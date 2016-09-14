@@ -26,4 +26,10 @@ public partial class MainWindow: Gtk.Window, IListener
 			lblTwo.Text = dataModel.DecimalTwo.ToString();
 		});
 	}
+
+	protected void btnTest_Clicked (object sender, EventArgs e)
+	{
+		//TODO: will this method run on the "UI thread"?
+		mainController.TestMethod ();
+	}
 }
