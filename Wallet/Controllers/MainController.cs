@@ -30,6 +30,15 @@ namespace Wallet
 			this.listener = listener;
 		}
 
+		public void TestMethod() {
+			dataModel.DecimalOne = 999;
+			dataModel.DecimalTwo = 444;
+
+			if (listener != null) {
+				listener.UpdateUI (dataModel);
+			}
+		}
+
 		public void Quit() {
 			stopping = true;
 			tempThread.Join ();
@@ -43,6 +52,7 @@ namespace Wallet
 				dataModel.DecimalTwo = random.Next(1, 7);
 
 				if (listener != null) {
+					//Alternative: Runtime.DispatchService.GuiDispatch (new StatefulMessageHandler (UpdateGui), n);
 					listener.UpdateUI (dataModel);
 				}
 
