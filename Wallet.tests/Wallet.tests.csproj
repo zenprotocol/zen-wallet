@@ -35,7 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestECKeyClass.cs" />
-    <Compile Include="TestECKeyClassDepracatedUsage.cs" />
+    <Compile Include="TestECKeyClassDeprecatedUsage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

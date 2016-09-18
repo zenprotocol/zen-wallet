@@ -25,7 +25,7 @@ namespace Wallet.tests
 
 			bool isSuccess = signingECKey.Verify (hash, signature);
 
-			Assert.AreEqual(true, isSuccess);
+			Assert.IsTrue(isSuccess);
 		}
 	}
 }
