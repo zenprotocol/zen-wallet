@@ -24,6 +24,12 @@
         <property name="Label" translatable="yes">test</property>
         <property name="ShortLabel" translatable="yes">test</property>
       </action>
+      <action id="SignAndVerifyTestAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">SignAndVerifyTest</property>
+        <property name="ShortLabel" translatable="yes">SignAndVerifyTest</property>
+        <signal name="Activated" handler="menuSignAndVerify_clicked" />
+      </action>
     </action-group>
     <property name="MemberName" />
     <property name="Title" translatable="yes">MainWindow</property>
@@ -40,7 +46,9 @@
               <node type="Menu" action="HomeAction">
                 <node type="Menuitem" action="testAction1" />
               </node>
-              <node type="Menu" action="testAction" />
+              <node type="Menu" action="testAction">
+                <node type="Menuitem" action="SignAndVerifyTestAction" />
+              </node>
             </node>
           </widget>
           <packing>

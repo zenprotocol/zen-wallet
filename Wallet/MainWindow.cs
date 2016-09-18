@@ -32,4 +32,24 @@ public partial class MainWindow: Gtk.Window, IListener
 		//TODO: will this method run on the "UI thread"?
 		mainController.TestMethod ();
 	}
+
+	protected void menuSignAndVerify_clicked (object sender, EventArgs e)
+	{
+		String result;
+
+		try {
+			TestClass testClass = new TestClass();
+
+			result = testClass.result;
+		} catch (Exception ex) {
+			result = ex.Message;
+		}
+
+		MessageDialog md = new MessageDialog(this, 
+			DialogFlags.DestroyWithParent, MessageType.Info, 
+			ButtonsType.Close, result);
+		
+		md.Run();
+		md.Destroy();
+	}
 }
