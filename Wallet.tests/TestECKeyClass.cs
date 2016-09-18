@@ -20,10 +20,10 @@ namespace Wallet.tests
 			uint256 hash = 1234567890;
 			byte[] keyBytes = { 0, 0, 0, 25 };
 
-			ECKey signningECKey = new ECKey (keyBytes, true);
-			ECDSASignature signature = signningECKey.Sign (hash);
+			ECKey signingECKey = new ECKey (keyBytes, true);
+			ECDSASignature signature = signingECKey.Sign (hash);
 
-			bool isSuccess = signningECKey.Verify (hash, signature);
+			bool isSuccess = signingECKey.Verify (hash, signature);
 
 			Assert.AreEqual(true, isSuccess);
 		}
