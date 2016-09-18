@@ -11,6 +11,8 @@ public partial class MainWindow
 	
 	private global::Gtk.Action testAction1;
 	
+	private global::Gtk.Action SignAndVerifyTestAction;
+	
 	private global::Gtk.VBox vbox1;
 	
 	private global::Gtk.MenuBar menubar1;
@@ -44,6 +46,9 @@ public partial class MainWindow
 		this.testAction1 = new global::Gtk.Action ("testAction1", global::Mono.Unix.Catalog.GetString ("test"), null, null);
 		this.testAction1.ShortLabel = global::Mono.Unix.Catalog.GetString ("test");
 		w1.Add (this.testAction1, null);
+		this.SignAndVerifyTestAction = new global::Gtk.Action ("SignAndVerifyTestAction", global::Mono.Unix.Catalog.GetString ("SignAndVerifyTest"), null, null);
+		this.SignAndVerifyTestAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("SignAndVerifyTest");
+		w1.Add (this.SignAndVerifyTestAction, null);
 		this.UIManager.InsertActionGroup (w1, 0);
 		this.AddAccelGroup (this.UIManager.AccelGroup);
 		this.Name = "MainWindow";
@@ -54,7 +59,7 @@ public partial class MainWindow
 		this.vbox1.Name = "vbox1";
 		this.vbox1.Spacing = 6;
 		// Container child vbox1.Gtk.Box+BoxChild
-		this.UIManager.AddUiFromString ("<ui><menubar name='menubar1'><menu name='HomeAction' action='HomeAction'><menuitem name='testAction1' action='testAction1'/></menu><menu name='testAction' action='testAction'/></menubar></ui>");
+		this.UIManager.AddUiFromString ("<ui><menubar name='menubar1'><menu name='HomeAction' action='HomeAction'><menuitem name='testAction1' action='testAction1'/></menu><menu name='testAction' action='testAction'><menuitem name='SignAndVerifyTestAction' action='SignAndVerifyTestAction'/></menu></menubar></ui>");
 		this.menubar1 = ((global::Gtk.MenuBar)(this.UIManager.GetWidget ("/menubar1")));
 		this.menubar1.Name = "menubar1";
 		this.vbox1.Add (this.menubar1);
@@ -123,6 +128,7 @@ public partial class MainWindow
 		this.DefaultHeight = 468;
 		this.Show ();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
+		this.SignAndVerifyTestAction.Activated += new global::System.EventHandler (this.menuSignAndVerify_clicked);
 		this.btnTest.Clicked += new global::System.EventHandler (this.btnTest_Clicked);
 	}
 }
