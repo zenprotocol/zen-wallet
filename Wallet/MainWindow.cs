@@ -35,12 +35,12 @@ public partial class MainWindow: Gtk.Window, IListener
 
 	protected void menuSignAndVerify_clicked (object sender, EventArgs e)
 	{
-		String result;
+		String result = "test";
 
 		try {
-			TestClass testClass = new TestClass();
+			//TestClass testClass = new TestClass();
 
-			result = testClass.result;
+			//result = testClass.result;
 		} catch (Exception ex) {
 			result = ex.Message;
 		}
