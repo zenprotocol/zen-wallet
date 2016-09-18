@@ -70,7 +70,6 @@
     <Compile Include="Controllers\MainController.cs" />
     <Compile Include="Domain\DataModel.cs" />
     <Compile Include="Controllers\IListener.cs" />
-    <Compile Include="TestClass.cs" />
     <Compile Include="NBitcoin\UInt2561.cs" />
     <Compile Include="NBitcoin\DataEncoders\ASCIIEncoder.cs" />
     <Compile Include="NBitcoin\DataEncoders\Base58Encoder.cs" />

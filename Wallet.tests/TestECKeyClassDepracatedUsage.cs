@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using NBitcoin;
 using NBitcoin.Crypto;
 using NBitcoin.BouncyCastle.Crypto.Parameters;
@@ -8,13 +9,14 @@ using NBitcoin.BouncyCastle.Math;
 using NBitcoin.BouncyCastle.Math.EC;
 using NBitcoin.BouncyCastle.Math.EC.Custom.Sec;
 
-namespace Wallet
+namespace Wallet.tests
 {
-	public class TestClass
+	[TestFixture ()]
+	public class TestECKeyClassDepracatedUsage
 	{
-		public String result;
-
-		public TestClass() {
+		[Test ()]
+		public void test ()
+		{
 			uint256 hash = 1234567890;
 			byte[] data = { 0, 0, 0, 25 };
 
@@ -25,9 +27,9 @@ namespace Wallet
 			DomainParameter = new ECDomainParameters(Secp256k1.Curve, Secp256k1.G, Secp256k1.N, Secp256k1.H);
 
 
-					
-//			int count = data.Length;
-//			byte[] vch = data.SafeSubarray(0, count); //SafeSubarray?
+
+			//			int count = data.Length;
+			//			byte[] vch = data.SafeSubarray(0, count); //SafeSubarray?
 			byte[] vch = data;
 
 
@@ -52,11 +54,11 @@ namespace Wallet
 			// Verifying
 			////////////////////////////////////
 
-	
+
 
 			bool isSuccess = Verify (hash, signature, publicKey);
 
-			result = "verify result: " + (isSuccess? "success" : "failure");
+			Assert.AreEqual(true, isSuccess);
 		}
 
 		private bool Verify(uint256 hash, ECDSASignature sig, ECPublicKeyParameters key)
