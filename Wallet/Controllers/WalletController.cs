@@ -8,7 +8,16 @@ namespace Wallet
 	{
 		private static WalletController instance = null;
 
-		public ActionBarView ActionBarView { get; set; }
+		private ActionBarView _actionBarView;
+		public ActionBarView ActionBarView {
+			get {
+				return _actionBarView;
+			}
+			set {
+				_actionBarView = value;
+				ActionBarView.Currency = "Zen";
+			}
+		}
 		public TransactionsView TransactionsView { get; set; }
 
 		public CurrencyEnum currency;
