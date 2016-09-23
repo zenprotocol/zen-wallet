@@ -6,7 +6,7 @@ namespace Wallet
 	public class MainAreaController
 	{
 		private const int DEFAULT_MENU_TOP_IDX = 1;
-		private const int DEFAULT_MENU_LEFT_IDX = 2;
+		private const int DEFAULT_MENU_LEFT_IDX = 0;
 		private static MainAreaController instance = null;
 
 		private MainAreaView mainAreaView; 

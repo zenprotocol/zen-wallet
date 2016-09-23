@@ -49,8 +49,24 @@ namespace Wallet
 
 		public String Currency {
 			set {
-				_currency = value;
+
+				switch (value) {
+				case "Bitcoin":
+					_currency = "BTC";
+					break;
+				case "Ether":
+					_currency = "ETH";
+					break;
+				case "Zen":
+					_currency = "ZEN";
+					break;
+				case "Lite":
+					_currency = "LTC";
+					break;
+				}
+
 				String asset = "Wallet.Assets.misc." + value + ".png";
+
 				try {
 					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(asset);
 				} catch (Exception e) {
