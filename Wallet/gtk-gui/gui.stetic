@@ -197,11 +197,10 @@
     <child>
       <widget class="Gtk.HBox" id="hboxMain">
         <property name="MemberName" />
-        <property name="Homogeneous">True</property>
         <child>
           <widget class="Gtk.HBox" id="hboxCurrency">
             <property name="MemberName" />
-            <property name="Spacing">50</property>
+            <property name="Spacing">10</property>
             <child>
               <widget class="Gtk.Image" id="image2">
                 <property name="MemberName" />
@@ -221,9 +220,34 @@
                 <property name="MemberName" />
                 <property name="Spacing">6</property>
                 <child>
-                  <widget class="Gtk.Label" id="label1">
+                  <widget class="Gtk.HBox" id="hbox1">
                     <property name="MemberName" />
-                    <property name="LabelProp" translatable="yes">label1</property>
+                    <property name="Spacing">6</property>
+                    <child>
+                      <widget class="Gtk.Label" id="label1">
+                        <property name="MemberName" />
+                        <property name="LabelProp" translatable="yes">label1</property>
+                      </widget>
+                      <packing>
+                        <property name="Position">0</property>
+                        <property name="AutoSize">True</property>
+                        <property name="Expand">False</property>
+                        <property name="Fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="Gtk.Label" id="label3">
+                        <property name="MemberName" />
+                        <property name="Yalign">0.6</property>
+                        <property name="LabelProp" translatable="yes">label2</property>
+                      </widget>
+                      <packing>
+                        <property name="Position">1</property>
+                        <property name="AutoSize">True</property>
+                        <property name="Expand">False</property>
+                        <property name="Fill">False</property>
+                      </packing>
+                    </child>
                   </widget>
                   <packing>
                     <property name="Position">0</property>
@@ -245,9 +269,34 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="Gtk.Label" id="label2">
+                  <widget class="Gtk.HBox" id="hbox3">
                     <property name="MemberName" />
-                    <property name="LabelProp" translatable="yes">label2</property>
+                    <property name="Spacing">6</property>
+                    <child>
+                      <widget class="Gtk.Label" id="label4">
+                        <property name="MemberName" />
+                        <property name="LabelProp" translatable="yes">label3</property>
+                      </widget>
+                      <packing>
+                        <property name="Position">0</property>
+                        <property name="AutoSize">True</property>
+                        <property name="Expand">False</property>
+                        <property name="Fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="Gtk.Label" id="label5">
+                        <property name="MemberName" />
+                        <property name="Yalign">0.6</property>
+                        <property name="LabelProp" translatable="yes">label4</property>
+                      </widget>
+                      <packing>
+                        <property name="Position">1</property>
+                        <property name="AutoSize">True</property>
+                        <property name="Expand">False</property>
+                        <property name="Fill">False</property>
+                      </packing>
+                    </child>
                   </widget>
                   <packing>
                     <property name="Position">2</property>
@@ -259,9 +308,7 @@
               </widget>
               <packing>
                 <property name="Position">1</property>
-                <property name="AutoSize">True</property>
-                <property name="Expand">False</property>
-                <property name="Fill">False</property>
+                <property name="AutoSize">False</property>
               </packing>
             </child>
           </widget>

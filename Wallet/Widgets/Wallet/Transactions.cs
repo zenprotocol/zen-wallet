@@ -111,6 +111,7 @@ namespace Wallet
 			Gtk.CellRendererText renderCol1 = new Gtk.CellRendererText ();
 			col1.PackStart (renderCol1, true);
 			col1.SetCellDataFunc (renderCol1, new Gtk.TreeCellDataFunc (RenderCellCol1));
+			col1.MinWidth = 100;
 			treeView.AppendColumn (col1);
 
 
