@@ -55,21 +55,48 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="libstetic">
+      <HintPath>..\..\..\..\..\..\..\..\usr\lib\monodevelop\AddIns\MonoDevelop.GtkCore\libstetic.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
       <LogicalName>gui.stetic</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Assets\logosmall.png" />
+    <EmbeddedResource Include="Assets\Portfolio_on.png" />
+    <EmbeddedResource Include="Assets\Portfolio_off.png" />
+    <EmbeddedResource Include="Assets\Wallet_off.png" />
+    <EmbeddedResource Include="Assets\Wallet_on.png" />
+    <EmbeddedResource Include="Assets\Contract_on.png" />
+    <EmbeddedResource Include="Assets\Contract_off.png" />
+    <EmbeddedResource Include="Assets\Market_on.png" />
+    <EmbeddedResource Include="Assets\Market_off.png" />
+    <EmbeddedResource Include="Assets\Bitcoin_off.png" />
+    <EmbeddedResource Include="Assets\Bitcoin_on.png" />
+    <EmbeddedResource Include="Assets\Ether_on.png" />
+    <EmbeddedResource Include="Assets\Lite_off.png" />
+    <EmbeddedResource Include="Assets\Lite_on.png" />
+    <EmbeddedResource Include="Assets\Zen_off.png" />
+    <EmbeddedResource Include="Assets\Zen_on.png" />
+    <EmbeddedResource Include="Assets\misc\arrowdown.png" />
+    <EmbeddedResource Include="Assets\misc\arrows.png" />
+    <EmbeddedResource Include="Assets\misc\arrowup.png" />
+    <EmbeddedResource Include="Assets\misc\receive.png" />
+    <EmbeddedResource Include="Assets\misc\send.png" />
+    <EmbeddedResource Include="Assets\Ether_off.png" />
+    <EmbeddedResource Include="Assets\misc\Bitcoin.png" />
+    <EmbeddedResource Include="Assets\misc\Ether.png" />
+    <EmbeddedResource Include="Assets\misc\Lite.png" />
+    <EmbeddedResource Include="Assets\misc\Zen.png" />
+    <EmbeddedResource Include="Assets\Contract\Create.png" />
+    <EmbeddedResource Include="Assets\Contract\Load.png" />
+    <EmbeddedResource Include="Assets\Contract\Verify.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gtk-gui\generated.cs" />
-    <Compile Include="MainWindow.cs" />
-    <Compile Include="gtk-gui\MainWindow.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Controllers\MainController.cs" />
-    <Compile Include="Domain\DataModel.cs" />
-    <Compile Include="Controllers\IListener.cs" />
     <Compile Include="NBitcoin\UInt2561.cs" />
     <Compile Include="NBitcoin\DataEncoders\ASCIIEncoder.cs" />
     <Compile Include="NBitcoin\DataEncoders\Base58Encoder.cs" />
@@ -424,11 +451,40 @@
     <Compile Include="NBitcoin\Crypto\Cryptsharp\SCrypt.cs" />
     <Compile Include="NBitcoin\Crypto\Cryptsharp\Salsa20Core.cs" />
     <Compile Include="NBitcoin\Crypto\Cryptsharp\Security.cs" />
+    <Compile Include="TestTabsBarWidget.cs" />
+    <Compile Include="gtk-gui\Wallet.TestTabsBarWidget.cs" />
+    <Compile Include="TestTabsBarVertWidget.cs" />
+    <Compile Include="gtk-gui\Wallet.TestTabsBarVertWidget.cs" />
+    <Compile Include="WidgetMyButton.cs" />
+    <Compile Include="gtk-gui\Wallet.WidgetMyButton.cs" />
+    <Compile Include="WidgetButtonContent.cs" />
+    <Compile Include="gtk-gui\Wallet.WidgetButtonContent.cs" />
+    <Compile Include="Widgets\Wallet\ActionBar.cs" />
+    <Compile Include="gtk-gui\Wallet.ActionBar.cs" />
+    <Compile Include="Controllers\WalletController.cs" />
+    <Compile Include="gtk-gui\Wallet.Wallet.cs" />
+    <Compile Include="Widgets\Wallet\Wallet.cs" />
+    <Compile Include="WindowSSS.cs" />
+    <Compile Include="gtk-gui\Wallet.WindowSSS.cs" />
+    <Compile Include="Widgets\MainArea.cs" />
+    <Compile Include="gtk-gui\Wallet.MainArea.cs" />
+    <Compile Include="Widgets\Wallet\Transactions.cs" />
+    <Compile Include="gtk-gui\Wallet.Transactions.cs" />
+    <Compile Include="Domain\TransactionItem.cs" />
+    <Compile Include="Widgets\Contract\Contract.cs" />
+    <Compile Include="Controllers\EventBus.cs" />
+    <Compile Include="gtk-gui\Wallet.Contract.cs" />
+    <Compile Include="Controllers\ContractController.cs" />
+    <Compile Include="Controllers\MainAreaController.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Domain\" />
+    <Folder Include="Widgets\" />
+    <Folder Include="Widgets\Wallet\" />
+    <Folder Include="Assets\" />
+    <Folder Include="Widgets\Contract\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="NBitcoin\UInt256.tt" />

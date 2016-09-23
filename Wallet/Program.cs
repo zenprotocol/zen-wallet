@@ -10,9 +10,14 @@ namespace Wallet
 			//TODO: will initializing MainController were have an effect on it's thread?
 
 			Application.Init ();
-			MainWindow win = new MainWindow ();
-			win.Show ();
+			new WindowSSS(); // Refactoring is an impossible mission using MonoDevelop
 			Application.Run ();
+		}
+
+		public static void CloseApp() {
+			EventBus.GetInstance().Close();
+			WalletController.GetInstance().Quit();
+			Application.Quit ();
 		}
 	}
 }
