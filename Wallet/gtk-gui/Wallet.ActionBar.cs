@@ -159,6 +159,7 @@ namespace Wallet
 			w13.Position = 2;
 			w13.Expand = false;
 			w13.Fill = false;
+			w13.Padding = ((uint)(10));
 			this.Add (this.hboxMain);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
