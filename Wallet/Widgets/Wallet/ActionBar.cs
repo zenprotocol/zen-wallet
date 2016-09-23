@@ -18,18 +18,24 @@ namespace Wallet
 			this.Build ();
 			WalletController.ActionBarView = this;
 
-			Pango.FontDescription fontdesc = Pango.FontDescription.FromString("Purisa 10");
-			label1.ModifyFont(fontdesc);
 
-//			label1.ModifyFont (Gtk.StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
-			label2.ModifyText (Gtk.StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
+			Pango.FontDescription fontdesc = new Pango.FontDescription();
+			fontdesc.Family = "Sans";
+			fontdesc.Size = 42;
+			//fontdesc.Weight = Pango.Weight.Semibold;
+			Gdk.Color fontcolor = new Gdk.Color(0x0F7, 0x0F7, 0x0F7);
+
+
+			label1.ModifyFg(Gtk.StateType.Normal, fontcolor);
+			label2.ModifyFg(Gtk.StateType.Normal, fontcolor);
+
 
 			HeightRequest = 130;
 		}
 
 		public Decimal Rate {
 			set {
-				label1.Text = value.ToString();
+				label1.Text = value.ToString() + " " + _currency;
 			}
 		}
 
@@ -39,8 +45,11 @@ namespace Wallet
 			}
 		}
 
+		private String _currency;
+
 		public String Currency {
 			set {
+				_currency = value;
 				String asset = "Wallet.Assets.misc." + value + ".png";
 				try {
 					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(asset);

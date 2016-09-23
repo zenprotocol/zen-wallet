@@ -103,6 +103,7 @@ namespace Wallet
 			// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
 			this.textview1 = new global::Gtk.TextView ();
 			this.textview1.CanFocus = true;
+			this.textview1.Name = "textview1";
 			this.GtkScrolledWindow.Add (this.textview1);
 			this.vbox1.Add (this.GtkScrolledWindow);
 			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.GtkScrolledWindow]));
