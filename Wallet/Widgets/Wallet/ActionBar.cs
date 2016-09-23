@@ -26,10 +26,10 @@ namespace Wallet
 			label4.ModifyFg(Gtk.StateType.Normal, fontcolor);
 			label5.ModifyFg(Gtk.StateType.Normal, fontcolor);
 
-			label1.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 25"));
-			label3.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 15"));
-			label4.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 25"));
-			label5.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 15"));
+			label1.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 30"));
+			label3.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 15"));
+			label4.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 30"));
+			label5.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 15"));
 
 
 			HeightRequest = 130;
