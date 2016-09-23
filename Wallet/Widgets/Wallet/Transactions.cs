@@ -34,19 +34,18 @@ namespace Wallet
 			WalletController.TransactionsView = this;
 
 			ScrolledWindow sw = new ScrolledWindow();
-			sw.ShadowType = ShadowType.EtchedIn;
+
 			sw.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
 
 			((Gtk.VBox)Children [0]).PackStart(sw, true, true, 0);
 
-//			InitStore();
-
 			TreeView treeView = new TreeView(listStore);
 			treeView.RulesHint = true;
 			treeView.RowActivated += OnRowActivated;
+			treeView.Selection.Mode = SelectionMode.None;
 			sw.Add(treeView);
 
-			treeView.ModifyBase (Gtk.StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
+			treeView.ModifyBase (Gtk.StateType.Normal, new Gdk.Color (0x024, 0x030, 0x03e));
 
 			treeView.BorderWidth = 0;
 
