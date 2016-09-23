@@ -41,7 +41,7 @@ namespace Wallet
 
 		public Decimal Total {
 			set {
-				label2.Text = value.ToString();
+				label2.Text = value.ToString() + " USD";
 			}
 		}
 
