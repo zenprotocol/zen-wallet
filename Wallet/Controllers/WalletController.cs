@@ -42,19 +42,19 @@ namespace Wallet
 			EventBus.GetInstance ().Register ("button", delegate (String value) {
 				switch (value) {
 				case "Bitcoin":
-					//currency = Wallet.Domain.TransactionItem.CurrencyEnum.BTC;
+					currency = CurrencyEnum.BTC;
 					ActionBarView.Currency = "Bitcoin";
 					break;
 				case "Ether":
-					//currency = Wallet.Domain.TransactionItem.CurrencyEnum.ETH;
+					currency = CurrencyEnum.ETH;
 					ActionBarView.Currency = "Ether";
 					break;
 				case "Zen":
-					//currency = Wallet.Domain.TransactionItem.CurrencyEnum.ZEN;
+					currency = CurrencyEnum.ZEN;
 					ActionBarView.Currency = "Zen";
 					break;
 				case "Lite":
-					//currency = Wallet.Domain.TransactionItem.CurrencyEnum.Lite;
+					currency = CurrencyEnum.LTE;
 					ActionBarView.Currency = "Lite";
 					break;
 				}
@@ -95,7 +95,7 @@ namespace Wallet
 					Decimal amount = (Decimal)random.Next(1, 100000) / 1000000;
 
 					TransactionsView.AddTransactionItem(
-						new TransactionItem(amount, direcion)
+						new TransactionItem(amount, direcion, currency)
 					);
 				}
 			});

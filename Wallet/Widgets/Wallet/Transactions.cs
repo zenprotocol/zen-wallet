@@ -17,11 +17,13 @@ namespace Wallet
 		{
 			Icon,
 			Direction,
-			Amount
+			Amount,
+			Currency
 		}
 
 		private ListStore listStore = new ListStore(
 			typeof (Gdk.Pixbuf), 
+			typeof(String),
 			typeof(String),
 			typeof(String)
 		);
@@ -143,9 +145,10 @@ namespace Wallet
 
 		private void RenderCellCol2 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
 		{
-			String value = (String) model.GetValue (iter, 2);
+			String value1 = (String) model.GetValue (iter, 2);
+			String value2 = (String) model.GetValue (iter, 3);
 			(cell as Gtk.CellRendererText).Foreground = "white";
-			(cell as Gtk.CellRendererText).Text = value + " ZEN";
+			(cell as Gtk.CellRendererText).Text = value1 + " " + value2;
 			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM 12");
 		}
 
@@ -164,7 +167,8 @@ namespace Wallet
 			listStore.AppendValues(
 				Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc." + (transactionItem.Direction == DirectionEnum.Sent ? "arrowup" : "arrowdown") + ".png"),
 				transactionItem.Direction == DirectionEnum.Sent ? "Sent" : "Received", 
-				transactionItem.Amount.ToString()
+				transactionItem.Amount.ToString(),
+				transactionItem.Currency.ToString()
 			);
 		}
 	}
