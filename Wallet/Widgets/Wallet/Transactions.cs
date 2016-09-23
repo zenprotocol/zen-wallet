@@ -139,15 +139,15 @@ namespace Wallet
 			String value = (String) model.GetValue (iter, 1);
 			(cell as Gtk.CellRendererText).Foreground = "white";
 			(cell as Gtk.CellRendererText).Text = value;
-			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM Bold 15");
+			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM 12");
 		}
 
 		private void RenderCellCol2 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
 		{
 			String value = (String) model.GetValue (iter, 2);
 			(cell as Gtk.CellRendererText).Foreground = "white";
-			(cell as Gtk.CellRendererText).Text = value;
-			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM Bold 15");
+			(cell as Gtk.CellRendererText).Text = value + " ZEN";
+			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM 12");
 		}
 
 		public List<TransactionItem> TransactionsList { 

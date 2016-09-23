@@ -238,7 +238,7 @@
                     <child>
                       <widget class="Gtk.Label" id="label3">
                         <property name="MemberName" />
-                        <property name="Yalign">0.6</property>
+                        <property name="Yalign">0.57</property>
                         <property name="LabelProp" translatable="yes">label2</property>
                       </widget>
                       <packing>
@@ -259,6 +259,7 @@
                 <child>
                   <widget class="Gtk.Image" id="image4">
                     <property name="MemberName" />
+                    <property name="Yalign">0.55</property>
                     <property name="Pixbuf">resource:Wallet.Assets.misc.arrows.png</property>
                   </widget>
                   <packing>
@@ -266,6 +267,7 @@
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>
+                    <property name="Padding">10</property>
                   </packing>
                 </child>
                 <child>
@@ -287,7 +289,7 @@
                     <child>
                       <widget class="Gtk.Label" id="label5">
                         <property name="MemberName" />
-                        <property name="Yalign">0.6</property>
+                        <property name="Yalign">0.57</property>
                         <property name="LabelProp" translatable="yes">label4</property>
                       </widget>
                       <packing>
@@ -325,27 +327,39 @@
             <property name="MemberName" />
             <property name="Spacing">6</property>
             <child>
-              <widget class="Gtk.Image" id="image1">
+              <widget class="Gtk.VBox" id="vbox1">
                 <property name="MemberName" />
-                <property name="Pixbuf">resource:Wallet.Assets.misc.send.png</property>
+                <property name="Homogeneous">True</property>
+                <child>
+                  <widget class="Gtk.Image" id="image1">
+                    <property name="MemberName" />
+                    <property name="Pixbuf">resource:Wallet.Assets.misc.send.png</property>
+                  </widget>
+                  <packing>
+                    <property name="Position">0</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.Image" id="image3">
+                    <property name="MemberName" />
+                    <property name="Pixbuf">resource:Wallet.Assets.misc.receive.png</property>
+                  </widget>
+                  <packing>
+                    <property name="Position">1</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
               </widget>
               <packing>
                 <property name="Position">0</property>
-                <property name="AutoSize">True</property>
+                <property name="AutoSize">False</property>
                 <property name="Expand">False</property>
-                <property name="Fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="Gtk.Image" id="image3">
-                <property name="MemberName" />
-                <property name="Pixbuf">resource:Wallet.Assets.misc.receive.png</property>
-              </widget>
-              <packing>
-                <property name="Position">1</property>
-                <property name="AutoSize">True</property>
-                <property name="Expand">False</property>
-                <property name="Fill">False</property>
+                <property name="Padding">10</property>
               </packing>
             </child>
           </widget>
