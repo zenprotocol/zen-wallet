@@ -104,14 +104,14 @@ namespace Wallet
 			Gtk.CellRendererPixbuf renderCol0 = new Gtk.CellRendererPixbuf ();
 			col0.PackStart (renderCol0, true);
 			col0.SetCellDataFunc (renderCol0, new Gtk.TreeCellDataFunc (RenderCellCol0));
-			col0.MinWidth = 100;
+			col0.MinWidth = 130;
 			treeView.AppendColumn (col0);
 
 			Gtk.TreeViewColumn col1 = new Gtk.TreeViewColumn ();
 			Gtk.CellRendererText renderCol1 = new Gtk.CellRendererText ();
 			col1.PackStart (renderCol1, true);
 			col1.SetCellDataFunc (renderCol1, new Gtk.TreeCellDataFunc (RenderCellCol1));
-			col1.MinWidth = 100;
+			col1.MinWidth = 130;
 			treeView.AppendColumn (col1);
 
 
@@ -139,6 +139,7 @@ namespace Wallet
 			String value = (String) model.GetValue (iter, 1);
 			(cell as Gtk.CellRendererText).Foreground = "white";
 			(cell as Gtk.CellRendererText).Text = value;
+			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM Bold 15");
 		}
 
 		private void RenderCellCol2 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
@@ -146,6 +147,7 @@ namespace Wallet
 			String value = (String) model.GetValue (iter, 2);
 			(cell as Gtk.CellRendererText).Foreground = "white";
 			(cell as Gtk.CellRendererText).Text = value;
+			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM Bold 15");
 		}
 
 		public List<TransactionItem> TransactionsList { 
