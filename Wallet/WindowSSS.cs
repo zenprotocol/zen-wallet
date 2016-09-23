@@ -3,12 +3,17 @@ using Gtk;
 
 namespace Wallet
 {
-	public partial class WindowSSS : Gtk.Window
+	public interface MainView {
+		Boolean SideMenuVisible { set; }
+	}
+
+	public partial class WindowSSS : Gtk.Window, MainView
 	{
 		public WindowSSS () :
 			base (/*Gtk.WindowType.Toplevel*/"ZEN Wallet")
 		{
 			this.Build ();
+			MainAreaController.GetInstance().MainView = this;
 
 //			Gdk.Pixbuf one= Gdk.Pixbuf.LoadFromResource ("Wallet.portfolio.png");
 //			one = 
@@ -30,6 +35,15 @@ namespace Wallet
 		{
 			MainClass.CloseApp ();
 			a.RetVal = true;
+		}
+
+		public Boolean SideMenuVisible { 
+			set {
+				Container c = (Container)Children [0];
+				c = (Container)c.Children [2];
+
+				((TestTabsBarVertWidget)c.Children [0]).Visible = value;
+			}
 		}
 	}
 }
