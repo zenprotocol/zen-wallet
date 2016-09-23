@@ -23,7 +23,7 @@ namespace Wallet
 		private ListStore listStore = new ListStore(
 			typeof (Gdk.Pixbuf), 
 			typeof(String),
-			typeof(int)
+			typeof(String)
 		);
 		
 		private WalletController WalletController = WalletController.GetInstance ();
@@ -69,14 +69,19 @@ namespace Wallet
 		{
 			treeView.HeadersVisible = false;
 
+			TreeViewColumn column;
 
-			treeView.AppendColumn ("Icon", new Gtk.CellRendererPixbuf (), "pixbuf", 0);
-
+			column = new TreeViewColumn("Icon", new CellRendererPixbuf(),
+				"pixbuf", Column.Icon);
+			column.MinWidth = 100;
+	//		treeView.AppendColumn ("Icon", new Gtk.CellRendererPixbuf (), "pixbuf", 0);
+			treeView.AppendColumn(column);
 
 			CellRendererText rendererText = new CellRendererText();
-			TreeViewColumn column = new TreeViewColumn("Direction", rendererText,
+			column = new TreeViewColumn("Direction", rendererText,
 				"text", Column.Direction);
 			column.SortColumnId = (int) Column.Direction;
+			column.MinWidth = 200;
 			treeView.AppendColumn(column);
 
 			rendererText = new CellRendererText();
@@ -90,6 +95,7 @@ namespace Wallet
 //				"text", Column.Amount);
 //			column.SortColumnId = (int) Column.Currency;
 //			treeView.AppendColumn(column);
+
 		}
 
 		public List<TransactionItem> TransactionsList { 
@@ -107,8 +113,7 @@ namespace Wallet
 			listStore.AppendValues(
 				Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc." + (transactionItem.Direction == DirectionEnum.Sent ? "arrowup" : "arrowdown") + ".png"),
 				transactionItem.Direction == DirectionEnum.Sent ? "Sent" : "Received", 
-				//transactionItem.Amount
-				random.Next(1, 100000) / 100 //WTF?!
+				transactionItem.Amount.ToString()
 			);
 		}
 	}

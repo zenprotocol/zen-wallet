@@ -84,7 +84,7 @@ namespace Wallet
 				if (TransactionsView != null) {
 
 					DirectionEnum direcion = random.Next(0, 10) > 5 ? DirectionEnum.Sent : DirectionEnum.Recieved;
-					Decimal amount = random.Next(1, 100000) / 100;
+					Decimal amount = (Decimal)random.Next(1, 100000) / 1000000;
 
 					TransactionsView.AddTransactionItem(
 						new TransactionItem(amount, direcion)
