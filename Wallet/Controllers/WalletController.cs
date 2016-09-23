@@ -58,9 +58,8 @@ namespace Wallet
 					ActionBarView.Currency = "Lite";
 					break;
 				}
-				Console.Write(value);
+				UpdateUI();
 			});
-
 		}
 
 		public void Send(Decimal amount) {
@@ -86,8 +85,8 @@ namespace Wallet
 			Gtk.Application.Invoke(delegate {
 				if (ActionBarView != null) {
 					//Alternative: Runtime.DispatchService.GuiDispatch (new StatefulMessageHandler (UpdateGui), n);
-					ActionBarView.Total = random.Next(1, 13);
-					ActionBarView.Rate = random.Next(1, 13);
+					ActionBarView.Total = (decimal)random.Next(1, 1000) / 10000;
+					ActionBarView.Rate = (decimal)random.Next(1, 1000) / 10000;
 				}
 
 				if (TransactionsView != null) {

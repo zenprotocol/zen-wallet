@@ -18,16 +18,18 @@ namespace Wallet
 			this.Build ();
 			WalletController.ActionBarView = this;
 
-
-			Pango.FontDescription fontdesc = new Pango.FontDescription();
-			fontdesc.Family = "Sans";
-			fontdesc.Size = 42;
-			//fontdesc.Weight = Pango.Weight.Semibold;
+		
 			Gdk.Color fontcolor = new Gdk.Color(0x0F7, 0x0F7, 0x0F7);
 
-
 			label1.ModifyFg(Gtk.StateType.Normal, fontcolor);
-			label2.ModifyFg(Gtk.StateType.Normal, fontcolor);
+			label3.ModifyFg(Gtk.StateType.Normal, fontcolor);
+			label4.ModifyFg(Gtk.StateType.Normal, fontcolor);
+			label5.ModifyFg(Gtk.StateType.Normal, fontcolor);
+
+			label1.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 25"));
+			label3.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 15"));
+			label4.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 25"));
+			label5.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM Bold 15"));
 
 
 			HeightRequest = 130;
@@ -35,13 +37,15 @@ namespace Wallet
 
 		public Decimal Rate {
 			set {
-				label1.Text = value.ToString() + " " + _currency;
+				label1.Text = value.ToString();
+				label3.Text = _currency;
 			}
 		}
 
 		public Decimal Total {
 			set {
-				label2.Text = value.ToString() + " USD";
+				label4.Text = value.ToString();
+				label5.Text = "USD";
 			}
 		}
 
