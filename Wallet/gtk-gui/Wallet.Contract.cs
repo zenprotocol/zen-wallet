@@ -62,6 +62,7 @@ namespace Wallet
 			w2.Position = 0;
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.vbox1 = new global::Gtk.VBox ();
+			this.vbox1.WidthRequest = 500;
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild

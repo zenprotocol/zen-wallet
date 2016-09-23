@@ -574,7 +574,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.Contract" design-size="399 300">
+  <widget class="Gtk.Bin" id="Wallet.Contract" design-size="593 300">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -602,6 +602,7 @@
         <child>
           <widget class="Gtk.VBox" id="vbox1">
             <property name="MemberName" />
+            <property name="WidthRequest">500</property>
             <property name="Spacing">6</property>
             <child>
               <widget class="Gtk.HBox" id="hbox3">
