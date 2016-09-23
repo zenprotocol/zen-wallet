@@ -137,6 +137,7 @@ namespace Wallet
 
 		private void RenderCellCol1 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
 		{
+			cell.Height = 50;
 			String value = (String) model.GetValue (iter, 1);
 			(cell as Gtk.CellRendererText).Foreground = "white";
 			(cell as Gtk.CellRendererText).Text = value;
