@@ -69,26 +69,27 @@ namespace Wallet
 		{
 			treeView.HeadersVisible = false;
 
-			TreeViewColumn column;
-
-			column = new TreeViewColumn("Icon", new CellRendererPixbuf(),
-				"pixbuf", Column.Icon);
-			column.MinWidth = 100;
-	//		treeView.AppendColumn ("Icon", new Gtk.CellRendererPixbuf (), "pixbuf", 0);
-			treeView.AppendColumn(column);
-
-			CellRendererText rendererText = new CellRendererText();
-			column = new TreeViewColumn("Direction", rendererText,
-				"text", Column.Direction);
-			column.SortColumnId = (int) Column.Direction;
-			column.MinWidth = 200;
-			treeView.AppendColumn(column);
-
-			rendererText = new CellRendererText();
-			column = new TreeViewColumn("Amount", rendererText, 
-				"text", Column.Amount);
-			column.SortColumnId = (int) Column.Amount;
-			treeView.AppendColumn(column);
+//			TreeViewColumn column;
+//
+//			column = new TreeViewColumn("Icon", new CellRendererPixbuf(),
+//				"pixbuf", Column.Icon);
+//			column.MinWidth = 100;
+//	//		treeView.AppendColumn ("Icon", new Gtk.CellRendererPixbuf (), "pixbuf", 0);
+//			treeView.AppendColumn(column);
+//
+//			CellRendererText rendererText = new CellRendererText();
+//			column = new TreeViewColumn("Direction", rendererText,
+//				"text", Column.Direction);
+//			column.SortColumnId = (int) Column.Direction;
+//			column.MinWidth = 200;
+//			treeView.AppendColumn(column);
+//
+//			rendererText = new CellRendererText();
+//			column = new TreeViewColumn("Amount", rendererText, 
+//				"text", Column.Amount);
+//			column.SortColumnId = (int) Column.Amount;
+//
+//			treeView.AppendColumn(column);
 
 //			rendererText = new CellRendererText();
 //			column = new TreeViewColumn("Currency", rendererText, 
@@ -96,6 +97,54 @@ namespace Wallet
 //			column.SortColumnId = (int) Column.Currency;
 //			treeView.AppendColumn(column);
 
+
+
+
+			Gtk.TreeViewColumn col0 = new Gtk.TreeViewColumn ();
+			Gtk.CellRendererPixbuf renderCol0 = new Gtk.CellRendererPixbuf ();
+			col0.PackStart (renderCol0, true);
+			col0.SetCellDataFunc (renderCol0, new Gtk.TreeCellDataFunc (RenderCellCol0));
+			col0.MinWidth = 100;
+			treeView.AppendColumn (col0);
+
+			Gtk.TreeViewColumn col1 = new Gtk.TreeViewColumn ();
+			Gtk.CellRendererText renderCol1 = new Gtk.CellRendererText ();
+			col1.PackStart (renderCol1, true);
+			col1.SetCellDataFunc (renderCol1, new Gtk.TreeCellDataFunc (RenderCellCol1));
+			treeView.AppendColumn (col1);
+
+
+			Gtk.TreeViewColumn col2 = new Gtk.TreeViewColumn ();
+			Gtk.CellRendererText renderCol2 = new Gtk.CellRendererText ();
+			col2.PackStart (renderCol2, true);
+			col2.SetCellDataFunc (renderCol2, new Gtk.TreeCellDataFunc (RenderCellCol2));
+			treeView.AppendColumn (col2);
+
+			treeView.Model = listStore;
+
+
+		}
+
+
+		private void RenderCellCol0 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
+		{
+			Gdk.Pixbuf img = (Gdk.Pixbuf) model.GetValue (iter, 0);
+			(cell as Gtk.CellRendererPixbuf).Pixbuf = img;
+		}
+
+
+		private void RenderCellCol1 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
+		{
+			String value = (String) model.GetValue (iter, 1);
+			(cell as Gtk.CellRendererText).Foreground = "white";
+			(cell as Gtk.CellRendererText).Text = value;
+		}
+
+		private void RenderCellCol2 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
+		{
+			String value = (String) model.GetValue (iter, 2);
+			(cell as Gtk.CellRendererText).Foreground = "white";
+			(cell as Gtk.CellRendererText).Text = value;
 		}
 
 		public List<TransactionItem> TransactionsList { 
