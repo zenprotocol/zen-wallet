@@ -7,9 +7,9 @@ namespace Wallet
 		Boolean SideMenuVisible { set; }
 	}
 
-	public partial class WindowSSS : Gtk.Window, MainView
+	public partial class MainWindow : Gtk.Window, MainView
 	{
-		public WindowSSS () :
+		public MainWindow () :
 			base (/*Gtk.WindowType.Toplevel*/"ZEN Wallet")
 		{
 			this.Build ();
@@ -33,7 +33,7 @@ namespace Wallet
 
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 		{
-			MainClass.CloseApp ();
+			Program.CloseApp ();
 			a.RetVal = true;
 		}
 

@@ -29,19 +29,19 @@ namespace Wallet
 			set 
 			{
 				eventbox9.ModifyBg(Gtk.StateType.Normal, !value ? new Gdk.Color(0x01d,0x025,0x030) : new Gdk.Color(0x028,0x02f,0x037));
-				ImageButton WidgetButtonContent = GetWidgetButtonContent ();
+				ImageButton ImageButton = GetImageButton ();
 
 				String asset = "Wallet.Assets." + Name + (value ? "_on.png" : "_off.png");
 
 				try {
-					WidgetButtonContent.SetBackground(asset);
+					ImageButton.SetBackground(asset);
 				} catch {
 					Console.WriteLine("missing" + asset);
 				}
 			}
 		}
 
-		private ImageButton GetWidgetButtonContent() {
+		private ImageButton GetImageButton() {
 			Gtk.Container c = (Gtk.Container) Children[0];
 			c = (Gtk.Container) c.Children [0];	
 			c = (Gtk.Container) c.Children [0];	

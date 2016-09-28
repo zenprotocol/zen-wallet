@@ -5,9 +5,9 @@
   </configuration>
   <import>
     <widget-library name="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <widget-library name="../bin/Release/Wallet.exe" internal="true" />
+    <widget-library name="../bin/Debug/Wallet.exe" internal="true" />
   </import>
-  <widget class="Gtk.Bin" id="Wallet.TestTabsBarWidget" design-size="1404 312">
+  <widget class="Gtk.Bin" id="Wallet.MainMenu" design-size="1404 312">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -15,7 +15,7 @@
         <property name="MemberName" />
         <property name="Homogeneous">True</property>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Portfolio">
+          <widget class="Wallet.MenuButton" id="Portfolio">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -26,7 +26,7 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Wallet">
+          <widget class="Wallet.MenuButton" id="Wallet">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -37,7 +37,7 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Contract">
+          <widget class="Wallet.MenuButton" id="Contract">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -48,7 +48,7 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Market">
+          <widget class="Wallet.MenuButton" id="Market">
             <property name="MemberName" />
             <property name="Events">ButtonPressMask</property>
           </widget>
@@ -60,7 +60,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.TestTabsBarVertWidget" design-size="234 1248">
+  <widget class="Gtk.Bin" id="Wallet.VerticalMenu" design-size="234 1248">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -68,7 +68,7 @@
         <property name="MemberName" />
         <property name="Homogeneous">True</property>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Zen">
+          <widget class="Wallet.MenuButton" id="Zen">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -79,7 +79,7 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Bitcoin">
+          <widget class="Wallet.MenuButton" id="Bitcoin">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -90,7 +90,7 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Ether">
+          <widget class="Wallet.MenuButton" id="Ether">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -101,7 +101,7 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.WidgetMyButton" id="Lite">
+          <widget class="Wallet.MenuButton" id="Lite">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -114,7 +114,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.WidgetMyButton" design-size="300 312">
+  <widget class="Gtk.Bin" id="Wallet.MenuButton" design-size="300 312">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -138,7 +138,7 @@
                   <placeholder />
                 </child>
                 <child>
-                  <widget class="Wallet.WidgetButtonContent" id="widgetbuttoncontent1">
+                  <widget class="Wallet.ImageButton" id="ImageButton1">
                     <property name="MemberName" />
                     <property name="Events">ButtonPressMask</property>
                   </widget>
@@ -168,7 +168,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.WidgetButtonContent" design-size="300 300">
+  <widget class="Gtk.Bin" id="Wallet.ImageButton" design-size="300 300">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -407,7 +407,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Window" id="Wallet.WindowSSS" design-size="936 936">
+  <widget class="Gtk.Window" id="Wallet.MainWindow" design-size="936 936">
     <property name="MemberName" />
     <property name="Title" translatable="yes">ZEN Wallet</property>
     <property name="WindowPosition">CenterOnParent</property>
@@ -449,7 +449,7 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.TestTabsBarWidget" id="testtabsbarwidget1">
+          <widget class="Wallet.MainMenu" id="MainMenu1">
             <property name="MemberName" />
             <property name="Events">ButtonPressMask</property>
           </widget>
@@ -463,7 +463,7 @@
           <widget class="Gtk.HBox" id="hbox1">
             <property name="MemberName" />
             <child>
-              <widget class="Wallet.TestTabsBarVertWidget" id="testtabsbarvertwidget1">
+              <widget class="Wallet.VerticalMenu" id="VerticalMenu1">
                 <property name="MemberName" />
                 <property name="Events">ButtonPressMask</property>
               </widget>

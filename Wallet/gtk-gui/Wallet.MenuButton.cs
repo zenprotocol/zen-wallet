@@ -10,15 +10,15 @@ namespace Wallet
 		
 		private global::Gtk.HBox hbox7;
 		
-		private global::Wallet.ImageButton widgetbuttoncontent1;
+		private global::Wallet.ImageButton ImageButton1;
 
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
-			// Widget Wallet.WidgetMyButton
+			// Widget Wallet.MenuButton
 			global::Stetic.BinContainer.Attach (this);
-			this.Name = "Wallet.WidgetMyButton";
-			// Container child Wallet.WidgetMyButton.Gtk.Container+ContainerChild
+			this.Name = "Wallet.MenuButton";
+			// Container child Wallet.MenuButton.Gtk.Container+ContainerChild
 			this.eventbox9 = new global::Gtk.EventBox ();
 			this.eventbox9.Name = "eventbox9";
 			// Container child eventbox9.Gtk.Container+ContainerChild
@@ -33,11 +33,11 @@ namespace Wallet
 			this.hbox7.Homogeneous = true;
 			this.hbox7.Spacing = 6;
 			// Container child hbox7.Gtk.Box+BoxChild
-			this.widgetbuttoncontent1 = new global::Wallet.ImageButton ();
-			this.widgetbuttoncontent1.Events = ((global::Gdk.EventMask)(256));
-			this.widgetbuttoncontent1.Name = "widgetbuttoncontent1";
-			this.hbox7.Add (this.widgetbuttoncontent1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox7 [this.widgetbuttoncontent1]));
+			this.ImageButton1 = new global::Wallet.ImageButton ();
+			this.ImageButton1.Events = ((global::Gdk.EventMask)(256));
+			this.ImageButton1.Name = "ImageButton1";
+			this.hbox7.Add (this.ImageButton1);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox7 [this.ImageButton1]));
 			w1.Position = 1;
 			w1.Expand = false;
 			w1.Fill = false;
