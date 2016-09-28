@@ -453,18 +453,16 @@
     <Compile Include="NBitcoin\Crypto\Cryptsharp\Security.cs" />
     <Compile Include="Widgets\Menu\MainMenu.cs" />
     <Compile Include="Widgets\Menu\VerticalMenu.cs" />
-    <Compile Include="gtk-gui\Wallet.TestTabsBarVertWidget.cs" />
+    <Compile Include="gtk-gui\Wallet.VerticalMenu.cs" />
     <Compile Include="Widgets\Menu\MenuButton.cs" />
-    <Compile Include="gtk-gui\Wallet.WidgetMyButton.cs" />
     <Compile Include="Widgets\Menu\ImageButton.cs" />
-    <Compile Include="gtk-gui\Wallet.WidgetButtonContent.cs" />
+    <Compile Include="gtk-gui\Wallet.ImageButton.cs" />
     <Compile Include="Widgets\Wallet\ActionBar.cs" />
     <Compile Include="gtk-gui\Wallet.ActionBar.cs" />
     <Compile Include="Controllers\WalletController.cs" />
     <Compile Include="gtk-gui\Wallet.Wallet.cs" />
     <Compile Include="Widgets\Wallet\Wallet.cs" />
     <Compile Include="MainWindow.cs" />
-    <Compile Include="gtk-gui\Wallet.WindowSSS.cs" />
     <Compile Include="Widgets\MainArea.cs" />
     <Compile Include="gtk-gui\Wallet.MainArea.cs" />
     <Compile Include="Widgets\Wallet\Transactions.cs" />
@@ -476,7 +474,9 @@
     <Compile Include="Controllers\ContractController.cs" />
     <Compile Include="Controllers\MainAreaController.cs" />
     <Compile Include="Widgets\Menu\IMenuSelectionHandler.cs" />
-    <Compile Include="gtk-gui\Wallet.TestTabsBarWidget.cs" />
+    <Compile Include="gtk-gui\Wallet.MainWindow.cs" />
+    <Compile Include="gtk-gui\Wallet.MainMenu.cs" />
+    <Compile Include="gtk-gui\Wallet.MenuButton.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
