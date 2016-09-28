@@ -15,7 +15,7 @@ namespace Wallet
 		}
 
 		public static void CloseApp() {
-			EventBus.GetInstance().Close();
+		//	EventBus.GetInstance().Close();
 			WalletController.GetInstance().Quit();
 			Application.Quit ();
 		}

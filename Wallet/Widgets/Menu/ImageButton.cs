@@ -3,9 +3,9 @@
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class WidgetButtonContent : Gtk.Bin
+	public partial class ImageButton : Gtk.Bin
 	{
-		public WidgetButtonContent ()
+		public ImageButton ()
 		{
 			this.Build ();
 		}
