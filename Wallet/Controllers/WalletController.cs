@@ -6,7 +6,10 @@ namespace Wallet
 {
 	public class WalletController
 	{
+		private const int DEFAULT_MENU_LEFT_IDX = 0;
 		private static WalletController instance = null;
+
+		public ITestTabsBarVertView TestTabsBarVertView { set { value.Default = DEFAULT_MENU_LEFT_IDX; } }
 
 		private ActionBarView _actionBarView;
 		public ActionBarView ActionBarView {
@@ -34,32 +37,34 @@ namespace Wallet
 			return instance;
 		}
 
+		public String CurrencySelected { 
+			set {
+				switch (value) {
+					case "Bitcoin":
+						currency = CurrencyEnum.BTC;
+						ActionBarView.Currency = "Bitcoin";
+						break;
+					case "Ether":
+						currency = CurrencyEnum.ETH;
+						ActionBarView.Currency = "Ether";
+						break;
+					case "Zen":
+						currency = CurrencyEnum.ZEN;
+						ActionBarView.Currency = "Zen";
+						break;
+					case "Lite":
+						currency = CurrencyEnum.LTE;
+						ActionBarView.Currency = "Lite";
+						break;
+					}
+					UpdateUI();
+			}
+		}
+
 		public WalletController ()
 		{
 			tempThread = new Thread (Reset);
 			tempThread.Start ();
-
-			EventBus.GetInstance ().Register ("button", delegate (String value) {
-				switch (value) {
-				case "Bitcoin":
-					currency = CurrencyEnum.BTC;
-					ActionBarView.Currency = "Bitcoin";
-					break;
-				case "Ether":
-					currency = CurrencyEnum.ETH;
-					ActionBarView.Currency = "Ether";
-					break;
-				case "Zen":
-					currency = CurrencyEnum.ZEN;
-					ActionBarView.Currency = "Zen";
-					break;
-				case "Lite":
-					currency = CurrencyEnum.LTE;
-					ActionBarView.Currency = "Lite";
-					break;
-				}
-				UpdateUI();
-			});
 		}
 
 		public void Send(Decimal amount) {

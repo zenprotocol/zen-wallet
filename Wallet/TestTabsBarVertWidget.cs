@@ -3,21 +3,27 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface TestTabsBarVertView {
-		int Default { set; }
+	public interface ITestTabsBarVertView : IMenu {
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class TestTabsBarVertWidget : Gtk.Bin, TestTabsBarVertView
+	public partial class TestTabsBarVertWidget : Gtk.Bin, ITestTabsBarVertView
 	{
-		MainAreaController MainAreaController = MainAreaController.GetInstance ();
+		WalletController WalletController = WalletController.GetInstance ();
 
 		public TestTabsBarVertWidget ()
 		{
 			this.Build ();
-			MainAreaController.TestTabsBarVertView = this;
 
+			WalletController.TestTabsBarVertView = this;
+	
 			WidthRequest = 170;
+		}
+			
+		public String Selection { 
+			set {
+				WalletController.CurrencySelected = value;
+			}
 		}
 
 		public int Default { 
@@ -27,4 +33,3 @@ namespace Wallet
 		}
 	}
 }
-

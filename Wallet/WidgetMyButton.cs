@@ -2,13 +2,9 @@
 
 namespace Wallet
 {
-	public delegate void MyEventHandler (String info);
-
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class WidgetMyButton : Gtk.Bin
 	{
-//		public event MyEventHandler MyButtonClicked;
-
 		public WidgetMyButton ()
 		{
 			this.Build ();
@@ -16,22 +12,9 @@ namespace Wallet
 			Selected = false;
 
 			eventbox9.ButtonPressEvent += delegate {
-				EventBus.GetInstance().Dispatch("button", Name);
-//				Console.WriteLine("clicked " + Name);
-//				if (MyButtonClicked != null)
-//				{
-//					MyButtonClicked("mmm");
-//				}
-
-
-
 				Select();
+				Menu.Selection = Name;
 			};
-
-			//	EventBus.GetInstance().Register(ClassTag, String val);
-			//EventBus.GetInstance().RegisterIncomingFromParent(this, (String xnnn) => {
-
-			//});
 		}
 
 		public void Select() {
@@ -41,7 +24,7 @@ namespace Wallet
 				}
 			}
 		}
-
+			
 		public bool Selected { 
 			set 
 			{
@@ -49,9 +32,10 @@ namespace Wallet
 				WidgetButtonContent WidgetButtonContent = GetWidgetButtonContent ();
 
 				String asset = "Wallet.Assets." + Name + (value ? "_on.png" : "_off.png");
+
 				try {
 					WidgetButtonContent.SetBackground(asset);
-				} catch (Exception e) {
+				} catch {
 					Console.WriteLine("missing" + asset);
 				}
 			}
@@ -63,6 +47,12 @@ namespace Wallet
 			c = (Gtk.Container) c.Children [0];	
 
 			return (WidgetButtonContent)c.Children [0];
+		}
+
+		private IMenu Menu { 
+			get {
+				return (IMenu)Parent.Parent;
+			}
 		}
 	}
 }
