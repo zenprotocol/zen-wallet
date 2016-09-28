@@ -10,11 +10,11 @@ namespace Wallet
 		
 		private global::Gtk.Image image1;
 		
-		private global::Wallet.TestTabsBarWidget testtabsbarwidget1;
+		private global::Wallet.MainMenu testtabsbarwidget1;
 		
 		private global::Gtk.HBox hbox1;
 		
-		private global::Wallet.TestTabsBarVertWidget testtabsbarvertwidget1;
+		private global::Wallet.VerticalMenu testtabsbarvertwidget1;
 		
 		private global::Wallet.MainArea mainarea1;
 
@@ -50,7 +50,7 @@ namespace Wallet
 			w2.Fill = false;
 			w2.Padding = ((uint)(15));
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.testtabsbarwidget1 = new global::Wallet.TestTabsBarWidget ();
+			this.testtabsbarwidget1 = new global::Wallet.MainMenu ();
 			this.testtabsbarwidget1.Events = ((global::Gdk.EventMask)(256));
 			this.testtabsbarwidget1.Name = "testtabsbarwidget1";
 			this.vbox1.Add (this.testtabsbarwidget1);
@@ -61,7 +61,7 @@ namespace Wallet
 			this.hbox1 = new global::Gtk.HBox ();
 			this.hbox1.Name = "hbox1";
 			// Container child hbox1.Gtk.Box+BoxChild
-			this.testtabsbarvertwidget1 = new global::Wallet.TestTabsBarVertWidget ();
+			this.testtabsbarvertwidget1 = new global::Wallet.VerticalMenu ();
 			this.testtabsbarvertwidget1.Events = ((global::Gdk.EventMask)(256));
 			this.testtabsbarvertwidget1.Name = "testtabsbarvertwidget1";
 			this.hbox1.Add (this.testtabsbarvertwidget1);

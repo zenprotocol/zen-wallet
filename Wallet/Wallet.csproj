@@ -451,12 +451,12 @@
     <Compile Include="NBitcoin\Crypto\Cryptsharp\SCrypt.cs" />
     <Compile Include="NBitcoin\Crypto\Cryptsharp\Salsa20Core.cs" />
     <Compile Include="NBitcoin\Crypto\Cryptsharp\Security.cs" />
-    <Compile Include="TestTabsBarWidget.cs" />
-    <Compile Include="TestTabsBarVertWidget.cs" />
+    <Compile Include="MainMenu.cs" />
+    <Compile Include="VerticalMenu.cs" />
     <Compile Include="gtk-gui\Wallet.TestTabsBarVertWidget.cs" />
-    <Compile Include="WidgetMyButton.cs" />
+    <Compile Include="MenuButton.cs" />
     <Compile Include="gtk-gui\Wallet.WidgetMyButton.cs" />
-    <Compile Include="WidgetButtonContent.cs" />
+    <Compile Include="ImageButton.cs" />
     <Compile Include="gtk-gui\Wallet.WidgetButtonContent.cs" />
     <Compile Include="Widgets\Wallet\ActionBar.cs" />
     <Compile Include="gtk-gui\Wallet.ActionBar.cs" />

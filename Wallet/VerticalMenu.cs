@@ -7,11 +7,11 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class TestTabsBarVertWidget : Gtk.Bin, ITestTabsBarVertView
+	public partial class VerticalMenu : Gtk.Bin, ITestTabsBarVertView
 	{
 		WalletController WalletController = WalletController.GetInstance ();
 
-		public TestTabsBarVertWidget ()
+		public VerticalMenu ()
 		{
 			this.Build ();
 
@@ -28,7 +28,7 @@ namespace Wallet
 
 		public int Default { 
 			set {
-				((WidgetMyButton) ((Container)Children[0]).Children[value]).Select();
+				((MenuButton) ((Container)Children[0]).Children[value]).Select();
 			}
 		}
 	}
