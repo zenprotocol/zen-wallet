@@ -3,8 +3,7 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface TestTabsBarView {
-		int Default { set; }
+	public interface TestTabsBarView : IMenu {
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -18,6 +17,12 @@ namespace Wallet
 			MainAreaController.TestTabsBarView = this;
 
 			HeightRequest = 100;
+		}
+
+		public String Selection { 
+			set {
+				MainAreaController.MainAreaSelected = value;
+			}
 		}
 
 		public int Default { 

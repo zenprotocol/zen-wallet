@@ -452,7 +452,6 @@
     <Compile Include="NBitcoin\Crypto\Cryptsharp\Salsa20Core.cs" />
     <Compile Include="NBitcoin\Crypto\Cryptsharp\Security.cs" />
     <Compile Include="TestTabsBarWidget.cs" />
-    <Compile Include="gtk-gui\Wallet.TestTabsBarWidget.cs" />
     <Compile Include="TestTabsBarVertWidget.cs" />
     <Compile Include="gtk-gui\Wallet.TestTabsBarVertWidget.cs" />
     <Compile Include="WidgetMyButton.cs" />
@@ -476,6 +475,8 @@
     <Compile Include="gtk-gui\Wallet.Contract.cs" />
     <Compile Include="Controllers\ContractController.cs" />
     <Compile Include="Controllers\MainAreaController.cs" />
+    <Compile Include="Widgets\IMenuSelectionHandler.cs" />
+    <Compile Include="gtk-gui\Wallet.TestTabsBarWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
