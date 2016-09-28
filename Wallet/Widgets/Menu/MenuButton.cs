@@ -3,9 +3,9 @@
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class WidgetMyButton : Gtk.Bin
+	public partial class MenuButton : Gtk.Bin
 	{
-		public WidgetMyButton ()
+		public MenuButton ()
 		{
 			this.Build ();
 
@@ -19,8 +19,8 @@ namespace Wallet
 
 		public void Select() {
 			foreach (Gtk.Widget widget in ((Gtk.Container)Parent).Children) {
-				if (widget is WidgetMyButton) {
-					((WidgetMyButton)widget).Selected = widget.Name == Name;
+				if (widget is MenuButton) {
+					((MenuButton)widget).Selected = widget.Name == Name;
 				}
 			}
 		}
@@ -29,7 +29,7 @@ namespace Wallet
 			set 
 			{
 				eventbox9.ModifyBg(Gtk.StateType.Normal, !value ? new Gdk.Color(0x01d,0x025,0x030) : new Gdk.Color(0x028,0x02f,0x037));
-				WidgetButtonContent WidgetButtonContent = GetWidgetButtonContent ();
+				ImageButton WidgetButtonContent = GetWidgetButtonContent ();
 
 				String asset = "Wallet.Assets." + Name + (value ? "_on.png" : "_off.png");
 
@@ -41,12 +41,12 @@ namespace Wallet
 			}
 		}
 
-		private WidgetButtonContent GetWidgetButtonContent() {
+		private ImageButton GetWidgetButtonContent() {
 			Gtk.Container c = (Gtk.Container) Children[0];
 			c = (Gtk.Container) c.Children [0];	
 			c = (Gtk.Container) c.Children [0];	
 
-			return (WidgetButtonContent)c.Children [0];
+			return (ImageButton)c.Children [0];
 		}
 
 		private IMenu Menu { 

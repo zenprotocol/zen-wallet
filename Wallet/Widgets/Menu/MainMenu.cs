@@ -7,11 +7,11 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class TestTabsBarWidget : Gtk.Bin, TestTabsBarView
+	public partial class MainMenu : Gtk.Bin, TestTabsBarView
 	{
 		MainAreaController MainAreaController = MainAreaController.GetInstance ();
 
-		public TestTabsBarWidget ()
+		public MainMenu ()
 		{
 			this.Build ();
 			MainAreaController.TestTabsBarView = this;
@@ -27,7 +27,7 @@ namespace Wallet
 
 		public int Default { 
 			set {
-				((WidgetMyButton) ((Container)Children[0]).Children[value]).Select();
+				((MenuButton) ((Container)Children[0]).Children[value]).Select();
 			}
 		}
 	}

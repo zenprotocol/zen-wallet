@@ -42,7 +42,7 @@ namespace Wallet
 				Container c = (Container)Children [0];
 				c = (Container)c.Children [2];
 
-				((TestTabsBarVertWidget)c.Children [0]).Visible = value;
+				((VerticalMenu)c.Children [0]).Visible = value;
 			}
 		}
 	}
