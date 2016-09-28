@@ -11,10 +11,10 @@ namespace Wallet
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
-			// Widget Wallet.WidgetButtonContent
+			// Widget Wallet.ImageButton
 			global::Stetic.BinContainer.Attach (this);
-			this.Name = "Wallet.WidgetButtonContent";
-			// Container child Wallet.WidgetButtonContent.Gtk.Container+ContainerChild
+			this.Name = "Wallet.ImageButton";
+			// Container child Wallet.ImageButton.Gtk.Container+ContainerChild
 			this.hbox8 = new global::Gtk.HBox ();
 			this.hbox8.Name = "hbox8";
 			this.hbox8.Homogeneous = true;

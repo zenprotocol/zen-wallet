@@ -3,14 +3,14 @@ using Gtk;
 
 namespace Wallet
 {
-	class MainClass
+	class Program
 	{
 		public static void Main (string[] args)
 		{
 			//TODO: will initializing MainController were have an effect on it's thread?
 
 			Application.Init ();
-			new WindowSSS(); // Refactoring is an impossible mission using MonoDevelop
+			new MainWindow();
 			Application.Run ();
 		}
 

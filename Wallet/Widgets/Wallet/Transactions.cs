@@ -41,6 +41,13 @@ namespace Wallet
 
 			((Gtk.VBox)Children [0]).PackStart(sw, true, true, 0);
 
+			ActionBar a = new ActionBar ();
+			sw.AddWithViewport (a);
+
+			ActionBar a1 = new ActionBar ();
+			sw.AddWithViewport (a1);
+
+
 			TreeView treeView = new TreeView(listStore);
 			treeView.RulesHint = true;
 			treeView.RowActivated += OnRowActivated;
