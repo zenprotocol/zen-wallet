@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -463,7 +463,7 @@
     <Compile Include="Controllers\WalletController.cs" />
     <Compile Include="gtk-gui\Wallet.Wallet.cs" />
     <Compile Include="Widgets\Wallet\Wallet.cs" />
-    <Compile Include="WindowSSS.cs" />
+    <Compile Include="MainWindow.cs" />
     <Compile Include="gtk-gui\Wallet.WindowSSS.cs" />
     <Compile Include="Widgets\MainArea.cs" />
     <Compile Include="gtk-gui\Wallet.MainArea.cs" />
@@ -479,14 +479,7 @@
     <Compile Include="gtk-gui\Wallet.TestTabsBarWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Domain\" />
-    <Folder Include="Widgets\" />
-    <Folder Include="Widgets\Wallet\" />
-    <Folder Include="Assets\" />
-    <Folder Include="Widgets\Contract\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="NBitcoin\UInt256.tt" />
     <None Include="NBitcoin\BitcoinStream.Partial.tt" />
