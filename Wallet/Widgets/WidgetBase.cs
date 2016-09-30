@@ -4,7 +4,7 @@ using Gtk;
 
 namespace Wallet
 {
-	public class WidgetBase : Gtk.Bin
+	public abstract class WidgetBase : Gtk.Bin
 	{
 		private IDictionary<Type, Widget> parentsCache = new Dictionary<Type, Widget>();
 		private IDictionary<Type, Widget> childrenCache = new Dictionary<Type, Widget>();

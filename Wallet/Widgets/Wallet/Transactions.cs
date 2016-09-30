@@ -11,7 +11,7 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class Transactions : WidgetBase, TransactionsView
+	public partial class Transactions : FocusableWidget, TransactionsView
 	{
 		private enum Columns {
 			IsExpanded = 0,
@@ -59,7 +59,8 @@ namespace Wallet
 
 			return treeView;
 		}
-		public void Focus() {
+
+		public override void Focus() {
 			treeView.GrabFocus ();
 		}
 
