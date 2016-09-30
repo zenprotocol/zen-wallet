@@ -1,9 +1,10 @@
 ﻿using System;
+using Gtk;
 
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class ImageButton : Gtk.Bin
+	public partial class ImageButton : WidgetBase
 	{
 		public ImageButton ()
 		{
@@ -11,7 +12,11 @@ namespace Wallet
 		}
 
 		public void SetBackground(String value) {
-			image73.Pixbuf = Gdk.Pixbuf.LoadFromResource(value);
+			try {
+				FindChild<Image>().Pixbuf = Gdk.Pixbuf.LoadFromResource(value);
+			} catch {
+				Console.WriteLine("missing" + value);
+			}
 		}
 	}
 }
