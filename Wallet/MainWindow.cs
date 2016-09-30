@@ -10,7 +10,7 @@ namespace Wallet
 	public partial class MainWindow : Gtk.Window, MainView
 	{
 		public MainWindow () :
-			base (/*Gtk.WindowType.Toplevel*/"ZEN Wallet")
+			base (Gtk.WindowType.Toplevel)
 		{
 			this.Build ();
 			MainAreaController.GetInstance().MainView = this;
