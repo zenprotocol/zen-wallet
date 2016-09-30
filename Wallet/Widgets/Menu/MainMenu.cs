@@ -7,7 +7,7 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class MainMenu : Gtk.Bin, TestTabsBarView
+	public partial class MainMenu : MenuBase, TestTabsBarView
 	{
 		MainAreaController MainAreaController = MainAreaController.GetInstance ();
 
@@ -19,15 +19,9 @@ namespace Wallet
 			HeightRequest = 100;
 		}
 
-		public String Selection { 
+		public override String Selection { 
 			set {
 				MainAreaController.MainAreaSelected = value;
-			}
-		}
-
-		public int Default { 
-			set {
-				((MenuButton) ((Container)Children[0]).Children[value]).Select();
 			}
 		}
 	}
