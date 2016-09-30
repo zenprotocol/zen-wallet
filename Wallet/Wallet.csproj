@@ -478,11 +478,11 @@
     <Compile Include="gtk-gui\Wallet.MenuButton.cs" />
     <Compile Include="gtk-gui\Wallet.Transactions.cs" />
     <Compile Include="Widgets\Wallet\ExpandingCellRenderer.cs" />
-    <Compile Include="Widgets\IFocusable.cs" />
     <Compile Include="Widgets\WidgetBase.cs" />
     <Compile Include="Widgets\Menu\MenuBase.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Widgets\RendererHelper.cs" />
+    <Compile Include="Widgets\FocusableWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

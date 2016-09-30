@@ -1,4 +1,5 @@
 ﻿using System;
+using Gtk;
 
 namespace Wallet
 {
@@ -7,7 +8,7 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class MainArea : Gtk.Bin, MainAreaView
+	public partial class MainArea : WidgetBase, MainAreaView
 	{
 		MainAreaController MainAreaController = MainAreaController.GetInstance ();
 
@@ -21,10 +22,14 @@ namespace Wallet
 			set {
 				notebook1.Page = value;
 
-				IFocusable focusable = notebook1.Children [value] as IFocusable;
+				WidgetBase widgetBase = notebook1.Children [value] as WidgetBase;
 
-				if (focusable != null) {
-					focusable.Focus ();
+				if (widgetBase != null) {
+					FocusableWidget focusableWidget = widgetBase.FindChild<FocusableWidget>();
+						
+					if (focusableWidget != null) {
+						focusableWidget.Focus();
+					}
 				}
 			}
 		}
