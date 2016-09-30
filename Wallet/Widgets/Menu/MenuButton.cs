@@ -1,4 +1,5 @@
 ﻿using System;
+using Gtk;
 
 namespace Wallet
 {
@@ -18,7 +19,7 @@ namespace Wallet
 		}
 
 		public void Select() {
-			foreach (Gtk.Widget widget in ((Gtk.Container)Parent).Children) {
+			foreach (Widget widget in FindParent<Container>().Children) {
 				if (widget is MenuButton) {
 					((MenuButton)widget).Selected = widget.Name == Name;
 				}
@@ -28,15 +29,9 @@ namespace Wallet
 		public bool Selected { 
 			set 
 			{
-				eventbox9.ModifyBg(Gtk.StateType.Normal, !value ? new Gdk.Color(0x01d,0x025,0x030) : new Gdk.Color(0x028,0x02f,0x037));
+				Children[0].ModifyBg(Gtk.StateType.Normal, value ? Constants.Colors.ButtonSelected : Constants.Colors.ButtonUnselected);
 
-				String asset = "Wallet.Assets." + Name + (value ? "_on.png" : "_off.png");
-
-				try {
-					FindChild<ImageButton>().SetBackground(asset);
-				} catch {
-					Console.WriteLine("missing" + asset);
-				}
+				FindChild<ImageButton>().SetBackground(Constants.Images.Button(Name, value));
 			}
 		}
 	}
