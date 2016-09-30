@@ -1,35 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using Gtk;
 
 namespace Wallet
 {
 	public abstract class WidgetBase : Gtk.Bin
 	{
-		private IDictionary<Type, Widget> parentsCache = new Dictionary<Type, Widget>();
-		private IDictionary<Type, Widget> childrenCache = new Dictionary<Type, Widget>();
-
+		private WidgetCache parentsCache = new WidgetCache();
+		private WidgetCache childrenCache = new WidgetCache();
 
 		public T FindParent<T>() where T : Widget
 		{
-			Type type = typeof(T);
-
-			if (!parentsCache.ContainsKey(type)) {
-				parentsCache[type] = FindParentRecursive<T>(this);
-			}
-
-			return (T) parentsCache[type];
+			return parentsCache.Get<T>(() => {
+				return FindParentRecursive<T>(this);
+			});
 		}
 
 		public T FindChild<T>(int index = 0) where T : Widget
 		{
-			Type type = typeof(T);
-
-			if (!childrenCache.ContainsKey(type)) {
-				childrenCache[type] = FindChildRecursive<T>(this, index);
-			}
-				
-			return (T) childrenCache[type];
+			return childrenCache.Get<T>(() => {
+				return FindChildRecursive<T>(this, index);
+			});
 		}
 
 		private T FindChildRecursive<T>(Container container, int index) where T : Widget {
