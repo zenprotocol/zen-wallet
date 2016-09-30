@@ -11,7 +11,6 @@ namespace Wallet
 
 			Application.Init ();
 			new MainWindow();
-		//	new Driver1 ();
 			Application.Run ();
 		}
 
@@ -22,3 +21,10 @@ namespace Wallet
 		}
 	}
 }
+
+
+
+//TODO: rename interfaces
+//TODO: handle memory leaks for pixbufs
+//TODO: redesign scrollbars
+//TODO: use namespaces
