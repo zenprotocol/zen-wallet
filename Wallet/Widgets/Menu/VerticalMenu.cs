@@ -25,7 +25,5 @@ namespace Wallet
 				WalletController.CurrencySelected = value;
 			}
 		}
-
-	
 	}
 }

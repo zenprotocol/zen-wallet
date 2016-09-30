@@ -22,7 +22,7 @@ namespace Wallet
 			set {
 				notebook1.Page = value;
 
-				WidgetBase widgetBase = notebook1.Children [value] as WidgetBase;
+				WidgetBase widgetBase = FindChild<Notebook>().Children [value] as WidgetBase;
 
 				if (widgetBase != null) {
 					FocusableWidget focusableWidget = widgetBase.FindChild<FocusableWidget>();

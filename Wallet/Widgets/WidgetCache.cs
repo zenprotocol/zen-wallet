@@ -8,7 +8,7 @@ namespace Wallet
 	{
 		public delegate T Factory<T>() where T : Widget;
 
-		private IDictionary<T, WeakReference<T>> dictionary = new Dictionary<T, WeakReference<T>>();
+		private IDictionary<Type, WeakReference<Widget>> dictionary = new Dictionary<Type, WeakReference<Widget>>();
 
 		public T Get<T>(Factory<T> factory) where T : Widget {
 			if (!Contains<T>()) {
@@ -27,11 +27,11 @@ namespace Wallet
 		}
 
 		private T Get<T>() where T : Widget {
-			T t;
+			Widget widget;
 
-			dictionary [typeof(T)].TryGetTarget (out t);
+			dictionary [typeof(T)].TryGetTarget (out widget);
 
-			return t;
+			return (T) widget;
 		}
 
 	}
