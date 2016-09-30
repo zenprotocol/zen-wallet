@@ -29,7 +29,7 @@ namespace Wallet
 		public bool Selected { 
 			set 
 			{
-				Container.ModifyBg(Gtk.StateType.Normal, value ? Constants.Colors.ButtonSelected : Constants.Colors.ButtonUnselected);
+				Container.ModifyBg(Gtk.StateType.Normal, value ? Constants.Colors.ButtonSelected.Gdk : Constants.Colors.ButtonUnselected.Gdk);
 
 				FindChild<ImageButton>().SetBackground(Constants.Images.Button(Name, value));
 			}

@@ -77,10 +77,16 @@ namespace Wallet
 		}
 
 		private void Reset() {
+			int i = 0;
+
 			while (!stopping) {
 				UpdateUI ();
 
-				Thread.Sleep(1000);
+				if (i++ > 10) {
+					break;
+				}
+
+				Thread.Sleep(100);
 			}
 		}
 
@@ -98,10 +104,10 @@ namespace Wallet
 
 					DirectionEnum direcion = random.Next(0, 10) > 5 ? DirectionEnum.Sent : DirectionEnum.Recieved;
 					Decimal amount = (Decimal)random.Next(1, 100000) / 1000000;
+					Decimal fee = (Decimal)random.Next(1, 100) / 1000000;
+					DateTime date = DateTime.Now.AddDays(-1 * random.Next(0, 100));
 
-					TransactionsView.AddTransactionItem(
-						new TransactionItem(amount, direcion, currency)
-					);
+					TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, currency, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
 				}
 			});
 		}
