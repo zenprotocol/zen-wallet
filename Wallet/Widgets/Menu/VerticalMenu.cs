@@ -7,7 +7,7 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class VerticalMenu : Gtk.Bin, ITestTabsBarVertView
+	public partial class VerticalMenu : MenuBase, ITestTabsBarVertView
 	{
 		WalletController WalletController = WalletController.GetInstance ();
 
@@ -20,16 +20,12 @@ namespace Wallet
 			WidthRequest = 170;
 		}
 			
-		public String Selection { 
+		public override String Selection { 
 			set {
 				WalletController.CurrencySelected = value;
 			}
 		}
 
-		public int Default { 
-			set {
-				((MenuButton) ((Container)Children[0]).Children[value]).Select();
-			}
-		}
+	
 	}
 }

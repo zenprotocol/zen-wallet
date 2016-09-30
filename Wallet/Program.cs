@@ -11,6 +11,7 @@ namespace Wallet
 
 			Application.Init ();
 			new MainWindow();
+		//	new Driver1 ();
 			Application.Run ();
 		}
 

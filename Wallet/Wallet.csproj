@@ -466,7 +466,6 @@
     <Compile Include="Widgets\MainArea.cs" />
     <Compile Include="gtk-gui\Wallet.MainArea.cs" />
     <Compile Include="Widgets\Wallet\Transactions.cs" />
-    <Compile Include="gtk-gui\Wallet.Transactions.cs" />
     <Compile Include="Domain\TransactionItem.cs" />
     <Compile Include="Widgets\Contract\Contract.cs" />
     <Compile Include="Controllers\EventBus.cs" />
@@ -477,6 +476,13 @@
     <Compile Include="gtk-gui\Wallet.MainWindow.cs" />
     <Compile Include="gtk-gui\Wallet.MainMenu.cs" />
     <Compile Include="gtk-gui\Wallet.MenuButton.cs" />
+    <Compile Include="gtk-gui\Wallet.Transactions.cs" />
+    <Compile Include="Widgets\Wallet\ExpandingCellRenderer.cs" />
+    <Compile Include="Widgets\IFocusable.cs" />
+    <Compile Include="Widgets\WidgetBase.cs" />
+    <Compile Include="Widgets\Menu\MenuBase.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Widgets\RendererHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

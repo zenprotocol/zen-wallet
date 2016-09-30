@@ -2,13 +2,6 @@
 
 namespace Wallet
 {
-//	enum MainAreaViewEnum {
-//		Wallet,
-//		Portfolio,
-//		XXX,
-//		YYY
-//	}
-
 	public interface MainAreaView {
 		int Page { set; }
 	}
@@ -27,7 +20,12 @@ namespace Wallet
 		public int Page { 
 			set {
 				notebook1.Page = value;
-			//	notebook1.
+
+				IFocusable focusable = notebook1.Children [value] as IFocusable;
+
+				if (focusable != null) {
+					focusable.Focus ();
+				}
 			}
 		}
 	}
