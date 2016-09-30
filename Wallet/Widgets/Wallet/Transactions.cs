@@ -25,7 +25,7 @@ namespace Wallet
 		
 		private WalletController WalletController = WalletController.GetInstance ();
 
-		TreeView treeView;
+		TreeView list;
 		public Transactions ()
 		{
 			this.Build ();
@@ -36,32 +36,36 @@ namespace Wallet
 
 			sw.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
 			FindChild<Gtk.VBox>().PackStart(sw, true, true, 0);
-			sw.Add(CreateList());
+
+			CreateList();
+
+			sw.Add(list);
 		}
 
-		private TreeView CreateList() {
-			treeView = new TreeView(listStore);
+		private void CreateList() {
+			list = new TreeView(listStore);
 
-			treeView.RulesHint = true; //alternating colors
-			treeView.Selection.Mode = SelectionMode.Single;
-			treeView.HoverSelection = true;
-			treeView.Selection.Changed += OnSelectionChanged;
-			treeView.BorderWidth = 0;
-			treeView.HeadersVisible = false;
-			treeView.ModifyBase (Gtk.StateType.Normal, Constants.Colors.Base);
+			list.RulesHint = true; //alternating colors
+			list.Selection.Mode = SelectionMode.Single;
+			list.HoverSelection = true;
+			list.Selection.Changed += OnSelectionChanged;
+			list.BorderWidth = 0;
+			list.HeadersVisible = false;
+			list.ModifyBase (Gtk.StateType.Normal, Constants.Colors.Base);
 
 			Gtk.TreeViewColumn col = new Gtk.TreeViewColumn ();
 			ExpandingCellRenderer rendered = new ExpandingCellRenderer();
 			col.PackStart (rendered, true);
 			col.SetCellDataFunc (rendered, new Gtk.TreeCellDataFunc (RenderCell));
 			col.MinWidth = 130;
-			treeView.AppendColumn (col);
-
-			return treeView;
+			list.AppendColumn (col);
 		}
 
 		public override void Focus() {
-			treeView.GrabFocus ();
+			TreeIter selectionIter;
+			if (list.Selection.GetSelected (out selectionIter)) {
+				list.GrabFocus ();
+			}
 		}
 
 		void OnSelectionChanged(object sender, EventArgs e)
@@ -69,7 +73,7 @@ namespace Wallet
 			TreeIter selectionIter;
 			TreeModel selectionModel;
 
-			bool hasSelection = ((TreeSelection)sender).GetSelected (out selectionModel, out selectionIter);
+			bool hasSelection = ((TreeSelection)sender).GetSelected (out selectionIter);
 
 			TreeIter storeIter;
 			listStore.GetIterFirst (out storeIter);
