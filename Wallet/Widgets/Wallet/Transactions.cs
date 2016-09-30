@@ -11,146 +11,79 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class Transactions : Gtk.Bin, TransactionsView
+	public partial class Transactions : WidgetBase, TransactionsView
 	{
-		enum Column
-		{
-			Icon,
-			Direction,
-			Amount,
-			Currency
+		private enum Columns {
+			IsExpanded = 0,
+			Data = 1
 		}
 
 		private ListStore listStore = new ListStore(
-			typeof (Gdk.Pixbuf), 
-			typeof(String),
-			typeof(String),
-			typeof(String)
+			typeof (bool), 
+			typeof(TransactionItem)
 		);
 		
 		private WalletController WalletController = WalletController.GetInstance ();
 
+		TreeView treeView;
 		public Transactions ()
 		{
 			this.Build ();
+
 			WalletController.TransactionsView = this;
 
 			ScrolledWindow sw = new ScrolledWindow();
 
 			sw.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
+			FindChild<Gtk.VBox>().PackStart(sw, true, true, 0);
+			sw.Add(CreateList());
+		}
 
-			((Gtk.VBox)Children [0]).PackStart(sw, true, true, 0);
+		private TreeView CreateList() {
+			treeView = new TreeView(listStore);
 
-			TreeView treeView = new TreeView(listStore);
-			treeView.RulesHint = true;
-			treeView.RowActivated += OnRowActivated;
-			treeView.Selection.Mode = SelectionMode.None;
-			sw.Add(treeView);
-
-			treeView.ModifyBase (Gtk.StateType.Normal, new Gdk.Color (0x024, 0x030, 0x03e));
-
+			treeView.RulesHint = true; //alternating colors
+			treeView.Selection.Mode = SelectionMode.Single;
+			treeView.HoverSelection = true;
+			treeView.Selection.Changed += OnSelectionChanged;
 			treeView.BorderWidth = 0;
-
-			AddColumns(treeView);
-		}
-
-		void OnRowActivated (object sender, RowActivatedArgs args) {
-			TreeIter iter;        
-			TreeView view = (TreeView) sender;   
-
-			if (view.Model.GetIter(out iter, args.Path)) {
-//				string row = (string) view.Model.GetValue(iter, (int) Column.Type );
-//				row += ", " + (string) view.Model.GetValue(iter, (int) Column.Amount );
-//				row += ", " + view.Model.GetValue(iter, (int) Column.Year );
-				//statusbar.Push(0, row);
-			}
-		}
-
-		void AddColumns(TreeView treeView)
-		{
 			treeView.HeadersVisible = false;
+			treeView.ModifyBase (Gtk.StateType.Normal, Constants.Colors.Base);
 
-//			TreeViewColumn column;
-//
-//			column = new TreeViewColumn("Icon", new CellRendererPixbuf(),
-//				"pixbuf", Column.Icon);
-//			column.MinWidth = 100;
-//	//		treeView.AppendColumn ("Icon", new Gtk.CellRendererPixbuf (), "pixbuf", 0);
-//			treeView.AppendColumn(column);
-//
-//			CellRendererText rendererText = new CellRendererText();
-//			column = new TreeViewColumn("Direction", rendererText,
-//				"text", Column.Direction);
-//			column.SortColumnId = (int) Column.Direction;
-//			column.MinWidth = 200;
-//			treeView.AppendColumn(column);
-//
-//			rendererText = new CellRendererText();
-//			column = new TreeViewColumn("Amount", rendererText, 
-//				"text", Column.Amount);
-//			column.SortColumnId = (int) Column.Amount;
-//
-//			treeView.AppendColumn(column);
+			Gtk.TreeViewColumn col = new Gtk.TreeViewColumn ();
+			ExpandingCellRenderer rendered = new ExpandingCellRenderer();
+			col.PackStart (rendered, true);
+			col.SetCellDataFunc (rendered, new Gtk.TreeCellDataFunc (RenderCell));
+			col.MinWidth = 130;
+			treeView.AppendColumn (col);
 
-//			rendererText = new CellRendererText();
-//			column = new TreeViewColumn("Currency", rendererText, 
-//				"text", Column.Amount);
-//			column.SortColumnId = (int) Column.Currency;
-//			treeView.AppendColumn(column);
-
-
-
-
-			Gtk.TreeViewColumn col0 = new Gtk.TreeViewColumn ();
-			Gtk.CellRendererPixbuf renderCol0 = new Gtk.CellRendererPixbuf ();
-			col0.PackStart (renderCol0, true);
-			col0.SetCellDataFunc (renderCol0, new Gtk.TreeCellDataFunc (RenderCellCol0));
-			col0.MinWidth = 130;
-			treeView.AppendColumn (col0);
-
-			Gtk.TreeViewColumn col1 = new Gtk.TreeViewColumn ();
-			Gtk.CellRendererText renderCol1 = new Gtk.CellRendererText ();
-			col1.PackStart (renderCol1, true);
-			col1.SetCellDataFunc (renderCol1, new Gtk.TreeCellDataFunc (RenderCellCol1));
-			col1.MinWidth = 130;
-			treeView.AppendColumn (col1);
-
-
-			Gtk.TreeViewColumn col2 = new Gtk.TreeViewColumn ();
-			Gtk.CellRendererText renderCol2 = new Gtk.CellRendererText ();
-			col2.PackStart (renderCol2, true);
-			col2.SetCellDataFunc (renderCol2, new Gtk.TreeCellDataFunc (RenderCellCol2));
-			treeView.AppendColumn (col2);
-
-			treeView.Model = listStore;
-
-
+			return treeView;
+		}
+		public void Focus() {
+			treeView.GrabFocus ();
 		}
 
-
-		private void RenderCellCol0 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
+		void OnSelectionChanged(object sender, EventArgs e)
 		{
-			Gdk.Pixbuf img = (Gdk.Pixbuf) model.GetValue (iter, 0);
-			(cell as Gtk.CellRendererPixbuf).Pixbuf = img;
+			TreeIter selectionIter;
+			TreeModel selectionModel;
+
+			bool hasSelection = ((TreeSelection)sender).GetSelected (out selectionModel, out selectionIter);
+
+			TreeIter storeIter;
+			listStore.GetIterFirst (out storeIter);
+
+			do {
+				listStore.SetValue (storeIter, (int)Columns.IsExpanded, hasSelection && storeIter.Equals (selectionIter));
+			} while (listStore.IterNext (ref storeIter));
 		}
-
-
-		private void RenderCellCol1 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
+			
+		private void RenderCell (Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)
 		{
-			cell.Height = 50;
-			String value = (String) model.GetValue (iter, 1);
-			(cell as Gtk.CellRendererText).Foreground = "white";
-			(cell as Gtk.CellRendererText).Text = value;
-			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM 12");
-		}
+			ExpandingCellRenderer expandedCellRenderer = cellRenderer as ExpandingCellRenderer;
 
-		private void RenderCellCol2 (Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.TreeModel model, Gtk.TreeIter iter)
-		{
-			String value1 = (String) model.GetValue (iter, 2);
-			String value2 = (String) model.GetValue (iter, 3);
-			(cell as Gtk.CellRendererText).Foreground = "white";
-			(cell as Gtk.CellRendererText).Text = value1 + " " + value2;
-			(cell as Gtk.CellRendererText).FontDesc = Pango.FontDescription.FromString ("Aharoni CLM 12");
+			expandedCellRenderer.Expanded = (bool) model.GetValue (iter, (int) Columns.IsExpanded);
+			expandedCellRenderer.TransactionItem = (TransactionItem) model.GetValue (iter, (int) Columns.Data);
 		}
 
 		public List<TransactionItem> TransactionsList { 
@@ -161,16 +94,9 @@ namespace Wallet
 			}
 		}
 
-		Random random = new Random();
-
 		public void AddTransactionItem(TransactionItem transactionItem)
 		{
-			listStore.AppendValues(
-				Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc." + (transactionItem.Direction == DirectionEnum.Sent ? "arrowup" : "arrowdown") + ".png"),
-				transactionItem.Direction == DirectionEnum.Sent ? "Sent" : "Received", 
-				transactionItem.Amount.ToString(),
-				transactionItem.Currency.ToString()
-			);
+			listStore.AppendValues(false, transactionItem);
 		}
 	}
 }

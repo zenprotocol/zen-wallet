@@ -375,7 +375,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.Wallet" design-size="354 300">
+  <widget class="Gtk.Bin" id="Wallet.Wallet" design-size="511 300">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
