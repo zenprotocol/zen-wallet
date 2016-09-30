@@ -22,11 +22,13 @@ namespace Wallet
 		public void Label(object text, int x, int y) {
 			Pango.Layout layout = new Pango.Layout(widget.PangoContext);
 			layout.SetText(text.ToString());
-			drawable.DrawLayout(gc, exposeArea.X  + x, exposeArea.Y +  y, layout);
+			layout.FontDescription = Constants.Fonts.ActionBarSmall;
+			drawable.DrawLayout(gc, exposeArea.X  + x, exposeArea.Y + y, layout);
 		}
 
 		public void Image(Gdk.Pixbuf image, int x, int y) {
-			drawable.DrawPixbuf(gc, image, 0, 0, exposeArea.X + x, exposeArea.Y + y, 40, 40, RgbDither.None, 0,0);
+
+			drawable.DrawPixbuf(gc, image, 0, 0, exposeArea.X + x, exposeArea.Y + y, image.Width, image.Height, RgbDither.None, 0, 0);
 		}
 	}
 }

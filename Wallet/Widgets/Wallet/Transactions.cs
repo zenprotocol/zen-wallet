@@ -53,7 +53,9 @@ namespace Wallet
 			list.Selection.Changed += OnSelectionChanged;
 			list.BorderWidth = 0;
 			list.HeadersVisible = false;
-			list.ModifyBase (Gtk.StateType.Normal, Constants.Colors.Base);
+			list.ModifyBase (Gtk.StateType.Active, Constants.Colors.Base.Gdk);
+			list.ModifyBase (Gtk.StateType.Selected, Constants.Colors.Base.Gdk);
+			list.ModifyBase (Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
 
 			Gtk.TreeViewColumn col = new Gtk.TreeViewColumn ();
 			ExpandingCellRenderer rendered = new ExpandingCellRenderer();
@@ -64,19 +66,19 @@ namespace Wallet
 		}
 
 		public override void Focus() {
-			TreeIter selectionIter;
-			setFocus = false;
-			if (list.Selection.GetSelected (out selectionIter)) {
-				list.GrabFocus ();
-				setFocus = true;
-			}
+//			TreeIter selectionIter;
+//			setFocus = false;
+//			if (list.Selection.GetSelected (out selectionIter)) {
+//				list.GrabFocus ();
+//				setFocus = true;
+//			}
 		}
 
 		void OnSelectionChanged(object sender, EventArgs e)
 		{
-			if (!setFocus) {
-				list.GrabFocus ();
-			}
+//			if (!setFocus) {
+//				list.GrabFocus ();
+//			}
 
 			TreeIter selectionIter;
 

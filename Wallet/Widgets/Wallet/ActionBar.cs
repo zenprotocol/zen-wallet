@@ -18,10 +18,10 @@ namespace Wallet
 			this.Build ();
 			WalletController.ActionBarView = this;
 
-			label1.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
-			label3.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
-			label4.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
-			label5.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
+			label1.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+			label3.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+			label4.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+			label5.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
 
 			label1.ModifyFont (Constants.Fonts.ActionBarBig);
 			label3.ModifyFont (Constants.Fonts.ActionBarSmall);
@@ -66,9 +66,9 @@ namespace Wallet
 				}
 					
 				try {
-					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(Constants.Images.CurrencyLogo(_currency));
+					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(Constants.Images.CurrencyLogo(value));
 				} catch (Exception e) {
-					Console.WriteLine("missing" + Constants.Images.CurrencyLogo(_currency));
+					Console.WriteLine("missing" + Constants.Images.CurrencyLogo(value));
 				}
 			}
 		}
