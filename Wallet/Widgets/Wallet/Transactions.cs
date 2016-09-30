@@ -13,6 +13,8 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class Transactions : FocusableWidget, TransactionsView
 	{
+		private bool setFocus = false;
+
 		private enum Columns {
 			IsExpanded = 0,
 			Data = 1
@@ -63,15 +65,20 @@ namespace Wallet
 
 		public override void Focus() {
 			TreeIter selectionIter;
+			setFocus = false;
 			if (list.Selection.GetSelected (out selectionIter)) {
 				list.GrabFocus ();
+				setFocus = true;
 			}
 		}
 
 		void OnSelectionChanged(object sender, EventArgs e)
 		{
+			if (!setFocus) {
+				list.GrabFocus ();
+			}
+
 			TreeIter selectionIter;
-			TreeModel selectionModel;
 
 			bool hasSelection = ((TreeSelection)sender).GetSelected (out selectionIter);
 
