@@ -58,6 +58,7 @@
     <Reference Include="libstetic">
       <HintPath>..\..\..\..\..\..\..\..\usr\lib\monodevelop\AddIns\MonoDevelop.GtkCore\libstetic.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Cairo" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -484,6 +485,7 @@
     <Compile Include="Widgets\RendererHelper.cs" />
     <Compile Include="Widgets\FocusableWidget.cs" />
     <Compile Include="Widgets\WidgetCache.cs" />
+    <Compile Include="Widgets\TextRenderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
