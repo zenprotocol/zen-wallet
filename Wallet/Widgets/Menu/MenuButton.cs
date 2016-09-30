@@ -12,7 +12,7 @@ namespace Wallet
 
 			Selected = false;
 
-			eventbox9.ButtonPressEvent += delegate {
+			Container.ButtonPressEvent += delegate {
 				Select();
 				FindParent<MenuBase>().Selection = Name;
 			};
@@ -29,9 +29,15 @@ namespace Wallet
 		public bool Selected { 
 			set 
 			{
-				Children[0].ModifyBg(Gtk.StateType.Normal, value ? Constants.Colors.ButtonSelected : Constants.Colors.ButtonUnselected);
+				Container.ModifyBg(Gtk.StateType.Normal, value ? Constants.Colors.ButtonSelected : Constants.Colors.ButtonUnselected);
 
 				FindChild<ImageButton>().SetBackground(Constants.Images.Button(Name, value));
+			}
+		}
+
+		private Container Container { 
+			get {
+				return (Container)Children [0];
 			}
 		}
 	}

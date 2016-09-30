@@ -18,19 +18,15 @@ namespace Wallet
 			this.Build ();
 			WalletController.ActionBarView = this;
 
-		
-			Gdk.Color fontcolor = new Gdk.Color(0x0F7, 0x0F7, 0x0F7);
+			label1.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
+			label3.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
+			label4.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
+			label5.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2);
 
-			label1.ModifyFg(Gtk.StateType.Normal, fontcolor);
-			label3.ModifyFg(Gtk.StateType.Normal, fontcolor);
-			label4.ModifyFg(Gtk.StateType.Normal, fontcolor);
-			label5.ModifyFg(Gtk.StateType.Normal, fontcolor);
-
-			label1.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 30"));
-			label3.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 15"));
-			label4.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 30"));
-			label5.ModifyFont (Pango.FontDescription.FromString ("Aharoni CLM 15"));
-
+			label1.ModifyFont (Constants.Fonts.ActionBarBig);
+			label3.ModifyFont (Constants.Fonts.ActionBarSmall);
+			label4.ModifyFont (Constants.Fonts.ActionBarBig);
+			label5.ModifyFont (Constants.Fonts.ActionBarSmall);
 
 			HeightRequest = 130;
 		}
@@ -68,13 +64,11 @@ namespace Wallet
 					_currency = "LTC";
 					break;
 				}
-
-				String asset = "Wallet.Assets.misc." + value + ".png";
-
+					
 				try {
-					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(asset);
+					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(Constants.Images.CurrencyLogo(_currency));
 				} catch (Exception e) {
-					Console.WriteLine("missing" + asset);
+					Console.WriteLine("missing" + Constants.Images.CurrencyLogo(_currency));
 				}
 			}
 		}
