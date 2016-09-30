@@ -483,6 +483,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Widgets\RendererHelper.cs" />
     <Compile Include="Widgets\FocusableWidget.cs" />
+    <Compile Include="Widgets\WidgetCache.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
