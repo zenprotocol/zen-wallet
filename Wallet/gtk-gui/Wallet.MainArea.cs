@@ -6,13 +6,13 @@ namespace Wallet
 	{
 		private global::Gtk.Notebook notebook1;
 		
-		private global::Gtk.Label label1;
-		
 		private global::Wallet.Wallet wallet1;
 		
-		private global::Gtk.Label label5;
+		private global::Gtk.Label label2;
 		
 		private global::Wallet.Contract contract1;
+		
+		private global::Gtk.Label label3;
 		
 		private global::Gtk.Label label6;
 
@@ -27,44 +27,39 @@ namespace Wallet
 			this.notebook1.CanFocus = true;
 			this.notebook1.Name = "notebook1";
 			this.notebook1.CurrentPage = 0;
-			this.notebook1.TabPos = ((global::Gtk.PositionType)(1));
 			this.notebook1.ShowBorder = false;
-			this.notebook1.ShowTabs = false;
-			this.notebook1.BorderWidth = ((uint)(10));
-			// Notebook tab
-			global::Gtk.Label w1 = new global::Gtk.Label ();
-			w1.Visible = true;
-			this.notebook1.Add (w1);
-			this.label1 = new global::Gtk.Label ();
-			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("page1");
-			this.notebook1.SetTabLabel (w1, this.label1);
-			this.label1.ShowAll ();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.wallet1 = new global::Wallet.Wallet ();
 			this.wallet1.Events = ((global::Gdk.EventMask)(256));
 			this.wallet1.Name = "wallet1";
 			this.notebook1.Add (this.wallet1);
-			global::Gtk.Notebook.NotebookChild w2 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.wallet1]));
-			w2.Position = 1;
 			// Notebook tab
-			this.label5 = new global::Gtk.Label ();
-			this.label5.Name = "label5";
-			this.label5.LabelProp = global::Mono.Unix.Catalog.GetString ("page2");
-			this.notebook1.SetTabLabel (this.wallet1, this.label5);
-			this.label5.ShowAll ();
+			this.label2 = new global::Gtk.Label ();
+			this.label2.Name = "label2";
+			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("page1");
+			this.notebook1.SetTabLabel (this.wallet1, this.label2);
+			this.label2.ShowAll ();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.contract1 = new global::Wallet.Contract ();
 			this.contract1.Events = ((global::Gdk.EventMask)(256));
 			this.contract1.Name = "contract1";
 			this.notebook1.Add (this.contract1);
-			global::Gtk.Notebook.NotebookChild w3 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.contract1]));
-			w3.Position = 2;
+			global::Gtk.Notebook.NotebookChild w2 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.contract1]));
+			w2.Position = 1;
 			// Notebook tab
+			this.label3 = new global::Gtk.Label ();
+			this.label3.Name = "label3";
+			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("page2");
+			this.notebook1.SetTabLabel (this.contract1, this.label3);
+			this.label3.ShowAll ();
+			// Notebook tab
+			global::Gtk.Label w3 = new global::Gtk.Label ();
+			w3.Visible = true;
+			this.notebook1.Add (w3);
 			this.label6 = new global::Gtk.Label ();
 			this.label6.Name = "label6";
 			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString ("page3");
-			this.notebook1.SetTabLabel (this.contract1, this.label6);
+			this.notebook1.SetTabLabel (w3, this.label6);
 			this.label6.ShowAll ();
 			this.Add (this.notebook1);
 			if ((this.Child != null)) {

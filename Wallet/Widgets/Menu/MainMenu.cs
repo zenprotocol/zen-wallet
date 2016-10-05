@@ -3,18 +3,18 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface TestTabsBarView : IMenu {
+	public interface MainMenuView : IMenu {
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class MainMenu : MenuBase, TestTabsBarView
+	public partial class MainMenu : MenuBase, MainMenuView
 	{
 		MainAreaController MainAreaController = MainAreaController.GetInstance ();
 
 		public MainMenu ()
 		{
 			this.Build ();
-			MainAreaController.TestTabsBarView = this;
+			MainAreaController.MainMenuView = this;
 
 			HeightRequest = 100;
 		}

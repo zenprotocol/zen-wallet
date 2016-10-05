@@ -4,7 +4,8 @@ using Gtk;
 namespace Wallet
 {
 	public interface MainAreaView {
-		int Page { set; }
+		//int Page { set; }
+		Type Control { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -16,20 +17,19 @@ namespace Wallet
 		{
 			this.Build ();
 			MainAreaController.MainAreaView = this;
+			FindChild<Notebook>().ShowTabs = false; //Tabs used during development in designer
 		}
 
-		public int Page { 
-			set {
-				notebook1.Page = value;
+//		public int Page {
+//			set {
+//				FindChild<Notebook> ().Page = value;	
+//			}
+//		}
 
-				WidgetBase widgetBase = FindChild<Notebook>().Children [value] as WidgetBase;
-
-				if (widgetBase != null) {
-					FocusableWidget focusableWidget = widgetBase.FindChild<FocusableWidget>();
-						
-					if (focusableWidget != null) {
-						focusableWidget.Focus();
-					}
+		public Type Control { 
+			set { 
+				for (int i = 0; i < FindChild<Notebook>().Children.Length; i++) {
+					FindChild<Notebook>().GetNthPage (i).Visible = FindChild<Notebook> ().GetNthPage (i).GetType () == value;
 				}
 			}
 		}
