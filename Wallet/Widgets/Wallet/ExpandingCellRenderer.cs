@@ -99,6 +99,7 @@ namespace Wallet
 				textRenderer.RenderLayoutText (context, "DATE", TEXT_PADDING_LEFT, EXPANTION_SPACE +  TEXT_PADDING + exposeArea.Y, exposeArea.Width, HEADER_SIZE, Constants.Colors.SubText, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 				textRenderer.RenderLayoutText (context, "TO", exposeArea.Width / 2, EXPANTION_SPACE + TEXT_PADDING + exposeArea.Y, exposeArea.Width, HEADER_SIZE, Constants.Colors.SubText, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 
+				//http://www.csharp-examples.net/string-format-datetime/
 				textRenderer.RenderLayoutText (context, TransactionItem.Date.ToLongDateString(), TEXT_PADDING_LEFT, EXPANTION_SPACE + ROW_SPACE +  TEXT_PADDING + exposeArea.Y, exposeArea.Width, TEXT_SIZE, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 				textRenderer.RenderLayoutText (context, TransactionItem.To, exposeArea.Width / 2, EXPANTION_SPACE + ROW_SPACE + TEXT_PADDING + exposeArea.Y, exposeArea.Width, TEXT_SIZE, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 

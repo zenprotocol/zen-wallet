@@ -6,18 +6,20 @@ namespace Wallet
 	public class MainAreaController
 	{
 		private const int DEFAULT_MENU_TOP_IDX = 1;
+		private Type DEFAULT_CONTROL = typeof(Wallet);
 		private static MainAreaController instance = null;
 
 		private MainAreaView mainAreaView; 
 
 		public MainAreaView MainAreaView { 
 			set { 
-				mainAreaView = value; mainAreaView.Page = DEFAULT_MENU_TOP_IDX; 
+				mainAreaView = value; 
+				mainAreaView.Control = DEFAULT_CONTROL;
 			} 
 		}
 	
 		public MainView MainView { get; set; }
-		public TestTabsBarView TestTabsBarView { set { value.Default = DEFAULT_MENU_TOP_IDX; } }
+		public MainMenuView MainMenuView { set { value.Default = DEFAULT_MENU_TOP_IDX; } }
 
 		public static MainAreaController GetInstance() {
 			if (instance == null) {
@@ -29,21 +31,25 @@ namespace Wallet
 
 		public String MainAreaSelected { 
 			set {
-				switch (value) {
-					case "Portfolio":
-						mainAreaView.Page = 0;
-						MainView.SideMenuVisible = true;
-						break;
-					case "Wallet":
-						mainAreaView.Page = 1;
-						MainView.SideMenuVisible = true;
-						break;
-					case "Contract":
-						mainAreaView.Page = 2;
-						MainView.SideMenuVisible = false;
-						break;
-					}
+			switch (value) {
+				case "Portfolio":
+					mainAreaView.Control = typeof(Wallet);
+					MainView.SideMenuVisible = true;
+					break;
+				case "Wallet":
+					mainAreaView.Control = typeof(Wallet);
+					MainView.SideMenuVisible = true;
+					break;
+				case "Contract":
+					mainAreaView.Control = typeof(Contract);
+					MainView.SideMenuVisible = false;
+					break;
+				case "Log":
+					mainAreaView.Control = typeof(Wallet);
+					MainView.SideMenuVisible = false;
+					break;
 				}
+			}
 		}
 	}
 }
