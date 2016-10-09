@@ -3,26 +3,25 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface ITestTabsBarVertView : IMenu {
+	public interface IVerticalMenu : IMenu {
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class VerticalMenu : MenuBase, ITestTabsBarVertView
+	public partial class VerticalMenu : MenuBase, IVerticalMenu
 	{
-		WalletController WalletController = WalletController.GetInstance ();
+		MainAreaController MainAreaController = MainAreaController.GetInstance();
 
 		public VerticalMenu ()
 		{
 			this.Build ();
 
-			WalletController.TestTabsBarVertView = this;
-	
+			MainAreaController.VerticalMenuView = this;
 			WidthRequest = 170;
 		}
 			
 		public override String Selection { 
 			set {
-				WalletController.CurrencySelected = value;
+				WalletController.GetInstance ().CurrencySelected = value;
 			}
 		}
 	}

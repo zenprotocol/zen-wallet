@@ -26,6 +26,8 @@ namespace Wallet.Constants
 	{
 		public static Pango.FontDescription ActionBarBig = Pango.FontDescription.FromString ("Aharoni CLM 30");
 		public static Pango.FontDescription ActionBarSmall = Pango.FontDescription.FromString ("Aharoni CLM 15");
+		public static Pango.FontDescription LogHeader = Pango.FontDescription.FromString ("Aharoni CLM 14");
+		public static Pango.FontDescription LogText = Pango.FontDescription.FromString ("Aharoni CLM 12");
 	}
 
 	public class Strings
@@ -44,6 +46,13 @@ namespace Wallet.Constants
 		public static String MonthsAgo(int months) { 
 			return String.Format ("{0} months ago", months);
 		}
+
+		public static String Date = "Date";
+		public static String Balance = "Balance";
+		public static String TransactionId = "Transaction ID";
+		public static String TotalReceived = "Total Received";
+		public static String TotalBalance = "Total Balance";
+		public static String TotalSent = "Total Sent";
 	}
 
 	public class Color {
@@ -73,5 +82,10 @@ namespace Wallet.Constants
 		{
 			return string.Format("{0:X2}{1:X2}{2:X2}", r, g, b);
 		}
+	}
+
+	public class Formats {
+		public static String Money = "{0:0.00#####}";
+		public static String Date = "{0:G}";
 	}
 }

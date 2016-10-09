@@ -12,7 +12,7 @@ namespace Wallet
 		
 		private global::Wallet.MenuButton Contract;
 		
-		private global::Wallet.MenuButton Market;
+		private global::Wallet.MenuButton Log;
 
 		protected virtual void Build ()
 		{
@@ -49,11 +49,11 @@ namespace Wallet
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.Contract]));
 			w3.Position = 2;
 			// Container child hbox3.Gtk.Box+BoxChild
-			this.Market = new global::Wallet.MenuButton ();
-			this.Market.Events = ((global::Gdk.EventMask)(256));
-			this.Market.Name = "Market";
-			this.hbox3.Add (this.Market);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.Market]));
+			this.Log = new global::Wallet.MenuButton ();
+			this.Log.Events = ((global::Gdk.EventMask)(256));
+			this.Log.Name = "Log";
+			this.hbox3.Add (this.Log);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.Log]));
 			w4.Position = 3;
 			this.Add (this.hbox3);
 			if ((this.Child != null)) {

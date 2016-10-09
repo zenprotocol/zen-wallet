@@ -2,7 +2,6 @@
 using Wallet.Domain;
 using Gdk;
 using Gtk;
-using Cairo;
 
 namespace Wallet
 {

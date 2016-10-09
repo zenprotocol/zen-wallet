@@ -13,8 +13,9 @@ namespace Wallet
 		{
 			ReferenceWidget = referenceWidget;
 		}
-
-		public Gdk.Rectangle RenderLayoutText (Context cr, string text, int x, int y, int width, int textHeight,
+			
+		//TODO: Deprecate Cairo usage entirely
+		public Gdk.Rectangle RenderLayoutText (Context cr, String text, int x, int y, int width, int textHeight,
 			Constants.Color color, Pango.Alignment align, Pango.EllipsizeMode ellipse)
 		{
 			if (string.IsNullOrEmpty (text)) return new Gdk.Rectangle ();

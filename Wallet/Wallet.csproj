@@ -486,6 +486,19 @@
     <Compile Include="Widgets\FocusableWidget.cs" />
     <Compile Include="Widgets\WidgetCache.cs" />
     <Compile Include="Widgets\TextRenderer.cs" />
+    <Compile Include="Domain\LogEntry.cs" />
+    <Compile Include="Domain\CurrencyEnum.cs" />
+    <Compile Include="Domain\DirectionEnum.cs" />
+    <Compile Include="Widgets\Log\Log.cs" />
+    <Compile Include="gtk-gui\Wallet.Log.cs" />
+    <Compile Include="Widgets\Log\LogCellRenderer.cs" />
+    <Compile Include="Widgets\Log\LogEntryRow.cs" />
+    <Compile Include="Controllers\LogController.cs" />
+    <Compile Include="Widgets\Log\ILogEntryRow.cs" />
+    <Compile Include="Widgets\Log\LogSummaryRow.cs" />
+    <Compile Include="Widgets\Log\LogHeaderRow.cs" />
+    <Compile Include="gtk-gui\Wallet.Log2.cs" />
+    <Compile Include="LayoutHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -498,5 +511,8 @@
     <None Include="NBitcoin\PushNuget.ps1" />
     <None Include="NBitcoin\packages.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Widgets\Log\" />
   </ItemGroup>
 </Project>

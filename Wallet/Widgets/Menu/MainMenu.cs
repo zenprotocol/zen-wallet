@@ -3,11 +3,11 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface MainMenuView : IMenu {
+	public interface IMainMenuView : IMenu {
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class MainMenu : MenuBase, MainMenuView
+	public partial class MainMenu : MenuBase, IMainMenuView
 	{
 		MainAreaController MainAreaController = MainAreaController.GetInstance ();
 
