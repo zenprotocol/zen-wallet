@@ -12,9 +12,11 @@ namespace Wallet
 		
 		private global::Wallet.Contract contract1;
 		
-		private global::Gtk.Label label3;
-		
 		private global::Gtk.Label label6;
+		
+		private global::Wallet.Log log1;
+		
+		private global::Gtk.Label label7;
 
 		protected virtual void Build ()
 		{
@@ -26,7 +28,7 @@ namespace Wallet
 			this.notebook1 = new global::Gtk.Notebook ();
 			this.notebook1.CanFocus = true;
 			this.notebook1.Name = "notebook1";
-			this.notebook1.CurrentPage = 0;
+			this.notebook1.CurrentPage = 2;
 			this.notebook1.ShowBorder = false;
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.wallet1 = new global::Wallet.Wallet ();
@@ -47,20 +49,24 @@ namespace Wallet
 			global::Gtk.Notebook.NotebookChild w2 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.contract1]));
 			w2.Position = 1;
 			// Notebook tab
-			this.label3 = new global::Gtk.Label ();
-			this.label3.Name = "label3";
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("page2");
-			this.notebook1.SetTabLabel (this.contract1, this.label3);
-			this.label3.ShowAll ();
-			// Notebook tab
-			global::Gtk.Label w3 = new global::Gtk.Label ();
-			w3.Visible = true;
-			this.notebook1.Add (w3);
 			this.label6 = new global::Gtk.Label ();
 			this.label6.Name = "label6";
-			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString ("page3");
-			this.notebook1.SetTabLabel (w3, this.label6);
+			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString ("page2");
+			this.notebook1.SetTabLabel (this.contract1, this.label6);
 			this.label6.ShowAll ();
+			// Container child notebook1.Gtk.Notebook+NotebookChild
+			this.log1 = new global::Wallet.Log ();
+			this.log1.Events = ((global::Gdk.EventMask)(256));
+			this.log1.Name = "log1";
+			this.notebook1.Add (this.log1);
+			global::Gtk.Notebook.NotebookChild w3 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.log1]));
+			w3.Position = 2;
+			// Notebook tab
+			this.label7 = new global::Gtk.Label ();
+			this.label7.Name = "label7";
+			this.label7.LabelProp = global::Mono.Unix.Catalog.GetString ("page3");
+			this.notebook1.SetTabLabel (this.log1, this.label7);
+			this.label7.ShowAll ();
 			this.Add (this.notebook1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

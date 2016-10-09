@@ -6,10 +6,7 @@ namespace Wallet
 {
 	public class WalletController
 	{
-		private const int DEFAULT_MENU_LEFT_IDX = 0;
 		private static WalletController instance = null;
-
-		public ITestTabsBarVertView TestTabsBarVertView { set { value.Default = DEFAULT_MENU_LEFT_IDX; } }
 
 		private ActionBarView _actionBarView;
 		public ActionBarView ActionBarView {
