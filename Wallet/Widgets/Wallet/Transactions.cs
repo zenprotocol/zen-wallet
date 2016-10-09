@@ -58,9 +58,9 @@ namespace Wallet
 			list.ModifyBase (Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
 
 			Gtk.TreeViewColumn col = new Gtk.TreeViewColumn ();
-			ExpandingCellRenderer rendered = new ExpandingCellRenderer();
-			col.PackStart (rendered, true);
-			col.SetCellDataFunc (rendered, new Gtk.TreeCellDataFunc (RenderCell));
+			ExpandingCellRenderer renderer = new ExpandingCellRenderer();
+			col.PackStart (renderer, true);
+			col.SetCellDataFunc (renderer, new Gtk.TreeCellDataFunc (RenderCell));
 			col.MinWidth = 130;
 			list.AppendColumn (col);
 		}
@@ -102,6 +102,8 @@ namespace Wallet
 
 		public List<TransactionItem> TransactionsList { 
 			set {
+				listStore.Clear ();
+
 				foreach (TransactionItem transactionItem in value) {
 					AddTransactionItem(transactionItem);
 				}

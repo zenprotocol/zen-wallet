@@ -5,8 +5,10 @@ namespace Wallet
 {
 	public class MainAreaController
 	{
-		private const int DEFAULT_MENU_TOP_IDX = 1;
-		private Type DEFAULT_CONTROL = typeof(Wallet);
+		private const int DEFAULT_MENU_TOP_IDX = 3;
+		private const int DEFAULT_MENU_LEFT_IDX = 0;
+
+		private Type DEFAULT_CONTROL = typeof(Log);//Wallet);
 		private static MainAreaController instance = null;
 
 		private MainAreaView mainAreaView; 
@@ -19,7 +21,9 @@ namespace Wallet
 		}
 	
 		public MainView MainView { get; set; }
-		public MainMenuView MainMenuView { set { value.Default = DEFAULT_MENU_TOP_IDX; } }
+
+		public IMainMenuView MainMenuView { set { value.Default = DEFAULT_MENU_TOP_IDX; } }
+		public IVerticalMenu VerticalMenuView { set { value.Default = DEFAULT_MENU_LEFT_IDX; } }
 
 		public static MainAreaController GetInstance() {
 			if (instance == null) {
@@ -45,8 +49,8 @@ namespace Wallet
 					MainView.SideMenuVisible = false;
 					break;
 				case "Log":
-					mainAreaView.Control = typeof(Wallet);
-					MainView.SideMenuVisible = false;
+					mainAreaView.Control = typeof(Log);
+					MainView.SideMenuVisible = true;
 					break;
 				}
 			}
