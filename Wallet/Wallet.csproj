@@ -497,7 +497,6 @@
     <Compile Include="Widgets\Log\ILogEntryRow.cs" />
     <Compile Include="Widgets\Log\LogSummaryRow.cs" />
     <Compile Include="Widgets\Log\LogHeaderRow.cs" />
-    <Compile Include="gtk-gui\Wallet.Log2.cs" />
     <Compile Include="LayoutHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
