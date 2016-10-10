@@ -4,13 +4,11 @@ namespace Wallet
 {
 	public partial class MenuButton
 	{
-		private global::Gtk.EventBox eventbox9;
+		private global::Gtk.EventBox eventbox;
 		
 		private global::Gtk.VBox vbox9;
 		
-		private global::Gtk.HBox hbox7;
-		
-		private global::Wallet.ImageButton ImageButton1;
+		private global::Gtk.HBox hbox1;
 
 		protected virtual void Build ()
 		{
@@ -19,35 +17,22 @@ namespace Wallet
 			global::Stetic.BinContainer.Attach (this);
 			this.Name = "Wallet.MenuButton";
 			// Container child Wallet.MenuButton.Gtk.Container+ContainerChild
-			this.eventbox9 = new global::Gtk.EventBox ();
-			this.eventbox9.Name = "eventbox9";
-			// Container child eventbox9.Gtk.Container+ContainerChild
+			this.eventbox = new global::Gtk.EventBox ();
+			this.eventbox.Name = "eventbox";
+			// Container child eventbox.Gtk.Container+ContainerChild
 			this.vbox9 = new global::Gtk.VBox ();
 			this.vbox9.Name = "vbox9";
 			this.vbox9.Homogeneous = true;
 			this.vbox9.Spacing = 6;
 			// Container child vbox9.Gtk.Box+BoxChild
-			this.hbox7 = new global::Gtk.HBox ();
-			this.hbox7.HeightRequest = 100;
-			this.hbox7.Name = "hbox7";
-			this.hbox7.Homogeneous = true;
-			this.hbox7.Spacing = 6;
-			// Container child hbox7.Gtk.Box+BoxChild
-			this.ImageButton1 = new global::Wallet.ImageButton ();
-			this.ImageButton1.Events = ((global::Gdk.EventMask)(256));
-			this.ImageButton1.Name = "ImageButton1";
-			this.hbox7.Add (this.ImageButton1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox7 [this.ImageButton1]));
-			w1.Position = 1;
-			w1.Expand = false;
-			w1.Fill = false;
-			this.vbox9.Add (this.hbox7);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox9 [this.hbox7]));
-			w2.Position = 1;
-			w2.Expand = false;
-			w2.Fill = false;
-			this.eventbox9.Add (this.vbox9);
-			this.Add (this.eventbox9);
+			this.hbox1 = new global::Gtk.HBox ();
+			this.hbox1.Name = "hbox1";
+			this.hbox1.Spacing = 6;
+			this.vbox9.Add (this.hbox1);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox9 [this.hbox1]));
+			w1.Position = 0;
+			this.eventbox.Add (this.vbox9);
+			this.Add (this.eventbox);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}

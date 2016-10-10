@@ -93,6 +93,8 @@
     <EmbeddedResource Include="Assets\Contract\Create.png" />
     <EmbeddedResource Include="Assets\Contract\Load.png" />
     <EmbeddedResource Include="Assets\Contract\Verify.png" />
+    <EmbeddedResource Include="Assets\Balance_off.png" />
+    <EmbeddedResource Include="Assets\Balance_on.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gtk-gui\generated.cs" />
@@ -498,6 +500,14 @@
     <Compile Include="Widgets\Log\LogSummaryRow.cs" />
     <Compile Include="Widgets\Log\LogHeaderRow.cs" />
     <Compile Include="LayoutHelper.cs" />
+    <Compile Include="Domain\AssetType.cs" />
+    <Compile Include="Widgets\Portfolio\Portfolio.cs" />
+    <Compile Include="gtk-gui\Wallet.Portfolio.cs" />
+    <Compile Include="Controllers\AssetsManager.cs" />
+    <Compile Include="Widgets\Menu\TextButton.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioItem.cs" />
+    <Compile Include="gtk-gui\Wallet.PortfolioItem.cs" />
+    <Compile Include="Widgets\IAssetsView.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -513,5 +523,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Widgets\Log\" />
+    <Folder Include="Widgets\Portfolio\" />
   </ItemGroup>
 </Project>

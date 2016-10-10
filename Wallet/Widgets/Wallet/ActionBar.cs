@@ -1,4 +1,5 @@
 ﻿using System;
+using Gtk;
 
 namespace Wallet
 {
@@ -27,6 +28,27 @@ namespace Wallet
 			label3.ModifyFont (Constants.Fonts.ActionBarSmall);
 			label4.ModifyFont (Constants.Fonts.ActionBarBig);
 			label5.ModifyFont (Constants.Fonts.ActionBarSmall);
+//
+			imagebutton1.ButtonPressEvent += (object o, Gtk.ButtonPressEventArgs args) => {
+				Dialog dialog = new Dialog();
+		//		("Sample", Program.MainWindow, Gtk.DialogFlags.DestroyWithParent);
+							dialog.Modal = true;
+							dialog.Decorated = false;
+				//			dialog.AddButton ("Close", ResponseType.Close);
+				dialog.Add(new ActionBar());
+						//	dialog.Response += new ResponseHandler (on_dialog_response);
+							dialog.Run ();
+							dialog.Destroy ();
+			};
+//			imageSend.ButtonReleaseEvent +=	(object o, Gtk.ButtonReleaseEventArgs args) => {
+//				SendDialog dialog = new SendDialog();
+////					("Sample", Program.MainWindow, Gtk.DialogFlags.Modal);
+//				dialog.Modal = true;
+////				dialog.AddButton ("Close", ResponseType.Close);
+//			//	dialog.Response += new ResponseHandler (on_dialog_response);
+//				dialog.Run ();
+//				dialog.Destroy ();
+//			};
 
 			HeightRequest = 130;
 		}
