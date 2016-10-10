@@ -6,7 +6,7 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 		
-		private global::Wallet.ActionBar actionbar1;
+		private global::Wallet.ActionBar actionbar;
 		
 		private global::Wallet.Transactions transactions1;
 
@@ -19,13 +19,12 @@ namespace Wallet
 			// Container child Wallet.Wallet.Gtk.Container+ContainerChild
 			this.vbox1 = new global::Gtk.VBox ();
 			this.vbox1.Name = "vbox1";
-			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.actionbar1 = new global::Wallet.ActionBar ();
-			this.actionbar1.Events = ((global::Gdk.EventMask)(256));
-			this.actionbar1.Name = "actionbar1";
-			this.vbox1.Add (this.actionbar1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.actionbar1]));
+			this.actionbar = new global::Wallet.ActionBar ();
+			this.actionbar.Events = ((global::Gdk.EventMask)(256));
+			this.actionbar.Name = "actionbar";
+			this.vbox1.Add (this.actionbar);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.actionbar]));
 			w1.Position = 0;
 			w1.Expand = false;
 			w1.Fill = false;

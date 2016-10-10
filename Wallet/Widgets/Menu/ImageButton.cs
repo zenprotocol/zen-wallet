@@ -11,11 +11,13 @@ namespace Wallet
 			this.Build ();
 		}
 
-		public void SetBackground(String value) {
-			try {
-				FindChild<Image>().Pixbuf = Gdk.Pixbuf.LoadFromResource(value);
-			} catch {
-				Console.WriteLine("missing" + value);
+		public String Background {
+			set {
+				try {
+			//		image.Pixbuf = Gdk.Pixbuf.LoadFromResource (value);
+				} catch {
+					Console.WriteLine ("missing" + value);
+				}
 			}
 		}
 	}

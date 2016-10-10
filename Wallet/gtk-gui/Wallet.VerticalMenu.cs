@@ -5,14 +5,6 @@ namespace Wallet
 	public partial class VerticalMenu
 	{
 		private global::Gtk.VBox vbox3;
-		
-		private global::Wallet.MenuButton Zen;
-		
-		private global::Wallet.MenuButton Bitcoin;
-		
-		private global::Wallet.MenuButton Ether;
-		
-		private global::Wallet.MenuButton Lite;
 
 		protected virtual void Build ()
 		{
@@ -24,38 +16,6 @@ namespace Wallet
 			this.vbox3 = new global::Gtk.VBox ();
 			this.vbox3.Name = "vbox3";
 			this.vbox3.Homogeneous = true;
-			// Container child vbox3.Gtk.Box+BoxChild
-			this.Zen = new global::Wallet.MenuButton ();
-			this.Zen.HeightRequest = 10;
-			this.Zen.Events = ((global::Gdk.EventMask)(256));
-			this.Zen.Name = "Zen";
-			this.vbox3.Add (this.Zen);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox3 [this.Zen]));
-			w1.Position = 0;
-			// Container child vbox3.Gtk.Box+BoxChild
-			this.Bitcoin = new global::Wallet.MenuButton ();
-			this.Bitcoin.HeightRequest = 10;
-			this.Bitcoin.Events = ((global::Gdk.EventMask)(256));
-			this.Bitcoin.Name = "Bitcoin";
-			this.vbox3.Add (this.Bitcoin);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox3 [this.Bitcoin]));
-			w2.Position = 1;
-			// Container child vbox3.Gtk.Box+BoxChild
-			this.Ether = new global::Wallet.MenuButton ();
-			this.Ether.HeightRequest = 10;
-			this.Ether.Events = ((global::Gdk.EventMask)(256));
-			this.Ether.Name = "Ether";
-			this.vbox3.Add (this.Ether);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox3 [this.Ether]));
-			w3.Position = 2;
-			// Container child vbox3.Gtk.Box+BoxChild
-			this.Lite = new global::Wallet.MenuButton ();
-			this.Lite.HeightRequest = 10;
-			this.Lite.Events = ((global::Gdk.EventMask)(256));
-			this.Lite.Name = "Lite";
-			this.vbox3.Add (this.Lite);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox3 [this.Lite]));
-			w4.Position = 3;
 			this.Add (this.vbox3);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

@@ -18,7 +18,9 @@ namespace Wallet
 				ActionBarView.Currency = "Zen";
 			}
 		}
+
 		public TransactionsView TransactionsView { get; set; }
+		public IWalletView WalletView { get; set; }
 
 		public CurrencyEnum currency;
 		public String currencyStr;
@@ -36,6 +38,8 @@ namespace Wallet
 
 		public String CurrencySelected { 
 			set {
+				WalletView.ActionBar = value != "All";
+
 				switch (value) {
 					case "Bitcoin":
 						currency = CurrencyEnum.BTC;

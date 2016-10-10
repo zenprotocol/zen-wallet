@@ -14,6 +14,11 @@ namespace Wallet
 		public MainMenu ()
 		{
 			this.Build ();
+
+			foreach (Widget widget in FindChild<HBox>()) {
+				((MenuButton)widget).ImageName = widget.Name;
+			}
+
 			MainAreaController.MainMenuView = this;
 
 			HeightRequest = 100;

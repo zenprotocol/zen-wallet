@@ -6,12 +6,23 @@ namespace Wallet
 {
 	class Program
 	{
+		public static MainWindow MainWindow { get; private set; }
+
 		public static void Main (string[] args)
 		{
 			//TODO: will initializing MainController were have an effect on it's thread?
 
 			Application.Init ();
-			new MainWindow();
+			MainWindow = new MainWindow();
+
+//			Dialog dialog = new Dialog
+//				("Sample", win, Gtk.DialogFlags.DestroyWithParent);
+//			dialog.Modal = true;
+//			dialog.AddButton ("Close", ResponseType.Close);
+//		//	dialog.Response += new ResponseHandler (on_dialog_response);
+//			dialog.Run ();
+//			dialog.Destroy ();
+
 			Application.Run ();
 		}
 

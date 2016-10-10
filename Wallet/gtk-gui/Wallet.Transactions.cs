@@ -16,6 +16,7 @@ namespace Wallet
 			this.vbox1 = new global::Gtk.VBox ();
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
+			this.vbox1.BorderWidth = ((uint)(10));
 			this.Add (this.vbox1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
