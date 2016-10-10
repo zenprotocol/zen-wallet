@@ -54,7 +54,7 @@ namespace Wallet
 					LogView.AddLogEntryItem(new LogEntryItem(
 						(Decimal)random.Next(1, 100000) / 1000000,
 						random.Next(0, 10) > 5 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-						CurrencyEnum.ZEN,
+						CurrencyEnum.Zen,
 						DateTime.Now.AddDays(-1 * random.Next(0, 100)),
 						Guid.NewGuid().ToString("N"),
 						Guid.NewGuid().ToString("N"),

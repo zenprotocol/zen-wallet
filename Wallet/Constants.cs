@@ -7,8 +7,10 @@ namespace Wallet.Constants
 		private static String resourceBase = "Wallet.Assets.";
 		public static String UpArrow = resourceBase + "misc.arrowup.png";
 		public static String DownArrow = resourceBase + "misc.arrowdown.png";
+		public static String Send = resourceBase + "misc.send.png";
+		public static String SendDialog = resourceBase + "misc.send_dialog.png";
 		public static String Button(String name, bool selected) { return "Wallet.Assets." + name + (selected ? "_on.png" : "_off.png"); }
-		public static String CurrencyLogo(String name) { return "Wallet.Assets.misc." + name + ".png"; }
+		public static String CurrencyLogo(CurrencyEnum currency) { return "Wallet.Assets.misc." + currency + ".png"; }
 	}
 
 	public class Colors

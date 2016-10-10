@@ -6,7 +6,7 @@ namespace Wallet
 	public interface ActionBarView {
 		Decimal Total { set; }
 		Decimal Rate { set; }
-		String Currency { set; }
+		CurrencyEnum Currency { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -19,43 +19,21 @@ namespace Wallet
 			this.Build ();
 			WalletController.ActionBarView = this;
 
-			label1.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-			label3.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-			label4.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-			label5.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+			foreach (Label label in new Label[] { label1, label3,  label4, label5 }) {
+				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+				label.ModifyFont (Constants.Fonts.ActionBarBig);
+			}
 
-			label1.ModifyFont (Constants.Fonts.ActionBarBig);
-			label3.ModifyFont (Constants.Fonts.ActionBarSmall);
-			label4.ModifyFont (Constants.Fonts.ActionBarBig);
-			label5.ModifyFont (Constants.Fonts.ActionBarSmall);
-//
 			imagebutton1.ButtonPressEvent += (object o, Gtk.ButtonPressEventArgs args) => {
-				Dialog dialog = new Dialog();
-		//		("Sample", Program.MainWindow, Gtk.DialogFlags.DestroyWithParent);
-							dialog.Modal = true;
-							dialog.Decorated = false;
-				//			dialog.AddButton ("Close", ResponseType.Close);
-				dialog.Add(new ActionBar());
-						//	dialog.Response += new ResponseHandler (on_dialog_response);
-							dialog.Run ();
-							dialog.Destroy ();
+				new SendDialog(CurrencyEnum.Zen).ShowDialog(Program.MainWindow);
 			};
-//			imageSend.ButtonReleaseEvent +=	(object o, Gtk.ButtonReleaseEventArgs args) => {
-//				SendDialog dialog = new SendDialog();
-////					("Sample", Program.MainWindow, Gtk.DialogFlags.Modal);
-//				dialog.Modal = true;
-////				dialog.AddButton ("Close", ResponseType.Close);
-//			//	dialog.Response += new ResponseHandler (on_dialog_response);
-//				dialog.Run ();
-//				dialog.Destroy ();
-//			};
 
 			HeightRequest = 130;
 		}
 
 		public Decimal Rate {
 			set {
-				label1.Text = value.ToString();
+				label1.Text = value.ToString ();
 				label3.Text = _currency;
 			}
 		}
@@ -69,27 +47,26 @@ namespace Wallet
 
 		private String _currency;
 
-		public String Currency {
+		public CurrencyEnum Currency {
 			set {
-
 				switch (value) {
-				case "Bitcoin":
+				case CurrencyEnum.Bitcoin:
 					_currency = "BTC";
 					break;
-				case "Ether":
+				case CurrencyEnum.Ether:
 					_currency = "ETH";
 					break;
-				case "Zen":
+				case CurrencyEnum.Zen:
 					_currency = "ZEN";
 					break;
-				case "Lite":
+				case CurrencyEnum.Lite:
 					_currency = "LTC";
 					break;
 				}
 					
 				try {
 					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(Constants.Images.CurrencyLogo(value));
-				} catch (Exception e) {
+				} catch {
 					Console.WriteLine("missing" + Constants.Images.CurrencyLogo(value));
 				}
 			}
