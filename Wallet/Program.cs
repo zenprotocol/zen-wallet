@@ -14,15 +14,6 @@ namespace Wallet
 
 			Application.Init ();
 			MainWindow = new MainWindow();
-
-//			Dialog dialog = new Dialog
-//				("Sample", win, Gtk.DialogFlags.DestroyWithParent);
-//			dialog.Modal = true;
-//			dialog.AddButton ("Close", ResponseType.Close);
-//		//	dialog.Response += new ResponseHandler (on_dialog_response);
-//			dialog.Run ();
-//			dialog.Destroy ();
-
 			Application.Run ();
 		}
 

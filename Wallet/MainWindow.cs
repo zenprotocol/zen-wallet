@@ -26,7 +26,7 @@ namespace Wallet
 //			style.SetBgPixmap (Gtk.StateType.Normal, pixmap);
 //			this.Style = style;
 
-			ModifyBg (Gtk.StateType.Normal, new Gdk.Color (0x024, 0x030, 0x03e));
+			ModifyBg (Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
 
 			Show ();
 		}

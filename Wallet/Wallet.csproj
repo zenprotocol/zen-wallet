@@ -95,6 +95,7 @@
     <EmbeddedResource Include="Assets\Contract\Verify.png" />
     <EmbeddedResource Include="Assets\Balance_off.png" />
     <EmbeddedResource Include="Assets\Balance_on.png" />
+    <EmbeddedResource Include="Assets\misc\send_dialog.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gtk-gui\generated.cs" />
@@ -508,6 +509,9 @@
     <Compile Include="Widgets\Portfolio\PortfolioItem.cs" />
     <Compile Include="gtk-gui\Wallet.PortfolioItem.cs" />
     <Compile Include="Widgets\IAssetsView.cs" />
+    <Compile Include="Widgets\SendDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.SendDialog.cs" />
+    <Compile Include="Widgets\DialogBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
