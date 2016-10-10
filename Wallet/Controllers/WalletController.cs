@@ -15,7 +15,7 @@ namespace Wallet
 			}
 			set {
 				_actionBarView = value;
-				ActionBarView.Currency = "Zen";
+				ActionBarView.Currency = CurrencyEnum.Zen;
 			}
 		}
 
@@ -42,20 +42,20 @@ namespace Wallet
 
 				switch (value) {
 					case "Bitcoin":
-						currency = CurrencyEnum.BTC;
-						ActionBarView.Currency = "Bitcoin";
+						currency = CurrencyEnum.Bitcoin;
+						ActionBarView.Currency = currency;
 						break;
 					case "Ether":
-						currency = CurrencyEnum.ETH;
-						ActionBarView.Currency = "Ether";
+						currency = CurrencyEnum.Ether;
+						ActionBarView.Currency = currency;
 						break;
 					case "Zen":
-						currency = CurrencyEnum.ZEN;
-						ActionBarView.Currency = "Zen";
+						currency = CurrencyEnum.Zen;
+						ActionBarView.Currency = currency;
 						break;
 					case "Lite":
-						currency = CurrencyEnum.LTE;
-						ActionBarView.Currency = "Lite";
+						currency = CurrencyEnum.Lite;
+						ActionBarView.Currency = currency;
 						break;
 					}
 					UpdateUI();
