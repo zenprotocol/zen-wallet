@@ -42,7 +42,6 @@ namespace Wallet
 				w.ModifyBg (Gtk.StateType.Normal, Colors.Base.Gdk);
 			}
 
-
 			Adjustment adj1 = new Adjustment (0.0, 0.0, 101.0, 0.1, 1.0, 1.0);
 		
 			vscrollbar2.Adjustment = adj1;

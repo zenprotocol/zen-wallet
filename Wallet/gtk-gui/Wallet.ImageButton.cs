@@ -4,9 +4,9 @@ namespace Wallet
 {
 	public partial class ImageButton
 	{
-		private global::Gtk.HBox hbox8;
+		private global::Gtk.EventBox eventbox1;
 		
-		private global::Gtk.Image image73;
+		private global::Gtk.Label label;
 
 		protected virtual void Build ()
 		{
@@ -15,20 +15,14 @@ namespace Wallet
 			global::Stetic.BinContainer.Attach (this);
 			this.Name = "Wallet.ImageButton";
 			// Container child Wallet.ImageButton.Gtk.Container+ContainerChild
-			this.hbox8 = new global::Gtk.HBox ();
-			this.hbox8.Name = "hbox8";
-			this.hbox8.Homogeneous = true;
-			this.hbox8.Spacing = 6;
-			// Container child hbox8.Gtk.Box+BoxChild
-			this.image73 = new global::Gtk.Image ();
-			this.image73.Name = "image73";
-			this.image73.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-dialog-question", global::Gtk.IconSize.Menu);
-			this.hbox8.Add (this.image73);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox8 [this.image73]));
-			w1.Position = 0;
-			w1.Expand = false;
-			w1.Fill = false;
-			this.Add (this.hbox8);
+			this.eventbox1 = new global::Gtk.EventBox ();
+			this.eventbox1.Name = "eventbox1";
+			// Container child eventbox1.Gtk.Container+ContainerChild
+			this.label = new global::Gtk.Label ();
+			this.label.Name = "label";
+			this.label.LabelProp = global::Mono.Unix.Catalog.GetString ("label");
+			this.eventbox1.Add (this.label);
+			this.Add (this.eventbox1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}

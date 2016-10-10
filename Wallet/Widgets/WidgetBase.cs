@@ -52,7 +52,6 @@ namespace Wallet
 			}
 
 			return FindParentRecursive<T>(parentWidget);
-
 		}
 	}
 }

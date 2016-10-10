@@ -26,11 +26,13 @@ namespace Wallet
 		
 		private global::Gtk.Label label5;
 		
+		private global::Wallet.ImageButton imagebutton1;
+		
 		private global::Gtk.HBox hboxActions;
 		
 		private global::Gtk.VBox vbox1;
 		
-		private global::Gtk.Image image1;
+		private global::Gtk.Image imageSend;
 		
 		private global::Gtk.Image image3;
 
@@ -136,6 +138,15 @@ namespace Wallet
 			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.hboxCurrency]));
 			w10.Position = 0;
 			// Container child hboxMain.Gtk.Box+BoxChild
+			this.imagebutton1 = new global::Wallet.ImageButton ();
+			this.imagebutton1.Events = ((global::Gdk.EventMask)(256));
+			this.imagebutton1.Name = "imagebutton1";
+			this.hboxMain.Add (this.imagebutton1);
+			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.imagebutton1]));
+			w11.Position = 1;
+			w11.Expand = false;
+			w11.Fill = false;
+			// Container child hboxMain.Gtk.Box+BoxChild
 			this.hboxActions = new global::Gtk.HBox ();
 			this.hboxActions.Name = "hboxActions";
 			this.hboxActions.Spacing = 6;
@@ -144,35 +155,35 @@ namespace Wallet
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Homogeneous = true;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.image1 = new global::Gtk.Image ();
-			this.image1.Name = "image1";
-			this.image1.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.send.png");
-			this.vbox1.Add (this.image1);
-			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.image1]));
-			w11.Position = 0;
-			w11.Expand = false;
-			w11.Fill = false;
+			this.imageSend = new global::Gtk.Image ();
+			this.imageSend.Name = "imageSend";
+			this.imageSend.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.send.png");
+			this.vbox1.Add (this.imageSend);
+			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.imageSend]));
+			w12.Position = 0;
+			w12.Expand = false;
+			w12.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.image3 = new global::Gtk.Image ();
 			this.image3.Name = "image3";
 			this.image3.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.receive.png");
 			this.vbox1.Add (this.image3);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.image3]));
-			w12.Position = 1;
-			w12.Expand = false;
-			w12.Fill = false;
-			this.hboxActions.Add (this.vbox1);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.hboxActions [this.vbox1]));
-			w13.Position = 0;
+			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.image3]));
+			w13.Position = 1;
 			w13.Expand = false;
-			w13.Padding = ((uint)(10));
-			this.hboxMain.Add (this.hboxActions);
-			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.hboxActions]));
-			w14.PackType = ((global::Gtk.PackType)(1));
-			w14.Position = 2;
+			w13.Fill = false;
+			this.hboxActions.Add (this.vbox1);
+			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hboxActions [this.vbox1]));
+			w14.Position = 0;
 			w14.Expand = false;
-			w14.Fill = false;
 			w14.Padding = ((uint)(10));
+			this.hboxMain.Add (this.hboxActions);
+			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.hboxActions]));
+			w15.PackType = ((global::Gtk.PackType)(1));
+			w15.Position = 2;
+			w15.Expand = false;
+			w15.Fill = false;
+			w15.Padding = ((uint)(10));
 			this.Add (this.hboxMain);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

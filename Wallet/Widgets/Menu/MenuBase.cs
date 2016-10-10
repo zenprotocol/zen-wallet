@@ -8,7 +8,7 @@ namespace Wallet
 
 		public int Default { 
 			set {
-				FindChild<MenuButton> (value).Select ();
+				FindChild<MenuButton>(value).Select();
 			}
 		}
 	}
