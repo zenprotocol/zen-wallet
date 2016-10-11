@@ -26,15 +26,19 @@ namespace Wallet
 		
 		private global::Gtk.Label label5;
 		
-		private global::Wallet.ImageButton imagebutton1;
+		private global::Gtk.EventBox eventbox2;
 		
 		private global::Gtk.HBox hboxActions;
 		
 		private global::Gtk.VBox vbox1;
 		
-		private global::Gtk.Image imageSend;
+		private global::Gtk.EventBox eventboxSend;
 		
-		private global::Gtk.Image image3;
+		private global::Gtk.Image image5;
+		
+		private global::Gtk.EventBox eventboxReceive;
+		
+		private global::Gtk.Image image6;
 
 		protected virtual void Build ()
 		{
@@ -138,14 +142,12 @@ namespace Wallet
 			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.hboxCurrency]));
 			w10.Position = 0;
 			// Container child hboxMain.Gtk.Box+BoxChild
-			this.imagebutton1 = new global::Wallet.ImageButton ();
-			this.imagebutton1.Events = ((global::Gdk.EventMask)(256));
-			this.imagebutton1.Name = "imagebutton1";
-			this.hboxMain.Add (this.imagebutton1);
-			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.imagebutton1]));
+			this.eventbox2 = new global::Gtk.EventBox ();
+			this.eventbox2.Name = "eventbox2";
+			this.eventbox2.VisibleWindow = false;
+			this.hboxMain.Add (this.eventbox2);
+			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.eventbox2]));
 			w11.Position = 1;
-			w11.Expand = false;
-			w11.Fill = false;
 			// Container child hboxMain.Gtk.Box+BoxChild
 			this.hboxActions = new global::Gtk.HBox ();
 			this.hboxActions.Name = "hboxActions";
@@ -155,35 +157,45 @@ namespace Wallet
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Homogeneous = true;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.imageSend = new global::Gtk.Image ();
-			this.imageSend.Name = "imageSend";
-			this.imageSend.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.send.png");
-			this.vbox1.Add (this.imageSend);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.imageSend]));
-			w12.Position = 0;
-			w12.Expand = false;
-			w12.Fill = false;
-			// Container child vbox1.Gtk.Box+BoxChild
-			this.image3 = new global::Gtk.Image ();
-			this.image3.Name = "image3";
-			this.image3.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.receive.png");
-			this.vbox1.Add (this.image3);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.image3]));
-			w13.Position = 1;
+			this.eventboxSend = new global::Gtk.EventBox ();
+			this.eventboxSend.Name = "eventboxSend";
+			this.eventboxSend.VisibleWindow = false;
+			// Container child eventboxSend.Gtk.Container+ContainerChild
+			this.image5 = new global::Gtk.Image ();
+			this.image5.Name = "image5";
+			this.image5.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.send.png");
+			this.eventboxSend.Add (this.image5);
+			this.vbox1.Add (this.eventboxSend);
+			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.eventboxSend]));
+			w13.Position = 0;
 			w13.Expand = false;
 			w13.Fill = false;
-			this.hboxActions.Add (this.vbox1);
-			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hboxActions [this.vbox1]));
-			w14.Position = 0;
-			w14.Expand = false;
-			w14.Padding = ((uint)(10));
-			this.hboxMain.Add (this.hboxActions);
-			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.hboxActions]));
-			w15.PackType = ((global::Gtk.PackType)(1));
-			w15.Position = 2;
+			// Container child vbox1.Gtk.Box+BoxChild
+			this.eventboxReceive = new global::Gtk.EventBox ();
+			this.eventboxReceive.Name = "eventboxReceive";
+			this.eventboxReceive.VisibleWindow = false;
+			// Container child eventboxReceive.Gtk.Container+ContainerChild
+			this.image6 = new global::Gtk.Image ();
+			this.image6.Name = "image6";
+			this.image6.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.receive.png");
+			this.eventboxReceive.Add (this.image6);
+			this.vbox1.Add (this.eventboxReceive);
+			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.eventboxReceive]));
+			w15.Position = 1;
 			w15.Expand = false;
 			w15.Fill = false;
-			w15.Padding = ((uint)(10));
+			this.hboxActions.Add (this.vbox1);
+			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.hboxActions [this.vbox1]));
+			w16.Position = 0;
+			w16.Expand = false;
+			w16.Padding = ((uint)(10));
+			this.hboxMain.Add (this.hboxActions);
+			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.hboxMain [this.hboxActions]));
+			w17.PackType = ((global::Gtk.PackType)(1));
+			w17.Position = 2;
+			w17.Expand = false;
+			w17.Fill = false;
+			w17.Padding = ((uint)(10));
 			this.Add (this.hboxMain);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

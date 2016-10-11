@@ -6,23 +6,23 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 		
-		private global::Gtk.Label label4;
+		private global::Gtk.Label labelHeader;
 		
 		private global::Gtk.Image image;
 		
 		private global::Gtk.HBox hboxTo;
 		
-		private global::Gtk.Label label7;
+		private global::Gtk.Label labelTo;
 		
-		private global::Gtk.Entry entry3;
+		private global::Gtk.Entry entryTo;
 		
 		private global::Gtk.Label label8;
 		
 		private global::Gtk.HBox hboxAmount;
 		
-		private global::Gtk.Label label9;
+		private global::Gtk.Label labelAmount;
 		
-		private global::Gtk.Entry entry4;
+		private global::Gtk.Entry entryAmount;
 		
 		private global::Gtk.Label label10;
 		
@@ -48,14 +48,14 @@ namespace Wallet
 			// Container child Wallet.SendDialog.Gtk.Container+ContainerChild
 			this.vbox1 = new global::Gtk.VBox ();
 			this.vbox1.Name = "vbox1";
-			this.vbox1.Spacing = 6;
+			this.vbox1.Spacing = 20;
 			this.vbox1.BorderWidth = ((uint)(15));
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.label4 = new global::Gtk.Label ();
-			this.label4.Name = "label4";
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("SEND");
-			this.vbox1.Add (this.label4);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.label4]));
+			this.labelHeader = new global::Gtk.Label ();
+			this.labelHeader.Name = "labelHeader";
+			this.labelHeader.LabelProp = global::Mono.Unix.Catalog.GetString ("SEND");
+			this.vbox1.Add (this.labelHeader);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.labelHeader]));
 			w1.Position = 0;
 			w1.Expand = false;
 			w1.Fill = false;
@@ -72,24 +72,27 @@ namespace Wallet
 			this.hboxTo.Name = "hboxTo";
 			this.hboxTo.Spacing = 6;
 			// Container child hboxTo.Gtk.Box+BoxChild
-			this.label7 = new global::Gtk.Label ();
-			this.label7.WidthRequest = 100;
-			this.label7.Name = "label7";
-			this.label7.Xalign = 1F;
-			this.label7.LabelProp = global::Mono.Unix.Catalog.GetString ("TO");
-			this.hboxTo.Add (this.label7);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxTo [this.label7]));
+			this.labelTo = new global::Gtk.Label ();
+			this.labelTo.WidthRequest = 100;
+			this.labelTo.Name = "labelTo";
+			this.labelTo.Xpad = 10;
+			this.labelTo.Xalign = 1F;
+			this.labelTo.LabelProp = global::Mono.Unix.Catalog.GetString ("TO");
+			this.hboxTo.Add (this.labelTo);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxTo [this.labelTo]));
 			w3.Position = 0;
 			w3.Expand = false;
 			w3.Fill = false;
 			// Container child hboxTo.Gtk.Box+BoxChild
-			this.entry3 = new global::Gtk.Entry ();
-			this.entry3.CanFocus = true;
-			this.entry3.Name = "entry3";
-			this.entry3.IsEditable = true;
-			this.entry3.InvisibleChar = '●';
-			this.hboxTo.Add (this.entry3);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hboxTo [this.entry3]));
+			this.entryTo = new global::Gtk.Entry ();
+			this.entryTo.HeightRequest = 40;
+			this.entryTo.CanFocus = true;
+			this.entryTo.Name = "entryTo";
+			this.entryTo.IsEditable = true;
+			this.entryTo.HasFrame = false;
+			this.entryTo.InvisibleChar = '●';
+			this.hboxTo.Add (this.entryTo);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hboxTo [this.entryTo]));
 			w4.Position = 1;
 			// Container child hboxTo.Gtk.Box+BoxChild
 			this.label8 = new global::Gtk.Label ();
@@ -111,25 +114,28 @@ namespace Wallet
 			this.hboxAmount.Name = "hboxAmount";
 			this.hboxAmount.Spacing = 6;
 			// Container child hboxAmount.Gtk.Box+BoxChild
-			this.label9 = new global::Gtk.Label ();
-			this.label9.WidthRequest = 100;
-			this.label9.Name = "label9";
-			this.label9.Xalign = 1F;
-			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString ("AMOUNT");
-			this.label9.Justify = ((global::Gtk.Justification)(1));
-			this.hboxAmount.Add (this.label9);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hboxAmount [this.label9]));
+			this.labelAmount = new global::Gtk.Label ();
+			this.labelAmount.WidthRequest = 100;
+			this.labelAmount.Name = "labelAmount";
+			this.labelAmount.Xpad = 10;
+			this.labelAmount.Xalign = 1F;
+			this.labelAmount.LabelProp = global::Mono.Unix.Catalog.GetString ("AMOUNT");
+			this.labelAmount.Justify = ((global::Gtk.Justification)(1));
+			this.hboxAmount.Add (this.labelAmount);
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hboxAmount [this.labelAmount]));
 			w7.Position = 0;
 			w7.Expand = false;
 			w7.Fill = false;
 			// Container child hboxAmount.Gtk.Box+BoxChild
-			this.entry4 = new global::Gtk.Entry ();
-			this.entry4.CanFocus = true;
-			this.entry4.Name = "entry4";
-			this.entry4.IsEditable = true;
-			this.entry4.InvisibleChar = '●';
-			this.hboxAmount.Add (this.entry4);
-			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.hboxAmount [this.entry4]));
+			this.entryAmount = new global::Gtk.Entry ();
+			this.entryAmount.HeightRequest = 40;
+			this.entryAmount.CanFocus = true;
+			this.entryAmount.Name = "entryAmount";
+			this.entryAmount.IsEditable = true;
+			this.entryAmount.HasFrame = false;
+			this.entryAmount.InvisibleChar = '●';
+			this.hboxAmount.Add (this.entryAmount);
+			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.hboxAmount [this.entryAmount]));
 			w8.Position = 1;
 			// Container child hboxAmount.Gtk.Box+BoxChild
 			this.label10 = new global::Gtk.Label ();
@@ -154,9 +160,11 @@ namespace Wallet
 			// Container child hboxSendButton.Gtk.Box+BoxChild
 			this.eventboxSend = new global::Gtk.EventBox ();
 			this.eventboxSend.Name = "eventboxSend";
+			this.eventboxSend.VisibleWindow = false;
 			// Container child eventboxSend.Gtk.Container+ContainerChild
 			this.imageSend = new global::Gtk.Image ();
 			this.imageSend.Name = "imageSend";
+			this.imageSend.Pixbuf = global::Gdk.Pixbuf.LoadFromResource ("Wallet.Assets.misc.send_dialog.png");
 			this.eventboxSend.Add (this.imageSend);
 			this.hboxSendButton.Add (this.eventboxSend);
 			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hboxSendButton [this.eventboxSend]));
@@ -177,7 +185,7 @@ namespace Wallet
 			this.labelBalance = new global::Gtk.Label ();
 			this.labelBalance.Name = "labelBalance";
 			this.labelBalance.Xalign = 0F;
-			this.labelBalance.LabelProp = global::Mono.Unix.Catalog.GetString ("label8");
+			this.labelBalance.LabelProp = global::Mono.Unix.Catalog.GetString ("Balance");
 			this.hboxFooter.Add (this.labelBalance);
 			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hboxFooter [this.labelBalance]));
 			w14.Position = 0;
@@ -185,7 +193,7 @@ namespace Wallet
 			this.labelFee = new global::Gtk.Label ();
 			this.labelFee.Name = "labelFee";
 			this.labelFee.Xalign = 1F;
-			this.labelFee.LabelProp = global::Mono.Unix.Catalog.GetString ("label9");
+			this.labelFee.LabelProp = global::Mono.Unix.Catalog.GetString ("Fee");
 			this.hboxFooter.Add (this.labelFee);
 			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hboxFooter [this.labelFee]));
 			w15.Position = 1;
