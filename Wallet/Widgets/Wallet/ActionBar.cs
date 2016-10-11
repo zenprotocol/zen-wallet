@@ -24,7 +24,11 @@ namespace Wallet
 				label.ModifyFont (Constants.Fonts.ActionBarBig);
 			}
 
-			imagebutton1.ButtonPressEvent += (object o, Gtk.ButtonPressEventArgs args) => {
+			eventboxSend.ButtonPressEvent += (object o, Gtk.ButtonPressEventArgs args) => {
+				new SendDialog(CurrencyEnum.Zen).ShowDialog(Program.MainWindow);
+			};
+
+			eventboxReceive.ButtonPressEvent += (object o, Gtk.ButtonPressEventArgs args) => {
 				new SendDialog(CurrencyEnum.Zen).ShowDialog(Program.MainWindow);
 			};
 

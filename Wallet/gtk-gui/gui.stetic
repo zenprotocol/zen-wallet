@@ -252,15 +252,16 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.ImageButton" id="imagebutton1">
+          <widget class="Gtk.EventBox" id="eventbox2">
             <property name="MemberName" />
-            <property name="Events">ButtonPressMask</property>
+            <property name="VisibleWindow">False</property>
+            <child>
+              <placeholder />
+            </child>
           </widget>
           <packing>
             <property name="Position">1</property>
             <property name="AutoSize">True</property>
-            <property name="Expand">False</property>
-            <property name="Fill">False</property>
           </packing>
         </child>
         <child>
@@ -272,9 +273,15 @@
                 <property name="MemberName" />
                 <property name="Homogeneous">True</property>
                 <child>
-                  <widget class="Gtk.Image" id="imageSend">
+                  <widget class="Gtk.EventBox" id="eventboxSend">
                     <property name="MemberName" />
-                    <property name="Pixbuf">resource:Wallet.Assets.misc.send.png</property>
+                    <property name="VisibleWindow">False</property>
+                    <child>
+                      <widget class="Gtk.Image" id="image5">
+                        <property name="MemberName" />
+                        <property name="Pixbuf">resource:Wallet.Assets.misc.send.png</property>
+                      </widget>
+                    </child>
                   </widget>
                   <packing>
                     <property name="Position">0</property>
@@ -284,9 +291,15 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="Gtk.Image" id="image3">
+                  <widget class="Gtk.EventBox" id="eventboxReceive">
                     <property name="MemberName" />
-                    <property name="Pixbuf">resource:Wallet.Assets.misc.receive.png</property>
+                    <property name="VisibleWindow">False</property>
+                    <child>
+                      <widget class="Gtk.Image" id="image6">
+                        <property name="MemberName" />
+                        <property name="Pixbuf">resource:Wallet.Assets.misc.receive.png</property>
+                      </widget>
+                    </child>
                   </widget>
                   <packing>
                     <property name="Position">1</property>
@@ -949,17 +962,17 @@
       <placeholder />
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.SendDialog" design-size="822 300">
+  <widget class="Gtk.Bin" id="Wallet.SendDialog" design-size="822 347">
     <property name="MemberName" />
     <property name="WidthRequest">650</property>
     <property name="Visible">False</property>
     <child>
       <widget class="Gtk.VBox" id="vbox1">
         <property name="MemberName" />
-        <property name="Spacing">6</property>
+        <property name="Spacing">20</property>
         <property name="BorderWidth">15</property>
         <child>
-          <widget class="Gtk.Label" id="label4">
+          <widget class="Gtk.Label" id="labelHeader">
             <property name="MemberName" />
             <property name="LabelProp" translatable="yes">SEND</property>
           </widget>
@@ -986,9 +999,10 @@
             <property name="MemberName" />
             <property name="Spacing">6</property>
             <child>
-              <widget class="Gtk.Label" id="label7">
+              <widget class="Gtk.Label" id="labelTo">
                 <property name="MemberName" />
                 <property name="WidthRequest">100</property>
+                <property name="Xpad">10</property>
                 <property name="Xalign">1</property>
                 <property name="LabelProp" translatable="yes">TO</property>
               </widget>
@@ -1000,10 +1014,12 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.Entry" id="entry3">
+              <widget class="Gtk.Entry" id="entryTo">
                 <property name="MemberName" />
+                <property name="HeightRequest">40</property>
                 <property name="CanFocus">True</property>
                 <property name="IsEditable">True</property>
+                <property name="HasFrame">False</property>
                 <property name="InvisibleChar">●</property>
               </widget>
               <packing>
@@ -1037,9 +1053,10 @@
             <property name="MemberName" />
             <property name="Spacing">6</property>
             <child>
-              <widget class="Gtk.Label" id="label9">
+              <widget class="Gtk.Label" id="labelAmount">
                 <property name="MemberName" />
                 <property name="WidthRequest">100</property>
+                <property name="Xpad">10</property>
                 <property name="Xalign">1</property>
                 <property name="LabelProp" translatable="yes">AMOUNT</property>
                 <property name="Justify">Right</property>
@@ -1052,10 +1069,12 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.Entry" id="entry4">
+              <widget class="Gtk.Entry" id="entryAmount">
                 <property name="MemberName" />
+                <property name="HeightRequest">40</property>
                 <property name="CanFocus">True</property>
                 <property name="IsEditable">True</property>
+                <property name="HasFrame">False</property>
                 <property name="InvisibleChar">●</property>
               </widget>
               <packing>
@@ -1095,9 +1114,11 @@
             <child>
               <widget class="Gtk.EventBox" id="eventboxSend">
                 <property name="MemberName" />
+                <property name="VisibleWindow">False</property>
                 <child>
                   <widget class="Gtk.Image" id="imageSend">
                     <property name="MemberName" />
+                    <property name="Pixbuf">resource:Wallet.Assets.misc.send_dialog.png</property>
                   </widget>
                 </child>
               </widget>
@@ -1128,7 +1149,7 @@
               <widget class="Gtk.Label" id="labelBalance">
                 <property name="MemberName" />
                 <property name="Xalign">0</property>
-                <property name="LabelProp" translatable="yes">label8</property>
+                <property name="LabelProp" translatable="yes">Balance</property>
               </widget>
               <packing>
                 <property name="Position">0</property>
@@ -1139,7 +1160,7 @@
               <widget class="Gtk.Label" id="labelFee">
                 <property name="MemberName" />
                 <property name="Xalign">1</property>
-                <property name="LabelProp" translatable="yes">label9</property>
+                <property name="LabelProp" translatable="yes">Fee</property>
               </widget>
               <packing>
                 <property name="Position">1</property>
