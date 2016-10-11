@@ -9,8 +9,11 @@ namespace Wallet
 
 		public void ShowDialog(Window parent) {
 			dialog = new Dialog (null, parent, DialogFlags.Modal | DialogFlags.DestroyWithParent);
-
 			dialog.Decorated = false;
+
+			Gdk.GC gc = parent.Style.TextGC(StateType.Normal);
+			gc.RgbFgColor = Constants.Colors.Text.Gdk;
+
 			dialog.ModifyBg (Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
 			dialog.VBox.PackStart (this, false, false, 0);
 

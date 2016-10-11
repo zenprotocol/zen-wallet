@@ -30,6 +30,8 @@ namespace Wallet.Constants
 		public static Pango.FontDescription ActionBarSmall = Pango.FontDescription.FromString ("Aharoni CLM 15");
 		public static Pango.FontDescription LogHeader = Pango.FontDescription.FromString ("Aharoni CLM 14");
 		public static Pango.FontDescription LogText = Pango.FontDescription.FromString ("Aharoni CLM 12");
+		public static Pango.FontDescription DialogHeader = Pango.FontDescription.FromString ("Aharoni CLM 20");
+		public static Pango.FontDescription DialogContent = Pango.FontDescription.FromString ("Aharoni CLM 12");
 	}
 
 	public class Strings
