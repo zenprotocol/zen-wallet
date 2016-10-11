@@ -18,7 +18,7 @@ namespace Wallet
 
 		public SendDialog (CurrencyEnum currency)
 		{
-			this.Build ();
+			this.Build();
 
 			labelHeader.ModifyFont (Constants.Fonts.DialogHeader);
 
@@ -34,7 +34,7 @@ namespace Wallet
 
 			eventboxSend.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => 
 			{
-				//new SendConfirmationDialog(this).ShowDialog(Program.MainWindow);
+				new SendConfirmationDialog(this).ShowDialog(Program.MainWindow);
 			};
 		}
 			

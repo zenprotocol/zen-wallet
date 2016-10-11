@@ -513,6 +513,8 @@
     <Compile Include="gtk-gui\Wallet.SendDialog.cs" />
     <Compile Include="Widgets\DialogBase.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Widgets\SendConfirmationDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.SendConfirmationDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
