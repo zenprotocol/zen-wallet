@@ -38,6 +38,10 @@ namespace Wallet
 			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listTransactions, logEntryStore);
 
+			ExposeEvent += (object o, ExposeEventArgs args) => {
+				listSummaryHeader.Hide ();
+			};
+
 			foreach (Widget w in new Widget[] { eventbox1, eventbox2, eventbox3, eventbox4, eventbox5, eventbox6, eventbox7 }) {
 				w.ModifyBg (Gtk.StateType.Normal, Colors.Base.Gdk);
 			}
@@ -141,7 +145,7 @@ namespace Wallet
 
 			Decimal value = (logEntryItem.Direction ==  DirectionEnum.Recieved ? 1 : -1) * logEntryItem.Amount;
 
-			logSummaryRow[value > 0 ? 0 : 1] += value;
+			logSummaryRow[value > 0 ? 1 : 0] += value;
 			logSummaryRow[2] += value;
 
 			logSummaryStore.SetValue (storeIter, 0, logSummaryRow);
