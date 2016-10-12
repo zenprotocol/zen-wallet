@@ -7,7 +7,7 @@ namespace Wallet
 	public interface ISendDialogView {
 		decimal Amount { get; }
 		string To { get; }
-		void Cofirm();
+		void Confirm();
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -34,11 +34,12 @@ namespace Wallet
 
 			eventboxSend.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => 
 			{
+				CloseDialog();
 				new SendConfirmationDialog(this).ShowDialog(Program.MainWindow);
 			};
 		}
 			
-		public void Cofirm() {
+		public void Confirm() {
 			//..
 			CloseDialog();
 		}

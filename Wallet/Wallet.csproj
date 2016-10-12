@@ -515,6 +515,8 @@
     <Compile Include="Utils.cs" />
     <Compile Include="Widgets\SendConfirmationDialog.cs" />
     <Compile Include="gtk-gui\Wallet.SendConfirmationDialog.cs" />
+    <Compile Include="ISend.cs" />
+    <Compile Include="SendStub.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

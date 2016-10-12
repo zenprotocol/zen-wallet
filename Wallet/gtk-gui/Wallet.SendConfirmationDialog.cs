@@ -6,6 +6,8 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 		
+		private global::Gtk.Label label1;
+		
 		private global::Gtk.EventBox eventbox1;
 		
 		private global::Gtk.Image image1;
@@ -21,6 +23,15 @@ namespace Wallet
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild
+			this.label1 = new global::Gtk.Label ();
+			this.label1.Name = "label1";
+			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("Send Conformation");
+			this.vbox1.Add (this.label1);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.label1]));
+			w1.Position = 0;
+			w1.Expand = false;
+			w1.Fill = false;
+			// Container child vbox1.Gtk.Box+BoxChild
 			this.eventbox1 = new global::Gtk.EventBox ();
 			this.eventbox1.Name = "eventbox1";
 			// Container child eventbox1.Gtk.Container+ContainerChild
@@ -29,10 +40,10 @@ namespace Wallet
 			this.image1.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-clear", global::Gtk.IconSize.Menu);
 			this.eventbox1.Add (this.image1);
 			this.vbox1.Add (this.eventbox1);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.eventbox1]));
-			w2.Position = 2;
-			w2.Expand = false;
-			w2.Fill = false;
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.eventbox1]));
+			w3.Position = 2;
+			w3.Expand = false;
+			w3.Fill = false;
 			this.Add (this.vbox1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

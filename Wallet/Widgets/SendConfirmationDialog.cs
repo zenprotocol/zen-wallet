@@ -13,7 +13,7 @@ namespace Wallet
 			eventbox1.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => 
 			{
 				CloseDialog();
-				sendDialogView.Cofirm();
+				sendDialogView.Confirm();
 			};
 		}
 	}
