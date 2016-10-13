@@ -1,6 +1,7 @@
 ﻿using System;
 using Gtk;
 using Cairo;
+using Wallet.Constants;
 
 namespace Wallet
 {
@@ -20,23 +21,32 @@ namespace Wallet
 		{
 			this.Build();
 
-			labelHeader.ModifyFont (Constants.Fonts.DialogHeader);
+			labelHeader.ModifyFont (Fonts.DialogHeader);
 
 			Apply((Label label) => {
-				label.ModifyFont (Constants.Fonts.DialogContent);
+				label.ModifyFont (Fonts.DialogContent);
 			}, labelTo, labelAmount, labelBalance, labelFee);
 
 			Apply((Entry entry) => {
-				entry.ModifyFont (Constants.Fonts.DialogContentBold);
+				entry.ModifyFont (Fonts.DialogContentBold);
+				entry.ModifyBase(Gtk.StateType.Normal, Colors.ButtonSelected.Gdk);
 			}, entryTo, entryAmount);
 		
-			image.Pixbuf = Utils.ToPixbuf(Constants.Images.AssetLogo(asset.Image));
+			imageCurrency.Pixbuf = Utils.ToPixbuf(Images.AssetLogo(asset.Image));
 
-			eventboxSend.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => 
-			{
+			ButtonReleaseEvent (eventboxSend, () => {
+				WalletController.GetInstance().SendStub.RequestSend("1",1,"1",1).ContinueWith(Action => {
+					notebookCurrent.Page++;
+				});
+			});
+				
+			ButtonReleaseEvent (eventboxBack, () => {
+				notebookCurrent.Page--;
+			});
+
+			ButtonReleaseEvent (eventboxCancel, () => {
 				CloseDialog();
-				//new SendConfirmationDialog(this).ShowDialog(Program.MainWindow);
-			};
+			});
 		}
 			
 		public void Confirm() {

@@ -10,7 +10,7 @@ namespace Wallet.core
 		}
 
 		public async Task<Tuple<SignedTx, TxMetadata>> RequestSend (string assetId, int amount, string destination, int fee) {
-			Task.Delay (1000);
+			await Task.Delay (1500);
 
 			SignedTx signedTx = new SignedTx (); 
 			TxMetadata txMetadata = new TxMetadata ();

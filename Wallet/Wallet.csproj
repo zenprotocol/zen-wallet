@@ -516,6 +516,7 @@
     <Compile Include="ISend.cs" />
     <Compile Include="SendStub.cs" />
     <Compile Include="Domain\AssetTypes.cs" />
+    <Compile Include="EmptyClass.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
