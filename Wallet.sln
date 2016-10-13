@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet", "Wallet\Wallet.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.tests", "Wallet.tests\Wallet.tests.csproj", "{27357B40-A6E8-4A4F-B382-78A7F98D5467}"
 EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -19,5 +21,9 @@ Global
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Debug|x86.Build.0 = Debug|x86
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.ActiveCfg = Release|x86
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.Build.0 = Release|x86
+		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.Build.0 = Debug|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.ActiveCfg = Release|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
