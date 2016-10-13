@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Wallet
-{
+﻿//using System;
+//using System.Threading.Tasks;
+//
+//namespace Wallet
+//{
 //	public class SendStub : ISend
 //	{
 //		public SendStub ()
@@ -10,16 +10,15 @@ namespace Wallet
 //		}
 //
 //		public async Task<Tuple<SignedTx, TxMetadata>> RequestSend (string assetId, int amount, string destination, int fee) {
+//			System.Threading.Thread.Sleep (10000);
 //
-//			return new Task<Tuple<SignedTx, TxMetadata>> (() => {
-//			});
+//			SignedTx signedTx = new SignedTx (); 
+//			TxMetadata txMetadata = new TxMetadata ();
 //
+//			Tuple<SignedTx, TxMetadata> x = new Tuple<SignedTx, TxMetadata>(signedTx, txMetadata);
 //
-//			return new Task<Tuple<SignedTx, TxMetadata>>(
-//				
-//			Task taskA = Task.Run( () => Console.WriteLine("Hello from taskA."));
+//			Task.Delay (1000);
 //		}
-//
 //	}
-}
-
+//}
+//

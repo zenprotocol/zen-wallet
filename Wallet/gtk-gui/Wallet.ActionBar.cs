@@ -14,17 +14,17 @@ namespace Wallet
 		
 		private global::Gtk.HBox hbox1;
 		
-		private global::Gtk.Label label1;
+		private global::Gtk.Label labelAmount;
 		
-		private global::Gtk.Label label3;
+		private global::Gtk.Label labelCurrency;
 		
 		private global::Gtk.Image image4;
 		
 		private global::Gtk.HBox hbox3;
 		
-		private global::Gtk.Label label4;
+		private global::Gtk.Label labelAmountConverted;
 		
-		private global::Gtk.Label label5;
+		private global::Gtk.Label labelCurrencyConverted;
 		
 		private global::Gtk.EventBox eventbox2;
 		
@@ -73,21 +73,21 @@ namespace Wallet
 			this.hbox1.Name = "hbox1";
 			this.hbox1.Spacing = 6;
 			// Container child hbox1.Gtk.Box+BoxChild
-			this.label1 = new global::Gtk.Label ();
-			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("label1");
-			this.hbox1.Add (this.label1);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.label1]));
+			this.labelAmount = new global::Gtk.Label ();
+			this.labelAmount.Name = "labelAmount";
+			this.labelAmount.LabelProp = global::Mono.Unix.Catalog.GetString ("label1");
+			this.hbox1.Add (this.labelAmount);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.labelAmount]));
 			w2.Position = 0;
 			w2.Expand = false;
 			w2.Fill = false;
 			// Container child hbox1.Gtk.Box+BoxChild
-			this.label3 = new global::Gtk.Label ();
-			this.label3.Name = "label3";
-			this.label3.Yalign = 0.57F;
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("label2");
-			this.hbox1.Add (this.label3);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.label3]));
+			this.labelCurrency = new global::Gtk.Label ();
+			this.labelCurrency.Name = "labelCurrency";
+			this.labelCurrency.Yalign = 0.57F;
+			this.labelCurrency.LabelProp = global::Mono.Unix.Catalog.GetString ("label2");
+			this.hbox1.Add (this.labelCurrency);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.labelCurrency]));
 			w3.Position = 1;
 			w3.Expand = false;
 			w3.Fill = false;
@@ -112,21 +112,21 @@ namespace Wallet
 			this.hbox3.Name = "hbox3";
 			this.hbox3.Spacing = 6;
 			// Container child hbox3.Gtk.Box+BoxChild
-			this.label4 = new global::Gtk.Label ();
-			this.label4.Name = "label4";
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("label3");
-			this.hbox3.Add (this.label4);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.label4]));
+			this.labelAmountConverted = new global::Gtk.Label ();
+			this.labelAmountConverted.Name = "labelAmountConverted";
+			this.labelAmountConverted.LabelProp = global::Mono.Unix.Catalog.GetString ("label3");
+			this.hbox3.Add (this.labelAmountConverted);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.labelAmountConverted]));
 			w6.Position = 0;
 			w6.Expand = false;
 			w6.Fill = false;
 			// Container child hbox3.Gtk.Box+BoxChild
-			this.label5 = new global::Gtk.Label ();
-			this.label5.Name = "label5";
-			this.label5.Yalign = 0.57F;
-			this.label5.LabelProp = global::Mono.Unix.Catalog.GetString ("label4");
-			this.hbox3.Add (this.label5);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.label5]));
+			this.labelCurrencyConverted = new global::Gtk.Label ();
+			this.labelCurrencyConverted.Name = "labelCurrencyConverted";
+			this.labelCurrencyConverted.Yalign = 0.57F;
+			this.labelCurrencyConverted.LabelProp = global::Mono.Unix.Catalog.GetString ("label4");
+			this.hbox3.Add (this.labelCurrencyConverted);
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.labelCurrencyConverted]));
 			w7.Position = 1;
 			w7.Expand = false;
 			w7.Fill = false;

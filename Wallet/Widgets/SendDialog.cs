@@ -16,21 +16,21 @@ namespace Wallet
 		public decimal Amount { get { return Utils.ToDecimal(entryAmount.Text); } }
 		public string To { get { return entryTo.Text; } }
 
-		public SendDialog (CurrencyEnum currency)
+		public SendDialog (AssetType asset)
 		{
 			this.Build();
 
 			labelHeader.ModifyFont (Constants.Fonts.DialogHeader);
 
-			foreach (Label label in new Label[] { labelTo, labelAmount, labelBalance, labelFee}) {
+			Apply((Label label) => {
 				label.ModifyFont (Constants.Fonts.DialogContent);
-			}
+			}, labelTo, labelAmount, labelBalance, labelFee);
 
-			try {
-				image.Pixbuf = Gdk.Pixbuf.LoadFromResource(Constants.Images.CurrencyLogo(currency));
-			} catch {
-				Console.WriteLine("missing" + Constants.Images.CurrencyLogo(currency));
-			}
+			Apply((Entry entry) => {
+				entry.ModifyFont (Constants.Fonts.DialogContentBold);
+			}, entryTo, entryAmount);
+		
+			image.Pixbuf = Utils.ToPixbuf(Constants.Images.AssetLogo(asset.Image));
 
 			eventboxSend.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => 
 			{
@@ -40,6 +40,7 @@ namespace Wallet
 		}
 			
 		public void Confirm() {
+		//	WalletController.GetInstance ().SendStub.RequestSend("assetId", 10, "desc", 10);
 			//..
 			CloseDialog();
 		}

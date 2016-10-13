@@ -517,6 +517,7 @@
     <Compile Include="gtk-gui\Wallet.SendConfirmationDialog.cs" />
     <Compile Include="ISend.cs" />
     <Compile Include="SendStub.cs" />
+    <Compile Include="Domain\AssetTypes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -533,5 +534,11 @@
   <ItemGroup>
     <Folder Include="Widgets\Log\" />
     <Folder Include="Widgets\Portfolio\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

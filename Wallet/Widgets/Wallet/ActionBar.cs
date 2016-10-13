@@ -6,11 +6,11 @@ namespace Wallet
 	public interface ActionBarView {
 		Decimal Total { set; }
 		Decimal Rate { set; }
-		CurrencyEnum Currency { set; }
+		AssetType Asset { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class ActionBar : Gtk.Bin, ActionBarView
+	public partial class ActionBar : WidgetBase, ActionBarView
 	{
 		private WalletController WalletController = WalletController.GetInstance ();
 
@@ -19,60 +19,40 @@ namespace Wallet
 			this.Build ();
 			WalletController.ActionBarView = this;
 
-			foreach (Label label in new Label[] { label1, label3,  label4, label5 }) {
+			Apply ((Label label) => {
+				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+				label.ModifyFont (Constants.Fonts.ActionBarSmall);
+			}, labelCurrency, labelCurrencyConverted);
+
+			Apply ((Label label) => {
 				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
 				label.ModifyFont (Constants.Fonts.ActionBarBig);
-			}
+			}, labelAmount, labelAmountConverted);
 
-			eventboxSend.ButtonPressEvent += (object o, Gtk.ButtonPressEventArgs args) => {
-				new SendDialog(CurrencyEnum.Zen).ShowDialog(Program.MainWindow);
-			};
-
-			eventboxReceive.ButtonPressEvent += (object o, Gtk.ButtonPressEventArgs args) => {
-				new SendDialog(CurrencyEnum.Zen).ShowDialog(Program.MainWindow);
-			};
+			ButtonPressEvent (eventboxSend, () => {
+				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(Program.MainWindow);
+			});
 
 			HeightRequest = 130;
 		}
 
 		public Decimal Rate {
 			set {
-				label1.Text = value.ToString ();
-				label3.Text = _currency;
+				labelAmount.Text = value.ToString ();
 			}
 		}
 
 		public Decimal Total {
 			set {
-				label4.Text = value.ToString();
-				label5.Text = "USD";
+				labelAmountConverted.Text = value.ToString();
+				labelCurrencyConverted.Text = "USD";
 			}
 		}
 
-		private String _currency;
-
-		public CurrencyEnum Currency {
+		public AssetType Asset {
 			set {
-				switch (value) {
-				case CurrencyEnum.Bitcoin:
-					_currency = "BTC";
-					break;
-				case CurrencyEnum.Ether:
-					_currency = "ETH";
-					break;
-				case CurrencyEnum.Zen:
-					_currency = "ZEN";
-					break;
-				case CurrencyEnum.Lite:
-					_currency = "LTC";
-					break;
-				}
-					
-				try {
-					image2.Pixbuf = Gdk.Pixbuf.LoadFromResource(Constants.Images.CurrencyLogo(value));
-				} catch {
-					Console.WriteLine("missing" + Constants.Images.CurrencyLogo(value));
-				}
+				labelCurrency.Text = value.Caption;
+				image2.Pixbuf = Utils.ToPixbuf(Constants.Images.AssetLogo(value.Image));
 			}
 		}
 

@@ -9,13 +9,13 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class MainMenu : MenuBase, IMainMenuView
 	{
-		MainAreaController MainAreaController = MainAreaController.GetInstance ();
+		MainAreaController MainAreaController = MainAreaController.GetInstance();
 
 		public MainMenu ()
 		{
 			this.Build ();
 
-			foreach (Widget widget in FindChild<HBox>()) {
+			foreach (Widget widget in hboxContainer) {
 				((MenuButton)widget).ImageName = widget.Name;
 			}
 
@@ -24,9 +24,9 @@ namespace Wallet
 			HeightRequest = 100;
 		}
 
-		public override String Selection { 
+		public override MenuButton Selection { 
 			set {
-				MainAreaController.MainAreaSelected = value;
+				MainAreaController.MainAreaSelected = value.Name;
 			}
 		}
 	}

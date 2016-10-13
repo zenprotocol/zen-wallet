@@ -6,32 +6,25 @@ namespace Wallet
 {
 	public class AssetsManager
 	{
-		private static AssetsManager instance = null;
+		private static AssetTypes assets = new AssetTypes();
 
-		private List<AssetType> assetsList = new List<AssetType> ();
-
-		private AssetsManager() {
-			assetsList.Add(new AssetType("Zen", "Zen"));
-			assetsList.Add(new AssetType("Bitcoin", "Bitcoin"));
-			assetsList.Add(new AssetType("Etherum", "Etherum"));
-			assetsList.Add(new AssetType("Lite", "Litecoin"));
-			assetsList.Add(new AssetType("Lite1", "Litecoin"));
-			assetsList.Add(new AssetType("Lite2", "Litecoin"));
-			assetsList.Add(new AssetType("Lite3", "Litecoin"));
-			assetsList.Add(new AssetType("Lite4", "Litecoin"));
-			assetsList.Add(new AssetType("Contracts", "Contracts"));
-		}
-	
-		public void InitAssetsView(IAssetsView assetsView) { 
-			assetsView.Assets = assetsList;
-		}
-
-		public static AssetsManager GetInstance() {
-			if (instance == null) {
-				instance = new AssetsManager ();
+		public static AssetTypes Assets { 
+			get {
+				return assets;
 			}
+		}
 
-			return instance;
+		static AssetsManager() {
+			assets.Add(String.Empty, new AssetTypeAll());
+			assets.Add("key1", new AssetType("Zen", "Zen"));
+			assets.Add("key2", new AssetType("Bitcoin", "Bitcoin"));
+			assets.Add("key3", new AssetType("Etherum", "Etherum"));
+			assets.Add("key4", new AssetType("Lite", "Litecoin"));
+			assets.Add("key5", new AssetType("Lite1", "Litecoin"));
+			assets.Add("key6", new AssetType("Lite2", "Litecoin"));
+			assets.Add("key7", new AssetType("Lite3", "Litecoin"));
+			assets.Add("key8", new AssetType("Lite4", "Litecoin"));
+			assets.Add("key9", new AssetType("Contracts", "Contracts"));
 		}
 	}
 }
