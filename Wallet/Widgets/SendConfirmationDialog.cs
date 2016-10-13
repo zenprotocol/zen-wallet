@@ -10,11 +10,10 @@ namespace Wallet
 		{
 			this.Build ();
 
-			eventbox1.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => 
-			{
+			ButtonReleaseEvent(eventbox1, () => {
 				CloseDialog();
-				sendDialogView.Confirm();
-			};
+			//	sendDialogView.Close();
+			});
 		}
 	}
 }

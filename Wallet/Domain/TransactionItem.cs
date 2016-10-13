@@ -5,7 +5,7 @@ namespace Wallet.Domain
 	public class TransactionItem
 	{
 		public Decimal Amount { get; set; }
-		public CurrencyEnum Currency { get; set; }
+		public AssetType Asset { get; set; }
 		public DirectionEnum Direction { get; set; }
 		public DateTime Date { get; set; }
 		public String To { get; set; }
@@ -18,10 +18,10 @@ namespace Wallet.Domain
 			}
 		}
 
-		public TransactionItem(Decimal Amount, DirectionEnum Direction, CurrencyEnum Currency, DateTime Date, String To, String Id, Decimal Fee) {
+		public TransactionItem(Decimal Amount, DirectionEnum Direction, AssetType Asset, DateTime Date, String To, String Id, Decimal Fee) {
 			this.Amount = Amount;
 			this.Direction = Direction;
-			this.Currency = Currency;
+			this.Asset = Asset;
 			this.Date = Date;
 			this.To = To;
 			this.Id = Id;

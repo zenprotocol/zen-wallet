@@ -4,7 +4,7 @@ namespace Wallet
 {
 	public partial class VerticalMenu
 	{
-		private global::Gtk.VBox vbox3;
+		private global::Gtk.VBox vboxContainer;
 
 		protected virtual void Build ()
 		{
@@ -13,10 +13,10 @@ namespace Wallet
 			global::Stetic.BinContainer.Attach (this);
 			this.Name = "Wallet.VerticalMenu";
 			// Container child Wallet.VerticalMenu.Gtk.Container+ContainerChild
-			this.vbox3 = new global::Gtk.VBox ();
-			this.vbox3.Name = "vbox3";
-			this.vbox3.Homogeneous = true;
-			this.Add (this.vbox3);
+			this.vboxContainer = new global::Gtk.VBox ();
+			this.vboxContainer.Name = "vboxContainer";
+			this.vboxContainer.Homogeneous = true;
+			this.Add (this.vboxContainer);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}

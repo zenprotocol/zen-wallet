@@ -36,7 +36,7 @@ namespace Wallet
 			return String.Format("{0} {1} {2} ({3} {4})", 
 				TransactionItem.Direction == DirectionEnum.Recieved ? Constants.Strings.Received : Constants.Strings.Sent,
 				TransactionItem.Amount,
-				TransactionItem.Currency,
+				TransactionItem.Asset,
 				"0.34",
 				"USD"
 			);
@@ -106,7 +106,7 @@ namespace Wallet
 				textRenderer.RenderLayoutText (context, "FEE", exposeArea.Width / 2, EXPANTION_SPACE + ROW_SPACE + ROW_SPACE2 + TEXT_PADDING + exposeArea.Y, exposeArea.Width, HEADER_SIZE, Constants.Colors.SubText, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 
 				textRenderer.RenderLayoutText (context, TransactionItem.Id, TEXT_PADDING_LEFT, EXPANTION_SPACE + ROW_SPACE * 2 + ROW_SPACE2 + TEXT_PADDING + exposeArea.Y, exposeArea.Width /2 - TEXT_PADDING_LEFT - TEXT_PADDING_RIGHT, TEXT_SIZE, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
-				textRenderer.RenderLayoutText (context, TransactionItem.Fee.ToString() + " " + TransactionItem.Currency, exposeArea.Width / 2, EXPANTION_SPACE + ROW_SPACE * 2 + ROW_SPACE2 + TEXT_PADDING + exposeArea.Y, exposeArea.Width, TEXT_SIZE, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
+				textRenderer.RenderLayoutText (context, TransactionItem.Fee.ToString() + " " + TransactionItem.Asset, exposeArea.Width / 2, EXPANTION_SPACE + ROW_SPACE * 2 + ROW_SPACE2 + TEXT_PADDING + exposeArea.Y, exposeArea.Width, TEXT_SIZE, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 			}
 
 			context.Dispose ();

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Wallet
 {
-	public interface IVerticalMenu : IMenu, IAssetsView {
+	public interface IVerticalMenu : IMenu {
 		bool AllVisible { set; }
 	}
 
@@ -15,42 +15,32 @@ namespace Wallet
 		{
 			this.Build ();
 
-			AssetsManager.GetInstance().InitAssetsView(this);
+			foreach (String key in AssetsManager.Assets.Keys) {
+				AddButton(key, AssetsManager.Assets[key]);
+			}
+
 			MainAreaController.GetInstance().VerticalMenuView = this;
 
 			WidthRequest = 170;
 		}
 			
-		public override String Selection { 
+		public override MenuButton Selection { 
 			set {
-				WalletController.GetInstance().CurrencySelected = value;
+				WalletController.GetInstance().Asset = AssetsManager.Assets[value.Name];
 			}
-		}
-
-		public List<AssetType> Assets { 
-			set {
-				AddButton("All");
-
-				foreach (AssetType assetType in value) {
-					AddButton(assetType.Caption);
-				}
-			} 
 		}
 
 		public bool AllVisible { 
 			set {
-				FindChild<Gtk.VBox> ().Children [0].Visible = value;
+				vboxContainer.Children [0].Visible = value;
 			} 
 		}
 
-		private void AddButton(String caption) {
-			MenuButton menuButton = new MenuButton ();
-
-			menuButton.Name = caption;
-			menuButton.Caption = caption;
-			menuButton.Selected = false;
-
-			FindChild<Gtk.VBox>().PackStart(menuButton, true, true, 0);
+		private void AddButton(String key, AssetType assetType) {
+			vboxContainer.PackStart(new MenuButton () { 
+				Name = key, 
+				Caption = assetType.Caption 
+			}, true, true, 0);
 		}
 	}
 }

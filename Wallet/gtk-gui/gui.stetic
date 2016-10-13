@@ -11,7 +11,7 @@
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
-      <widget class="Gtk.HBox" id="hbox3">
+      <widget class="Gtk.HBox" id="hboxContainer">
         <property name="MemberName" />
         <property name="Homogeneous">True</property>
         <child>
@@ -64,7 +64,7 @@
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
-      <widget class="Gtk.VBox" id="vbox3">
+      <widget class="Gtk.VBox" id="vboxContainer">
         <property name="MemberName" />
         <property name="Homogeneous">True</property>
         <child>
@@ -88,12 +88,6 @@
               <widget class="Gtk.HBox" id="hbox1">
                 <property name="MemberName" />
                 <property name="Spacing">6</property>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
                 <child>
                   <placeholder />
                 </child>
@@ -156,7 +150,7 @@
                     <property name="MemberName" />
                     <property name="Spacing">6</property>
                     <child>
-                      <widget class="Gtk.Label" id="label1">
+                      <widget class="Gtk.Label" id="labelAmount">
                         <property name="MemberName" />
                         <property name="LabelProp" translatable="yes">label1</property>
                       </widget>
@@ -168,7 +162,7 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="Gtk.Label" id="label3">
+                      <widget class="Gtk.Label" id="labelCurrency">
                         <property name="MemberName" />
                         <property name="Yalign">0.57</property>
                         <property name="LabelProp" translatable="yes">label2</property>
@@ -207,7 +201,7 @@
                     <property name="MemberName" />
                     <property name="Spacing">6</property>
                     <child>
-                      <widget class="Gtk.Label" id="label4">
+                      <widget class="Gtk.Label" id="labelAmountConverted">
                         <property name="MemberName" />
                         <property name="LabelProp" translatable="yes">label3</property>
                       </widget>
@@ -219,7 +213,7 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="Gtk.Label" id="label5">
+                      <widget class="Gtk.Label" id="labelCurrencyConverted">
                         <property name="MemberName" />
                         <property name="Yalign">0.57</property>
                         <property name="LabelProp" translatable="yes">label4</property>

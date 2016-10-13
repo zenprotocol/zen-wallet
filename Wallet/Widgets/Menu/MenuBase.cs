@@ -4,7 +4,7 @@ namespace Wallet
 {
 	public abstract class MenuBase : WidgetBase
 	{
-		public virtual String Selection { get; set; }
+		public virtual MenuButton Selection { get; set; }
 
 		public int Default { 
 			set {

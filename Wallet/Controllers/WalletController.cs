@@ -15,15 +15,19 @@ namespace Wallet
 			}
 			set {
 				_actionBarView = value;
-				ActionBarView.Currency = CurrencyEnum.Zen;
+			//	ActionBarView.Asset = CurrencyEnum.Zen;
 			}
 		}
+
+//		public SendStub SendStub = new SendStub ();
 
 		public TransactionsView TransactionsView { get; set; }
 		public IWalletView WalletView { get; set; }
 
-		public CurrencyEnum currency;
-		public String currencyStr;
+		//public CurrencyEnum currency;
+		//public String currencyStr;
+
+		private AssetType asset;
 
 		private Thread tempThread;
 		private bool stopping = false;
@@ -36,29 +40,13 @@ namespace Wallet
 			return instance;
 		}
 
-		public String CurrencySelected { 
+		public AssetType Asset { 
 			set {
-				WalletView.ActionBar = value != "All";
-
-				switch (value) {
-					case "Bitcoin":
-						currency = CurrencyEnum.Bitcoin;
-						ActionBarView.Currency = currency;
-						break;
-					case "Ether":
-						currency = CurrencyEnum.Ether;
-						ActionBarView.Currency = currency;
-						break;
-					case "Zen":
-						currency = CurrencyEnum.Zen;
-						ActionBarView.Currency = currency;
-						break;
-					case "Lite":
-						currency = CurrencyEnum.Lite;
-						ActionBarView.Currency = currency;
-						break;
-					}
-					UpdateUI();
+				asset = value;
+				ActionBarView.Asset = value;
+				WalletView.ActionBar = !(value is AssetTypeAll);
+			} get {
+				return asset;
 			}
 		}
 
@@ -69,7 +57,6 @@ namespace Wallet
 		}
 
 		public void Send(Decimal amount) {
-			//UpdateUI ();
 		}
 
 		public void Quit() {
@@ -108,7 +95,7 @@ namespace Wallet
 					Decimal fee = (Decimal)random.Next(1, 100) / 1000000;
 					DateTime date = DateTime.Now.AddDays(-1 * random.Next(0, 100));
 
-					TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, currency, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
+					TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
 				}
 			});
 		}
