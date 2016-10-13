@@ -13,12 +13,12 @@ namespace Wallet
 				return assets;
 			}
 		}
-
+			
 		static AssetsManager() {
 			assets.Add(String.Empty, new AssetTypeAll());
-			assets.Add("key1", new AssetType("Zen", "Zen"));
+			assets.Add("zen", new AssetType("Zen", "Zen"));
 			assets.Add("key2", new AssetType("Bitcoin", "Bitcoin"));
-			assets.Add("key3", new AssetType("Etherum", "Etherum"));
+			assets.Add("key3", new AssetType("Etherium", "Ether"));
 			assets.Add("key4", new AssetType("Lite", "Litecoin"));
 			assets.Add("key5", new AssetType("Lite1", "Litecoin"));
 			assets.Add("key6", new AssetType("Lite2", "Litecoin"));
@@ -28,4 +28,3 @@ namespace Wallet
 		}
 	}
 }
-
