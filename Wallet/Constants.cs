@@ -10,7 +10,7 @@ namespace Wallet.Constants
 		public static String Send = resourceBase + "misc.send.png";
 		public static String SendDialog = resourceBase + "misc.send_dialog.png";
 		public static String Button(String name, bool selected) { return "Wallet.Assets." + name + (selected ? "_on.png" : "_off.png"); }
-		public static String CurrencyLogo(CurrencyEnum currency) { return "Wallet.Assets.misc." + currency + ".png"; }
+		public static String AssetLogo(String key) { return "Wallet.Assets.misc." + key + ".png"; }
 	}
 
 	public class Colors
@@ -32,6 +32,11 @@ namespace Wallet.Constants
 		public static Pango.FontDescription LogText = Pango.FontDescription.FromString ("Aharoni CLM 12");
 		public static Pango.FontDescription DialogHeader = Pango.FontDescription.FromString ("Aharoni CLM 20");
 		public static Pango.FontDescription DialogContent = Pango.FontDescription.FromString ("Aharoni CLM 12");
+		public static Pango.FontDescription DialogContentBold = Pango.FontDescription.FromString ("Aharoni CLM 12");
+
+		static Fonts() {
+			DialogContentBold.Weight = Pango.Weight.Bold;
+		}
 	}
 
 	public class Strings

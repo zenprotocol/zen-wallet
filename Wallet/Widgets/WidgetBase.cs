@@ -53,6 +53,33 @@ namespace Wallet
 
 			return FindParentRecursive<T>(parentWidget);
 		}
+			
+		public delegate void Apply<T>(T t) where T : Widget;
+
+		public void Apply<T>(Apply<T> apply, params T[] arr) where T : Widget
+		{
+			foreach (T child in arr) {
+				if (child is T) {
+					apply ((T) child);
+				}
+			}
+		}
+		 
+		public delegate void Func0();
+
+		public void ButtonReleaseEvent(EventBox eventBox, Func0 func)
+		{
+			eventBox.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => {
+				func();
+			};
+		}
+
+		public void ButtonPressEvent(EventBox eventBox, Func0 func)
+		{
+			eventBox.ButtonPressEvent += (object o, ButtonPressEventArgs args) => {
+				func();
+			};
+		}
 	}
 }
 

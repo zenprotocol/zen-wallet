@@ -12,10 +12,10 @@ namespace Wallet
 
 			Selected = false;
 
-			eventbox.ButtonPressEvent += delegate {
+			ButtonPressEvent (eventbox, () => {
 				Select();
-				FindParent<MenuBase>().Selection = Name;
-			};
+				FindParent<MenuBase>().Selection = this;
+			});
 		}
 
 		public void Select() {
@@ -35,12 +35,8 @@ namespace Wallet
 			{ 
 				image = new Image ();
 
-				try {
-					imageSource = value;
-					image.Pixbuf = Gdk.Pixbuf.LoadFromResource (Constants.Images.Button(value, false));
-				} catch {
-					Console.WriteLine ("missing " + Constants.Images.Button(value, false));
-				}
+				imageSource = value;
+				image.Pixbuf = Utils.ToPixbuf(Constants.Images.Button(value, false));
 
 				hbox1.PackStart(image, true, true, 0);
 			}

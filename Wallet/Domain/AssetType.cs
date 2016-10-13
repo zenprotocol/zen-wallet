@@ -12,5 +12,10 @@ namespace Wallet
 			Image = image;
 		}
 	}
+
+	public class AssetTypeAll : AssetType
+	{
+		public AssetTypeAll() : base("All", "All") {}
+	}
 }
 
