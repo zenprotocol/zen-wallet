@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Wallet.Domain;
+using Wallet.core;
 
 namespace Wallet
 {
@@ -19,7 +20,7 @@ namespace Wallet
 			}
 		}
 
-//		public SendStub SendStub = new SendStub ();
+		public SendStub SendStub = new SendStub ();
 
 		public TransactionsView TransactionsView { get; set; }
 		public IWalletView WalletView { get; set; }
@@ -27,7 +28,7 @@ namespace Wallet
 		//public CurrencyEnum currency;
 		//public String currencyStr;
 
-		private AssetType asset;
+		private AssetType asset = AssetsManager.Assets["zen"];
 
 		private Thread tempThread;
 		private bool stopping = false;
