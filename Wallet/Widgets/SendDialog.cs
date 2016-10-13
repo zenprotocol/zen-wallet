@@ -35,7 +35,7 @@ namespace Wallet
 			eventboxSend.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => 
 			{
 				CloseDialog();
-				new SendConfirmationDialog(this).ShowDialog(Program.MainWindow);
+				//new SendConfirmationDialog(this).ShowDialog(Program.MainWindow);
 			};
 		}
 			
