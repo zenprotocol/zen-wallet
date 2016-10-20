@@ -1,1 +1,0 @@
-/Users/topynate/Projects/zen-wallet/Consensus/obj/Debug/.NETFramework,Version=v4.5.1.AssemblyAttribute.fs
