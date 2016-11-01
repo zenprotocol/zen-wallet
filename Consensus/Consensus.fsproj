@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -39,24 +38,31 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="JetBrains.Annotations">
-      <HintPath>..\packages\JetBrains.Annotations.10.2.0\lib\net\JetBrains.Annotations.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization.Primitives">
       <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.1.1\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="msgpack.light">
-      <HintPath>..\packages\msgpack.light.1.0.0\lib\net461\msgpack.light.dll</HintPath>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="Sodium">
+      <HintPath>..\packages\libsodium-net.0.10.0-beta3\lib\Net40\Sodium.dll</HintPath>
+    </Reference>
+    <Reference Include="JetBrains.Annotations">
+      <HintPath>..\packages\JetBrains.Annotations.10.2.1\lib\net\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Validate.fs" />
+    <None Include="packages.config" />
+    <Compile Include="Types.fs" />
+    <Compile Include="Serialization.fs" />
     <Compile Include="Script.fsx" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(FSharpTargetsPath)" />
+  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.2.0-xbuild02\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.2.0-xbuild02\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
 </Project>
