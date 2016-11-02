@@ -55,7 +55,7 @@ type ExtendedContract =
     | Contract of Contract
     | HighVContract of version : uint32 * data : MessagePackObject
 
-let contractVersion (eContract : ExtendedContract) = function
+let contractVersion : (ExtendedContract -> uint32) = function
     | Contract _ -> 0u
     | HighVContract(version=version) -> version
 
@@ -78,19 +78,22 @@ type Transaction = {version: uint32; inputs: Outpoint list; witnesses: Witness l
 
 type Validity = Valid of Contract option | Invalid
 
-type Nonce = uint64 * uint64 * uint64 * uint64
+type Nonce = byte[]
 
 type BlockHeader = {
     version: uint32;
     parent: Hash;
-    number: uint32;
     txMerkleRoot: Hash;
     witnessMerkleRoot: Hash;
     contractMerkleRoot: Hash;
+    extraData: byte[] list;
     timestamp: int64;
     pdiff: uint32;
     nonce: Nonce;
     }
+
+let merkleData (bh : BlockHeader) =
+    bh.txMerkleRoot :: bh.witnessMerkleRoot :: bh.contractMerkleRoot :: bh.extraData
 
 type Block = {
     header: BlockHeader;
