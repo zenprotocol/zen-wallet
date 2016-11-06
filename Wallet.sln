@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.tests", "Wallet.test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.core", "Wallet.core\Wallet.core.csproj", "{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}"
 EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "TestMsgPack", "TestMsgPack\TestMsgPack.fsproj", "{7E5229B8-51EF-4044-B779-ABED183CE8E2}"
+EndProject
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "Compatibility", "Compatibility\Compatibility.csproj", "{73FD32FB-BD62-407F-A2AD-18BE0515B128}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -25,5 +31,17 @@ Global
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Debug|x86.Build.0 = Debug|x86
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.ActiveCfg = Release|x86
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.Build.0 = Release|x86
+		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.Build.0 = Debug|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.ActiveCfg = Release|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.Build.0 = Release|Any CPU
+		{7E5229B8-51EF-4044-B779-ABED183CE8E2}.Debug|x86.ActiveCfg = Debug|x86
+		{7E5229B8-51EF-4044-B779-ABED183CE8E2}.Debug|x86.Build.0 = Debug|x86
+		{7E5229B8-51EF-4044-B779-ABED183CE8E2}.Release|x86.ActiveCfg = Release|x86
+		{7E5229B8-51EF-4044-B779-ABED183CE8E2}.Release|x86.Build.0 = Release|x86
+		{73FD32FB-BD62-407F-A2AD-18BE0515B128}.Debug|x86.ActiveCfg = Debug|x86
+		{73FD32FB-BD62-407F-A2AD-18BE0515B128}.Debug|x86.Build.0 = Debug|x86
+		{73FD32FB-BD62-407F-A2AD-18BE0515B128}.Release|x86.ActiveCfg = Release|x86
+		{73FD32FB-BD62-407F-A2AD-18BE0515B128}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 EndGlobal
