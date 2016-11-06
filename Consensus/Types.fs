@@ -1,11 +1,8 @@
 ﻿module Consensus.Types
 
-open MsgPack
-open MsgPack.Serialization
-
 type Hash = byte[]
 
-type LockCore = {version: uint32; lockData: MessagePackObject list}
+type LockCore = {version: uint32; lockData: byte[] list}
 
 type OutputLock =
     | CoinbaseLock of LockCore
@@ -31,14 +28,15 @@ let typeCode : (OutputLock -> int) = function
     | ContractLock (_,_) -> 4
     | HighVLock (typeCode = tCode) -> tCode
 
-let lockData : (OutputLock -> MessagePackObject list) = function
-    | CoinbaseLock lCore| FeeLock lCore
+let lockData : (OutputLock -> byte[] list) = function
+    | CoinbaseLock lCore
+    | FeeLock lCore
     | ContractSacrificeLock lCore
     | HighVLock(lockCore = lCore) -> lCore.lockData
     | PKLock pkHash ->
-        [new MessagePackObject(pkHash, true)]
+        [pkHash]
     | ContractLock (hash,data) ->
-        [new MessagePackObject(hash,true);new MessagePackObject(data,true)]
+        [hash;data]
 
 type Spend = {asset: Hash; amount: uint64}
 
@@ -53,7 +51,7 @@ type Contract = {code: byte[]; bounds: byte[]; hint: byte[]}
 
 type ExtendedContract =
     | Contract of Contract
-    | HighVContract of version : uint32 * data : MessagePackObject
+    | HighVContract of version : uint32 * data : byte[]
 
 let contractVersion : (ExtendedContract -> uint32) = function
     | Contract _ -> 0u
