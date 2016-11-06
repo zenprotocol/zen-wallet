@@ -236,7 +236,7 @@ let ``ExtendedContract round trip of version 0 contract produces same object``()
     let res = serializer.Unpack(stream)
     Assert.That(res, Is.EqualTo(extContract))
 
-let highVContract = HighVContract (version=9u, data=new MessagePackObject([|0uy;5uy;75uy|],true))
+let highVContract = HighVContract (version=9u, data=[|0uy;5uy;75uy|])
 
 [<Test>]
 let ``ExtendedContract round trip of HighVContract produces same object``() =

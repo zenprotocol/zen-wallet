@@ -16,58 +16,56 @@ type OutputLockSerializer(ownerContext) =
         | HighVLock (lockCore = lCore) when lCore.version = 0u ->
             // possible code smell; this is really validation logic
             raise <| new SerializationException("Cannot serialize malformed HighVLock")
-        | _ -> (new MessagePackObject(lockVersion oLock))
-            :: (new MessagePackObject(typeCode oLock))
-            :: (lockData oLock) |> packer.PackArray |> ignore
-
+        | _ ->
+            let bodyLength = if List.isEmpty <| lockData oLock then 2 else 3
+            packer.PackArrayHeader(bodyLength)
+                  .Pack(lockVersion oLock)
+                  .Pack(typeCode oLock) |> ignore
+            if bodyLength = 3 then packer.PackArray(lockData oLock) |> ignore
+        
     override __.UnpackFromCore(unpacker: Unpacker) : OutputLock =
-        let mutable v = 0ul
         let mutable tC = 0
         if not <| unpacker.IsArrayHeader then
             raise <| new SerializationException("OutputLock is not an array")
         else
             use subtreeReader = unpacker.ReadSubtree()
-            if subtreeReader.ItemsCount < 2L then
-                raise <| new SerializationException("Too few items in OutputLock")
-            elif not <| subtreeReader.ReadUInt32(&v) then
-                raise <| new SerializationException("Bad OutputLock version")
-            elif not <| subtreeReader.ReadInt32(&tC) then
-                raise <| new SerializationException("Bad OutputLock version")
-            else
-                let lD = if subtreeReader.ItemsCount = 2L then [] else List.ofSeq subtreeReader
-                let lCore = {version=v;lockData=lD} : LockCore
-                match v, tC with
-                    | _, 0 ->
-                        CoinbaseLock lCore
-                    | _, 1 ->
-                        FeeLock lCore
-                    | _, 2 ->
-                        ContractSacrificeLock lCore
-                    | v, tC when (v > 0u) -> 
-                        HighVLock (lockCore=lCore,typeCode=tC)
-                    | _, 3 when lD.Length <> 1 ->
-                        raise <| new SerializationException("PKLock has too many items")
-                    | _, 3 ->
-                        let hd = lD.Head
-                        let isBinary = hd.IsTypeOf<byte[]>()
-                        if not <| isBinary.GetValueOrDefault() then
-                            raise <| new SerializationException("Bad hash for PKLock")
-                        elif (hd.AsBinary()).Length <> PubKeyHashBytes then
-                            raise <| new SerializationException("PKLock hash is wrong length")
-                        else
-                            PKLock (hd.AsBinary())
-                    | _, 4 when lD.Length <> 2 ->
-                        raise <| new SerializationException("ContractLock has wrong number of items")
-                    | _, 4 when not <| lD.Head.IsTypeOf<byte[]>().GetValueOrDefault() ->
-                        raise <| new SerializationException("Bad hash for ContractLock")
-                    | _, 4 when lD.Head.AsBinary().Length <> ContractHashBytes ->
-                        raise <| new SerializationException("ContractLock hash is wrong length")
-                    | _, 4 when not <| lD.Item(1).IsTypeOf<byte[]>().GetValueOrDefault() ->
-                        raise <| new SerializationException("Bad data for ContractLock")
-                    | _, 4 ->
-                        ContractLock (lD.Head.AsBinary(), lD.Item(1).AsBinary())
-                    | _ ->
-                        raise <| new SerializationException("Bad typeCode for version 0 OutputLock")
+            if subtreeReader.ItemsCount <> 2L && subtreeReader.ItemsCount <> 3L then
+                raise <| new SerializationException("Wrong number of items in OutputLock")
+            subtreeReader.Read() |> ignore
+            let v = subtreeReader.Unpack<uint32>()
+            subtreeReader.Read() |> ignore
+            let tC = subtreeReader.Unpack<int32>()
+            let lD =
+                if subtreeReader.ItemsCount = 3L then
+                    subtreeReader.Read() |> ignore
+                    subtreeReader.Unpack<byte[] list>(ownerContext) else
+                    List.empty
+            let lCore = {version=v;lockData=lD} : LockCore
+            match v, tC with
+                | _, 0 ->
+                    CoinbaseLock lCore
+                | _, 1 ->
+                    FeeLock lCore
+                | _, 2 ->
+                    ContractSacrificeLock lCore
+                | v, tC when (v > 0u) -> 
+                    HighVLock (lockCore=lCore,typeCode=tC)
+                | _, 3 when lD.Length <> 1 ->
+                    raise <| new SerializationException("PKLock has too many items")
+                | _, 3 ->
+                    let hd = lD.Head
+                    if hd.Length <> PubKeyHashBytes then
+                        raise <| new SerializationException("PKLock hash is wrong length")
+                    else
+                        PKLock hd
+                | _, 4 when lD.Length <> 2 ->
+                    raise <| new SerializationException("ContractLock has wrong number of items")
+                | _, 4 when lD.[0].Length <> ContractHashBytes ->
+                    raise <| new SerializationException("ContractLock hash is wrong length")
+                | _, 4 ->
+                    ContractLock (lD.[0], lD.[1])
+                | _ ->
+                    raise <| new SerializationException("Bad typeCode for version 0 OutputLock")
 
 type SpendSerializer(ownerContext) =
     inherit MessagePackSerializer<Spend>(ownerContext: SerializationContext)
@@ -84,7 +82,7 @@ type SpendSerializer(ownerContext) =
             let mutable amount:uint64 = 0uL
             use subtreeReader = unpacker.ReadSubtree()
             if subtreeReader.ItemsCount <> 2L then
-                raise <| new SerializationException("Wrong number of items in Spend")
+                raise <| new SerializationException(sprintf "Wrong number of items in Spend: %i" subtreeReader.ItemsCount)
             elif not <| subtreeReader.ReadBinary(&asset) then
                 raise <| new SerializationException("Bad asset for Spend")
             elif not <| subtreeReader.ReadUInt64(&amount) then
@@ -98,7 +96,6 @@ type OutputSerializer(ownerContext) =
     inherit MessagePackSerializer<Output>(ownerContext: SerializationContext)
 
     override __.PackToCore(packer: Packer, {lock=lock; spend=spend}: Output) =
-        //__.OwnerContext.Serializers.Register<OutputLock>(new OutputLockSerializer(__.OwnerContext)) |> ignore
         packer.PackArrayHeader(2)
               .Pack<OutputLock>(lock,ownerContext)
               .Pack<Spend>(spend,ownerContext)
@@ -106,7 +103,7 @@ type OutputSerializer(ownerContext) =
     
     override __.UnpackFromCore(unpacker: Unpacker) : Output =
         if not <| unpacker.IsArrayHeader then
-            raise <| new SerializationException("Spend is not an array")
+            raise <| new SerializationException("Output is not an array")
         else
             use subtreeReader = unpacker.ReadSubtree()
             if subtreeReader.ItemsCount <> 2L then
@@ -170,8 +167,12 @@ type ExtendedContractSerializer(ownerContext) =
         packer.PackArrayHeader(2)
          .Pack((contractVersion eContract),ownerContext) |> ignore
         match eContract with
-            | Contract ct -> packer.Pack<Contract>(ct,ownerContext) |> ignore
-            | HighVContract(data=data) -> packer.Pack<MessagePackObject>(data) |> ignore
+            | HighVContract(data=data) -> packer.PackBinary(data) |> ignore
+            | Contract ct ->
+                use contractStream = new System.IO.MemoryStream()
+                use contractPacker = Packer.Create(contractStream)
+                contractPacker.Pack<Contract>(ct,ownerContext) |> ignore
+                packer.PackBinary(contractStream.ToArray()) |> ignore
               
     override __.UnpackFromCore(unpacker: Unpacker) : ExtendedContract =
         if not <| unpacker.IsArrayHeader then
@@ -182,13 +183,18 @@ type ExtendedContractSerializer(ownerContext) =
         subtreeReader.Read() |> ignore
         let v = subtreeReader.Unpack<uint32>()
         subtreeReader.Read() |> ignore
+        let contractData = subtreeReader.Unpack<byte[]>()
         match v with
             | 0u ->
-                let ct = subtreeReader.Unpack<Contract>(ownerContext)
+                let contractStream = new System.IO.MemoryStream(contractData) 
+                let contractUnpacker = Unpacker.Create(contractStream)
+                contractUnpacker.Read() |> ignore
+                let ct = contractUnpacker.Unpack<Contract>(ownerContext)
+                if contractUnpacker.Read() then
+                    raise <| new SerializationException("Too many items in extended contract data")
                 Contract ct
             | _ ->
-                let d = subtreeReader.Unpack<MessagePackObject>()
-                HighVContract(version=v,data=d)
+                HighVContract(version=v,data=contractData)
 
 // Currently unused and untested
 type PKWitnessSerializer(ownerContext) =
