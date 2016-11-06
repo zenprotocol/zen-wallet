@@ -38,9 +38,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Runtime.Serialization.Primitives">
-      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.1.1\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
@@ -54,6 +51,12 @@
     <Reference Include="MsgPack">
       <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization.Primitives">
+      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0-preview1-24530-04\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
@@ -61,6 +64,7 @@
     <Compile Include="Types.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="Script.fsx" />
+    <Compile Include="Tests.fs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(FSharpTargetsPath)" />

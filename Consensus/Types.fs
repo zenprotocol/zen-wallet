@@ -100,4 +100,3 @@ type Block = {
     transactions: Transaction list
     }
 
-

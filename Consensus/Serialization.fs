@@ -99,7 +99,9 @@ type OutputSerializer(ownerContext) =
 
     override __.PackToCore(packer: Packer, {lock=lock; spend=spend}: Output) =
         //__.OwnerContext.Serializers.Register<OutputLock>(new OutputLockSerializer(__.OwnerContext)) |> ignore
-        packer.PackArrayHeader(2).Pack<OutputLock>(lock).Pack<Spend>(spend)
+        packer.PackArrayHeader(2)
+              .Pack<OutputLock>(lock,ownerContext)
+              .Pack<Spend>(spend,ownerContext)
         |> ignore
     
     override __.UnpackFromCore(unpacker: Unpacker) : Output =
@@ -110,8 +112,10 @@ type OutputSerializer(ownerContext) =
             if subtreeReader.ItemsCount <> 2L then
                 raise <| new SerializationException("Wrong number of items in Output")
             else
-                let lock = subtreeReader.Unpack<OutputLock>()
-                let spend = subtreeReader.Unpack<Spend>()
+                subtreeReader.Read() |> ignore
+                let lock = subtreeReader.Unpack<OutputLock>(ownerContext)
+                subtreeReader.Read() |> ignore
+                let spend = subtreeReader.Unpack<Spend>(ownerContext)
                 {lock=lock; spend=spend} : Output
         
 
@@ -129,9 +133,11 @@ type OutpointSerializer(ownerContext) =
             use subtreeReader = unpacker.ReadSubtree()
             if subtreeReader.ItemsCount <> 2L then
                 raise <| new SerializationException("Wrong number of items in Outpoint")
-            else 
-                let txHash = subtreeReader.Unpack<Hash>()
-                let index = subtreeReader.Unpack<uint32>()
+            else
+                subtreeReader.Read() |> ignore
+                let txHash = subtreeReader.Unpack<Hash>(ownerContext)
+                subtreeReader.Read() |> ignore
+                let index = subtreeReader.Unpack<uint32>(ownerContext)
                 {txHash=txHash; index=index} : Outpoint
 
 type ContractSerializer(ownerContext) =
@@ -148,9 +154,12 @@ type ContractSerializer(ownerContext) =
            use subtreeReader = unpacker.ReadSubtree()
            if subtreeReader.ItemsCount <> 3L then
                raise <| new SerializationException("Wrong number of items in Contract")
-           else 
+           else
+               subtreeReader.Read() |> ignore 
                let code = subtreeReader.Unpack<byte[]>()
+               subtreeReader.Read() |> ignore
                let bounds = subtreeReader.Unpack<byte[]>()
+               subtreeReader.Read() |> ignore
                let hint = subtreeReader.Unpack<byte[]>()
                {code=code; bounds=bounds; hint=hint} : Contract
 
@@ -159,10 +168,10 @@ type ExtendedContractSerializer(ownerContext) =
 
     override __.PackToCore(packer: Packer, eContract: ExtendedContract) =
         packer.PackArrayHeader(2)
-         .Pack(contractVersion eContract) |> ignore
+         .Pack((contractVersion eContract),ownerContext) |> ignore
         match eContract with
-            | Contract ct -> packer.Pack(ct) |> ignore
-            | HighVContract(data=data) -> packer.Pack(data) |> ignore
+            | Contract ct -> packer.Pack<Contract>(ct,ownerContext) |> ignore
+            | HighVContract(data=data) -> packer.Pack<MessagePackObject>(data) |> ignore
               
     override __.UnpackFromCore(unpacker: Unpacker) : ExtendedContract =
         if not <| unpacker.IsArrayHeader then
@@ -170,15 +179,18 @@ type ExtendedContractSerializer(ownerContext) =
         use subtreeReader = unpacker.ReadSubtree()
         if subtreeReader.ItemsCount <> 2L then
             raise <| new SerializationException("Wrong number of items in ExtendedContract")
+        subtreeReader.Read() |> ignore
         let v = subtreeReader.Unpack<uint32>()
+        subtreeReader.Read() |> ignore
         match v with
             | 0u ->
-                let ct = subtreeReader.Unpack<Contract>()
+                let ct = subtreeReader.Unpack<Contract>(ownerContext)
                 Contract ct
             | _ ->
                 let d = subtreeReader.Unpack<MessagePackObject>()
                 HighVContract(version=v,data=d)
 
+// Currently unused and untested
 type PKWitnessSerializer(ownerContext) =
     inherit MessagePackSerializer<PKWitness>(ownerContext: SerializationContext)
 
@@ -200,44 +212,41 @@ type TransactionSerializer(ownerContext) =
                          | Some _ -> 5
         bodyPacker.PackArrayHeader(bodyLength)
          .Pack(tx.version)
-         .PackArray(tx.inputs)
-         .PackArray(tx.witnesses)
-         .PackArray(tx.outputs)
-         |> (fun bPkr
-              -> if tx.contract.IsSome then 
-                   bPkr.Pack(tx.contract.Value) |> ignore else ()
-            )
+         .PackArray(tx.inputs,ownerContext)
+         .PackArray(tx.witnesses,ownerContext)
+         .PackArray(tx.outputs,ownerContext) |> ignore
+        if tx.contract.IsSome then
+            bodyPacker.Pack<ExtendedContract>(tx.contract.Value, ownerContext) |> ignore
         packer.PackExtendedTypeValue(__.typeCode,body.ToArray())
         |> ignore
 
     
     override __.UnpackFromCore(unpacker: Unpacker) : Transaction =
-        let mutable extObj = MessagePackExtendedTypeObject()
-        if not <| unpacker.ReadMessagePackExtendedTypeObject(&extObj) then
-            printfn "In transaction, cannot read extended type object"
-            raise <| new SerializationException("Not an exttype")
-        elif extObj.TypeCode <> __.typeCode then
-            printfn "In transaction, wrong typecode %i" extObj.TypeCode
+        let extObj = unpacker.LastReadData.AsMessagePackExtendedTypeObject()
+        if extObj.TypeCode <> __.typeCode then
             raise <| new SerializationException("Not a transaction")
         use body = new System.IO.MemoryStream(extObj.GetBody())
         use bodyUnpacker = Unpacker.Create(body)
+        bodyUnpacker.Read() |> ignore
         if not <| bodyUnpacker.IsArrayHeader then
-            printfn "In txn, not an arrayheader"
             raise <| new SerializationException("tx body not an array")
         use subtreeReader = bodyUnpacker.ReadSubtree()
-        if subtreeReader.ItemsCount <> 4L || 
+        if subtreeReader.ItemsCount <> 4L && 
            subtreeReader.ItemsCount <> 5L then
-               printfn "In txn, wrong number items in tx body %i" subtreeReader.ItemsCount
-               raise <| new SerializationException "wrong number items in tx body"
+               raise <| new SerializationException "wrong number of items in tx body"
+        subtreeReader.Read() |> ignore
         let version = subtreeReader.Unpack<uint32>()
-        let inputs = subtreeReader.Unpack<Outpoint list>()
-        let witnesses = subtreeReader.Unpack<Witness list>()
-        let outputs = subtreeReader.Unpack<Output list>()
+        subtreeReader.Read() |> ignore
+        let inputs = subtreeReader.Unpack<Outpoint list>(ownerContext)
+        subtreeReader.Read() |> ignore
+        let witnesses = subtreeReader.Unpack<Witness list>(ownerContext)
+        subtreeReader.Read() |> ignore
+        let outputs = subtreeReader.Unpack<Output list>(ownerContext)
         let contract =
             if subtreeReader.ItemsCount = 5L then
-                Some <| subtreeReader.Unpack<ExtendedContract>() else
+                subtreeReader.Read() |> ignore
+                Some <| subtreeReader.Unpack<ExtendedContract>(ownerContext) else
                 None
-        printfn "Finished unpacking transaction"
         {version=version; inputs=inputs; witnesses=witnesses; outputs=outputs; contract=contract}
 
 
@@ -260,33 +269,37 @@ type BlockHeaderSerializer(ownerContext) =
         |> ignore
     
     override __.UnpackFromCore(unpacker: Unpacker) : BlockHeader =
-        let mutable extObj = MessagePackExtendedTypeObject()
-        if not <| unpacker.ReadMessagePackExtendedTypeObject(&extObj) then
-            raise <| new SerializationException("Not an exttype")
-        elif extObj.TypeCode <> __.typeCode then
+        let extObj = unpacker.LastReadData.AsMessagePackExtendedTypeObject()
+        if extObj.TypeCode <> __.typeCode then
             raise <| new SerializationException("Not a block header")
-        
         use body = new System.IO.MemoryStream(extObj.GetBody())
         use bodyUnpacker = Unpacker.Create(body)
+        bodyUnpacker.Read() |> ignore
         if not <| bodyUnpacker.IsArrayHeader then
             raise <| new SerializationException("Block header is not an array")
         use subtreeReader = bodyUnpacker.ReadSubtree()
         if subtreeReader.ItemsCount <> 6L then
             raise <| SerializationException("Wrong number of items in block header")
+        subtreeReader.Read() |> ignore
         let version = subtreeReader.Unpack<uint32>()
-        let parent = subtreeReader.Unpack<byte[]>()
+        subtreeReader.Read() |> ignore
+        let parent = subtreeReader.Unpack<Hash>(ownerContext)
 //        if not <| subtreeReader.IsArrayHeader then
 //            raise <| SerializationException("merkle roots not in array")
-        let mData = subtreeReader.Unpack<byte[] list>()
+        subtreeReader.Read() |> ignore
+        let mData = subtreeReader.Unpack<Hash list>(ownerContext)
         if mData.Length < 3 then
             raise <| SerializationException("too few merkle roots in array")
         let txMR = mData.Item(0)
         let wMR = mData.Item(1)
         let cMR = mData.Item(2)
         let exData = List.skip 3 mData
+        subtreeReader.Read() |> ignore
         let timestamp = bodyUnpacker.Unpack<int64>()
+        subtreeReader.Read() |> ignore
         let pdiff = bodyUnpacker.Unpack<uint32>()
-        let nonce = bodyUnpacker.Unpack<byte[]>()
+        subtreeReader.Read() |> ignore
+        let nonce = bodyUnpacker.Unpack<Nonce>(ownerContext)
         {
             version=version;
             parent=parent;
@@ -305,33 +318,38 @@ type BlockSerializer(ownerContext) =
 
     override __.PackToCore(packer: Packer, blk: Block) =
         use body = new System.IO.MemoryStream()
-        use bodyPacker = Packer.Create(body)
+        use bodyPacker = Packer.Create(body,ownerContext.CompatibilityOptions.PackerCompatibilityOptions)
         bodyPacker.PackArrayHeader(2)
-         .Pack(blk.header)
-         .PackArray(blk.transactions)
+         .Pack(blk.header,ownerContext)
+         .PackArray(blk.transactions,ownerContext)
          |> ignore
         packer.PackExtendedTypeValue(__.typeCode,body.ToArray())
         |> ignore
 
     override __.UnpackFromCore(unpacker: Unpacker) : Block =
-        let mutable extObj = MessagePackExtendedTypeObject()
-        if not <| unpacker.ReadMessagePackExtendedTypeObject(&extObj) then
-            raise <| new SerializationException("Not an exttype")
-        elif extObj.TypeCode <> __.typeCode then
-            raise <| new SerializationException("Not a block")
-        
+        let  extObj = unpacker.LastReadData.AsMessagePackExtendedTypeObject()
+        if extObj.TypeCode <> __.typeCode then
+            raise <| new SerializationException("Not a block")        
         use body = new System.IO.MemoryStream(extObj.GetBody())
         use bodyUnpacker = Unpacker.Create(body)
+        bodyUnpacker.Read() |> ignore
         if not <| bodyUnpacker.IsArrayHeader then
-            raise <| new SerializationException("block is not an array")
+            raise <| new SerializationException("Block is not an array")
         use subtreeReader = bodyUnpacker.ReadSubtree()
         if subtreeReader.ItemsCount <> 2L then
             raise <| new SerializationException("wrong number of items in block")
-        let header = subtreeReader.Unpack<BlockHeader>()
-        let transactions = subtreeReader.Unpack<Transaction list>()
+        subtreeReader.Read() |> ignore
+        let header = subtreeReader.Unpack<BlockHeader>(ownerContext)
+        subtreeReader.Read() |> ignore
+        let transactions = subtreeReader.Unpack<Transaction list>(ownerContext)
         {header=header;transactions=transactions}
 
 let context = new SerializationContext()
+
+//TODO setup reading the typecode from the serializers
+
+context.CompatibilityOptions.PackerCompatibilityOptions <- PackerCompatibilityOptions.None
+
 context.Serializers.RegisterOverride<OutputLock>(new OutputLockSerializer(context))
 context.Serializers.RegisterOverride<Spend>(new SpendSerializer(context))
 context.Serializers.RegisterOverride<Output>(new OutputSerializer(context))
@@ -343,8 +361,6 @@ context.Serializers.RegisterOverride<Transaction>(new TransactionSerializer(cont
 context.Serializers.RegisterOverride<BlockHeader>(new BlockHeaderSerializer(context))
 context.Serializers.RegisterOverride<Block>(new BlockSerializer(context))
 
-//TODO setup reading the typecode from the serializers
 context.ExtTypeCodeMapping.Add("Transaction", 0x01uy) |> ignore
 context.ExtTypeCodeMapping.Add("Block", 0x02uy) |> ignore
 context.ExtTypeCodeMapping.Add("BlockHeader", 0x03uy) |> ignore
-
