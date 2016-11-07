@@ -64,7 +64,9 @@
     <Compile Include="Types.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="Script.fsx" />
+    <Compile Include="Merkle.fs" />
     <Compile Include="Tests.fs" />
+    <Compile Include="MerkleTests.fs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(FSharpTargetsPath)" />
