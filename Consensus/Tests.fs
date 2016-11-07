@@ -313,3 +313,4 @@ let ``Block round trip produces same object``() =
     let res = serializer.Unpack(stream)
     Assert.That(res, Is.EqualTo(blk))
 
+// TODO: Test erroneous objects
