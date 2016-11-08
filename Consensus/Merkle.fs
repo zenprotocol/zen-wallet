@@ -4,8 +4,10 @@
 open MsgPack
 open MsgPack.Serialization
 
-open Types
-open Serialization
+open Consensus.Types
+open Consensus.Serialization
+
+open Consensus.Tree
 
 // TODO: Make thread-safe
 let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
@@ -68,32 +70,34 @@ let taggedHash : ('T -> Hashable) -> 'T -> Hash =
 // Example use of taggedHash: partially apply to the Transaction discriminator
 let transactionHash = taggedHash Transaction
 
-type Tree = {
-    constant: byte[];
-    items: Hashable list
-    }
-//    with member this.size =
-//                    let lazysize:Lazy<int> = TreeHelper.size this
-//                    lazysize.Force()
 
-//and TreeHelper() =
-//    let lazySize (tree:Tree) =
-//        lazy (List.length (tree.items))
-//    let lazyRoot (tree:Tree) =
-//        lazy ([||]:byte[])
-//    static member val private trees = System.Collections.Generic.Dictionary<Tree, Lazy<int> * Lazy<Hash>>()
-//    static member private init(tree : Tree) =
-//        TreeHelper.trees.[tree] <- (lazySize tree, lazyRoot tree)
-//    static member size(tree : Tree) =
-//        if not <| TreeHelper.trees.ContainsKey(tree) then
-//            ()
-//        if (TreeHelper.trees.ContainsKey(tree)) then
-//            (fst <| TreeHelper.trees.[tree]) |> ignore
-//            lazy 6
-//        else
-//            lazy 7
 
-let lazyTreeSize tree =
-    let result = lazy (List.length tree.items)
-    fun () -> result
+//type Tree = {
+//    constant: byte[];
+//    items: Hashable list
+//    }
+////    with member this.size =
+////                    let lazysize:Lazy<int> = TreeHelper.size this
+////                    lazysize.Force()
+
+////and TreeHelper() =
+////    let lazySize (tree:Tree) =
+////        lazy (List.length (tree.items))
+////    let lazyRoot (tree:Tree) =
+////        lazy ([||]:byte[])
+////    static member val private trees = System.Collections.Generic.Dictionary<Tree, Lazy<int> * Lazy<Hash>>()
+////    static member private init(tree : Tree) =
+////        TreeHelper.trees.[tree] <- (lazySize tree, lazyRoot tree)
+////    static member size(tree : Tree) =
+////        if not <| TreeHelper.trees.ContainsKey(tree) then
+////            ()
+////        if (TreeHelper.trees.ContainsKey(tree)) then
+////            (fst <| TreeHelper.trees.[tree]) |> ignore
+////            lazy 6
+////        else
+////            lazy 7
+
+//let lazyTreeSize tree =
+//    let result = lazy (List.length tree.items)
+//    fun () -> result
 
