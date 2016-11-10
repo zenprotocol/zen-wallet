@@ -68,8 +68,30 @@ let taggedHash : ('T -> Hashable) -> 'T -> Hash =
     fun wrapper item -> innerHashList [tag <| wrapper item; serialize item]
 
 // Example use of taggedHash: partially apply to the Transaction discriminator
-let transactionHash = taggedHash Transaction
+// let transactionHash = taggedHash Transaction
 
+//let leafHash cTW l = match l with
+//                     | {leafData = None} -> innerHash cTW
+//                     | {leafData= Some lD;loc=loc} ->
+//                         innerHashList [cTW; tag lD; serialize lD; serialize loc]
+
+// Usage: partially apply to cTW and keep a reference as long as
+// the tree is needed.
+let defaultHash cTW =
+    let defaultHashSeq =
+        Seq.unfold
+        <| fun hashN ->
+            let nextHash = innerHashList [hashN; hashN]
+            Some (hashN, nextHash)
+        <| innerHash cTW
+        |> Seq.cache
+    fun n -> Seq.item n defaultHashSeq
+
+
+            
+//let branchHash {height=h;loc=b} lHashL lHashR =
+//    match lHashL.Force(), lHashR.Force() with
+//    | emptyN
 
 
 //type Tree = {
