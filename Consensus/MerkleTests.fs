@@ -32,3 +32,11 @@ let ``SHA3 hash of null string matches known value``() =
 //    member x.TestCase() =
 //        Assert.IsTrue(true)
 
+open Consensus.Tree
+
+[<Test>]
+let ``Print tree of [1;..14]``() =
+    let ls = [1..14]
+    let tree = complete(ls)
+    printfn "%A" tree
+    Assert.IsTrue(true)
