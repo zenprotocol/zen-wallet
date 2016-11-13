@@ -84,12 +84,26 @@ let inline toBytes (n: ^T) =
     let high = byte (u >>> 24)
     [|low; mLow; mHigh; high|]
 
+let bitsToBytes (bs:bool[]) =
+    seq {
+        let b = ref 0uy
+        for i=0 to bs.Length-1 do
+            let rem = i % 8
+            if rem = 0 && i <> 0 then
+                yield !b
+                b := 0uy
+            if bs.[i] then
+                b := !b + byte (1 <<< rem)
+        yield !b
+    } |> Array.ofSeq
+
+
 type Digest = {digest: byte[]; isDefault: bool}
 
 let leafHash cTW (wrapper:'T->Hashable) defaultHashes = 
     let typeTag = tag << wrapper <| Unchecked.defaultof<'T>
     let hasher = fun (x:'T) b ->
-        innerHashList [cTW; typeTag; serialize x; toBytes b]
+        innerHashList [cTW; typeTag; serialize x; bitsToBytes b]
     function
     | {data = None; location={height=h}} -> {digest=defaultHashes h; isDefault=true}
     | {data = Some x; location={loc=b}} -> {digest=hasher x b; isDefault=false}
@@ -100,45 +114,11 @@ let branchHash defaultHashes = fun branchData dL dR ->
         {digest = defaultHashes h; isDefault=true}
     | {height=h;loc=b}, _, _ ->
         {
-            digest = innerHashList [dL.digest;dR.digest;toBytes b;toBytes h];
+            digest = innerHashList [dL.digest;dR.digest;bitsToBytes b;toBytes h];
             isDefault=false;
         }
 
 let merkleRoot cTW wrapper =
     let defaultHashes = defaultHash cTW
     cata (leafHash cTW wrapper defaultHashes) (branchHash defaultHashes)                                                 
-            
-//let branchHash {height=h;loc=b} lHashL lHashR =
-//    match lHashL.Force(), lHashR.Force() with
-//    | emptyN
-
-
-//type Tree = {
-//    constant: byte[];
-//    items: Hashable list
-//    }
-////    with member this.size =
-////                    let lazysize:Lazy<int> = TreeHelper.size this
-////                    lazysize.Force()
-
-////and TreeHelper() =
-////    let lazySize (tree:Tree) =
-////        lazy (List.length (tree.items))
-////    let lazyRoot (tree:Tree) =
-////        lazy ([||]:byte[])
-////    static member val private trees = System.Collections.Generic.Dictionary<Tree, Lazy<int> * Lazy<Hash>>()
-////    static member private init(tree : Tree) =
-////        TreeHelper.trees.[tree] <- (lazySize tree, lazyRoot tree)
-////    static member size(tree : Tree) =
-////        if not <| TreeHelper.trees.ContainsKey(tree) then
-////            ()
-////        if (TreeHelper.trees.ContainsKey(tree)) then
-////            (fst <| TreeHelper.trees.[tree]) |> ignore
-////            lazy 6
-////        else
-////            lazy 7
-
-//let lazyTreeSize tree =
-//    let result = lazy (List.length tree.items)
-//    fun () -> result
 
