@@ -40,19 +40,18 @@ let rec height = function
     | Leaf _ -> 0
     | Branch (left=left) -> 1 + height left
 
-type LocBranchData<'T> = {branchData:'T; height:int32; loc:uint32}
-type LocLeafData<'T> = {leafData:'T; loc:uint32}
-
-
-type Loc = {height:int32; loc:uint32}
+type Loc = {height:int32; loc:bool[]} // need > 64 bits, but doesn't need to be mem-efficient
 type LocData<'T> = {data:'T; location:Loc}
 
 
 let addLocation height tree =
     let right = function
-        | {Loc.height=h;loc=l} -> {height = h-1; loc = l ||| (1u <<< (h - 1))}
+        | {Loc.height=h;loc=l} ->
+            let l' = Array.copy l
+            l'.SetValue(true, h-1)
+            {height = h-1; loc = l'}
     let left = function
-        | {Loc.height=h; loc=l} -> {height = h-1; loc=l}
+        | {Loc.height=h; loc=l} -> {height = h-1; loc=Array.copy l}
     let rec inner = function
         | location, Leaf v -> Leaf {data=v; location=location}
         | {height=height;loc=loc} as location, Branch (branchData, leftTree, rightTree) ->
@@ -62,7 +61,7 @@ let addLocation height tree =
                 inner (left location, leftTree),
                 inner (right location, rightTree)
             )
-    inner ({height=height;loc=0u}, tree)
+    inner ({height=height;loc=Array.zeroCreate (height+1)}, tree)
 
 let locLocation<'L,'B> : (FullTree<LocData<'L>,LocData<'B>> -> Loc) = function
     | Leaf v -> v.location
@@ -72,15 +71,15 @@ let locHeight<'L,'B> : (FullTree<LocData<'L>,LocData<'B>> -> int32) = function
     | Leaf v -> v.location.height
     | Branch (data=data) -> data.location.height
 
-let locLoc<'L,'B> : (FullTree<LocData<'L>,LocData<'B>> -> uint32) = function
-    | Leaf v -> v.location.loc
-    | Branch (data=data) -> data.location.loc
+//let locLoc<'L,'B> : (FullTree<LocData<'L>,LocData<'B>> -> bool[]) = function
+//    | Leaf v -> v.location.loc
+//    | Branch (data=data) -> data.location.loc
 
 type OptTree<'L,'B> = FullTree<'L option,'B>
 
 let complete (s:seq<'T>) =
-    let defaultB = {data=None; location={height=0;loc=0u}}
-    let defaultHeight n = {data=None; location={height=n;loc=0u}}
+    let defaultB = {data=None; location={height=0;loc=[||]}}
+    let defaultHeight n = {data=None; location={height=n;loc=[||]}}
     let leaves = Seq.map (addLocation 0 << Leaf << Some) s
     let rec parent stack a = 
         match stack, a with
