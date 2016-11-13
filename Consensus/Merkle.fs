@@ -57,23 +57,11 @@ let serialize (x : 'a) =
     serializer.Pack(stream, x)
     stream.ToArray()
 
-//let serialized : Hashable -> byte[] =
-//    function
-//    | Transaction tx -> serialize tx
-//    | OutputLock ol -> serialize ol
-//    | _ -> failwith "not implemented"
-
-// TODO: get the tag and return a closure
-let taggedHash : ('T -> Hashable) -> 'T -> Hash = 
-    fun wrapper item -> innerHashList [tag <| wrapper item; serialize item]
-
-// Example use of taggedHash: partially apply to the Transaction discriminator
-// let transactionHash = taggedHash Transaction
-
-//let leafHash cTW l = match l with
-//                     | {leafData = None} -> innerHash cTW
-//                     | {leafData= Some lD;loc=loc} ->
-//                         innerHashList [cTW; tag lD; serialize lD; serialize loc]
+//// TODO: get the tag and return a closure
+//// Example use of taggedHash: partially apply to the Transaction discriminator
+//// let transactionHash = taggedHash Transaction
+//let taggedHash : ('T -> Hashable) -> 'T -> Hash = 
+//    fun wrapper item -> innerHashList [tag <| wrapper item; serialize item]
 
 // Usage: partially apply to cTW and keep a reference as long as
 // the tree is needed.
@@ -87,7 +75,38 @@ let defaultHash cTW =
         |> Seq.cache
     fun n -> Seq.item n defaultHashSeq
 
+// little-endian, fixed size (for any 8, 16 or 32 bit integral)
+let inline toBytes (n: ^T) =
+    let u = uint32 n
+    let low = byte u
+    let mLow = byte (u >>> 8)
+    let mHigh = byte (u >>> 16)
+    let high = byte (u >>> 24)
+    [|low; mLow; mHigh; high|]
 
+type Digest = {digest: byte[]; isDefault: bool}
+
+let leafHash cTW (wrapper:'T->Hashable) defaultHashes = 
+    let typeTag = tag << wrapper <| Unchecked.defaultof<'T>
+    let hasher = fun (x:'T) b ->
+        innerHashList [cTW; typeTag; serialize x; toBytes b]
+    function
+    | {data = None; location={height=h}} -> {digest=defaultHashes h; isDefault=true}
+    | {data = Some x; location={loc=b}} -> {digest=hasher x b; isDefault=false}
+
+let branchHash defaultHashes = fun branchData dL dR ->
+    match branchData.location ,dL, dR with
+    | {height=h}, {isDefault=true}, {isDefault=true} ->
+        {digest = defaultHashes h; isDefault=true}
+    | {height=h;loc=b}, _, _ ->
+        {
+            digest = innerHashList [dL.digest;dR.digest;toBytes b;toBytes h];
+            isDefault=false;
+        }
+
+let merkleRoot cTW wrapper =
+    let defaultHashes = defaultHash cTW
+    cata (leafHash cTW wrapper defaultHashes) (branchHash defaultHashes)                                                 
             
 //let branchHash {height=h;loc=b} lHashL lHashR =
 //    match lHashL.Force(), lHashR.Force() with
