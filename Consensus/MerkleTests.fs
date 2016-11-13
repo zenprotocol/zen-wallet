@@ -35,8 +35,17 @@ let ``SHA3 hash of null string matches known value``() =
 open Consensus.Tree
 
 [<Test>]
-let ``Print tree of [1;..14]``() =
+let ``Print tree of [1..14]``() =
     let ls = [1..14]
     let tree = complete(ls)
     printfn "%A" tree
+    Assert.IsTrue(true)
+
+[<Test>]
+let ``Print merkle root of 14 hashes``() =
+    let zHash = Array.zeroCreate 31
+    let hs = List.map (fun x -> Array.append zHash [|x|]) [1uy..14uy]
+    let tree = complete(hs)
+    let cTW = "CONSTANT!"B
+    printfn "%A" <| merkleRoot cTW Hash tree
     Assert.IsTrue(true)
