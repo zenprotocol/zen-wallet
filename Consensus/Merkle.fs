@@ -24,6 +24,17 @@ type Hashable =
     | Block of Block
     | Hash of Hash
 
+let transaction x = Transaction x
+let outputLock x = OutputLock x
+let spend x = Spend x
+let outpoint x = Outpoint x
+let output x = Outpoint x
+let contract x = Contract x
+let extendedContract x = ExtendedContract x
+let blockHeader x = BlockHeader x
+let block x = Block x
+let hash x = Hash x
+
 let tag : Hashable -> byte[] =
     function
     | Transaction _ -> "tx"B
@@ -124,4 +135,5 @@ let branchHash defaultHashes = fun branchData dL dR ->
 let merkleRoot cTW wrapper =
     let defaultHashes = defaultHash cTW
     cata (leafHash cTW wrapper defaultHashes) (branchHash defaultHashes)                                                 
+
 

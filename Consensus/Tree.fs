@@ -44,22 +44,26 @@ type Loc = {height:int32; loc:bool[]} // need > 64 bits, but doesn't need to be 
 type LocData<'T> = {data:'T; location:Loc}
 
 
+let rightLocation = function
+    | {loc=loc;height=height} ->
+        let l = Array.copy loc
+        l.SetValue(true, Array.length l - height - 1)
+        {height=height-1;loc=l}
+
+let leftLocation = function
+    | {loc=loc;height=height} ->
+        let l = Array.copy loc
+        {height=height-1;loc=l}
+
 let addLocation height tree =
-    let right = function
-        | {Loc.height=h;loc=l} ->
-            let l' = Array.copy l
-            l'.SetValue(true, h-1)
-            {height = h-1; loc = l'}
-    let left = function
-        | {Loc.height=h; loc=l} -> {height = h-1; loc=Array.copy l}
     let rec inner = function
         | location, Leaf v -> Leaf {data=v; location=location}
         | {height=height;loc=loc} as location, Branch (branchData, leftTree, rightTree) ->
             Branch <|
             (
                 {data=branchData;location=location},
-                inner (left location, leftTree),
-                inner (right location, rightTree)
+                inner (leftLocation location, leftTree),
+                inner (rightLocation location, rightTree)
             )
     inner ({height=height;loc=Array.zeroCreate (height+1)}, tree)
 
@@ -120,3 +124,8 @@ let normalize<'L,'B> =
         | Leaf {data=None:'L option}, Leaf {data=None} -> Leaf {data=None; location=brData.location}
         | _ , _ -> Branch (brData, tL, tR)
     cata (Leaf << id) fBranch
+
+let liftLocation =
+    fun f ->
+        function
+        | {data=data;location=location} -> {data=f data;location=location}
