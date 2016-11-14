@@ -57,11 +57,14 @@ let serialize (x : 'a) =
     serializer.Pack(stream, x)
     stream.ToArray()
 
-//// TODO: get the tag and return a closure
-//// Example use of taggedHash: partially apply to the Transaction discriminator
-//// let transactionHash = taggedHash Transaction
-//let taggedHash : ('T -> Hashable) -> 'T -> Hash = 
-//    fun wrapper item -> innerHashList [tag <| wrapper item; serialize item]
+// Example use of taggedHash: partially apply to the Transaction discriminator
+// let transactionHash = taggedHash Transaction
+
+let taggedHash : ('T -> Hashable) -> 'T -> Hash =
+    fun wrapper ->
+        let aTag = tag <| wrapper Unchecked.defaultof<'T>
+        fun item -> innerHashList [ aTag; serialize item]
+
 
 // Usage: partially apply to cTW and keep a reference as long as
 // the tree is needed.
