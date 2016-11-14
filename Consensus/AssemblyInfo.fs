@@ -1,14 +1,18 @@
 ﻿namespace Consensus
 open System.Reflection
 open System.Runtime.CompilerServices
+open System.Runtime.InteropServices
 
 [<assembly: AssemblyTitle("Consensus")>]
 [<assembly: AssemblyDescription("")>]
 [<assembly: AssemblyConfiguration("")>]
 [<assembly: AssemblyCompany("")>]
-[<assembly: AssemblyProduct("")>]
+[<assembly: AssemblyProduct("ZenConsensus")>]
 [<assembly: AssemblyCopyright("topynate")>]
 [<assembly: AssemblyTrademark("")>]
+[<assembly: ComVisible(true)>]
+
+
 
 // The assembly version has the format {Major}.{Minor}.{Build}.{Revision}
 
