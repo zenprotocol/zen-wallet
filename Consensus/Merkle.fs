@@ -13,6 +13,7 @@ open Consensus.Tree
 let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
 
 type Hashable =
+    public
     | Transaction of Transaction
     | OutputLock of OutputLock
     | Spend of Spend
