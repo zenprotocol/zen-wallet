@@ -5,9 +5,9 @@ using DBreeze;
 
 namespace Store
 {
-	public abstract class MiroringCache<T, Y> where T : Store<Y>
+	public abstract class MiroringCache<T> : Store<T> 
 	{
-		protected MiroringCache(string dbName, string tableName) : base(dbName, tableName)
+		protected MiroringCache(string tableName) : base(tableName)
 		{
 			
 		}

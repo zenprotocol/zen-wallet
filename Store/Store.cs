@@ -1,103 +1,51 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using DBreeze;
+using DBreeze.Transactions;
 
 namespace Store
 {
-	public class StoredItem<T>
+	public abstract class Store<T>
 	{
-		public T Value { get; private set; }
-		public byte[] Key { get; private set; }
-		public byte[] Data { get; private set; }
-
-		public StoredItem(T value, byte[] key, byte[] data) {
-			Value = value;
-			Key = key;
-			Data = data;
-		}
-	}
-
-	public abstract class Store<T> : IDisposable
-	{
-		private readonly DBreezeEngine _Engine;
 		private readonly string _TableName;
 
-		protected Store(string dbName, string tableName)
+		public Store(string tableName)
 		{
-			if (tableName == null) throw new ArgumentNullException("tableName");
-			if (dbName == null) throw new ArgumentNullException("dbName");
-
 			_TableName = tableName;
-			_Engine = new DBreezeEngine(dbName);
 		}
 
-		public void Put(T item)
+		public void Put(TransactionContext transactionContext, T item)
 		{
-			Put(new T[] { item });
+			Put(transactionContext, new T[] { item });
 		}
 
-		public void Put(byte[] key, byte[] value)
+		public void Put(TransactionContext transactionContext, byte[] key, byte[] value)
 		{
-			Put(new Tuple<byte[],byte[]>[] { new Tuple<byte[], byte[]>(key, value) });
+			Put(transactionContext, new Tuple<byte[],byte[]>[] { new Tuple<byte[], byte[]>(key, value) });
 		}
 
-		public void Put(T[] items)
+		public void Put(TransactionContext transactionContext, T[] items)
 		{
-			using (var transaction = _Engine.GetTransaction())
-			{
-				foreach (T item in items) {
-					StoredItem<T> storedItem = Wrap(item);
-					transaction.Insert<byte[], byte[]> (_TableName, storedItem.Key, storedItem.Data);
-				}
-				transaction.Commit();
+			foreach (T item in items) {
+				StoredItem<T> storedItem = Wrap(item);
+				transactionContext.Transaction.Insert<byte[], byte[]> (_TableName, storedItem.Key, storedItem.Data);
 			}
 		}
 
-		public void Put(Tuple<byte[], byte[]>[] items)
+		public void Put(TransactionContext transactionContext, Tuple<byte[], byte[]>[] items)
 		{
-			using (var transaction = _Engine.GetTransaction())
+			foreach (Tuple<byte[], byte[]> item in items)
 			{
-				foreach (Tuple<byte[], byte[]> item in items)
-				{
-					transaction.Insert<byte[], byte[]>(_TableName, item.Item1, item.Item2);
-				}
-				transaction.Commit();
+				transactionContext.Transaction.Insert<byte[], byte[]>(_TableName, item.Item1, item.Item2);
 			}
 		}
 
-		public T Get(byte[] key)
+		public T Get(TransactionContext transactionContext, byte[] key)
 		{
-			using (var transaction = _Engine.GetTransaction())
-			{
-				var row = transaction.Select<byte[], byte[]>(_TableName, key);
-				return FromBytes(row.Value, row.Key);
-			}
-
-			throw new Exception("not found");
+			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
+			return FromBytes(row.Value, row.Key);
 		}
 
 		protected abstract StoredItem<T> Wrap(T item);
 		protected abstract T FromBytes(byte[] data, byte[] key);
-
-		public void Dispose()
-		{
-			_Engine.Dispose();
-		}
-
-		//public IEnumerator<T> GetEnumerator()
-		//{
-		//	using (var transaction = _Engine.GetTransaction())
-		//	{
-		//		foreach (var row in transaction.SelectForward<byte[], byte[]>(TableName)) {
-		//			yield return FromBytes(row.Value, row.Key);
-		//		}
-		//	}
-		//}
-
-		//System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		//{
-		//	return this.GetEnumerator();
-		//}
 	}
 }

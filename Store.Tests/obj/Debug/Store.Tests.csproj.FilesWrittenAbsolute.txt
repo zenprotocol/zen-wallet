@@ -1,15 +1,3 @@
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/Store.Tests.dll.mdb
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/Store.Tests.dll
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/obj/Debug/Store.Tests.dll
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/obj/Debug/Store.Tests.dll.mdb
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/nunit.framework.dll
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/Consensus.dll
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/Store.dll
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/Store.dll.mdb
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/MsgPack.dll
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/DBreeze.dll
-/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Store.Tests/bin/Debug/BouncyCastle.Crypto.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store.Tests/obj/Debug/.NETFramework,Version=v4.6.1.AssemblyAttribute.cs
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store.Tests/bin/Debug/Store.Tests.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store.Tests/bin/Debug/Store.Tests.dll
