@@ -2,52 +2,117 @@
 using System;
 using Consensus;
 using System.Collections.Generic;
-using Microsoft.FSharp.Collections;
 using System.Linq;
 
 namespace Store.Tests
 {
 	[TestFixture()]
-	public class Test
+	public class Test : TestBase
 	{
+		private Random random = new Random();
+
 		[Test()]
-		public void CanGetAndPutTransaction()
+		public void CanStoreSingleTransaction()
 		{
-			TransactionStore transactionStore = new TransactionStore("test", "test");
+			using (TestStore testStore = new TestStore())
+			{
+				for (int i = 0; i < 10; i++)
+				{
+					uint version = (uint)random.Next(0, 1000);
 
-			Types.Transaction putTransaction = GetNewTransaction(1);
+					var putTransaction = GetNewTransaction(version);
+					var key = Merkle.transactionHasher.Invoke(putTransaction);
 
-			transactionStore.Put(putTransaction);
+					testStore.Store.Put(putTransaction);
+					var getTransaction = testStore.Store.Get(key);
 
-			var key = Merkle.transactionHasher.Invoke(putTransaction);
-
-			Types.Transaction getTransaction = transactionStore.Get(key);
-
-			Assert.AreEqual(getTransaction.version, putTransaction.version);
-
-			var reKey = Merkle.transactionHasher.Invoke(getTransaction);
-
-			Assert.AreEqual(key, reKey);
+					Assert.AreEqual(getTransaction.version, putTransaction.version);
+					Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
+				}
+			}
 		}
 
-
-		private static Types.Transaction GetNewTransaction(uint version)
+		[Test()]
+		public void CanStoreMultipleTransactions()
 		{
-			var endpoints = new List<Types.Outpoint>();
-			var outputs = new List<Types.Output>();
-			var hashes = new List<byte[]>();
+			using (TestStore testStore = new TestStore())
+			{
+				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
 
-			endpoints.Add(new Types.Outpoint(new byte[] { 0x34 }, 111));
+				for (int i = 0; i < 10; i++)
+				{
+					uint version = (uint)random.Next(0, 1000);
 
-			Types.Transaction transaction =
-				new Types.Transaction(version,
-					ListModule.OfSeq(endpoints),
-					ListModule.OfSeq(hashes),
-					ListModule.OfSeq(outputs),
-					null);
+					var putTransaction = GetNewTransaction(version);
+					var key = Merkle.transactionHasher.Invoke(putTransaction);
 
-			return transaction;
+					putTransactions.Add(new Tuple<byte[], Types.Transaction>(key, putTransaction));
+				}
+
+                testStore.Store.Put(putTransactions.Select(t => t.Item2).ToArray());
+
+				putTransactions.ForEach(t =>
+				{
+					var getTransaction = testStore.Store.Get(t.Item1);
+
+					Assert.AreEqual(getTransaction.version, t.Item2.version);
+					Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction));
+				});
+			}
 		}
 
+		[Test()]
+		public void CanStoreRawSingleRawTransaction()
+		{
+			using (TestStore testStore = new TestStore())
+			{
+				for (int i = 0; i < 10; i++)
+				{
+					uint version = (uint)random.Next(0, 1000);
+
+					var putTransaction = GetNewTransaction(version);
+					var key = Merkle.transactionHasher.Invoke(putTransaction);
+					var value = Merkle.serialize<Types.Transaction>(putTransaction);
+
+					testStore.Store.Put(key, value);
+					var getTransaction = testStore.Store.Get(key);
+
+					Assert.AreEqual(getTransaction.version, putTransaction.version);
+					Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
+				}
+			}
+		}
+
+		[Test()]
+		public void CanStoreMultipleRawTransactions()
+		{
+			using (TestStore testStore = new TestStore())
+			{
+				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
+				List<Tuple<byte[], byte[]>> putRawTransactions = new List<Tuple<byte[], byte[]>>();
+
+				for (int i = 0; i < 10; i++)
+				{
+					uint version = (uint)random.Next(0, 1000);
+
+					var putTransaction = GetNewTransaction(version);
+					var key = Merkle.transactionHasher.Invoke(putTransaction);
+					var value = Merkle.serialize<Types.Transaction>(putTransaction);
+
+					putTransactions.Add(new Tuple<byte[], Types.Transaction>(key, putTransaction));
+					putRawTransactions.Add(new Tuple<byte[], byte[]>(key, value));
+				}
+
+				testStore.Store.Put(putRawTransactions.ToArray());
+
+				putTransactions.ForEach(t =>
+				{
+					var getTransaction = testStore.Store.Get(t.Item1);
+
+					Assert.AreEqual(getTransaction.version, t.Item2.version);
+					Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction));
+				});
+			}
+		}
 	}
 }
