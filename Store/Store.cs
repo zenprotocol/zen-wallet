@@ -37,6 +37,11 @@ namespace Store
 			Put(new T[] { item });
 		}
 
+		public void Put(byte[] key, byte[] value)
+		{
+			Put(new Tuple<byte[],byte[]>[] { new Tuple<byte[], byte[]>(key, value) });
+		}
+
 		public void Put(T[] items)
 		{
 			using (var transaction = _Engine.GetTransaction())
@@ -49,13 +54,24 @@ namespace Store
 			}
 		}
 
+		public void Put(Tuple<byte[], byte[]>[] items)
+		{
+			using (var transaction = _Engine.GetTransaction())
+			{
+				foreach (Tuple<byte[], byte[]> item in items)
+				{
+					transaction.Insert<byte[], byte[]>(_TableName, item.Item1, item.Item2);
+				}
+				transaction.Commit();
+			}
+		}
+
 		public T Get(byte[] key)
 		{
 			using (var transaction = _Engine.GetTransaction())
 			{
-				foreach (var row in transaction.SelectForward<byte[], byte[]>(_TableName)) {
-					return FromBytes(row.Value, row.Key);
-				}
+				var row = transaction.Select<byte[], byte[]>(_TableName, key);
+				return FromBytes(row.Value, row.Key);
 			}
 
 			throw new Exception("not found");
