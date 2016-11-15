@@ -25,17 +25,6 @@ type Hashable =
     | Block of Block
     | Hash of Hash
 
-let transaction x = Transaction x
-let outputLock x = OutputLock x
-let spend x = Spend x
-let outpoint x = Outpoint x
-let output x = Outpoint x
-let contract x = Contract x
-let extendedContract x = ExtendedContract x
-let blockHeader x = BlockHeader x
-let block x = Block x
-let hash x = Hash x
-
 let tag : Hashable -> byte[] =
     function
     | Transaction _ -> "tx"B
@@ -77,6 +66,17 @@ let taggedHash : ('T -> Hashable) -> 'T -> Hash =
         let aTag = tag <| wrapper Unchecked.defaultof<'T>
         fun item -> innerHashList [ aTag; serialize item]
 
+
+let transactionHasher = taggedHash Transaction
+let outputLockHasher = taggedHash OutputLock
+let spendHasher = taggedHash Spend
+let outpointHasher = taggedHash Outpoint
+let outputHasher = taggedHash Outpoint
+let contractHasher = taggedHash Contract
+let extendedContractHasher = taggedHash ExtendedContract
+let blockHeaderHasher = taggedHash BlockHeader
+let blockHasher = taggedHash Block
+let hashHasher = taggedHash Hash
 
 // Usage: partially apply to cTW and keep a reference as long as
 // the tree is needed.
