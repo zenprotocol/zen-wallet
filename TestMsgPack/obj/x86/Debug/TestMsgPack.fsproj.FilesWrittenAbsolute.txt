@@ -1,6 +1,6 @@
-/Users/topynate/Projects/zen-wallet/TestMsgPack/obj/x86/Debug/.NETFramework,Version=v4.5.1.AssemblyAttribute.fs
-/Users/topynate/Projects/zen-wallet/TestMsgPack/bin/Debug/TestMsgPack.exe.mdb
-/Users/topynate/Projects/zen-wallet/TestMsgPack/bin/Debug/TestMsgPack.exe
-/Users/topynate/Projects/zen-wallet/TestMsgPack/obj/x86/Debug/TestMsgPack.exe
-/Users/topynate/Projects/zen-wallet/TestMsgPack/obj/x86/Debug/TestMsgPack.exe.mdb
-/Users/topynate/Projects/zen-wallet/TestMsgPack/bin/Debug/MsgPack.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/TestMsgPack/obj/x86/Debug/.NETFramework,Version=v4.5.1.AssemblyAttribute.fs
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/TestMsgPack/bin/Debug/TestMsgPack.exe.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/TestMsgPack/bin/Debug/TestMsgPack.exe
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/TestMsgPack/obj/x86/Debug/TestMsgPack.exe
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/TestMsgPack/obj/x86/Debug/TestMsgPack.exe.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/TestMsgPack/bin/Debug/MsgPack.dll

@@ -1,13 +1,9 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Consensus;
-using Store;
 
-namespace Blockchain
+namespace Store
 {
-	public class Mempool : CachedStore<TransactionStore, Types.Transaction>
+	public class Mempool : Dictionary<byte[], Types.Transaction>
 	{
-		public Mempool() : base("db", "mempool")
-		{
-		}
 	}
 }

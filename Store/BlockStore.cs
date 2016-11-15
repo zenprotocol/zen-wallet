@@ -5,24 +5,24 @@ using System.Linq;
 
 namespace Store
 {
-	public class TransactionStore : Store<Types.Transaction>
+	public class BlockStore : Store<Types.Block>
 	{
-		public TransactionStore(string dbName, string tableName) : base(dbName, "tx-" + tableName)
+		public BlockStore() : base("bk")
 		{
 		}
 
-		protected override StoredItem<Types.Transaction> Wrap(Types.Transaction item)
+		protected override StoredItem<Types.Block> Wrap(Types.Block item)
 		{
-			var data = Merkle.serialize<Types.Transaction>(item);
-			var key = Merkle.transactionHasher.Invoke(item);
+			var data = Merkle.serialize<Types.Block>(item);
+			var key = Merkle.blockHasher.Invoke(item);
 
-			return new StoredItem<Types.Transaction>(item, key, data);
+			return new StoredItem<Types.Block>(item, key, data);
 		}
 
-		protected override Types.Transaction FromBytes(byte[] data, byte[] key)
+		protected override Types.Block FromBytes(byte[] data, byte[] key)
 		{
 			//TODO: encap unpacking in Consensus, so referencing MsgPack would becode unnecessary 
-			return Serialization.context.GetSerializer<Types.Transaction>().UnpackSingleObject(data);
+			return Serialization.context.GetSerializer<Types.Block>().UnpackSingleObject(data);
 		}
 	}
 }

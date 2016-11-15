@@ -7,7 +7,7 @@ namespace Store
 {
 	public class TransactionStore : Store<Types.Transaction>
 	{
-		public TransactionStore(string dbName, string tableName) : base(dbName, "tx-" + tableName)
+		public TransactionStore() : base("tx")
 		{
 		}
 
