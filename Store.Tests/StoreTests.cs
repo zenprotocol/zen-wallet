@@ -6,15 +6,17 @@ using System.Linq;
 
 namespace Store.Tests
 {
+	//TOOD: benchmark compare with iBoxDb?
+
 	[TestFixture()]
-	public class Test : TestBase
+	public class StoreTests : TestBase
 	{
 		private Random random = new Random();
 
 		[Test()]
 		public void CanStoreSingleTransaction()
 		{
-			using (TestStore testStore = new TestStore())
+			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
 			{
 				for (int i = 0; i < 10; i++)
 				{
@@ -23,11 +25,19 @@ namespace Store.Tests
 					var putTransaction = GetNewTransaction(version);
 					var key = Merkle.transactionHasher.Invoke(putTransaction);
 
-					testStore.Store.Put(putTransaction);
-					var getTransaction = testStore.Store.Get(key);
+					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					{
+						dbContext.Store.Put(transaction, putTransaction);
+						transaction.Commit();
+					}
 
-					Assert.AreEqual(getTransaction.version, putTransaction.version);
-					Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
+					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					{
+						var getTransaction = dbContext.Store.Get(transaction, key);
+
+						Assert.AreEqual(getTransaction.version, putTransaction.version);
+						Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
+					}
 				}
 			}
 		}
@@ -35,7 +45,7 @@ namespace Store.Tests
 		[Test()]
 		public void CanStoreMultipleTransactions()
 		{
-			using (TestStore testStore = new TestStore())
+			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
 			{
 				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
 
@@ -49,22 +59,29 @@ namespace Store.Tests
 					putTransactions.Add(new Tuple<byte[], Types.Transaction>(key, putTransaction));
 				}
 
-                testStore.Store.Put(putTransactions.Select(t => t.Item2).ToArray());
-
-				putTransactions.ForEach(t =>
+				using (TransactionContext transaction = dbContext.GetTransactionContext())
 				{
-					var getTransaction = testStore.Store.Get(t.Item1);
+					dbContext.Store.Put(transaction, putTransactions.Select(t => t.Item2).ToArray());
+					transaction.Commit();
+				}
 
-					Assert.AreEqual(getTransaction.version, t.Item2.version);
-					Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction));
-				});
+				using (TransactionContext transaction = dbContext.GetTransactionContext())
+				{
+					putTransactions.ForEach(t =>
+					{
+						var getTransaction = dbContext.Store.Get(transaction, t.Item1);
+
+						Assert.AreEqual(getTransaction.version, t.Item2.version);
+						Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction));
+					});
+				}
 			}
 		}
 
 		[Test()]
 		public void CanStoreRawSingleRawTransaction()
 		{
-			using (TestStore testStore = new TestStore())
+			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
 			{
 				for (int i = 0; i < 10; i++)
 				{
@@ -74,11 +91,20 @@ namespace Store.Tests
 					var key = Merkle.transactionHasher.Invoke(putTransaction);
 					var value = Merkle.serialize<Types.Transaction>(putTransaction);
 
-					testStore.Store.Put(key, value);
-					var getTransaction = testStore.Store.Get(key);
+					Types.Transaction getTransaction;
 
-					Assert.AreEqual(getTransaction.version, putTransaction.version);
-					Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
+					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					{
+						dbContext.Store.Put(transaction, key, value);
+						getTransaction = dbContext.Store.Get(transaction, key);
+						transaction.Commit();
+					}
+
+					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					{
+						Assert.AreEqual(getTransaction.version, putTransaction.version);
+						Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
+					}
 				}
 			}
 		}
@@ -86,7 +112,7 @@ namespace Store.Tests
 		[Test()]
 		public void CanStoreMultipleRawTransactions()
 		{
-			using (TestStore testStore = new TestStore())
+			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
 			{
 				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
 				List<Tuple<byte[], byte[]>> putRawTransactions = new List<Tuple<byte[], byte[]>>();
@@ -103,15 +129,22 @@ namespace Store.Tests
 					putRawTransactions.Add(new Tuple<byte[], byte[]>(key, value));
 				}
 
-				testStore.Store.Put(putRawTransactions.ToArray());
-
-				putTransactions.ForEach(t =>
+				using (TransactionContext transaction = dbContext.GetTransactionContext())
 				{
-					var getTransaction = testStore.Store.Get(t.Item1);
+					dbContext.Store.Put(transaction, putRawTransactions.ToArray());
+					transaction.Commit();
+				}
 
-					Assert.AreEqual(getTransaction.version, t.Item2.version);
-					Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction));
-				});
+				using (TransactionContext transaction = dbContext.GetTransactionContext())
+				{
+					putTransactions.ForEach(t =>
+					{
+						var getTransaction = dbContext.Store.Get(transaction, t.Item1);
+
+						Assert.AreEqual(getTransaction.version, t.Item2.version);
+						Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction));
+					});
+				}
 			}
 		}
 	}
