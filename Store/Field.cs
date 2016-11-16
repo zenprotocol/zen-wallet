@@ -2,29 +2,29 @@
 
 namespace Store
 {
-	public class Field<T> where T : new()
+	public class Field<TKey, TValue> where TValue : new()
 	{
 		private readonly TransactionContext _Context;
 		private readonly String _TableName;
-		private readonly String _Key;
+		private readonly TKey _Key;
 
-		public Field(TransactionContext context, String tableName, String key)
+		public Field(TransactionContext context, String tableName, TKey key)
 		{
 			_Context = context;
 			_TableName = tableName;
 			_Key = key;
 		}
 
-		public T Value
+		public TValue Value
 		{
 			get
 			{
-				var valueRow = _Context.Transaction.Select<String, T>(_TableName, _Key);
-				return valueRow.Exists ? valueRow.Value : new T();
+				var valueRow = _Context.Transaction.Select<TKey, TValue>(_TableName, _Key);
+				return valueRow.Exists ? valueRow.Value : new TValue();
 			}
 			set
 			{
-				_Context.Transaction.Insert<String, T>(_TableName, _Key, value);
+				_Context.Transaction.Insert<TKey, TValue>(_TableName, _Key, value);
 			}
 		}
 	}

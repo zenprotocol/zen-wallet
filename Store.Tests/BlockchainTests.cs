@@ -27,7 +27,7 @@ namespace Store.Tests
 
 				using (BlockChain blockChain = new BlockChain(dbName))
 				{
-					blockChain.HandleNewValueBlock(newBlock, newTip);
+					blockChain.HandleNewValueBlock(newBlock/*, newTip*/);
 				}
 
 				if (newTip > expectedTip)
@@ -37,7 +37,7 @@ namespace Store.Tests
 
 				using (DBContext dbContext = new DBContext(dbName))
 				{
-					var Tip = new Field<int>(dbContext.GetTransactionContext(), "blockchain", "tip");
+					var Tip = new Field<string, int>(dbContext.GetTransactionContext(), "blockchain", "tip");
 
 					Assert.AreEqual(Tip.Value, expectedTip);
 				}
@@ -55,7 +55,7 @@ namespace Store.Tests
 
 			using (BlockChain blockChain = new BlockChain(dbName))
 			{
-				blockChain.HandleNewValueBlock(newBlock, 1);
+				blockChain.HandleNewValueBlock(newBlock/*, 1*/);
 			}
 
 			Directory.Delete(dbName, true);
