@@ -39,6 +39,11 @@
     <Compile Include="StoreTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="BlockchainTests.cs" />
+    <Compile Include="DBTests.cs" />
+    <Compile Include="TestFSharp.cs" />
+    <Compile Include="BlockChainAddTransactionOperationTests.cs" />
+    <Compile Include="TxMempoolTests.cs" />
+    <Compile Include="TestCSharp.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -6,8 +6,6 @@ using System.Linq;
 
 namespace Store.Tests
 {
-	//TOOD: benchmark compare with iBoxDb?
-
 	[TestFixture()]
 	public class StoreTests : TestBase
 	{
@@ -16,7 +14,7 @@ namespace Store.Tests
 		[Test()]
 		public void CanStoreSingleTransaction()
 		{
-			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
+			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
 			{
 				for (int i = 0; i < 10; i++)
 				{
@@ -45,7 +43,7 @@ namespace Store.Tests
 		[Test()]
 		public void CanStoreMultipleTransactions()
 		{
-			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
+			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
 			{
 				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
 
@@ -81,7 +79,7 @@ namespace Store.Tests
 		[Test()]
 		public void CanStoreRawSingleRawTransaction()
 		{
-			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
+			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
 			{
 				for (int i = 0; i < 10; i++)
 				{
@@ -112,7 +110,7 @@ namespace Store.Tests
 		[Test()]
 		public void CanStoreMultipleRawTransactions()
 		{
-			using (TestDBContext<TransactionStore> dbContext = new TestDBContext<TransactionStore>())
+			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
 			{
 				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
 				List<Tuple<byte[], byte[]>> putRawTransactions = new List<Tuple<byte[], byte[]>>();
