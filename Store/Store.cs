@@ -4,7 +4,13 @@ using DBreeze.Transactions;
 
 namespace Store
 {
-	public abstract class Store<T>
+	//TODO: memory management
+	//https://docs.google.com/document/d/1IFkXoX3Tc2zHNAQN9EmGSXZGbQabMrWmpmVxFsLxLsw/pub
+	//calling GC.Collect
+	//calling table.Close
+
+	//public abstract class Store<TWrapper, TItem> where TWrapper : StoredItem<TItem>
+	public abstract class Store<T> where T : class
 	{
 		private readonly string _TableName;
 
@@ -39,10 +45,15 @@ namespace Store
 			}
 		}
 
+		public bool ContainsKey(TransactionContext transactionContext, byte[] key)
+		{
+			return transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key).Exists;
+		}
+
 		public T Get(TransactionContext transactionContext, byte[] key)
 		{
 			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
-			return FromBytes(row.Value, row.Key);
+			return row.Exists ? FromBytes(row.Value, row.Key) : null;
 		}
 
 		protected abstract StoredItem<T> Wrap(T item);

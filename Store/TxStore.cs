@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace Store
 {
-	public class TransactionStore : Store<Types.Transaction>
+	public class TxStore : Store<Types.Transaction>
 	{
-		public TransactionStore() : base("tx")
+		public TxStore() : base("tx")
 		{
 		}
 

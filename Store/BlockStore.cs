@@ -1,6 +1,5 @@
 ﻿using System;
 using Consensus;
-using System.IO;
 using System.Linq;
 
 namespace Store
@@ -14,7 +13,8 @@ namespace Store
 		protected override StoredItem<Types.Block> Wrap(Types.Block item)
 		{
 			var data = Merkle.serialize<Types.Block>(item);
-			var key = Merkle.blockHasher.Invoke(item);
+			var key = Merkle.blockHasher.Invoke(item); //TODO: id should be hash of block header, blockHasher may be redundant and wrong to use here
+
 
 			return new StoredItem<Types.Block>(item, key, data);
 		}
