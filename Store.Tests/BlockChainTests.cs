@@ -1,15 +1,17 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using Consensus;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.FSharp.Collections;
 using System.IO;
+using BlockChain.Database;
+using BlockChain.Store;
 
-namespace Store.Tests
+namespace BlockChain.Tests
 {
 	[TestFixture()]
-	public class BlockchainTests
+	public class BlockChainTests
 	{
 		[Test()]
 		public void CanStoreBlockDifficulty()

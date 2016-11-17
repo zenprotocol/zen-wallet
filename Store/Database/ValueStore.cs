@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Store
+namespace BlockChain.Database
 {
 	//public class Field<TKey, TValue> where TValue : new()
 	//{

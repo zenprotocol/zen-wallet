@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using Consensus;
 using System.Linq;
+using BlockChain.Store;
+using BlockChain.Database;
 
-namespace Store
+namespace BlockChain
 {
 	public class BlockChain : IDisposable
 	{

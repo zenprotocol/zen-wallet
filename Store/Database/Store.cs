@@ -1,8 +1,9 @@
-﻿using System;
+using System;
+using BlockChain.Data;
 using DBreeze;
 using DBreeze.Transactions;
 
-namespace Store
+namespace BlockChain.Database
 {
 	//TODO: memory management
 	//https://docs.google.com/document/d/1IFkXoX3Tc2zHNAQN9EmGSXZGbQabMrWmpmVxFsLxLsw/pub

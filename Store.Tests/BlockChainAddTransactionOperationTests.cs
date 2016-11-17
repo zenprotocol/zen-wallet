@@ -1,8 +1,11 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using Consensus;
+using BlockChain.Store;
+using BlockChain.Data;
+using BlockChain.Database;
 
-namespace Store.Tests
+namespace BlockChain.Tests
 {
 	[TestFixture()]
 	public class BlockChainAddTransactionOperationTests : TestBase

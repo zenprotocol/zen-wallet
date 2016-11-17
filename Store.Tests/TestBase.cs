@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using BlockChain.Database;
 using Consensus;
 using Microsoft.FSharp.Collections;
 
-namespace Store.Tests
+namespace BlockChain.Tests
 {
 	public class TestBase
 	{

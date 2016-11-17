@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
-namespace Store.Tests
+namespace BlockChain.Tests
 {
 	//TOOD: benchmark compare with iBoxDb?
 
