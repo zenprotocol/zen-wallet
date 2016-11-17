@@ -60,10 +60,13 @@ namespace BlockChain.Database
 			get
 			{
 				var valueRow = _Context.Transaction.Select<TKey, TValue>(_TableName, key);
-				return valueRow.Exists ? valueRow.Value : new TValue();
+				TValue returnValue = valueRow.Exists ? valueRow.Value : new TValue();
+				DatabaseTrace.Read(_TableName, key, returnValue);
+				return returnValue;
 			}
 			set
 			{
+				DatabaseTrace.Write(_TableName, key, value);
 				_Context.Transaction.Insert<TKey, TValue>(_TableName, key, value);
 			}
 		}
