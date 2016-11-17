@@ -46,9 +46,9 @@ namespace BlockChain
 		{
 			Double result = block.header.pdiff;
 
-			if (block.header.parent == null)
+			if (block.header.parent == null || block.header.parent.Length == 0)
 			{
-				return 0;
+				return result;
 			}
 
 			Types.Block parentBlock = _BlockStore.Get(context, block.header.parent);

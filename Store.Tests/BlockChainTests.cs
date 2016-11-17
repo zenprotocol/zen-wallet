@@ -68,21 +68,29 @@ namespace BlockChain.Tests
 
 			Types.Block lastBlock = null;
 
+			Console.WriteLine("Creating");
+
 			for (int i = 0; i < 10; i++)
 			{
-				Double difficultyNew = random.Next(0, int.MaxValue);
+				Double difficultyNew = random.Next(0, 1000);
 				Types.Block newBlock = Util.GetBlock(lastBlock, difficultyNew);
 				lastBlock = newBlock;
 
 				using (BlockChain blockChain = new BlockChain(dbName))
 				{
+					Console.WriteLine("Handling block with difficulty: " + difficultyNew);
+
 					blockChain.HandleNewValueBlock(newBlock);
 				}
 
 				difficultyAgg += difficultyNew;
 
+				Console.WriteLine("Totoal difficulty: " + difficultyAgg);
+
 				blocks.Add(new Tuple<Types.Block, Double>(newBlock, difficultyAgg));
 			}
+
+			Console.WriteLine("Checking");
 
 			using (DBContext dbContext = new DBContext(dbName))
 			{
@@ -97,6 +105,7 @@ namespace BlockChain.Tests
 						Double found = BlockDifficultyTable.Context(context)[key];
 
 						Assert.AreEqual(expected, found, "match expected/found block difficulty");
+						Console.WriteLine("check passed..");
 					}
 				}
 			}
