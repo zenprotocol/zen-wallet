@@ -26,7 +26,6 @@ let countleaves tree = cata (konst 1) (fun _ x y -> x+y) tree
 
 let countSomeLeaves tree = cata (fun (x:LocData<'T option>) -> if Option.isNone x.data then 0 else 1) (fun _ x y -> x+y) tree
 
-
 [<Test>]
 let ``One item tree has one non-empty leaf``() =
     Assert.That( countSomeLeaves onetree, Is.EqualTo(1))
@@ -59,7 +58,7 @@ let toBits (bi:bigint) =
         b <- b / bigint 2
     ret
 
-let bigSize = 100
+let bigSize = 10
 
 let bigtree = List.fold (fun tree n -> insert tree (toBits n) [|1uy|]) emptree [bigint 0 .. bigint (bigSize - 1)]
 
@@ -91,20 +90,47 @@ let ``Empty SMT has default digest for given height``() =
 
 [<Test>]
 let ``Inserting one key gives non-default digest``() =
+    let smt = emptySMT<byte[]>(treeconst)
     let toInsert = Map.ofList [(firstKey, Some firstValue)]
-    let d = updateSMTOpt testSerializer testSMT testSMT defLocation toInsert
+    let d = updateSMTOpt testSerializer smt smt defLocation toInsert
     Assert.That(d, Is.Not.EqualTo(None))
 
 [<Test>]
 let ``One item SMT has one key``() =
-    Assert.That(testSMT.kv.Count, Is.EqualTo(1))
+    let smt = emptySMT<byte[]>(treeconst)
+    let toInsert = Map.ofList [(firstKey, Some firstValue)]
+    let d = updateSMTOpt testSerializer smt smt defLocation toInsert
+    Assert.That(smt.kv.Count, Is.EqualTo(1))
 
 [<Test>]
 let ``Removing item from SMT removes key and changes digest``() =
+    let smt = emptySMT<byte[]>(treeconst)
+    let toInsert = Map.ofList [(firstKey, Some firstValue)]
+    ignore <| updateSMTOpt testSerializer smt smt defLocation toInsert
     let toRemove = Map.ofList [(firstKey,None)]
-    let d = updateSMTOpt testSerializer testSMT testSMT defLocation toRemove
+    let d = updateSMTOpt testSerializer smt smt defLocation toRemove
     Assert.That(d, Is.EqualTo(None))
-    Assert.That(testSMT.kv.Count, Is.EqualTo(0))
+    Assert.That(smt.kv.Count, Is.EqualTo(0))
+
+let randomKeys size =
+    let rnd = System.Random()
+    Seq.initInfinite (fun _ ->
+        let buffer = Array.zeroCreate size
+        rnd.NextBytes buffer
+        buffer)
+
+[<Test>]
+let ``Adding 10,000 items results in 10,000 keys``() =
+    let smt = emptySMT<byte[]>(treeconst)
+    let aval = "a value"B
+    let toInsert =
+        Map.ofSeq << (Seq.take 10000) <| (Seq.map (fun k -> (k, Some aval)) (randomKeys (TSize/8)))
+    let d = updateSMTOpt testSerializer smt smt defLocation toInsert
+    printfn "SMT with 10000 elements has %d cached digests" smt.digests.Value.Count
+    printfn "toInsert count is %d" toInsert.Count
+    printfn "kv has key-val pairs %A" <| Map.toList smt.kv
+    Assert.That(d, Is.Not.EqualTo(None))
+    Assert.That(smt.kv.Count, Is.EqualTo(10000))
 
 //let semp = emptyTree' 2
 //let sone = insert semp [|false;false;|] 1
