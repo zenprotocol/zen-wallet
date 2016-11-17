@@ -1,5 +1,6 @@
-﻿using System;
-namespace Store
+using System;
+
+namespace BlockChain.Data
 {
 	public class Keyed<T>
 	{

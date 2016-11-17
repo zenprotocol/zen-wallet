@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using DBreeze.Transactions;
 
-namespace Store
+namespace BlockChain.Database
 {
 	public class TransactionContext : IDisposable
 	{

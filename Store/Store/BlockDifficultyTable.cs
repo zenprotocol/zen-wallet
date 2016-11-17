@@ -1,5 +1,7 @@
-﻿using System;
-namespace Store
+using System;
+using BlockChain.Database;
+
+namespace BlockChain.Store
 {
 	public class BlockDifficultyTable : ValueStore<byte[], Double>
 	{

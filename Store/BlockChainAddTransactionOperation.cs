@@ -1,7 +1,10 @@
-﻿using System;
+using System;
+using BlockChain.Data;
+using BlockChain.Database;
+using BlockChain.Store;
 using Consensus;
 
-namespace Store
+namespace BlockChain
 {
 	public class BlockChainAddTransactionOperation
 	{

@@ -1,10 +1,12 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using Consensus;
 using System.Collections.Generic;
 using System.Linq;
+using BlockChain.Store;
+using BlockChain.Database;
 
-namespace Store.Tests
+namespace BlockChain.Tests
 {
 	[TestFixture()]
 	public class StoreTests : TestBase
