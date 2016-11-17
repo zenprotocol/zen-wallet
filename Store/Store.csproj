@@ -53,10 +53,11 @@
     <Compile Include="BlockChain.cs" />
     <Compile Include="TransactionContext.cs" />
     <Compile Include="DBContext.cs" />
-    <Compile Include="Field.cs" />
+    <Compile Include="ValueStore.cs" />
     <Compile Include="Block.cs" />
     <Compile Include="BlockChainAddTransactionOperation.cs" />
     <Compile Include="HashDictionary.cs" />
+    <Compile Include="BlockDifficultyTable.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
