@@ -34,6 +34,9 @@
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="StoreTests.cs" />
@@ -44,14 +47,22 @@
     <Compile Include="BlockChainAddTransactionOperationTests.cs" />
     <Compile Include="TxMempoolTests.cs" />
     <Compile Include="TestCSharp.cs" />
+    <Compile Include="BlockStoreTests.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="ConsensusTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Store\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
+      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
+      <Name>Infrastructure.Testing</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

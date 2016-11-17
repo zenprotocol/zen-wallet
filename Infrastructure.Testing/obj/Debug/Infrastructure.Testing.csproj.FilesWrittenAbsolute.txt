@@ -1,0 +1,10 @@
+/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Infrastructure.Testing/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Infrastructure.Testing/bin/Debug/Infrastructure.Testing.dll.mdb
+/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Infrastructure.Testing/bin/Debug/Infrastructure.Testing.dll
+/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Infrastructure.Testing/obj/Debug/Infrastructure.Testing.dll
+/home/user/projects/zen/wallet/test_orig_nbitcoin_stress/Infrastructure.Testing/obj/Debug/Infrastructure.Testing.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Infrastructure.Testing/obj/Debug/.NETFramework,Version=v4.6.1.AssemblyAttribute.cs
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Infrastructure.Testing/bin/Debug/Infrastructure.Testing.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Infrastructure.Testing/bin/Debug/Infrastructure.Testing.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Infrastructure.Testing/obj/Debug/Infrastructure.Testing.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Infrastructure.Testing/obj/Debug/Infrastructure.Testing.dll.mdb

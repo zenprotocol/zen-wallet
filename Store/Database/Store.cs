@@ -34,6 +34,7 @@ namespace BlockChain.Database
 		{
 			foreach (T item in items) {
 				StoredItem<T> storedItem = Wrap(item);
+				DatabaseTrace.Write(_TableName, storedItem.Key);
 				transactionContext.Transaction.Insert<byte[], byte[]> (_TableName, storedItem.Key, storedItem.Data);
 			}
 		}
@@ -42,17 +43,20 @@ namespace BlockChain.Database
 		{
 			foreach (Tuple<byte[], byte[]> item in items)
 			{
+				DatabaseTrace.Write(_TableName, item.Item1);
 				transactionContext.Transaction.Insert<byte[], byte[]>(_TableName, item.Item1, item.Item2);
 			}
 		}
 
 		public bool ContainsKey(TransactionContext transactionContext, byte[] key)
 		{
+			DatabaseTrace.KeyLookup(_TableName, key);
 			return transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key).Exists;
 		}
 
 		public T Get(TransactionContext transactionContext, byte[] key)
 		{
+			DatabaseTrace.Read(_TableName, key);
 			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
 			return row.Exists ? FromBytes(row.Value, row.Key) : null;
 		}

@@ -14,7 +14,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -58,6 +58,7 @@
     <Compile Include="Database\TransactionContext.cs" />
     <Compile Include="Data\MiroringCache.cs" />
     <Compile Include="Data\Block.cs" />
+    <Compile Include="Database\DatabaseTrace.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -67,5 +68,11 @@
     <Folder Include="Data\" />
     <Folder Include="Store\" />
     <Folder Include="Database\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

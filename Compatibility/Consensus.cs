@@ -12,6 +12,18 @@ namespace Compatibility
 		{
 			byte[] hashed = Merkle.transactionHasher.Invoke(GetNewTransaction());
 			Console.WriteLine(Encoding.ASCII.GetString(hashed));
+
+
+			//Types.Block block = GetBlock(null, 0);
+			//var data = Merkle.serialize<Types.Block>(block);
+			//Types.Block _block = Serialization.context.GetSerializer<Types.Block>().UnpackSingleObject(data);
+
+			//Assert.IsTrue(block.Equals(_block));
+
+
+
+
+
 			Console.ReadLine ();
 		}
 
@@ -31,6 +43,19 @@ namespace Compatibility
 					null);
 
 			return transaction;
+		}
+
+		private static Types.Block GetBlock(Types.Block parent, Double difficulty)
+		{
+			UInt32 pdiff = Convert.ToUInt32(difficulty);
+			byte[] parentKey = parent == null ? null : Merkle.blockHasher.Invoke(parent);
+
+			Types.BlockHeader newBlockHeader = new Types.BlockHeader(1, parentKey, null, null, null, null, 0, pdiff, null);
+			var transactions = new List<Types.Transaction>();
+			FSharpList<Types.Transaction> newBlockTransactions = ListModule.OfSeq(transactions);
+			Types.Block newBlock = new Types.Block(newBlockHeader, newBlockTransactions);
+
+			return newBlock;
 		}
 	}
 }

@@ -48,7 +48,7 @@
 
 //		protected override BlockDifficulty FromBytes(byte[] data, byte[] key)
 //		{
-//			//TODO: encap unpacking in Consensus, so referencing MsgPack would becode unnecessary 
+//			//TODO: encap unpacking in Consensus, so referencing MsgPack would become unnecessary 
 //			return Serialization.context.GetSerializer<BlockDifficulty>().UnpackSingleObject(data);
 //		}
 //	}
