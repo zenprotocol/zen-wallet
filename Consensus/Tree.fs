@@ -47,7 +47,7 @@ type LocData<'T> = {data:'T; location:Loc}
 let rightLocation = function
     | {loc=loc;height=height} ->
         let l = Array.copy loc
-        l.SetValue(true, Array.length l - height - 1)
+        l.SetValue(true, Array.length l - height)
         {height=height-1;loc=l}
 
 let leftLocation = function
@@ -58,14 +58,14 @@ let leftLocation = function
 let addLocation height tree =
     let rec inner = function
         | location, Leaf v -> Leaf {data=v; location=location}
-        | {height=height;loc=loc} as location, Branch (branchData, leftTree, rightTree) ->
+        | location, Branch (branchData, leftTree, rightTree) ->
             Branch <|
             (
                 {data=branchData;location=location},
                 inner (leftLocation location, leftTree),
                 inner (rightLocation location, rightTree)
             )
-    inner ({height=height;loc=Array.zeroCreate (height+1)}, tree)
+    inner ({height=height;loc=Array.zeroCreate (height)}, tree)
 
 let locLocation<'L,'B> : (FullTree<LocData<'L>,LocData<'B>> -> Loc) = function
     | Leaf v -> v.location
