@@ -112,6 +112,12 @@ let bitsToBytes (bs:bool[]) =
         yield !b
     } |> Array.ofSeq
 
+let bytesToBits (bs:byte[]) = 
+    let ba = System.Collections.BitArray(bs)
+    let ret = Array.zeroCreate(bs.Length*8)
+    ba.CopyTo(ret,0)
+    ret
+
 
 type Digest = {digest: byte[]; isDefault: bool}
 
@@ -136,5 +142,3 @@ let branchHash defaultHashes = fun branchData dL dR ->
 let merkleRoot cTW wrapper =
     let defaultHashes = defaultHash cTW
     cata (leafHash cTW wrapper defaultHashes) (branchHash defaultHashes)                                                 
-
-
