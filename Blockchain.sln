@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain", "Store\BlockCh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLockChain.Tests", "Store.Tests\BLockChain.Tests.csproj", "{AC531A6E-F0A3-487D-883C-89BBA901A5F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Testing", "Infrastructure.Testing\Infrastructure.Testing.csproj", "{D3641686-BDB9-4399-8B53-10897DD26337}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -37,5 +41,13 @@ Global
 		{AC531A6E-F0A3-487D-883C-89BBA901A5F8}.Debug|x86.Build.0 = Debug|Any CPU
 		{AC531A6E-F0A3-487D-883C-89BBA901A5F8}.Release|x86.ActiveCfg = Release|Any CPU
 		{AC531A6E-F0A3-487D-883C-89BBA901A5F8}.Release|x86.Build.0 = Release|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Debug|x86.Build.0 = Debug|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Release|x86.ActiveCfg = Release|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Release|x86.Build.0 = Release|Any CPU
+		{D3641686-BDB9-4399-8B53-10897DD26337}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D3641686-BDB9-4399-8B53-10897DD26337}.Debug|x86.Build.0 = Debug|Any CPU
+		{D3641686-BDB9-4399-8B53-10897DD26337}.Release|x86.ActiveCfg = Release|Any CPU
+		{D3641686-BDB9-4399-8B53-10897DD26337}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -14,6 +14,48 @@ namespace BlockChain.Tests
 	public class BlockChainTests
 	{
 		[Test()]
+		public void CanStoreBlocks()
+		{
+			String dbName = "test-" + new Random().Next(0, 1000);
+
+			List<Types.Block> blocks = new List<Types.Block>();
+
+			for (int i = 0; i < 10; i++)
+			{
+				Types.Block newBlock = Util.GetBlock(null, new Random().Next(0, 1000));
+
+				using (BlockChain blockChain = new BlockChain(dbName))
+				{
+					blockChain.HandleNewValueBlock(newBlock);
+				}
+
+				blocks.Add(newBlock);
+			}
+
+
+			BlockStore blockStore = new BlockStore();
+
+			using (DBContext dbContext = new DBContext(dbName))
+			{
+				using (TransactionContext context = dbContext.GetTransactionContext())
+				{
+					foreach (Types.Block expected in blocks)
+					{
+						byte[] key = Merkle.blockHasher.Invoke(expected);
+
+						Assert.IsTrue(blockStore.ContainsKey(context, key));
+
+						Types.Block found = blockStore.Get(context, key);
+
+                      	Assert.AreEqual(expected, found, "match expected/found block");
+					}
+				}
+			}
+
+			Directory.Delete(dbName, true);
+		}
+
+		[Test()]
 		public void CanStoreBlockDifficulty()
 		{
 			String dbName = "test-" + new Random().Next(0, 1000);
@@ -29,7 +71,7 @@ namespace BlockChain.Tests
 			for (int i = 0; i < 10; i++)
 			{
 				Double difficultyNew = random.Next(0, int.MaxValue);
-				Types.Block newBlock = GetBlock(lastBlock, difficultyNew);
+				Types.Block newBlock = Util.GetBlock(lastBlock, difficultyNew);
 				lastBlock = newBlock;
 
 				using (BlockChain blockChain = new BlockChain(dbName))
@@ -76,19 +118,5 @@ namespace BlockChain.Tests
 
 		//	Directory.Delete(dbName, true);
 		//}
-
-
-		private Types.Block GetBlock(Types.Block parent, Double difficulty)
-		{
-			UInt32 pdiff = Convert.ToUInt32(difficulty);
-			byte[] parentKey = parent == null ? null : Merkle.blockHasher.Invoke(parent);
-
-			Types.BlockHeader newBlockHeader = new Types.BlockHeader(1, parentKey, null, null, null, null, 0, pdiff, null);
-			var transactions = new List<Types.Transaction>();
-			FSharpList<Types.Transaction> newBlockTransactions = ListModule.OfSeq(transactions);
-			Types.Block newBlock = new Types.Block(newBlockHeader, newBlockTransactions);
-
-			return newBlock;
-		}
 	}
 }
