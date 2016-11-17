@@ -23,24 +23,33 @@ namespace BlockChain.Database
 			_Trace.TraceEvent(TraceEventType.Verbose, 0, str);
 		}
 
-		internal static void Read(string tableName, byte[] key)
+		internal static void Read(string tableName, Object key, Object value = null)
 		{
-			Information($"RD {tableName}, key: {KeyToString(key)}");
+			if (value != null)
+				Information($"RD {tableName}, key: {KeyToString(key)}, value: {value}");
+			else
+				Information($"RD {tableName}, key: {KeyToString(key)}");
 		}
 
-		internal static void Write(string tableName, byte[] key)
+		internal static void Write(string tableName, Object key, Object value = null)
 		{
-			Information($"WR {tableName}, key: {KeyToString(key)}");
+			if (value != null)
+				Information($"WR {tableName}, key: {KeyToString(key)}, value: {value}");
+			else
+				Information($"WR {tableName}, key: {KeyToString(key)}");
 		}
 
-		internal static void KeyLookup(string tableName, byte[] key)
+		internal static void KeyLookup(string tableName, Object key)
 		{
 			Information($"KY {tableName}, key: {KeyToString(key)}");
 		}
 
-		private static String KeyToString(byte[] key)
+		private static String KeyToString(Object key)
 		{
-			return BitConverter.ToString(key);
+			if (key is byte[])
+				return BitConverter.ToString(key as byte[]).Substring(0,10);
+
+			return key.ToString();
 		}
 
 	}
