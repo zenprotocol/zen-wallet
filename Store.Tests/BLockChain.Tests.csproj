@@ -51,7 +51,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
-      <Name>Store</Name>
+      <Name>BlockChain</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
