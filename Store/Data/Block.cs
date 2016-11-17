@@ -1,8 +1,8 @@
-﻿////using System;
+////using System;
 ////using System.Collections.Generic;
 ////using Consensus;
 
-////namespace Store
+////namespace BlockChain
 ////{
 ////	public class Block
 ////	{
@@ -24,7 +24,7 @@
 //using Consensus;
 //using System.Linq;
 
-//namespace Store
+//namespace BlockChain
 //{
 //	public class BlockDifficulty
 //	{

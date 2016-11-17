@@ -1,7 +1,9 @@
-﻿using System;
+using System;
+using BlockChain.Data;
+using BlockChain.Database;
 using Consensus;
 
-namespace Store
+namespace BlockChain.Store
 {
 	public enum UTXOState {
 		Confirmed,
@@ -47,7 +49,5 @@ namespace Store
 				return Serialization.context.GetSerializer<Types.Output>().UnpackSingleObject(data);
 			}
 		}
-
-	
 	}
 }

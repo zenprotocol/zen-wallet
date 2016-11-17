@@ -7,9 +7,9 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "TestMsgPack", "TestMsgPack\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatibility", "Compatibility\Compatibility.csproj", "{7745B74E-F9A4-4E4B-AC06-FCB2CA83904B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store", "Store\Store.csproj", "{9D566AD5-659D-4042-A5CA-F804287CA992}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain", "Store\BlockChain.csproj", "{9D566AD5-659D-4042-A5CA-F804287CA992}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store.Tests", "Store.Tests\Store.Tests.csproj", "{AC531A6E-F0A3-487D-883C-89BBA901A5F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLockChain.Tests", "Store.Tests\BLockChain.Tests.csproj", "{AC531A6E-F0A3-487D-883C-89BBA901A5F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

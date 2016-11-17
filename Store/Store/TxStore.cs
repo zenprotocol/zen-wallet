@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using Consensus;
 using System.IO;
 using System.Linq;
+using BlockChain.Database;
+using BlockChain.Data;
 
-namespace Store
+namespace BlockChain.Store
 {
 	public class TxStore : Store<Types.Transaction>
 	{

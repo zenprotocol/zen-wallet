@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using Consensus;
 using System.Collections.Generic;
 
-namespace Store.Tests
+namespace BlockChain.Tests
 {
 	[TestFixture()]
 	public class TestFSharp : TestBase

@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using Consensus;
 using System.Linq;
+using BlockChain.Database;
+using BlockChain.Data;
 
-namespace Store
+namespace BlockChain.Store
 {
 	public class BlockStore : Store<Types.Block>
 	{

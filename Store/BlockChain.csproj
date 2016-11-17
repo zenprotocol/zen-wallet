@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{9D566AD5-659D-4042-A5CA-F804287CA992}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Store</RootNamespace>
-    <AssemblyName>Store</AssemblyName>
+    <RootNamespace>BlockChain</RootNamespace>
+    <AssemblyName>BlockChain</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -43,24 +43,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Store.cs" />
-    <Compile Include="TxStore.cs" />
-    <Compile Include="MiroringCache.cs" />
-    <Compile Include="StoredItem.cs" />
-    <Compile Include="TxMempool.cs" />
-    <Compile Include="BlockStore.cs" />
-    <Compile Include="UTXOStore.cs" />
     <Compile Include="BlockChain.cs" />
-    <Compile Include="TransactionContext.cs" />
-    <Compile Include="DBContext.cs" />
-    <Compile Include="ValueStore.cs" />
-    <Compile Include="Block.cs" />
     <Compile Include="BlockChainAddTransactionOperation.cs" />
-    <Compile Include="HashDictionary.cs" />
-    <Compile Include="BlockDifficultyTable.cs" />
+    <Compile Include="Store\BlockDifficultyTable.cs" />
+    <Compile Include="Store\BlockStore.cs" />
+    <Compile Include="Database\DBContext.cs" />
+    <Compile Include="Data\HashDictionary.cs" />
+    <Compile Include="Database\Store.cs" />
+    <Compile Include="Data\StoredItem.cs" />
+    <Compile Include="Store\TxMempool.cs" />
+    <Compile Include="Store\TxStore.cs" />
+    <Compile Include="Store\UTXOStore.cs" />
+    <Compile Include="Database\ValueStore.cs" />
+    <Compile Include="Database\TransactionContext.cs" />
+    <Compile Include="Data\MiroringCache.cs" />
+    <Compile Include="Data\Block.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="Store\" />
+    <Folder Include="Database\" />
   </ItemGroup>
 </Project>

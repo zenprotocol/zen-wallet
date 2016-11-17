@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{AC531A6E-F0A3-487D-883C-89BBA901A5F8}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Store.Tests</RootNamespace>
-    <AssemblyName>Store.Tests</AssemblyName>
+    <RootNamespace>BlockChain.Tests</RootNamespace>
+    <AssemblyName>BlockChain.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -38,7 +38,7 @@
   <ItemGroup>
     <Compile Include="StoreTests.cs" />
     <Compile Include="TestBase.cs" />
-    <Compile Include="BlockchainTests.cs" />
+    <Compile Include="BlockChainTests.cs" />
     <Compile Include="DBTests.cs" />
     <Compile Include="TestFSharp.cs" />
     <Compile Include="BlockChainAddTransactionOperationTests.cs" />
@@ -49,7 +49,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Store\Store.csproj">
+    <ProjectReference Include="..\Store\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
     </ProjectReference>

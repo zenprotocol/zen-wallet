@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Store
+namespace BlockChain.Data
 {
 public class ByteArrayComparer : IEqualityComparer<byte[]>
 	{

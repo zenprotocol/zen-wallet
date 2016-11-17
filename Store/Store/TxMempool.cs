@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using BlockChain.Data;
 using Consensus;
 
-namespace Store
+namespace BlockChain.Store
 {
 	public class TxMempoolItem
 	{
