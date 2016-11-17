@@ -10,7 +10,7 @@ namespace Store
 		private readonly TxStore _TxStore;
 		private readonly BlockStore _BlockStore;
 		private readonly DBContext _DBContext;
-		private const string BLOCK_DIFFICULTY_TABLE = "bk-difficulty";
+		private readonly BlockDifficultyTable _BlockDifficultyTable;
 
 		public BlockChain(string dbName)
 		{
@@ -18,6 +18,7 @@ namespace Store
 			_TxMempool = new TxMempool();
 			_TxStore = new TxStore();
 			_BlockStore = new BlockStore();
+			_BlockDifficultyTable = new BlockDifficultyTable();
 		}
 
 		public void Dispose()
@@ -25,28 +26,21 @@ namespace Store
 			_DBContext.Dispose();
 		}
 
-		public void HandleNewValueBlock(Types.Block block)
+		public void HandleNewValueBlock(Types.Block block) //TODO: use Keyed type
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				var Tip = new Field<string, int>(context, "blockchain", "tip");
-
 				var key = Merkle.blockHasher.Invoke(block); //TODO: id should be hash of block header, blockHasher may be redundant and wrong to use here
-				var Difficulty = new Field<byte[], int>(context, BLOCK_DIFFICULTY_TABLE, key);
 
 				_BlockStore.Put(context, block);
 				_TxStore.Put(context, block.transactions.ToArray());
-
-				//if (blockTip > Tip.Value)
-				//{
-				//	Tip.Value = blockTip;
-				//}
+				_BlockDifficultyTable.Context(context)[key] = Getdifficulty(context, block);
 
 				context.Commit();
 			}
 		}
 
-		private Double Getdifficulty(TransactionContext context, Types.Block block, Double difficulty)
+		private Double Getdifficulty(TransactionContext context, Types.Block block)
 		{
 			return GetdifficultyRecursive(context, block, 0);
 		}

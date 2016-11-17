@@ -12,59 +12,76 @@ namespace Store.Tests
 	public class BlockchainTests
 	{
 		[Test()]
-		public void CanUpdateNewBlockTip()
+		public void CanStoreBlockDifficulty()
 		{
-			Types.Block newBlock = GetBlock();
-
 			String dbName = "test-" + new Random().Next(0, 1000);
 
 			var random = new Random();
-			int expectedTip = 0;
+
+			Double difficultyAgg = 0;
+
+			List<Tuple<Types.Block, Double>> blocks = new List<Tuple<Types.Block, Double>>();
+
+			Types.Block lastBlock = null;
 
 			for (int i = 0; i < 10; i++)
 			{
-				int newTip = random.Next(0, 1000);
+				Double difficultyNew = random.Next(0, int.MaxValue);
+				Types.Block newBlock = GetBlock(lastBlock, difficultyNew);
+				lastBlock = newBlock;
 
 				using (BlockChain blockChain = new BlockChain(dbName))
 				{
-					blockChain.HandleNewValueBlock(newBlock/*, newTip*/);
+					blockChain.HandleNewValueBlock(newBlock);
 				}
 
-				if (newTip > expectedTip)
-				{
-					expectedTip = newTip;
-				}
+				difficultyAgg += difficultyNew;
 
-				using (DBContext dbContext = new DBContext(dbName))
-				{
-					var Tip = new Field<string, int>(dbContext.GetTransactionContext(), "blockchain", "tip");
-
-					Assert.AreEqual(Tip.Value, expectedTip);
-				}
+				blocks.Add(new Tuple<Types.Block, Double>(newBlock, difficultyAgg));
 			}
 
-			Directory.Delete(dbName, true);
-		}
-
-		[Test()]
-		public void CanHandleNewValidBlock()
-		{
-			Types.Block newBlock = GetBlock();
-
-			String dbName = "test-" + new Random().Next(0, 1000);
-
-			using (BlockChain blockChain = new BlockChain(dbName))
+			using (DBContext dbContext = new DBContext(dbName))
 			{
-				blockChain.HandleNewValueBlock(newBlock/*, 1*/);
+				var BlockDifficultyTable = new BlockDifficultyTable();
+
+				using (TransactionContext context = dbContext.GetTransactionContext())
+				{
+					foreach (Tuple<Types.Block, Double> blockDifficultyPair in blocks)
+					{
+						byte[] key = Merkle.blockHasher.Invoke(blockDifficultyPair.Item1);
+						Double expected = blockDifficultyPair.Item2;
+						Double found = BlockDifficultyTable.Context(context)[key];
+
+						Assert.AreEqual(expected, found, "match expected/found block difficulty");
+					}
+				}
 			}
 
 			Directory.Delete(dbName, true);
 		}
 
+		//[Test()]
+		//public void CanHandleNewValidBlock()
+		//{
+		//	Types.Block newBlock = GetBlock();
 
-		private Types.Block GetBlock()
+		//	String dbName = "test-" + new Random().Next(0, 1000);
+
+		//	using (BlockChain blockChain = new BlockChain(dbName))
+		//	{
+		//		blockChain.HandleNewValueBlock(newBlock/*, 1*/);
+		//	}
+
+		//	Directory.Delete(dbName, true);
+		//}
+
+
+		private Types.Block GetBlock(Types.Block parent, Double difficulty)
 		{
-			Types.BlockHeader newBlockHeader = new Types.BlockHeader(1, null, null, null, null, null, 0, 0, null);
+			UInt32 pdiff = Convert.ToUInt32(difficulty);
+			byte[] parentKey = parent == null ? null : Merkle.blockHasher.Invoke(parent);
+
+			Types.BlockHeader newBlockHeader = new Types.BlockHeader(1, parentKey, null, null, null, null, 0, pdiff, null);
 			var transactions = new List<Types.Transaction>();
 			FSharpList<Types.Transaction> newBlockTransactions = ListModule.OfSeq(transactions);
 			Types.Block newBlock = new Types.Block(newBlockHeader, newBlockTransactions);
