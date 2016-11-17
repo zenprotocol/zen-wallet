@@ -36,22 +36,29 @@ namespace BlockChain
 
 				_BlockStore.Put(context, block);
 				_TxStore.Put(context, block.transactions.ToArray());
-				_BlockDifficultyTable.Context(context)[key] = Getdifficulty(context, block);
+				_BlockDifficultyTable.Context(context)[key] = GetdifficultyRecursive(context, block);
 
 				context.Commit();
 			}
 		}
 
-		private Double Getdifficulty(TransactionContext context, Types.Block block)
+		private Double GetdifficultyRecursive(TransactionContext context, Types.Block block)
 		{
-			return GetdifficultyRecursive(context, block, 0);
-		}
+			Double result = block.header.pdiff;
 
-		private Double GetdifficultyRecursive(TransactionContext context, Types.Block block, Double difficulty)
-		{
-			return difficulty +
-				block.header.pdiff +
-					 (block.header.parent != null ? GetdifficultyRecursive(context, _BlockStore.Get(context, block.header.parent), difficulty) : 0);
+			if (block.header.parent == null)
+			{
+				return 0;
+			}
+
+			Types.Block parentBlock = _BlockStore.Get(context, block.header.parent);
+
+			if (parentBlock == null)
+			{
+				throw new Exception("Missing parent block");
+			}
+
+			return result + GetdifficultyRecursive(context, parentBlock);
 		}
 	}
 }

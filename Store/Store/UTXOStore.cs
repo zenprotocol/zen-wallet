@@ -45,7 +45,7 @@ namespace BlockChain.Store
 
 			protected override Types.Output FromBytes(byte[] data, byte[] key)
 			{
-				//TODO: encap unpacking in Consensus, so referencing MsgPack would becode unnecessary 
+				//TODO: encap unpacking in Consensus, so referencing MsgPack would become unnecessary 
 				return Serialization.context.GetSerializer<Types.Output>().UnpackSingleObject(data);
 			}
 		}
