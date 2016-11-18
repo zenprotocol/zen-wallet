@@ -1,24 +1,25 @@
 using System.Collections.Generic;
 using BlockChain.Data;
 using Consensus;
+using System.Linq;
 
 namespace BlockChain.Store
 {
-	public class TxMempoolItem
-	{
-		public Types.Transaction Transaction { get; set; }
-		public bool IsOrphaned { get; set; }
-	}
-
 	public class TxMempool
 	{
-		private readonly HashDictionary<TxMempoolItem> _Transactions;
-		private readonly List<Types.Outpoint> _Outpoints;
+		private readonly HashDictionary<Keyed<Types.Transaction>> _Transactions;
+		private readonly List<Types.Outpoint> _TransactionsInputs;
+
+		private readonly HashDictionary<Keyed<Types.Transaction>> _OrphanedTransactions;
+		private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanedTransactionsInputs;
 
 		public TxMempool()
 		{
-			_Transactions = new HashDictionary<TxMempoolItem>();
-			_Outpoints = new List<Types.Outpoint>();
+			_Transactions = new HashDictionary<Keyed<Types.Transaction>>();
+			_TransactionsInputs = new List<Types.Outpoint>();
+
+			_OrphanedTransactions = new HashDictionary<Keyed<Types.Transaction>>();
+			_OrphanedTransactionsInputs = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
 		}
 
 		public bool ContainsKey(byte[] key)
@@ -26,16 +27,16 @@ namespace BlockChain.Store
 			return _Transactions.ContainsKey(key);
 		}
 
-		public Types.Transaction Get(byte[] key)
+		public Keyed<Types.Transaction> Get(byte[] key)
 		{
-			return _Transactions[key].Transaction;
+			return _Transactions[key];
 		}
 
-		public bool ContainsInputs(Types.Transaction transaction)
+		public bool ContainsInputs(Keyed<Types.Transaction> transaction)
 		{
-			foreach (Types.Outpoint outpoint in transaction.inputs)
+			foreach (Types.Outpoint input in transaction.Value.inputs)
 			{
-				if (_Outpoints.Contains(outpoint)) {
+				if (_TransactionsInputs.Contains(input)) {
 					return true;
 				}
 			}
@@ -43,22 +44,29 @@ namespace BlockChain.Store
 			return false;
 	    }
 
-		public void AddOrphaned(Keyed<Types.Transaction> transaction)
+		public IEnumerable<Keyed<Types.Transaction>> GetOrphanedsOf(Keyed<Types.Transaction> parentTransaction)
 		{
-			_Add(transaction, true);
+			return _OrphanedTransactionsInputs.Keys
+				.Where(key => key.txHash.SequenceEqual(parentTransaction.Key))
+				.Select(key => _OrphanedTransactionsInputs[key]);
 		}
 
-		public void Add(Keyed<Types.Transaction> transaction)
+		public void Add(Keyed<Types.Transaction> transaction, bool isOrphaned = false)
 		{
-			_Add(transaction);
-		}
+			if (isOrphaned)
+			{
+				_OrphanedTransactions.Add(transaction.Key, transaction);
 
-		private void _Add(Keyed<Types.Transaction> transaction, bool isOrphaned = false)
-		{
-			TxMempoolItem txMempoolItem = new TxMempoolItem() { Transaction = transaction.Value, IsOrphaned = isOrphaned };
-
-			_Transactions.Add(transaction.Key, txMempoolItem);
-			_Outpoints.AddRange(transaction.Value.inputs);
+				foreach (Types.Outpoint input in transaction.Value.inputs)
+				{
+					_OrphanedTransactionsInputs.Add(input, transaction);
+				}
+			}
+			else 
+			{
+				_Transactions.Add(transaction.Key, transaction);
+				_TransactionsInputs.AddRange(transaction.Value.inputs);
+			}
 		}
 	}
 }

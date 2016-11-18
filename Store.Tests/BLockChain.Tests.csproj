@@ -48,8 +48,9 @@
     <Compile Include="TxMempoolTests.cs" />
     <Compile Include="TestCSharp.cs" />
     <Compile Include="BlockStoreTests.cs" />
-    <Compile Include="Util.cs" />
     <Compile Include="ConsensusTests.cs" />
+    <Compile Include="Utils\TestTransaction.cs" />
+    <Compile Include="Utils\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -64,6 +65,9 @@
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
       <Name>Infrastructure.Testing</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utils\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -46,7 +46,7 @@ namespace BlockChain.Tests
 
 						Assert.IsTrue(blockStore.ContainsKey(context, key), "should contain key of added object");
 
-						Types.Block found = blockStore.Get(context, key);
+						Types.Block found = blockStore.Get(context, key).Value;
 
 						Assert.AreEqual(expected, found, "match expected/found block");
 					}

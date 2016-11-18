@@ -54,11 +54,11 @@ namespace BlockChain.Database
 			return transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key).Exists;
 		}
 
-		public T Get(TransactionContext transactionContext, byte[] key)
+		public Keyed<T> Get(TransactionContext transactionContext, byte[] key)
 		{
 			DatabaseTrace.Read(_TableName, key);
 			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
-			return row.Exists ? FromBytes(row.Value, row.Key) : null;
+			return row.Exists ? new Keyed<T>(key, FromBytes(row.Value, row.Key)) : null;
 		}
 
 		protected abstract StoredItem<T> Wrap(T item);

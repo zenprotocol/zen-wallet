@@ -11,14 +11,14 @@ namespace BlockChain.Tests
 	public class TxMempoolTests : TestBase
 	{
 		[Test()]
-		public void ShouldContainsKey()
+		public void ShouldContainKey()
 		{
-			Types.Transaction transaction = GetNewTransaction(1);
+			Types.Transaction transaction = Util.GetNewTransaction(1);
 
-			TxMempool mempool = new TxMempool();
+			var mempool = new TxMempool();
 
-			Keyed<Types.Transaction> keyedTransaction =
-				new Keyed<Types.Transaction>(transaction, Merkle.transactionHasher.Invoke(transaction));
+			var keyedTransaction =
+				new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction);
 
 			mempool.Add(keyedTransaction);
 
@@ -27,33 +27,17 @@ namespace BlockChain.Tests
 			Assert.IsTrue(Enumerable.SequenceEqual(newKey, keyedTransaction.Key));
 			Assert.IsTrue(mempool.ContainsKey(keyedTransaction.Key));
 			Assert.IsTrue(mempool.ContainsKey(newKey));
-
 		}
-
-		//[Test()]
-		//public void ShouldContainsInputs()
-		//{
-		//	Types.Transaction transaction = GetNewTransaction(1);
-
-		//	TxMempool mempool = new TxMempool();
-
-		//	Keyed<Types.Transaction> keyedTransaction =
-		//		new Keyed<Types.Transaction>(transaction, Merkle.transactionHasher.Invoke(transaction));
-
-		//	mempool.Add(keyedTransaction);
-
-		//	Assert.IsTrue(mempool.ContainsKey(keyedTransaction.Key));
-		//}
 
 		[Test()]
 		public void ShouldNotGet()
 		{
-			Types.Transaction transaction = GetNewTransaction(1);
+			Types.Transaction transaction = Util.GetNewTransaction(1);
 
-			TxMempool mempool = new TxMempool();
+			var mempool = new TxMempool();
 
-			Keyed<Types.Transaction> keyedTransaction =
-				new Keyed<Types.Transaction>(transaction, Merkle.transactionHasher.Invoke(transaction));
+			var keyedTransaction =
+				new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction);
 
 			Exception getException = null;
 
@@ -72,18 +56,64 @@ namespace BlockChain.Tests
 		[Test()]
 		public void ShouldGet()
 		{
-			Types.Transaction transaction = GetNewTransaction(1);
+			Types.Transaction transaction = Util.GetNewTransaction(1);
 
-			TxMempool mempool = new TxMempool();
+			var mempool = new TxMempool();
 
-			Keyed<Types.Transaction> keyedTransaction =
-				new Keyed<Types.Transaction>(transaction, Merkle.transactionHasher.Invoke(transaction));
+			var keyedTransaction =
+				new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction);
 
 			mempool.Add(keyedTransaction);
 
-			Types.Transaction getTransaction = mempool.Get(keyedTransaction.Key);
+			Types.Transaction getTransaction = mempool.Get(keyedTransaction.Key).Value;
 
 			Assert.AreEqual(getTransaction, keyedTransaction.Value);
+		}
+
+		[Test()]
+		public void CanCheckDoubleSpend()
+		{
+			var p = new TestTransactionPool();
+
+			p.Add("base", 1);
+			p.Add("tx1", 0);
+			p.Spend("tx1", "base", 0);
+			p.Add("tx2", 0);
+			p.Spend("tx2", "base", 0);
+
+			p.Render();
+
+			var mempool = new TxMempool();
+
+			mempool.Add(p["base"]);
+
+			Assert.IsFalse(mempool.ContainsInputs(p["tx1"]));
+			Assert.IsFalse(mempool.ContainsInputs(p["tx2"]));
+
+			mempool.Add(p["tx1"]);
+
+			Assert.IsTrue(mempool.ContainsInputs(p["tx1"]));
+			Assert.IsTrue(mempool.ContainsInputs(p["tx2"]));
+		}
+
+		[Test()]
+		public void CanGetOrphanedsOfTx()
+		{
+			var p = new TestTransactionPool();
+
+			p.Add("parent", 1);
+			p.Add("orphan", 0);
+			p.Spend("orphan", "parent", 0);
+
+			p.Render();
+
+			var mempool = new TxMempool();
+
+			Assert.IsFalse(mempool.GetOrphanedsOf(p["parent"]).Contains(p["orphan"]));
+
+			mempool.Add(p["orphan"], true);
+
+			Assert.IsTrue(mempool.GetOrphanedsOf(p["parent"]).Contains(p["orphan"]));
 		}
 	}
 }
