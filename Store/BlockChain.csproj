@@ -59,6 +59,8 @@
     <Compile Include="Data\MiroringCache.cs" />
     <Compile Include="Data\Block.cs" />
     <Compile Include="Database\DatabaseTrace.cs" />
+    <Compile Include="BlockChainTrace.cs" />
+    <Compile Include="Data\KeyedTransaction.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

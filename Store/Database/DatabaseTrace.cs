@@ -46,10 +46,17 @@ namespace BlockChain.Database
 
 		private static String KeyToString(Object key)
 		{
-			if (key is byte[])
-				return BitConverter.ToString(key as byte[]).Substring(0,10);
+			String val;
 
-			return key.ToString();
+			if (key is byte[])
+				val = BitConverter.ToString(key as byte[]);
+			else 
+				val = key.ToString();
+
+			if (val.Length > 11)
+				val = val.Substring(0, 11);
+
+			return val;
 		}
 
 	}

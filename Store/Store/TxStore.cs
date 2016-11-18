@@ -18,7 +18,7 @@ namespace BlockChain.Store
 			var data = Merkle.serialize<Types.Transaction>(item);
 			var key = Merkle.transactionHasher.Invoke(item);
 
-			return new StoredItem<Types.Transaction>(item, key, data);
+			return new StoredItem<Types.Transaction>(key, item, data);
 		}
 
 		protected override Types.Transaction FromBytes(byte[] data, byte[] key)

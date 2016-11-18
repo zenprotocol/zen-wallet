@@ -18,7 +18,7 @@ namespace BlockChain.Store
 			var key = Merkle.blockHasher.Invoke(item); //TODO: id should be hash of block header, blockHasher may be redundant and wrong to use here
 
 
-			return new StoredItem<Types.Block>(item, key, data);
+			return new StoredItem<Types.Block>(key, item, data);
 		}
 
 		protected override Types.Block FromBytes(byte[] data, byte[] key)
