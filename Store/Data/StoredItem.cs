@@ -7,10 +7,10 @@ namespace BlockChain.Data
 		public T Value { get; private set; }
 		public byte[] Key { get; private set; }
 
-		public Keyed(T value, byte[] key)
+		public Keyed(byte[] key, T value)
 		{
-			Value = value;
 			Key = key;
+			Value = value;
 		}
 	}
 
@@ -18,7 +18,7 @@ namespace BlockChain.Data
 	{
 		public byte[] Data { get; private set; }
 
-		public StoredItem(T value, byte[] key, byte[] data) : base(value, key)
+		public StoredItem(byte[] key, T value, byte[] data) : base(key, value)
 		{
 			Data = data;
 		}

@@ -27,7 +27,7 @@ namespace BlockChain.Tests
 
 			IDictionary<Types.Outpoint, Types.Transaction> dictionary = new Dictionary<Types.Outpoint, Types.Transaction>();
 
-			dictionary.Add(o1, GetNewTransaction(1));
+			dictionary.Add(o1, Util.GetNewTransaction(1));
 
 			Assert.IsTrue(dictionary.ContainsKey(o1));
 			Assert.IsTrue(dictionary.ContainsKey(o2));

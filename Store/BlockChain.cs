@@ -51,7 +51,7 @@ namespace BlockChain
 				return result;
 			}
 
-			Types.Block parentBlock = _BlockStore.Get(context, block.header.parent);
+			Types.Block parentBlock = _BlockStore.Get(context, block.header.parent).Value;
 
 			if (parentBlock == null)
 			{
