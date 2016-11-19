@@ -126,6 +126,13 @@ namespace BlockChain.Tests
 		[Test()]
 		public void ShouldRejectNewTx_DueToReferencedOutputDoesNotExist_DueToMissingOutputIndex()
 		{
+			TestTransactionBlockChainExpectationPool p = new TestTransactionBlockChainExpectationPool();
+
+			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
+			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.Rejected);
+			p.Spend("test2", "test1", 1);
+
+			ScenarioAssertion(p);
 		}
 
 		[Test()]
