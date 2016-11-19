@@ -38,7 +38,7 @@ namespace BlockChain.Tests
 			}
 		}
 
-		public T GetItem(String tag)
+		public T GetItem(String tag, bool remove = false)
 		{
 			return _Map[tag];
 		}
@@ -65,13 +65,13 @@ namespace BlockChain.Tests
 			);
 		}
 
-		public T Remove(string tag)
+		public Keyed<Types.Transaction> TakeOut(string tag)
 		{
 			T t = _Map[tag];
 
 			_Map.Remove(tag);
 
-			return t;
+			return t.Value;
 		}
 
 		public void Render()
