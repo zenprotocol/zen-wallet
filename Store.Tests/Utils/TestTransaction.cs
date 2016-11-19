@@ -10,10 +10,12 @@ namespace BlockChain.Tests
 	{
 		public void Add(string tag, int outputs, BlockChainAddTransactionOperation.Result result)
 		{
-			TestTransactionBlockChainExpectation t = new TestTransactionBlockChainExpectation();
-			t.Outputs = outputs;
-			t.Result = result;
-			Add(tag, t);
+			Add(tag, new TestTransactionBlockChainExpectation()
+			{
+				Outputs = outputs,
+				Result = result,
+				Tag = tag
+			});
 		}
 	}
 
@@ -45,9 +47,11 @@ namespace BlockChain.Tests
 
 		public void Add(string tag, int outputs)
 		{
-			T t = new T();
-			t.Outputs = outputs;
-			Add(tag, t);
+			Add(tag, new T()
+			{
+				Outputs = outputs,
+				Tag = tag
+			});
 		}
 
 		protected void Add(string tag, T t)
@@ -108,6 +112,7 @@ namespace BlockChain.Tests
 		public int Outputs { get; set; }
 		public List<Point> Inputs { get; set; }
 		public Keyed<Types.Transaction> Value { get; set; }
+		public string Tag { get; set; }
 
 		public TestTransaction()
 		{
@@ -148,7 +153,10 @@ namespace BlockChain.Tests
 				ListModule.OfSeq(outputs),
 				null);
 
-			Value = new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction);
+			byte[] key = Merkle.transactionHasher.Invoke(transaction);
+			Value = new Keyed<Types.Transaction>(key, transaction);
+
+			TestTrace.Transaction(Tag, key);
 		}
 	}
 }
