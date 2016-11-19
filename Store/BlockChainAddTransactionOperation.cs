@@ -82,6 +82,7 @@ namespace BlockChain
 
 			if (!IsValidInputs())
 			{
+				BlockChainTrace.Information("invalid inputs");
 				return Result.Rejected;
 			}
 
@@ -159,11 +160,13 @@ namespace BlockChain
 			{
 				if (!ParentOutputExists(input))
 				{
+					BlockChainTrace.Information("parent output does not exist");
 					return false;
 				}
 
 				if (ParentOutputSpent(input))
 				{
+					BlockChainTrace.Information("parent output spent");
 					return false;
 				}
 			}
@@ -201,10 +204,10 @@ namespace BlockChain
 			if (_InputLocations[input] == InputLocationEnum.TxStore && !_UTXOStore.ContainsKey(_TransactionContext, inputKey))
 			{
 				BlockChainTrace.Information("Output has been spent");
-				return false;
+				return true;
 			}
 
-			return true;
+			return false;
 		}
 	}
 }
