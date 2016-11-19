@@ -24,7 +24,7 @@ namespace BlockChain.Tests
 			p.Render();
 			var test1 = p.Remove("test1");
 
-			ScenarioAssertion(p, null, (mempool, txstore, context) =>
+			ScenarioAssertion(p, postAction: (mempool, txstore, context) =>
 			{
 				BlockChainAddTransactionOperation.Result result = new BlockChainAddTransactionOperation(
 					context, test1.Value, mempool
@@ -39,8 +39,9 @@ namespace BlockChain.Tests
 		{
 			var p = new TestTransactionBlockChainExpectationPool();
 
-			p.Add("test1", 0, BlockChainAddTransactionOperation.Result.Added);
+			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
 			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.Added);
+			p.Spend("test2", "test1", 0);
 
 			ScenarioAssertion(p);
 		}
@@ -79,7 +80,7 @@ namespace BlockChain.Tests
 
 			p.Add("test1", 0, BlockChainAddTransactionOperation.Result.Rejected);
 
-			ScenarioAssertion(p, (mempool, txstore, context) => {
+			ScenarioAssertion(p, preAction: (mempool, txstore, context) => {
 				TestTransactionPool p1 = new TestTransactionPool();
 				p1.Add("mempool1", 0);
 				mempool.Add(p1["mempool1"]);
@@ -93,7 +94,7 @@ namespace BlockChain.Tests
 
 			p.Add("test1", 0, BlockChainAddTransactionOperation.Result.Rejected);
 
-			ScenarioAssertion(p, (mempool, txstore, context) =>
+			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
 			{
 				TestTransactionPool p1 = new TestTransactionPool();
 				p1.Add("mempool1", 0);
@@ -107,12 +108,19 @@ namespace BlockChain.Tests
 			var p = new TestTransactionBlockChainExpectationPool();
 
 			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
-			p.Add("test2", 1, BlockChainAddTransactionOperation.Result.AddedOrphaned);
+			p.Add("spend_in_mempool", 0, BlockChainAddTransactionOperation.Result.Added);
+			p.Spend("spend_in_mempool", "test1", 0);
+			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.Rejected);
 			p.Spend("test2", "test1", 0);
-			p.Add("test3", 1, BlockChainAddTransactionOperation.Result.Rejected);
-			p.Spend("test3", "test1", 0);
 
-			ScenarioAssertion(p);
+			p.Render();
+
+			var spend_in_mempool = p.Remove("spend_in_mempool");
+
+			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
+			{
+				mempool.Add(spend_in_mempool.Value);
+			});
 		}
 
 		[Test()]
