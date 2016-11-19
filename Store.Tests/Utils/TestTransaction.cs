@@ -65,6 +65,15 @@ namespace BlockChain.Tests
 			);
 		}
 
+		public T Remove(string tag)
+		{
+			T t = _Map[tag];
+
+			_Map.Remove(tag);
+
+			return t;
+		}
+
 		public void Render()
 		{
 			foreach (TestTransaction testTransaction in _Map.Values)
@@ -95,6 +104,7 @@ namespace BlockChain.Tests
 
 	public class TestTransaction
 	{
+		private Random _Random = new Random();
 		public int Outputs { get; set; }
 		public List<Point> Inputs { get; set; }
 		public Keyed<Types.Transaction> Value { get; set; }
@@ -104,8 +114,6 @@ namespace BlockChain.Tests
 			Inputs = new List<Point>();
 			Value = null;
 		}
-
-		Random Random = new Random();
 
 		public void Render()
 		{
@@ -132,7 +140,7 @@ namespace BlockChain.Tests
 			var hashes = new List<byte[]>();
 
 			//hack Concensus into giving a different hash per each tx created
-			var version = (uint)Random.Next(1000);
+			var version = (uint)_Random.Next(1000);
 
 			Types.Transaction transaction = new Types.Transaction(version,
 				ListModule.OfSeq(inputs),
@@ -140,9 +148,7 @@ namespace BlockChain.Tests
 				ListModule.OfSeq(outputs),
 				null);
 
-			byte[] key = Merkle.transactionHasher.Invoke(transaction);
-
-			Value = new Keyed<Types.Transaction>(key, transaction);
+			Value = new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction);
 		}
 	}
 }

@@ -26,7 +26,12 @@ namespace BlockChain
 		private readonly TxStore _TxStore;
 		private readonly UTXOStore _UTXOStore;
 		private Dictionary<Types.Outpoint, InputLocationEnum> _InputLocations;
-		private MessageProducer<AddedToMempoolMessage> _Producer = MessageProducer<AddedToMempoolMessage>.Instance;
+		private static MessageProducer<AddedToMempoolMessage> _Producer = MessageProducer<AddedToMempoolMessage>.Instance;
+
+		//private static IDisposable AddListener(Action<AddedToMempoolMessage> action)
+		//{
+		//	return _Producer.AddMessageListener(new EventLoopMessageListener(action));
+		//}
 
 		private enum InputLocationEnum
 		{
@@ -68,6 +73,7 @@ namespace BlockChain
 
 			if (IsOrphaned())
 			{
+				BlockChainTrace.Information("Added as orphan");
 				_TxMempool.Add(_NewTransaction, true);
 				return Result.AddedOrphaned;
 			}
@@ -91,6 +97,7 @@ namespace BlockChain
 
 			foreach (var transaction in _TxMempool.GetOrphanedsOf(_NewTransaction)) 
 			{
+				BlockChainTrace.Information("Start with orphan");
 				new BlockChainAddTransactionOperation(_TransactionContext, transaction, _TxMempool).Start();
 			}
 

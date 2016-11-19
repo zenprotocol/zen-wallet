@@ -13,6 +13,28 @@ namespace BlockChain.Tests
 	public class BlockChainAddTransactionOperationTests : TestBase
 	{
 		[Test()]
+		public void CanRedeemOrphand()
+		{
+			TestTransactionBlockChainExpectationPool p = new TestTransactionBlockChainExpectationPool();
+
+			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
+			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphaned);
+			p.Spend("test2", "test1", 0);
+
+			p.Render();
+			var test1 = p.Remove("test1");
+
+			ScenarioAssertion(p, null, (mempool, txstore, context) =>
+			{
+				BlockChainAddTransactionOperation.Result result = new BlockChainAddTransactionOperation(
+					context, test1.Value, mempool
+				).Start();
+
+				Assert.AreEqual(BlockChainAddTransactionOperation.Result.Added, result);
+			});
+		}
+
+		[Test()]
 		public void ShouldBeAddded()
 		{
 			var p = new TestTransactionBlockChainExpectationPool();
@@ -34,17 +56,20 @@ namespace BlockChain.Tests
 			ScenarioAssertion(p);
 		}
 
-		//[Test()]
-		//public void ShouldBeAddedAsOrphaned()
-		//{
-		//	TestTransactionBlockChainExpectationPool p = new TestTransactionBlockChainExpectationPool();
+		[Test()]
+		public void ShouldBeAddedAsOrphaned()
+		{
+			TestTransactionBlockChainExpectationPool p = new TestTransactionBlockChainExpectationPool();
 
-		//	p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
-		//	p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphaned);
-		//	p.Spend("test2", "test1", 1);
+			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
+			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphaned);
+			p.Spend("test2", "test1", 0);
 
-		//	ScenarioAssertion(p);
-		//}
+			p.Render();
+			p.Remove("test1");
+
+			ScenarioAssertion(p);
+		}
 
 
 		[Test()]
@@ -100,7 +125,11 @@ namespace BlockChain.Tests
 		{
 		}
 
-		private void ScenarioAssertion(TestTransactionBlockChainExpectationPool p, Action<TxMempool, TxStore, TransactionContext> preAction = null)
+		private void ScenarioAssertion(
+			TestTransactionBlockChainExpectationPool p, 
+			Action<TxMempool, TxStore, TransactionContext> preAction = null,
+			Action<TxMempool, TxStore, TransactionContext> postAction = null
+		)
 		{
 			var mempool = new TxMempool();
 			var txStore = new TxStore();
@@ -125,6 +154,11 @@ namespace BlockChain.Tests
 						).Start();
 
 						Assert.AreEqual(t.Result, result, "Assertion for tag: " + key);
+					}
+
+					if (postAction != null)
+					{
+						postAction(mempool, txStore, transactionContext);
 					}
 				}
 			}
