@@ -52,6 +52,7 @@
     <Compile Include="Utils\TestTransaction.cs" />
     <Compile Include="Utils\Util.cs" />
     <Compile Include="TestTrace.cs" />
+    <Compile Include="TxStoreTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
