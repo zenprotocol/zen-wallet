@@ -22,12 +22,12 @@ namespace BlockChain.Tests
 			p.Spend("test2", "test1", 0);
 
 			p.Render();
-			var test1 = p.Remove("test1");
+			var test1 = p.TakeOut("test1");
 
 			ScenarioAssertion(p, postAction: (mempool, txstore, context) =>
 			{
 				var result = new BlockChainAddTransactionOperation(
-					context, test1.Value, mempool
+					context, test1, mempool
 				).Start();
 
 				Assert.AreEqual(BlockChainAddTransactionOperation.Result.Added, result);
@@ -67,11 +67,10 @@ namespace BlockChain.Tests
 			p.Spend("test2", "test1", 0);
 
 			p.Render();
-			p.Remove("test1");
+			p.TakeOut("test1");
 
 			ScenarioAssertion(p);
 		}
-
 
 		[Test()]
 		public void ShouldRejectNewTx_DueToSameTxIdExistsInMempool()
@@ -113,11 +112,11 @@ namespace BlockChain.Tests
 
 			p.Render();
 
-			var spend_in_mempool = p.Remove("spend_in_mempool");
+			var spend_in_mempool = p.TakeOut("spend_in_mempool");
 
 			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
 			{
-				mempool.Add(spend_in_mempool.Value);
+				mempool.Add(spend_in_mempool);
 			});
 		}
 
@@ -136,6 +135,29 @@ namespace BlockChain.Tests
 		[Test()]
 		public void ShouldRejectNewTx_DueToReferencedOutputDoesNotExist_DueToOutputWasSpent()
 		{
+			var p = new TestTransactionBlockChainExpectationPool();
+
+			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
+			p.Add("test2", 0);
+			p.Spend("test2", "test1", 0);
+			p.Add("test3", 0, BlockChainAddTransactionOperation.Result.Added);
+			p.Spend("test3", "test1", 0);
+
+			p.Render();
+			var test2 = p.TakeOut("test2");
+			var test3 = p.TakeOut("test3");
+
+			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
+			{
+				txstore.Put(context, test2.Value);
+			}, postAction: (mempool, txstore, context) =>
+			{
+				var result = new BlockChainAddTransactionOperation(
+					context, test3, mempool
+				).Start();
+
+				Assert.AreEqual(BlockChainAddTransactionOperation.Result.Rejected, result, "test3");
+			});
 		}
 
 		private void ScenarioAssertion(
