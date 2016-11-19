@@ -15,7 +15,7 @@ namespace BlockChain.Tests
 		[Test()]
 		public void CanRedeemOrphand()
 		{
-			TestTransactionBlockChainExpectationPool p = new TestTransactionBlockChainExpectationPool();
+			var p = new TestTransactionBlockChainExpectationPool();
 
 			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
 			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphaned);
@@ -26,7 +26,7 @@ namespace BlockChain.Tests
 
 			ScenarioAssertion(p, postAction: (mempool, txstore, context) =>
 			{
-				BlockChainAddTransactionOperation.Result result = new BlockChainAddTransactionOperation(
+				var result = new BlockChainAddTransactionOperation(
 					context, test1.Value, mempool
 				).Start();
 
@@ -60,7 +60,7 @@ namespace BlockChain.Tests
 		[Test()]
 		public void ShouldBeAddedAsOrphaned()
 		{
-			TestTransactionBlockChainExpectationPool p = new TestTransactionBlockChainExpectationPool();
+			var p = new TestTransactionBlockChainExpectationPool();
 
 			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
 			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphaned);
@@ -81,9 +81,8 @@ namespace BlockChain.Tests
 			p.Add("test1", 0, BlockChainAddTransactionOperation.Result.Rejected);
 
 			ScenarioAssertion(p, preAction: (mempool, txstore, context) => {
-				TestTransactionPool p1 = new TestTransactionPool();
-				p1.Add("mempool1", 0);
-				mempool.Add(p1["mempool1"]);
+				p.Render();
+				mempool.Add(p["test1"]);
 			});
 		}
 
@@ -96,9 +95,8 @@ namespace BlockChain.Tests
 
 			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
 			{
-				TestTransactionPool p1 = new TestTransactionPool();
-				p1.Add("mempool1", 0);
-				txstore.Put(context, p1["mempool1"].Value);
+				p.Render();
+				txstore.Put(context, p["test1"].Value);
 			});
 		}
 
@@ -126,7 +124,7 @@ namespace BlockChain.Tests
 		[Test()]
 		public void ShouldRejectNewTx_DueToReferencedOutputDoesNotExist_DueToMissingOutputIndex()
 		{
-			TestTransactionBlockChainExpectationPool p = new TestTransactionBlockChainExpectationPool();
+			var p = new TestTransactionBlockChainExpectationPool();
 
 			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
 			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.Rejected);
