@@ -14,7 +14,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -51,6 +51,7 @@
     <Compile Include="ConsensusTests.cs" />
     <Compile Include="Utils\TestTransaction.cs" />
     <Compile Include="Utils\Util.cs" />
+    <Compile Include="TestTrace.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
