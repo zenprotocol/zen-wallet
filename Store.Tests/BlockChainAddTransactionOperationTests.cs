@@ -144,12 +144,12 @@ namespace BlockChain.Tests
 			p.Spend("test3", "test1", 0);
 
 			p.Render();
-			var test2 = p.TakeOut("test2");
+			var test1 = p.TakeOut("test1");
 			var test3 = p.TakeOut("test3");
 
 			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
 			{
-				txstore.Put(context, test2.Value);
+				txstore.Put(context, test1.Value);
 			}, postAction: (mempool, txstore, context) =>
 			{
 				var result = new BlockChainAddTransactionOperation(
@@ -212,7 +212,7 @@ namespace BlockChain.Tests
 
 			byte[] key1 = testTransactionPool["base"].Key;
 
-			Assert.AreEqual(testTransactionPool["tx1"].Value.inputs[0].txHash, key1, "should reference to previous transaction");
+			Assert.AreEqual(testTransactionPool["tx1"].Value.inputs[0].txHash, key1, "should reference previous transaction");
 		}
 	}
 }
