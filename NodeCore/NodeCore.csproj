@@ -45,7 +45,6 @@
     <Compile Include="Settings.cs" />
     <Compile Include="App.cs" />
     <Compile Include="ServerManager.cs" />
-    <Compile Include="IResourceOwner.cs" />
     <Compile Include="Networks.cs" />
     <Compile Include="DiscoveryManager.cs" />
     <Compile Include="AddressManager.cs" />

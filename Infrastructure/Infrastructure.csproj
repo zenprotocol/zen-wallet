@@ -42,6 +42,7 @@
     <Compile Include="Scope.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="JsonLoader.cs" />
+    <Compile Include="IResourceOwner.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

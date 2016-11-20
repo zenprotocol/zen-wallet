@@ -1,11 +1,5 @@
 ﻿using NUnit.Framework;
-using System;
-using Consensus;
 using BlockChain.Store;
-using BlockChain.Data;
-using BlockChain.Database;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace BlockChain.Tests
 {
@@ -17,7 +11,7 @@ namespace BlockChain.Tests
 		{
 			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
 			{
-				using (TransactionContext transactionContext = dbContext.GetTransactionContext())
+				using (var transactionContext = dbContext.GetTransactionContext())
 				{
 					var p = new TestTransactionPool();
 

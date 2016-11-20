@@ -5,21 +5,21 @@ namespace Store
 {
 	public class DBContext : IDisposable
 	{
-		public DBreezeEngine Engine { get; private set; }
+		private DBreezeEngine _Engine;
 
 		public DBContext(string dbName)
 		{
-			Engine = new DBreezeEngine(dbName);
+			_Engine = new DBreezeEngine(dbName);
 		}
 
 		public TransactionContext GetTransactionContext()
 		{
-			return new TransactionContext(Engine.GetTransaction());
+			return new TransactionContext(_Engine.GetTransaction());
 		}
 
 		public void Dispose()
 		{
-			Engine.Dispose();
+			_Engine.Dispose();
 		}
 	}
 }

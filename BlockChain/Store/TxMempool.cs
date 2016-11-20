@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using BlockChain.Data;
 using Consensus;
 using System.Linq;
+using Store;
 
 namespace BlockChain.Store
 {

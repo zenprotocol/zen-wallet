@@ -1,6 +1,5 @@
 using System;
-using BlockChain.Data;
-using BlockChain.Database;
+using Store;
 using Consensus;
 
 namespace BlockChain.Store

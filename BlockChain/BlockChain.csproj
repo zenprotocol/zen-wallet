@@ -47,18 +47,12 @@
     <Compile Include="BlockChainAddTransactionOperation.cs" />
     <Compile Include="Store\BlockDifficultyTable.cs" />
     <Compile Include="Store\BlockStore.cs" />
-    <Compile Include="Database\DBContext.cs" />
     <Compile Include="Data\HashDictionary.cs" />
-    <Compile Include="Database\Store.cs" />
-    <Compile Include="Data\StoredItem.cs" />
     <Compile Include="Store\TxMempool.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Store\UTXOStore.cs" />
-    <Compile Include="Database\ValueStore.cs" />
-    <Compile Include="Database\TransactionContext.cs" />
     <Compile Include="Data\MiroringCache.cs" />
     <Compile Include="Data\Block.cs" />
-    <Compile Include="Database\DatabaseTrace.cs" />
     <Compile Include="BlockChainTrace.cs" />
     <Compile Include="Data\KeyedTransaction.cs" />
   </ItemGroup>
@@ -69,12 +63,15 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Store\" />
-    <Folder Include="Database\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -67,6 +67,10 @@
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Utils\" />

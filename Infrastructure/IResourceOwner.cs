@@ -1,6 +1,6 @@
 using System;
 
-namespace NodeCore
+namespace Infrastructure
 {
 	public interface IResourceOwner
 	{

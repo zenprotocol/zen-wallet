@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using BlockChain.Database;
-using Consensus;
-using Microsoft.FSharp.Collections;
+using Store;
 
 namespace BlockChain.Tests
 {
