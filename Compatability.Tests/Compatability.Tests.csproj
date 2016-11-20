@@ -30,6 +30,12 @@
       <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core" />
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsensusTests.cs" />
@@ -39,9 +45,13 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Consensus\Consensus.fsproj">
-      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
-      <Name>Consensus</Name>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store.Tests\BLockChain.Tests.csproj">
+      <Project>{AC531A6E-F0A3-487D-883C-89BBA901A5F8}</Project>
+      <Name>BLockChain.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
