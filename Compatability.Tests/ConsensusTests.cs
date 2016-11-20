@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
 using Consensus;
-using BlockChain.Data;
 
 namespace BlockChain.Tests
 {

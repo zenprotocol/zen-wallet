@@ -1,0 +1,13 @@
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/obj/Debug/.NETFramework,Version=v4.6.1.AssemblyAttribute.cs
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/nunit.framework.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/Consensus.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/Consensus.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/MsgPack.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/BouncyCastle.Crypto.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/BlockChain.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/BlockChain.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/Infrastructure.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/Infrastructure.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/DBreeze.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Compatability.Tests/bin/Debug/Newtonsoft.Json.dll
