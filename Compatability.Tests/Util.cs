@@ -41,7 +41,7 @@ namespace BlockChain.Tests
 
 		public static Types.Output GetOutput()
 		{
-			return new Types.Output(Consensus.Tests.cbaselock, Consensus.Tests.zspend);
+			return new Types.Output(Consensus.Tests.cbaselock, new Types.Spend(new byte[] { }, 0));
 		}
 	}
 }

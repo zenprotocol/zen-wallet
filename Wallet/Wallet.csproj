@@ -3,10 +3,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AC531A6E-F0A3-487D-883C-89BBA901A5F8}</ProjectGuid>
+    <ProjectGuid>{237D9317-5976-41EE-A578-EABDF0B397B4}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>BlockChain.Tests</RootNamespace>
-    <AssemblyName>BlockChain.Tests</AssemblyName>
+    <RootNamespace>Wallet</RootNamespace>
+    <AssemblyName>Wallet</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -14,58 +14,51 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-      <Package>nunit</Package>
-    </Reference>
-    <Reference Include="FSharp.Core" />
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core" />
     <Reference Include="MsgPack">
       <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="StoreTests.cs" />
-    <Compile Include="TestBase.cs" />
-    <Compile Include="BlockChainTests.cs" />
-    <Compile Include="DBTests.cs" />
-    <Compile Include="TestFSharp.cs" />
-    <Compile Include="BlockChainAddTransactionOperationTests.cs" />
-    <Compile Include="TxMempoolTests.cs" />
-    <Compile Include="TestCSharp.cs" />
-    <Compile Include="BlockStoreTests.cs" />
-    <Compile Include="ConsensusTests.cs" />
-    <Compile Include="Utils\TestTransaction.cs" />
-    <Compile Include="Utils\Util.cs" />
-    <Compile Include="TestTrace.cs" />
-    <Compile Include="TxStoreTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Store\KeyStore.cs" />
+    <Compile Include="Data\Key.cs" />
+    <Compile Include="Store\TxStore.cs" />
+    <Compile Include="Store\MessagePacker.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
-      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
-      <Name>Infrastructure.Testing</Name>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Utils\" />
+    <Folder Include="Store\" />
+    <Folder Include="Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
