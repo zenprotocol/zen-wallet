@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7469FE62-A886-460D-8439-8048AF6514A1}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>NodeTester</RootNamespace>
+    <AssemblyName>NodeTester</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>TRACE;DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>glib-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>glade-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="Mono.Posix" />
+    <Reference Include="Open.Nat">
+      <HintPath>..\packages\Open.NAT.2.1.0.0\lib\net45\Open.Nat.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="MainWindow.cs" />
+    <Compile Include="gtk-gui\MainWindow.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="LogMessage.cs" />
+    <Compile Include="App.cs" />
+    <Compile Include="AddressManager.cs" />
+    <Compile Include="AddressManagerEditorWindow.cs" />
+    <Compile Include="AddressManagerEditorAddWindow.cs" />
+    <Compile Include="FieldEntry.cs" />
+    <Compile Include="SettingsWindow.cs" />
+    <Compile Include="SettingsManager.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="ServerManager.cs" />
+    <Compile Include="SelfTest.cs" />
+    <Compile Include="ConsoleWindow.cs" />
+    <Compile Include="IResourceOwner.cs" />
+    <Compile Include="ResourceOwnerWindow.cs" />
+    <Compile Include="NATTestsHelper.cs" />
+    <Compile Include="RemoteServerTest.cs" />
+    <Compile Include="DiscoveryManager.cs" />
+    <Compile Include="Networks.cs" />
+    <Compile Include="ColorConsoleTraceListener.cs" />
+    <Compile Include="ExternalTestingServicesHelper.cs" />
+    <Compile Include="Trace.cs" />
+    <Compile Include="IpExtensions.cs" />
+    <Compile Include="gtk-gui\NodeTester.AddressManagerEditorWindow.cs" />
+    <Compile Include="gtk-gui\NodeTester.AddressManagerEditorAddWindow.cs" />
+    <Compile Include="gtk-gui\NodeTester.FieldEntry.cs" />
+    <Compile Include="gtk-gui\NodeTester.SettingsWindow.cs" />
+    <Compile Include="gtk-gui\NodeTester.ConsoleWindow.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="ServerManager %28copy%29.cs" />
+    <Compile Include="Runtime.cs" />
+    <Compile Include="TransactionsPane.cs" />
+    <Compile Include="gtk-gui\NodeTester.TransactionsPane.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
+      <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
+      <Name>NBitcoinDerive</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NodeCore\NodeCore.csproj">
+      <Project>{125F2D2D-5FB6-447F-81D9-B97B1FB1DDB4}</Project>
+      <Name>NodeCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
+      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
+      <Name>Infrastructure.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
+      <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
+      <Name>Infrastructure.TestingGtk</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
