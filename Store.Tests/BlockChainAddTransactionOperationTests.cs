@@ -1,11 +1,7 @@
 using NUnit.Framework;
 using System;
-using Consensus;
 using BlockChain.Store;
-using BlockChain.Data;
-using BlockChain.Database;
-using System.Collections.Generic;
-using System.Linq;
+using Store;
 
 namespace BlockChain.Tests
 {

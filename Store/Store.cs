@@ -1,6 +1,4 @@
 using System;
-using DBreeze;
-using DBreeze.Transactions;
 
 namespace Store
 {
@@ -12,9 +10,9 @@ namespace Store
 	//public abstract class Store<TWrapper, TItem> where TWrapper : StoredItem<TItem>
 	public abstract class Store<T> where T : class
 	{
-		private readonly string _TableName;
+		protected readonly string _TableName;
 
-		public Store(string tableName)
+		protected Store(string tableName)
 		{
 			_TableName = tableName;
 		}

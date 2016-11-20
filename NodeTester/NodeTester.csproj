@@ -128,5 +128,9 @@
       <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
       <Name>Infrastructure.TestingGtk</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Wallet\Wallet.csproj">
+      <Project>{237D9317-5976-41EE-A578-EABDF0B397B4}</Project>
+      <Name>Wallet</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

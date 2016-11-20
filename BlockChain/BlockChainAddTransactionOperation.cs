@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using BlockChain.Data;
-using BlockChain.Database;
+using Store;
 using BlockChain.Store;
 using Consensus;
 using Infrastructure;

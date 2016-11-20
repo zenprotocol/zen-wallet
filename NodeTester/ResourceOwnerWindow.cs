@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gtk;
-using NodeCore;
+using Infrastructure;
 
 namespace NodeTester
 {
