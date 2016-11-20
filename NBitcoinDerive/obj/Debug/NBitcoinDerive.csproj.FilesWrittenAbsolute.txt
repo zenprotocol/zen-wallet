@@ -1,0 +1,7 @@
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/obj/Debug/.NETFramework,Version=v4.6.1.AssemblyAttribute.cs
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/NBitcoinDerive.dll.config
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/NBitcoinDerive.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/NBitcoinDerive.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/obj/Debug/NBitcoinDerive.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/obj/Debug/NBitcoinDerive.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/MsgPack.dll

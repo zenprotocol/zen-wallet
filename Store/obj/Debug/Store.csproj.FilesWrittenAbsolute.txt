@@ -1,9 +1,9 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/obj/Debug/.NETFramework,Version=v4.6.1.AssemblyAttribute.cs
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/DBreeze.dll
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Infrastructure.dll
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Infrastructure.dll.mdb
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Newtonsoft.Json.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Store.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Store.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/obj/Debug/Store.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/obj/Debug/Store.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/DBreeze.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Infrastructure.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Infrastructure.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/Store/bin/Debug/Newtonsoft.Json.dll
