@@ -1,5 +1,5 @@
 using System;
-using BlockChain.Database;
+using Store;
 
 namespace BlockChain.Store
 {

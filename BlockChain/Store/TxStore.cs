@@ -1,9 +1,7 @@
 using System;
 using Consensus;
-using System.IO;
 using System.Linq;
-using BlockChain.Database;
-using BlockChain.Data;
+using Store;
 
 namespace BlockChain.Store
 {

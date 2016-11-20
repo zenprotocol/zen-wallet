@@ -4,7 +4,7 @@ using Store;
 
 namespace Wallet.Store
 {
-	public class KeyStore : Store<Key>
+	public class KeyStore : EnumerableStore<Key>
 	{
 		public KeyStore() : base("key")
 		{

@@ -53,6 +53,10 @@
       <Project>{AC531A6E-F0A3-487D-883C-89BBA901A5F8}</Project>
       <Name>BLockChain.Tests</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

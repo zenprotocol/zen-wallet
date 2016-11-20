@@ -42,6 +42,7 @@
     <Compile Include="Data\Key.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Store\MessagePacker.cs" />
+    <Compile Include="Wallet.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Store\Store.csproj">

@@ -4,7 +4,6 @@ using Consensus;
 using System.Collections.Generic;
 using System.Linq;
 using BlockChain.Store;
-using BlockChain.Database;
 
 namespace BlockChain.Tests
 {
@@ -25,13 +24,13 @@ namespace BlockChain.Tests
 					var putTransaction = Util.GetNewTransaction(version);
 					var key = Merkle.transactionHasher.Invoke(putTransaction);
 
-					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					using (var transaction = dbContext.GetTransactionContext())
 					{
 						dbContext.Store.Put(transaction, putTransaction);
 						transaction.Commit();
 					}
 
-					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					using (var transaction = dbContext.GetTransactionContext())
 					{
 						var getTransaction = dbContext.Store.Get(transaction, key);
 
@@ -59,13 +58,13 @@ namespace BlockChain.Tests
 					putTransactions.Add(new Tuple<byte[], Types.Transaction>(key, putTransaction));
 				}
 
-				using (TransactionContext transaction = dbContext.GetTransactionContext())
+				using (var transaction = dbContext.GetTransactionContext())
 				{
 					dbContext.Store.Put(transaction, putTransactions.Select(t => t.Item2).ToArray());
 					transaction.Commit();
 				}
 
-				using (TransactionContext transaction = dbContext.GetTransactionContext())
+				using (var transaction = dbContext.GetTransactionContext())
 				{
 					putTransactions.ForEach(t =>
 					{
@@ -93,14 +92,14 @@ namespace BlockChain.Tests
 
 					Types.Transaction getTransaction;
 
-					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					using (var transaction = dbContext.GetTransactionContext())
 					{
 						dbContext.Store.Put(transaction, key, value);
 						getTransaction = dbContext.Store.Get(transaction, key).Value;
 						transaction.Commit();
 					}
 
-					using (TransactionContext transaction = dbContext.GetTransactionContext())
+					using (var transaction = dbContext.GetTransactionContext())
 					{
 						Assert.AreEqual(getTransaction.version, putTransaction.version);
 						Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
@@ -129,13 +128,13 @@ namespace BlockChain.Tests
 					putRawTransactions.Add(new Tuple<byte[], byte[]>(key, value));
 				}
 
-				using (TransactionContext transaction = dbContext.GetTransactionContext())
+				using (var transaction = dbContext.GetTransactionContext())
 				{
 					dbContext.Store.Put(transaction, putRawTransactions.ToArray());
 					transaction.Commit();
 				}
 
-				using (TransactionContext transaction = dbContext.GetTransactionContext())
+				using (var transaction = dbContext.GetTransactionContext())
 				{
 					putTransactions.ForEach(t =>
 					{

@@ -2,11 +2,9 @@ using NUnit.Framework;
 using System;
 using Consensus;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.FSharp.Collections;
 using System.IO;
-using BlockChain.Database;
 using BlockChain.Store;
+using Store;
 
 namespace BlockChain.Tests
 {

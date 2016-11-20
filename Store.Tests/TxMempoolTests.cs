@@ -3,7 +3,7 @@ using System;
 using Consensus;
 using System.Linq;
 using BlockChain.Store;
-using BlockChain.Data;
+using Store;
 
 namespace BlockChain.Tests
 {
