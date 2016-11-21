@@ -7,8 +7,9 @@ namespace NodeTester
 	public class App<T> where T : ResourceOwnerWindow, new()
 	{
 		static App() {
+			JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeTester.json";
 			JsonLoader<Settings>.Instance.FileName = "NodeTester.json";
-		}
+}
 
 		public static App<T> Create()
 		{
@@ -19,7 +20,11 @@ namespace NodeTester
 		{
 			T t = null;
 			TryCatch(() => { t = new T(); t.Show(); }, e => ExceptionHandler(e));
-			TryCatch (t, w => Runtime.Instance.Configure(w), (e, w) => ExceptionHandler(e, w));
+
+			if (JsonLoader<Settings>.Instance.Value.AutoConfigure)
+			{
+				TryCatch(t, w => Runtime.Instance.Configure(w), (e, w) => ExceptionHandler(e, w));
+			}
 		}
 
 		private void TryCatch(Action TryAction, Action<Exception> CatchAction)

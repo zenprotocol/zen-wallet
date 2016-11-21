@@ -57,6 +57,9 @@
     <Reference Include="Open.Nat">
       <HintPath>..\packages\Open.NAT.2.1.0.0\lib\net45\Open.Nat.dll</HintPath>
     </Reference>
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -81,7 +84,6 @@
     <Compile Include="ServerManager.cs" />
     <Compile Include="SelfTest.cs" />
     <Compile Include="ConsoleWindow.cs" />
-    <Compile Include="IResourceOwner.cs" />
     <Compile Include="ResourceOwnerWindow.cs" />
     <Compile Include="NATTestsHelper.cs" />
     <Compile Include="RemoteServerTest.cs" />
@@ -97,7 +99,6 @@
     <Compile Include="gtk-gui\NodeTester.SettingsWindow.cs" />
     <Compile Include="gtk-gui\NodeTester.ConsoleWindow.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="ServerManager %28copy%29.cs" />
     <Compile Include="Runtime.cs" />
     <Compile Include="TransactionsPane.cs" />
     <Compile Include="gtk-gui\NodeTester.TransactionsPane.cs" />

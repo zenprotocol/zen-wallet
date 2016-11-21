@@ -11,3 +11,6 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeCore/bin/Debug/NBitcoinDerive.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeCore/bin/Debug/NBitcoinDerive.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeCore/bin/Debug/MsgPack.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeCore/bin/Debug/Consensus.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeCore/bin/Debug/BouncyCastle.Crypto.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeCore/bin/Debug/nunit.framework.dll

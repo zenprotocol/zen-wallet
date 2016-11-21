@@ -23,23 +23,39 @@ namespace NodeCore
 			NBitcoin.Protocol.AddressManager addressManager = AddressManager.Instance.GetBitcoinAddressManager(); // new NBitcoin.Protocol.AddressManager ();
 
 			nodeConnectionParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+			nodeConnectionParameters.TemplateBehaviors.Add(new TransactionBehavior());
+
 			_Server.InboundNodeConnectionParameters = nodeConnectionParameters;
 
 			_Server.AllowLocalPeers = true; //TODO
 			_Server.ExternalEndpoint = ExternalEndpoint;
-
 		}
 
-		public void Start()
+		public bool Start()
 		{
 			try
 			{
 				_Server.Listen();
-				Trace.Information("Server listening on");
+				Trace.Information("Server listening");
+				return true;
 			}
 			catch (Exception e)
 			{
 				Trace.Error("Listen", e);
+			}
+			return false;
+		}
+
+		public void Stop()
+		{
+			_Server.Dispose();
+		}
+
+		public bool IsListening
+		{
+			get
+			{
+				return _Server.IsListening;
 			}
 		}
 
