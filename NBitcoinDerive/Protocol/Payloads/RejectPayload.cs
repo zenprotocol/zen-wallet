@@ -112,11 +112,11 @@ namespace NBitcoin.Protocol
 			}
 		}
 
-		uint256 _Hash;
+		byte[] _Hash;
 		/// <summary>
 		/// The hash being rejected
 		/// </summary>
-		public uint256 Hash
+		public byte[] Hash
 		{
 			get
 			{

@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BlockChain.Data
+namespace NBitcoin.Protocol.Behaviors
 {
+	//demo
 	public class ByteArrayComparer : IEqualityComparer<byte[]>
 	{
 		public bool Equals(byte[] left, byte[] right)
@@ -22,10 +23,4 @@ namespace BlockChain.Data
 		}
 	}
 
-	public class HashDictionary<T> : Dictionary<byte[], T>
-	{
-		public HashDictionary() : base(new ByteArrayComparer())
-		{
-		}
-	}
 }

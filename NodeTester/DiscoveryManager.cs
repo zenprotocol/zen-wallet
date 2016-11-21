@@ -10,6 +10,23 @@ using NodeTester;
 
 namespace NodeTester
 {
+	public class DemoHub : Singleton<DemoHub>
+	{
+		public BroadcastHubBehavior BroadcastHubBehavior { get; set; }
+		public SPVBehavior SPVBehavior { get; set; }
+
+		public DemoHub()
+		{
+			BroadcastHubBehavior = new BroadcastHubBehavior();
+			SPVBehavior = new SPVBehavior(t =>
+			{
+				Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+				Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+				Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+			});
+		}
+	}
+
 	public class DiscoveryManager : Singleton<DiscoveryManager>, IDisposable
 	{
 		protected NodesGroup nodesGroup = null;
@@ -70,7 +87,8 @@ namespace NodeTester
 
 			NodeConnectionParameters parameters = new NodeConnectionParameters();
 			parameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
-	//		parameters.TemplateBehaviors.Add(new TransactionBehavior());
+			parameters.TemplateBehaviors.Add(DemoHub.Instance.BroadcastHubBehavior);
+			parameters.TemplateBehaviors.Add(DemoHub.Instance.SPVBehavior);
 
 			if (ExternalIPAddress != null)
 			{
@@ -110,19 +128,13 @@ namespace NodeTester
 			resourceOwner.OwnResource (this); //only to stop the thread
 		}
 
-		public void SendTransaction(Consensus.Types.Transaction transaction)
+		public void SendTransaction(/*Consensus.Types.Transaction transaction*/)
 		{
-			foreach (var node in nodesGroup.ConnectedNodes)
-			{
-				//node.SendMessageAsync(new TransactionPayload() { Transaction = transaction });
-				//var tracker = node.Behaviors.Find<TrackerBehavior>();
-				//if (tracker == null)
-				//	continue;
-				//foreach (var data in result.ToOps().Select(o => o.PushData).Where(o => o != null))
-				//{
-				//	tracker.SendMessageAsync(new FilterAddPayload(data));
-				//}
-			}
+			Console.WriteLine("sending a transaction");
+
+			var hub = BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters);
+
+			hub.BroadcastTransactionAsync(Consensus.Tests.tx);
 		}
 	}
 }
