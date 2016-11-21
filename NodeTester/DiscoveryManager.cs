@@ -54,8 +54,6 @@ namespace NodeTester
 		}
 
 		public void Start (IResourceOwner resourceOwner, IPAddress ExternalIPAddress = null) {
-			Start (resourceOwner, ExternalIPAddress);
-
 			if (IsRunning) {
 				Stop ();
 			}
@@ -72,7 +70,7 @@ namespace NodeTester
 
 			NodeConnectionParameters parameters = new NodeConnectionParameters();
 			parameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
-			parameters.TemplateBehaviors.Add(new TransactionBehavior());
+	//		parameters.TemplateBehaviors.Add(new TransactionBehavior());
 
 			if (ExternalIPAddress != null)
 			{
@@ -116,7 +114,7 @@ namespace NodeTester
 		{
 			foreach (var node in nodesGroup.ConnectedNodes)
 			{
-				node.SendMessageAsync(new TransactionPayload() { Transaction = transaction });
+				//node.SendMessageAsync(new TransactionPayload() { Transaction = transaction });
 				//var tracker = node.Behaviors.Find<TrackerBehavior>();
 				//if (tracker == null)
 				//	continue;
