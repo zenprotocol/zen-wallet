@@ -48,6 +48,21 @@ namespace NBitcoin
 		}
 	}
 
+	public class CustomXxxSerializer : MessagePackSerializer<Consensus.Types.Transaction>
+	{
+		public CustomXxxSerializer(SerializationContext ownerContext) : base(ownerContext) { }
+
+		protected override void PackToCore(Packer packer, Consensus.Types.Transaction t)
+		{
+			packer.Pack(Consensus.Serialization.context.GetSerializer<Consensus.Types.Transaction>().PackSingleObject(t));
+		}
+
+		protected override Consensus.Types.Transaction UnpackFromCore(Unpacker unpacker)
+		{
+			return Consensus.Serialization.context.GetSerializer<Consensus.Types.Transaction>().UnpackSingleObject(unpacker.Unpack<byte[]>());
+		}
+	}
+
 	public class MessagePacker
 	{
 		private static MessagePacker instance = null;
@@ -85,6 +100,7 @@ namespace NBitcoin
 				{
 					_Context = new SerializationContext { SerializationMethod = SerializationMethod.Map }; //TODO
 					_Context.Serializers.RegisterOverride(new CustomIPEndPointSerializer(_Context));
+					_Context.Serializers.RegisterOverride(new CustomXxxSerializer(_Context));
 				}
 
 				return _Context;

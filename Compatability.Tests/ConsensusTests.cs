@@ -35,5 +35,16 @@ namespace BlockChain.Tests
 
 			Assert.IsTrue(t.Equals(test));
 		}
+
+		[Test()]
+		public void CanSerDesTx2()
+		{
+			var tx = Consensus.Tests.tx;
+			var data = Merkle.serialize<Types.Transaction>(tx);
+
+			var t = Serialization.context.GetSerializer<Types.Transaction>().UnpackSingleObject(data);
+
+			Assert.IsTrue(t.Equals(tx));
+		}
 	}
 }

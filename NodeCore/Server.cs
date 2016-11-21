@@ -12,7 +12,7 @@ namespace NodeCore
 	{
 		private readonly NodeServer _Server;
 
-		public Server(IResourceOwner resourceOwner, IPEndPoint ExternalEndpoint)
+		public Server(IResourceOwner resourceOwner, IPEndPoint ExternalEndpoint, Action<NodeConnectionParameters> demoAction = null)
 		{
 			NBitcoin.Network network = TestNetwork.Instance;
 
@@ -23,12 +23,18 @@ namespace NodeCore
 			NBitcoin.Protocol.AddressManager addressManager = AddressManager.Instance.GetBitcoinAddressManager(); // new NBitcoin.Protocol.AddressManager ();
 
 			nodeConnectionParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
-			nodeConnectionParameters.TemplateBehaviors.Add(new TransactionBehavior());
+			//	nodeConnectionParameters.TemplateBehaviors.Add(new TransactionBehavior());
 
+			if (demoAction != null)
+			{
+				demoAction(nodeConnectionParameters);
+			}
 			_Server.InboundNodeConnectionParameters = nodeConnectionParameters;
 
 			_Server.AllowLocalPeers = true; //TODO
 			_Server.ExternalEndpoint = ExternalEndpoint;
+
+			Trace.Information($"Server setup at {ExternalEndpoint}");
 		}
 
 		public bool Start()

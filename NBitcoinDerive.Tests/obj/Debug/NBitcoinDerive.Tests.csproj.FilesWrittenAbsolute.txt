@@ -12,4 +12,6 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Infrastructure.Testing.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Infrastructure.Testing.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/MsgPack.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Consensus.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/BouncyCastle.Crypto.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Newtonsoft.Json.dll
