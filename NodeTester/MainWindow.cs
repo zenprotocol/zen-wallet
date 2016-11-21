@@ -18,6 +18,8 @@ public partial class MainWindow : ResourceOwnerWindow
 	{
 		Build ();
 
+		OwnResource(Wallet.Wallet.Instance);
+
 //		statusbar3.Push (1, "xx");
 //		statusbar3.Push (1, "yy");
 //		statusbar3.Push (2, "zz");
@@ -40,6 +42,7 @@ public partial class MainWindow : ResourceOwnerWindow
 		buttonDiscoverStop.Clicked += Button_DiscoverStop;
 		buttonStopServer.Clicked += Button_StopServer;
 		buttonStartServer.Clicked += Button_StartServer;
+		buttonStartInternal.Clicked += Button_StartServerInternal;
 		buttonGetExternalIP_3rd.Clicked += Button_GetExternalIp_3rd;
 		buttonGetExternalIP_UPNP.Clicked += Button_GetExternalIP_UPnP;
 		buttonGetUPnPMapping.Clicked += Button_GetUPnPMapping;
@@ -99,7 +102,7 @@ public partial class MainWindow : ResourceOwnerWindow
 		treeviewMessages.AppendColumn ("Content", new Gtk.CellRendererText (), "text", 3);
 
 
-		if (NodeTester.ServerManager.Instance.IsRunning) {
+		if (NodeTester.ServerManager.Instance.IsListening) {
 			buttonStartServer.Sensitive = false;
 			buttonStopServer.Sensitive = true;
 			labelServerStatus.Text = "Server Connected";
@@ -305,15 +308,38 @@ public partial class MainWindow : ResourceOwnerWindow
 	{
 		new AddressManagerEditorAddWindow((IPEndPoint) =>
 		{
-			NodeTester.ServerManager.Instance.Start(this, IPEndPoint);
+			ServerManager.Instance.Start(this, IPEndPoint);
 		}).Show();
 	}
 
+	protected void Button_StartServerInternal(object sender, EventArgs e)
+	{
+		IPAddress InternalIPAddress = null;
+		IPAddress[] PrivateIPs = NodeCore.Utils.GetAllLocalIPv4();
+
+		if (PrivateIPs.Count() == 0)
+		{
+			this.ShowMessage("Warning, local addresses not found");
+			InternalIPAddress = null;
+		}
+		else {
+			InternalIPAddress = PrivateIPs.First();
+
+			if (PrivateIPs.Count() > 1)
+			{
+				this.ShowMessage("Warning, found " + PrivateIPs.Count() + " internal addresses");
+			}
+		}
+
+		ServerManager.Instance.Start(this, new IPEndPoint(InternalIPAddress, JsonLoader<NodeTester.Settings>.Instance.Value.ServerPort));
+	}
+
+
 	protected void Button_ServerTest (object sender, EventArgs e)
 	{
-		String testResult = NodeTester.ServerManager.GetInstance<NodeTester.ServerManager>().Test (this);
+		//String testResult = ServerManager.Instance.Test (this);
 
-		this.ShowMessage ("Test result: " + testResult);
+		//this.ShowMessage ("Test result: " + testResult);
 	}
 
 	protected void Menu_ClearLog (object sender, EventArgs e)

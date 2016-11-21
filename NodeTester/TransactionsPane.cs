@@ -1,7 +1,7 @@
 ﻿using System;
 using Gtk;
+using System.Linq;
 using Infrastructure;
-using NodeCore;
 
 namespace NodeTester
 {
@@ -13,27 +13,56 @@ namespace NodeTester
 			this.Build();
 
 			InitKeysPane();
+
+			buttonKeyCreate.Clicked += ButtonKeyCreate_Clicked;
+			buttonTransactionSend.Clicked += ButtonTransactionSend_Clicked;
+		}
+
+		void ButtonTransactionSend_Clicked(object sender, EventArgs e)
+		{
+			var sendTo = entryTransactionSendTo.Text;
+			var amount = entryTransactionSendAmount.Text;
+
+			DiscoveryManager.Instance.
+		}
+
+		void ButtonKeyCreate_Clicked(object sender, EventArgs e)
+		{
+			Wallet.Wallet.Instance.AddKey(new Wallet.Key() { IsChange = true });
+			Populate(treeviewKeysUnused, false, true);
 		}
 
 		private void InitKeysPane()
 		{
-			InitKeysPane(treeviewKeysUsed);
-			InitKeysPane(treeviewKeysUnused);
-			InitKeysPane(treeviewKeysChange);
+			InitKeysPane(treeviewKeysUsed, true, false);
+			InitKeysPane(treeviewKeysUnused, false, false);
+			InitKeysPane(treeviewKeysChange, null, true);
 		}
 
-		private void InitKeysPane(TreeView treeView)
+		private void InitKeysPane(TreeView treeView, bool? used, bool? isChange)
 		{
-			var store = new Gtk.ListStore(typeof(string), typeof(string));
-
-			treeView.AppendColumn("Public", new Gtk.CellRendererText(), "text", 0);
-			treeView.AppendColumn("Private", new Gtk.CellRendererText(), "text", 1);
-			treeView.AppendColumn("Used?", new Gtk.CellRendererText(), "text", 1);
-			treeView.AppendColumn("Change?", new Gtk.CellRendererText(), "text", 1);
-
-			//
+			var store = new Gtk.ListStore(typeof(string), typeof(string), typeof(string), typeof(string));
 
 			treeView.Model = store;
+			treeView.AppendColumn("Public", new Gtk.CellRendererText(), "text", 0);
+			treeView.AppendColumn("Private", new Gtk.CellRendererText(), "text", 1);
+			treeView.AppendColumn("Used?", new Gtk.CellRendererText(), "text", 2);
+			treeView.AppendColumn("Change?", new Gtk.CellRendererText(), "text", 3);
+
+			Populate(treeView, used, isChange);
+		}
+
+		private void Populate(TreeView treeView, bool? used, bool? isChange)
+		{
+			Wallet.Wallet.Instance.GetKeys(used, isChange).ToList().ForEach(key =>
+			{
+				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.IsChange ? "Yes" : "No");
+			});
+		}
+
+		private String DisplayKey(byte[] key)
+		{
+			return key == null ? "" : key.ToString();
 		}
 	}
 }

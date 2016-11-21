@@ -51,12 +51,12 @@ namespace NodeTester
 					NATManager.Instance.ExternalIPVerified.Value) {
 
 					try {
-						NodeTester.ServerManager.Instance.Start (resourceOwner, NATManager.Instance.ExternalIPAddress);
+						ServerManager.Instance.Start (resourceOwner, NATManager.Instance.ExternalIPAddress);
 					} catch (Exception e) {
 						NodeTester.Trace.Error ("Error starting server", e);
 					}
 
-					PushMessage (new ServerSummaryMessage () { IsRunning = NodeTester.ServerManager.Instance.IsRunning });
+					PushMessage (new ServerSummaryMessage () { IsRunning = NodeTester.ServerManager.Instance.IsListening });
 				}
 
 				if (JsonLoader<Settings>.Instance.Value.IPSeeds.Count == 0) {
