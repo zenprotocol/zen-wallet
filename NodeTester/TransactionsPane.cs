@@ -23,7 +23,7 @@ namespace NodeTester
 			var sendTo = entryTransactionSendTo.Text;
 			var amount = entryTransactionSendAmount.Text;
 
-			DiscoveryManager.Instance.
+			DiscoveryManager.Instance.SendTransaction();
 		}
 
 		void ButtonKeyCreate_Clicked(object sender, EventArgs e)

@@ -21,3 +21,8 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/bin/Debug/Store.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/bin/Debug/Store.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/bin/Debug/DBreeze.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/bin/Debug/NodeTester.exe.config
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/bin/Debug/NodeTester.exe.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/bin/Debug/NodeTester.exe
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/obj/Debug/NodeTester.exe
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NodeTester/obj/Debug/NodeTester.exe.mdb

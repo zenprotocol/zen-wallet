@@ -25,6 +25,10 @@ namespace NBitcoin.Protocol
 		[MessagePackKnownType("5", typeof(AddrPayload))]
 		[MessagePackKnownType("6", typeof(GetAddrPayload))]
 		[MessagePackKnownType("7", typeof(RejectPayload))]
+		[MessagePackKnownType("8", typeof(TransactionPayload))]
+		[MessagePackKnownType("9", typeof(InvPayload))]
+		[MessagePackKnownType("A", typeof(GetDataPayload))]
+		[MessagePackKnownType("B", typeof(TxPayload))]
 		public Payload Payload { get; set; }
 
 		public override string ToString()

@@ -32,6 +32,13 @@
     <Reference Include="MsgPack">
       <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net45\MsgPack.dll</HintPath>
     </Reference>
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="Mono.Posix" />
+    <Reference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -228,6 +235,15 @@
     <Compile Include="RandomUtils.cs" />
     <Compile Include="MessagePacker.cs" />
     <Compile Include="RandomUtils.partial.cs" />
+    <Compile Include="Protocol\Payloads\TransactionPayload.cs" />
+    <Compile Include="TransactionBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\BroadcastTransactionBehavior.cs" />
+    <Compile Include="Protocol\InventoryVector.cs" />
+    <Compile Include="Protocol\Payloads\InvPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetDataPayload.cs" />
+    <Compile Include="Protocol\Payloads\TxPayload.cs" />
+    <Compile Include="Protocol\Behaviors\SPVBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\ByteArrayComparer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Protocol\" />

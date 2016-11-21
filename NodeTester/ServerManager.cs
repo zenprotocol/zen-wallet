@@ -129,7 +129,10 @@ namespace NodeTester
 				Stop ();
 			}
 
-			_Server = new Server(resourceOwner, externalEndpoint);
+			_Server = new Server(resourceOwner, externalEndpoint, parameters => {
+				parameters.TemplateBehaviors.Add(DemoHub.Instance.BroadcastHubBehavior);
+				parameters.TemplateBehaviors.Add(DemoHub.Instance.SPVBehavior);
+			});
 
 			InitHandlers();
 

@@ -1,16 +1,123 @@
 ﻿using NUnit.Framework;
 using System;
+using NBitcoin;
 using NBitcoin.Protocol;
 using NBitcoin.Protocol.Behaviors;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Consensus;
+using Microsoft.FSharp.Collections;
 
 namespace NBitcoinDerive.Tests
 {
 	[TestFixture()]
 	public class NetworkTests : NetworkTestBase
 	{
+		[Test()]
+		public void CanPassTransactionDemo()
+		{
+			WithServerSet(2, servers =>
+			{
+				servers.SeedServerIndex = 0;
+
+				AddressManager serverAddressManager = new AddressManager();
+				serverAddressManager.Add(
+					new NetworkAddress(servers[0].ExternalEndpoint),
+					servers[0].ExternalEndpoint.Address
+				);
+				serverAddressManager.Connected(new NetworkAddress(servers[0].ExternalEndpoint));
+
+				NodeConnectionParameters serverParameters = new NodeConnectionParameters();
+				serverParameters.TemplateBehaviors.Add(new AddressManagerBehavior(serverAddressManager));
+
+				//serverParameters.TemplateBehaviors.Add(new TransactionBehavior());
+				serverParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
+				serverParameters.TemplateBehaviors.Add(new SPVBehavior(t => { 
+					Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+					Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+					Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+				}));
+
+				servers[0].InboundNodeConnectionParameters = serverParameters;
+		//		serverParameters.TemplateBehaviors.Find<TransactionBehavior>().ConnectedNodes = servers[0].ConnectedNodes;
+
+
+				//servers[0].NodeAdded += (sender, node) =>
+				//{
+					
+				//	Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+				//	Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+				//	Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+				//	Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+				//	Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+				//	Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+				//	Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+
+				//};
+
+				#region Setup Parameters for NodeGroup
+
+				AddressManager addressManager = new AddressManager();
+				addressManager.PeersToFind = 1;
+
+				NodeConnectionParameters parameters = new NodeConnectionParameters();
+				parameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+
+				parameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
+				parameters.TemplateBehaviors.Add(new SPVBehavior(t =>
+				{
+					Console.WriteLine("****************************************");
+					Console.WriteLine("****************************************");
+					Console.WriteLine("****************************************");
+				}));
+				parameters.AddressFrom = servers[1].ExternalEndpoint;
+
+				NodesGroup nodesGroup = new NodesGroup(servers.Network, parameters);
+				nodesGroup.AllowSameGroup = true;
+				nodesGroup.MaximumNodeConnection = 1;
+			//	nodesGroup.NodeConnectionParameters.TemplateBehaviors.Find<TransactionBehavior>().ConnectedNodes = nodesGroup.ConnectedNodes;
+
+				#endregion
+
+				nodesGroup.Connect();
+
+				//Action<Node> sendTransaction = node =>
+				//{
+				//	node.SendMessage(new TransactionPayload());// { Transaction = GetNewTransaction() });
+				//};
+
+				nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
+				{
+						Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+						Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+						Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+						Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+						Console.WriteLine("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+				};
+
+				Thread.Sleep(9000);  //TODO
+
+				//Assert.IsTrue(nodesGroup.ConnectedNodes.Count == 1);
+
+				//foreach (var node in nodesGroup.ConnectedNodes)
+				//{
+				//	node.SendMessage(new TransactionPayload());// { Transaction = GetNewTransaction() });
+				//}
+
+
+				var hub = BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters);
+
+				Console.WriteLine("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+				hub.BroadcastTransactionAsync(Consensus.Tests.tx);
+
+				Thread.Sleep(9000);  //TODO
+
+				Console.WriteLine("^^^^^******---------********^^^^^^^");
+
+			});
+		}
+
 		[Test()]
 		public void CanHandshake()
 		{
@@ -25,7 +132,6 @@ namespace NBitcoinDerive.Tests
 				Assert.AreEqual(true, AddressManagerContains(servers[1], node0to1.MyVersion.AddressFrom));
 
 				Thread.Sleep(200);
-
 			});
 		}
 

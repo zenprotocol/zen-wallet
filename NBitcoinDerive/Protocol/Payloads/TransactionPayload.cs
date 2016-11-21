@@ -2,13 +2,14 @@
 
 namespace NBitcoin.Protocol
 {
-	public class VerAckPayload : Payload
+	//TODO: DEMO CLASS
+	public class TransactionPayload : Payload
 	{
-		public int MockProperty { get; set; } //TODO: cannot use MsgPack on a type with no properties
-
+		//public Consensus.Types.Transaction Transaction { get; set; }
+		public String XXX { get; set; }
 		public override string ToString()
 		{
-			return "VerAck";
+			return "Transaction";
 		}
 	}
 }
