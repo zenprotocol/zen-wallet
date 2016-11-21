@@ -14,9 +14,9 @@ namespace Infrastructure
 			}
 		}
 
-		public static Y GetInstance<Y>() {
-			return (Y)Convert.ChangeType (Instance, typeof(Y));
-		}
+		//public static Y GetInstance<Y>() {
+		//	return (Y)Convert.ChangeType (Instance, typeof(Y));
+		//}
 	}
 
 //	public class ValueSingleton<T>

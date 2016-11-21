@@ -26,7 +26,7 @@ namespace NodeTester
 		}
 	}
 
-	public class ServerManager : NodeCore.ServerManager
+	public class ServerManager : Singleton<ServerManager>
 	{
 		public struct NodeInfo {
 			public String Address;
@@ -48,13 +48,20 @@ namespace NodeTester
 		public class MessageSentMessage : IMessage { public NodeInfo NodeInfo { get; set; } public MessageInfo MessageInfo { get; set; } }
 
 		private LogMessageContext LogMessageContext = new LogMessageContext("Server");
-		private NodeServer Server = null;
+
+		private Server _Server = null;
 
 		private void PushMessage(IMessage message) {
 			Infrastructure.MessageProducer<IMessage>.Instance.PushMessage (message);
 		}
 
-		protected override void InitHandlers() {
+		public bool IsListening { 
+			get {
+				return _Server != null && _Server.IsListening;
+			}
+		}
+
+		private void InitHandlers() {
 			MessagingFilter MessagingFilter = new MessagingFilter () { 
 				ReceivingMessageAction = (Node, Payload) => {
 					String fromNode = Node == null ? "-" : Node.RemoteSocketAddress + ":" + Node.RemoteSocketPort;
@@ -98,7 +105,7 @@ namespace NodeTester
 				},
 			};
 
-			Server.NodeAdded += (NodeServer sender, Node node) => {
+			_Server.OnNodeAdded((sender, node) => {
 				LogMessageContext.Create("Node connected (" + node.RemoteSocketAddress + ":" + node.RemoteSocketPort + ")");
 				PushMessage (new NodeConnectedMessage () { 
 					NodeInfo = new NodeInfo() { 
@@ -108,68 +115,100 @@ namespace NodeTester
 				});
 
 				node.Filters.Add(MessagingFilter);
-			};
+			});
 		}
 
-		public String Test(IResourceOwner resourceOwner) {
-			bool started = !IsRunning;
-			String returValue = null;
+		public void Start(IResourceOwner resourceOwner, IPAddress ExternalAddress)
+		{
+			Start(resourceOwner, new IPEndPoint(ExternalAddress, JsonLoader<Settings>.Instance.Value.ServerPort));
+		}
 
-			if (started) {
-				Start (resourceOwner, IPAddress.Parse("127.0.0.1"));
-			}
-				
-			try {				
-				Node node = Node.Connect(Server.Network, Server.ExternalEndpoint);
-				if (!node.IsConnected) {
-					returValue = "Unable to connect";
-				} else {
-					node.VersionHandshake();
-
-					if (node.State != NodeState.HandShaked) {
-						returValue = "Unable to handshake";
-					} else {
-						node.SendMessageAsync(new GetAddrPayload());
-						AddrPayload addrPayload = node.ReceiveMessage<AddrPayload>();
-
-						if (addrPayload.Addresses.Length == NodeCore.AddressManager.Instance.GetBitcoinAddressManager().GetAddr().Length)
-						{
-							int matchCount = 0;
-
-							NetworkAddress[] NetworkAddresses = NodeCore.AddressManager.Instance.GetBitcoinAddressManager().GetAddr();
-
-							foreach(NetworkAddress NetworkAddress in NetworkAddresses) 
-							{
-								foreach (NetworkAddress NetworkAddress_ in addrPayload.Addresses) 
-								{
-									if (NetworkAddress.Endpoint.ToString() == NetworkAddress_.Endpoint.ToString()) 
-									{
-										matchCount++;
-									}
-								}
-							}
-
-							if (addrPayload.Addresses.Length == matchCount) {
-								returValue = "Success";
-							} else {
-								returValue = "Address(es) missing";
-							}
-						} else {
-							returValue = "Addresses count mismatch";
-						}
-
-					}
-				}
-			} catch (Exception e) {
-				returValue = "Error: " + e.Message; 
-			}
-
-			if (started) {
+		public void Start (IResourceOwner resourceOwner, IPEndPoint externalEndpoint)
+		{
+			if (IsListening) {
 				Stop ();
 			}
 
-			return returValue;
+			_Server = new Server(resourceOwner, externalEndpoint);
+
+			InitHandlers();
+
+			if (_Server.Start())
+			{
+				PushMessage(new ConnectedMessage());
+				Trace.Information("Server " + (_Server.IsListening ? "listening" : "not listening"));
+			}
 		}
+
+		public void Stop() {
+			if (_Server != null) {
+				PushMessage(new DisconnectedMessage());
+
+				Trace.Information ("Server Stopped");
+				_Server.Stop ();
+				_Server = null;
+			}
+		}
+
+		//public String Test(IResourceOwner resourceOwner) {
+		//	bool started = !IsListening;
+		//	String returValue = null;
+
+		//	if (started) {
+		//		Start (resourceOwner, IPAddress.Parse("127.0.0.1"));
+		//	}
+				
+		//	try {				
+		//		Node node = Node.Connect(_Server.Network, _Server.ExternalEndpoint);
+		//		if (!node.IsConnected) {
+		//			returValue = "Unable to connect";
+		//		} else {
+		//			node.VersionHandshake();
+
+		//			if (node.State != NodeState.HandShaked) {
+		//				returValue = "Unable to handshake";
+		//			} else {
+		//				node.SendMessageAsync(new GetAddrPayload());
+		//				AddrPayload addrPayload = node.ReceiveMessage<AddrPayload>();
+
+		//				if (addrPayload.Addresses.Length == NodeCore.AddressManager.Instance.GetBitcoinAddressManager().GetAddr().Length)
+		//				{
+		//					int matchCount = 0;
+
+		//					NetworkAddress[] NetworkAddresses = NodeCore.AddressManager.Instance.GetBitcoinAddressManager().GetAddr();
+
+		//					foreach(NetworkAddress networkAddress in NetworkAddresses) 
+		//					{
+		//						foreach (NetworkAddress NetworkAddress_ in addrPayload.Addresses) 
+		//						{
+		//							if (networkAddress.Endpoint.ToString() == NetworkAddress_.Endpoint.ToString()) 
+		//							{
+		//								matchCount++;
+		//							}
+		//						}
+		//					}
+
+		//					if (addrPayload.Addresses.Length == matchCount) {
+		//						returValue = "Success";
+		//					} else {
+		//						returValue = "Address(es) missing";
+		//					}
+		//				} else {
+		//					returValue = "Addresses count mismatch";
+		//				}
+
+		//			}
+		//		}
+		//	} catch (Exception e) {
+		//		returValue = "Error: " + e.Message; 
+		//	}
+
+		//	if (started) {
+		//		Stop ();
+		//	}
+
+		//	return returValue;
+		//}
 	}
 }
 
