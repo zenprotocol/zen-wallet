@@ -28,7 +28,7 @@ namespace BlockChain
 			_DBContext.Dispose();
 		}
 
-		public void HandleNewValueBlock(Types.Block block) //TODO: use Keyed type
+		public void HandleNewBlock(Types.Block block) //TODO: use Keyed type
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
@@ -36,13 +36,13 @@ namespace BlockChain
 
 				_BlockStore.Put(context, block);
 				_TxStore.Put(context, block.transactions.ToArray());
-				_BlockDifficultyTable.Context(context)[key] = GetdifficultyRecursive(context, block);
+				_BlockDifficultyTable.Context(context)[key] = GetDifficultyRecursive(context, block);
 
 				context.Commit();
 			}
 		}
 
-		private Double GetdifficultyRecursive(TransactionContext context, Types.Block block)
+		private Double GetDifficultyRecursive(TransactionContext context, Types.Block block)
 		{
 			Double result = block.header.pdiff;
 
@@ -58,7 +58,7 @@ namespace BlockChain
 				throw new Exception("Missing parent block");
 			}
 
-			return result + GetdifficultyRecursive(context, parentBlock);
+			return result + GetDifficultyRecursive(context, parentBlock);
 		}
 	}
 }
