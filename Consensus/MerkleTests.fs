@@ -5,6 +5,7 @@ open NUnit.Framework.Constraints
 open System
 
 
+open Consensus.Tree
 open Consensus.Merkle
 
 let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
@@ -20,32 +21,11 @@ let ``SHA3 hash of null string matches known value``() =
     Assert.That(hexResult, Is.EqualTo(knownNullHash))
     Assert.That(hashLength, Is.EqualTo(32))
 
-//[<Test>]
-//let ``Default digest at leaf equals SHA3 hash of tree-wide constant``() =
-//let C_tw = "abc"B    // note: 'B' suffix converts from string to byte[]
-//let 
 
-//[<TestFixture>]
-//type Test() = 
 
-//    [<Test>]
-//    member x.TestCase() =
-//        Assert.IsTrue(true)
-
-open Consensus.Tree
-
-//[<Test>]
+[<Test>]
 let ``Print tree of [1..14]``() =
     let ls = [1..14]
     let tree = complete(ls)
     printfn "%A" tree
-    Assert.IsTrue(true)
-
-//[<Test>]
-let ``Print merkle root of 14 hashes``() =
-    let zHash = Array.zeroCreate 31
-    let hs = List.map (fun x -> Array.append zHash [|x|]) [1uy..14uy]
-    let tree = complete(hs)
-    let cTW = "CONSTANT!"B
-    printfn "%A" <| merkleRoot cTW Hash tree
     Assert.IsTrue(true)
