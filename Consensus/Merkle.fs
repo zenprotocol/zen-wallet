@@ -100,21 +100,14 @@ let inline toBytes (n: ^T) =
     [|low; mLow; mHigh; high|]
 
 let bitsToBytes (bs:bool[]) =
-    seq {
-        let b = ref 0uy
-        for i=0 to bs.Length-1 do
-            let rem = i % 8
-            if rem = 0 && i <> 0 then
-                yield !b
-                b := 0uy
-            if bs.[i] then
-                b := !b + byte (1 <<< rem)
-        yield !b
-    } |> Array.ofSeq
+    let ba = System.Collections.BitArray(bs)
+    let ret : byte[] = Array.zeroCreate(bs.Length / 8)
+    ba.CopyTo(ret,0)
+    ret
 
 let bytesToBits (bs:byte[]) = 
     let ba = System.Collections.BitArray(bs)
-    let ret = Array.zeroCreate(bs.Length*8)
+    let ret : bool[] = Array.zeroCreate(bs.Length*8)
     ba.CopyTo(ret,0)
     ret
 

@@ -11,252 +11,165 @@ open Consensus.Tree
 open Consensus.Merkle
 
 let TSize = 256
+let BSize = TSize/8
 
+
+type BLocation = {h:int;b:byte[]}
+
+let baseLocation = {h = TSize; b = Array.zeroCreate<byte> BSize}
 let zeroLoc' n = Array.zeroCreate<bool> n
 let zeroLoc = zeroLoc' TSize
 
-let emptyTree'<'L> n = addLocation (n) <| Branch ((), Leaf (None:'L option), Leaf None)
-let emptyTree<'L> = emptyTree' TSize
+let splitindex h = 
+    let j = TSize - h
+    let bnum = j / 8
+    let m = 7 - (j % 8)
+    let ret = Array.zeroCreate<byte> (BSize)
+    ret.SetValue(1uy <<< m,bnum)
+    ret
 
+let bitAt h (k:byte[]) =
+    let j = TSize - h
+    let bnum = j / 8
+    let m = 7 - (j % 8)
+    k.[bnum] &&& (1uy <<< m) <> 0uy
 
-let rec insert tree k v =
-    match tree with
-    | Branch ({location=location} as data, left, right) ->
-        if k < (rightLocation location).loc then Branch (data, insert left k v, right)
-        else Branch (data, left, insert right k v)
-    | Leaf {location={loc=b; height=h} as location} when h > 0 ->
-        insert
-        <| Branch (
-            {data=();location=location}, 
-            Leaf {data=None; location = leftLocation location}, 
-            Leaf {data=None; location = rightLocation location})
-        <| k <| v
-    | Leaf {data=data; location=location} ->
-        if k=location.loc then
-            Leaf {data = Some v; location=location}
-        else tree 
+let left {h=h;b=b} = {h=h-1;b=b}
+let right {h=h;b=b} =
+    let ir b h =
+        let ret = Array.copy b
+        let j = TSize - h
+        let bnum = j/8
+        let m = 7 - (j%8)
+        ret.SetValue(b.[bnum] ||| (1uy <<< m), bnum)
+        ret
+    {h=h-1;b = ir b h}
 
-let remove = 
-    let rec innerRem = fun tree k ->
-        match tree with
-        | Leaf ({location={loc=loc; height=height} as location})
-             when loc=k && height=0 ->
-                 Leaf {data=None;location=location}
-        | Leaf _ -> tree
-        | Branch ({location={loc=b}} as br, lTree, rTree) ->
-            if k <= b then Branch (br, innerRem lTree k, rTree)
-            else Branch (br, lTree, innerRem rTree k)
+let indexOf n = ((TSize - n)/8,7-((TSize - n)%8))
 
-    fun tree k -> normalize <| innerRem tree k
+type SMT<'V> = {cTW: byte[]; mutable kv: Map<Hash,'V>; mutable digests: Map<BLocation,Hash>; defaultDigests: int->Hash; serializer:'V->byte[]}
 
-type MerklizedData<'T> = {data:'T; isDefault:bool; digest: Hash option}
-type MerklizedLocationData<'T> = LocData<MerklizedData<'T>>
+let emptySMT<'V> = fun cTW serializer -> {cTW = cTW; kv = Map.empty<Hash,'V>; digests = Map.empty<BLocation,Hash>; defaultDigests = defaultHash cTW; serializer=serializer}
 
-let sparseLeafMerklize cTW (defaultHashes:int->Hash) serializer =
-    let hasher = fun x b ->
-        innerHashList [cTW; serializer x; bitsToBytes b]
-    function
-    | {data=None; location={height=h} as location} ->
-        Leaf {data={data=None; isDefault=true; digest=Some <| defaultHashes h}; location=location} : FullTree<MerklizedLocationData<_>,_>
-    | {data=Some x; location={loc=loc} as location} ->
-        Leaf {data={data=Some x; isDefault=false; digest=Some <| hasher x loc}; location=location}
+let splitlist kvl s =
+    let comp = fun (k,v) -> k < s
+    (List.takeWhile comp kvl, List.skipWhile comp kvl)
 
+let splitmap kv s =
+    let llist, rlist = splitlist (Map.toList kv) s
+    (Map.ofList llist, Map.ofList rlist)
 
-let (|GetDigest|_|) tree =
-    match tree with
-    | Branch ({data={digest=dig;data=_};location=_}, _, _) -> dig
-    | Leaf ({data={digest=dig;data=_};location=_}) -> dig
+let lHash cTW b sv = innerHashList [cTW; sv; b]
+let optLeafHash cTW b = Option.map (lHash cTW b)
 
-let (|DefaultDigest|NonDefaultDigest|) tree =
-    match tree with
-    | Branch ({data={isDefault=true;data=_};location=_}, _, _) -> DefaultDigest
-    | Leaf ({data={isDefault=true;data=_};location=_}) -> DefaultDigest
-    | _ -> NonDefaultDigest
-
-let eraseDigest (tree:FullTree<MerklizedLocationData<'L>,MerklizedLocationData<_>>)=
-    match tree with
-    | Leaf ({data=d} as lD) ->
-        Leaf {lD with data = {d with digest=None}}
-    | Branch ({data=d} as bD, lTree, rTree) ->
-        Branch ({bD with data = {d with digest=None}},lTree, rTree)
-            
-let sparseBranchMerklize (defaultHashes:int->Hash) = fun branchData mlTree mrTree ->
-    let eraser = match mlTree, mrTree with
-                 | NonDefaultDigest, NonDefaultDigest -> id
-                 | _,_ -> eraseDigest
-    let digTree = function
-               | GetDigest d -> d
-               | _ -> failwith "bad tree"
-    let b = branchData.location.loc
-    let h = branchData.location.height
-    let defaultness, dig = match mlTree, mrTree with
-                           | DefaultDigest, DefaultDigest ->
-                               true, Some <| defaultHashes h
-                           | _, _ ->
-                               false, Some <| innerHashList [digTree mlTree; digTree mrTree; bitsToBytes b; toBytes h]
-    let newBr =
-        (
-            {
-                location=branchData.location;
-                data=
-                    {
-                    data=branchData.data;
-                    isDefault=defaultness
-                    digest=dig
-                    }
-            },
-            eraser mlTree,
-            eraser mrTree
-        )
-    Branch <| newBr
-
-let merklize cTW serializer =
-    let defaultHashes = defaultHash cTW
-    cata (sparseLeafMerklize cTW defaultHashes serializer) (sparseBranchMerklize defaultHashes)
-
-
-type SMT<'V> = {cTW: byte[]; mutable kv: Map<Hash,'V>; digests: Map<Loc,Hash> ref; defaultDigests: int->Hash}
-
-let emptySMT<'V>(cTW) = {cTW=cTW; kv= Map.empty<Hash,'V>; digests = ref Map.empty<Loc,Hash>; defaultDigests = defaultHash cTW}
-
-let splitm (kvs:Map<Hash,'V>) s = 
-    let splitter kv =
-        (bytesToBits (fst kv)) < s
-    let kvlist = Map.toList kvs |> fun l -> (List.takeWhile splitter l, List.skipWhile splitter l)
-    match kvlist with
-    | (lower, upper) -> (Map.ofList lower, Map.ofList upper)
-    
-
-let split (smt:SMT<'V>) s =
-    let splitter kv =
-        (bytesToBits (fst kv)) < s
-    let kvl, kvu =
-        let kvlist = Map.toList smt.kv |> fun l -> (List.takeWhile splitter l, List.skipWhile splitter l)
-        match kvlist with
-        | (lower, upper) -> (Map.ofList lower, Map.ofList upper)
-    ({smt with kv=kvl}, {smt with kv=kvu})
-
-let lh serializer cTW b v = innerHashList [cTW; serializer v; bitsToBytes b]
-let ih dl dr b h = innerHashList [dl; dr; bitsToBytes b; toBytes h]
-
-let lhopt emp serializer cTW b v =
-    match v with
-    | Some v -> lh serializer cTW b v
-    | None -> emp
-
-let ihopt defdigests dl dr b h =
+let iHash dl dr {h=h;b=b} = innerHashList [dl; dr; b; toBytes h]
+let optInnerHash defaultDigests dl dr ({h=h;b=b} as location) =
     match dl, dr with
     | None, None -> None
     | None, Some r ->
-        Some <| innerHashList [defdigests h; r; bitsToBytes b; toBytes h]
+        Some <| iHash (defaultDigests (h-1)) r location
     | Some l, None ->
-        Some <| innerHashList [l; defdigests h; bitsToBytes b; toBytes h]
+        Some <| iHash l (defaultDigests (h-1)) location
     | Some l, Some r ->
-        Some <| innerHashList [l; r; bitsToBytes b; toBytes h]
+        Some <| iHash l r location
 
-let lhopt' serializer cTW b = Option.map (lh serializer cTW b)
 
-let rec digestSMT (serializer:'V->byte[]) ({cTW=cTW;kv=kv;digests=digests;defaultDigests=defaultDigests}:SMT<'V> as smt) (location:Loc) =
-    if (!digests).ContainsKey(location) then (!digests).[location]
-    elif kv.Count = 0 then defaultDigests location.height
-    elif kv.Count = 1 && location.height = 0 then
-        lh serializer cTW location.loc kv.[bitsToBytes location.loc]
-    else
-        let smtl, smtu = split smt <| (rightLocation location).loc
-        ih <|
-        (digestSMT serializer smtl <| leftLocation location) <|
-        (digestSMT serializer smtu <| rightLocation location) <|
-        location.loc <| location.height
 
-let rec digestSMTOpt (serializer:'V->byte[]) ({cTW=cTW;kv=kv;digests=digests;defaultDigests=defaultDigests}:SMT<'V> as smt) (location:Loc) =
-    if (!digests).ContainsKey(location) then Some <| (!digests).[location]
+let rec digestOpt cTW (kv:Map<Hash,Hash>) (digests:Map<BLocation,Hash>) (ddigests:int->Hash) ({h=h;b=b} as location) =
+    if digests.ContainsKey(location) then Some <| digests.[location]
     elif kv.Count = 0 then None
-    elif kv.Count = 1 && location.height = 0 then
-        Some <| lh serializer cTW location.loc kv.[bitsToBytes location.loc]
+    elif kv.Count = 1 && h = 0 then
+        let (k,v) = (Map.toList kv).[0]
+        if k <> b then
+            printfn "key not localised" // debug printf
+            None
+        else
+            Some <| lHash cTW b v
     else
-        let smtl, smtu = split smt <| (rightLocation location).loc
-        ihopt <|
-        defaultDigests <|
-        (digestSMTOpt serializer smtl <| leftLocation location) <|
-        (digestSMTOpt serializer smtu <| rightLocation location) <|
-        location.loc <| location.height
+        let rloc = right location
+        let lloc = left location
+        let kvl, kvr = splitmap kv <| rloc.b
+        optInnerHash ddigests <|
+        (digestOpt cTW kvl digests ddigests lloc ) <|
+        (digestOpt cTW kvr digests ddigests rloc ) <|
+        location
 
-let auditSMT (serializer:'V->byte[]) ({cTW=cTW;kv=kv;digests=digests;defaultDigests=defaultDigests}:SMT<'V> as smt) (location:Loc) =
-    let rec innerAuditSMT smt' (k:bool[]) location' =
-        if location'.height = 0 then [] else
-            let smtl, smtr = split smt' <| (rightLocation location').loc
-            if not <| k.[TSize-location'.height] then
-                (digestSMT serializer smtr <| rightLocation location') :: (innerAuditSMT smtl k (leftLocation location'))
-            else
-                (digestSMT serializer smtl <| leftLocation location') :: (innerAuditSMT smtr k (rightLocation location'))
-    fun key -> List.toArray <| innerAuditSMT smt (bytesToBits key) location
+let digestSMTOpt {cTW=cTW; kv=kv; digests=digests; defaultDigests=defaultDigests; serializer=serializer} location =
+    let mkv = kv |> Map.map (fun _ y -> serializer y)
+    digestOpt cTW mkv digests defaultDigests location
 
-let rec findRootOpt serializer cTW defaultHashes (path: Hash option []) key v ({height=height;loc=loc} as location) =
-    if height = 0 then lhopt' serializer cTW loc v
-    elif not <| (bytesToBits key).[TSize-height] then
-        ihopt defaultHashes (findRootOpt serializer cTW defaultHashes path key v (leftLocation location)) path.[TSize-height] loc height
-    else
-        ihopt defaultHashes (path.[TSize-height]) (findRootOpt serializer cTW defaultHashes path key v (rightLocation location) ) loc height
+let fromOpt<'V> f (smt:SMT<'V>) location =
+    let optResult = f smt location
+    match optResult with
+    | None -> smt.defaultDigests location.h
+    | Some r -> r
 
-let findRoot serializer cTW (path: Hash option [] ) key v location =
-    let defaultHashes = defaultHash cTW
-    findRootOpt serializer cTW defaultHashes path key v location
+let digestSMT<'V> = fromOpt<'V> digestSMTOpt
 
 
-let cache {defaultDigests=defaultDigests} height loc lroot rroot =
-    let ret = ih lroot rroot loc height
-    failwith "not implemented"
-
-let cacheOpt rootSmt ({kv=kv; defaultDigests=defaultDigests} as smt) height loc lroot rroot =
-    let location = {height=height;loc=loc}
-    let rlocation = rightLocation location
-    let llocation = leftLocation location
-    let ret = ihopt defaultDigests lroot rroot loc height
+let optCache (digests : Map<BLocation,byte[]> byref) defaultDigests location lroot rroot =
+    let rloc = right location
+    let lloc = left location
+    let ret = optInnerHash defaultDigests lroot rroot location
     match lroot, rroot with
     | Some l, Some r ->
-        smt.digests := smt.digests.Value.Add (llocation,l)
-        smt.digests := smt.digests.Value.Add (rlocation,r)
+        digests <- digests.Add (lloc,l)
+        digests <- digests.Add (rloc,r)
     | _ , _ ->
-        smt.digests := smt.digests.Value.Remove llocation
-        smt.digests := smt.digests.Value.Remove rlocation
+        digests <- digests.Remove lloc
+        digests <- digests.Remove rloc
     ret
 
+let rec optUpdate cTW (splitkv : Map<Hash,Hash>) (digests : Map<BLocation,Hash> byref) ddigests ({h=h;b=b} as location) (kvs:Map<Hash,Hash option>) =
+    if h=0 then
+        optLeafHash cTW b (splitkv.TryFind b)    
+    else    // Update digests
+        let rloc = right location
+        let lloc = left location
+        let kvsl, kvsr = splitmap kvs rloc.b
+        let splitkvl, splitkvr = splitmap splitkv rloc.b
+        let lroot, rroot =
+            match kvsl.Count, kvsr.Count with
+            | 0,0 -> 
+                digestOpt cTW splitkvl digests ddigests lloc, digestOpt cTW splitkvr digests ddigests rloc
+            | _, 0 ->
+                optUpdate cTW splitkvl &digests ddigests lloc kvsl, digestOpt cTW splitkvr digests ddigests rloc
+            | 0, _ ->
+                digestOpt cTW splitkvl digests ddigests lloc, optUpdate cTW splitkvr &digests ddigests rloc kvsr
+            | _, _ ->
+                optUpdate cTW splitkvl &digests ddigests lloc kvsl, optUpdate cTW splitkvr &digests ddigests rloc kvsr
+        optCache &digests ddigests location lroot rroot
 
-let auditSMTOpt (serializer:'V->byte[]) ({cTW=cTW;kv=kv;digests=digests;defaultDigests=defaultDigests}:SMT<'V> as smt) (location:Loc) =
-    let rec innerAuditSMTOpt smt' (k:bool[]) location' =
-        if location'.height = 0 then [] else
-            let smtl, smtr = split smt' <| (rightLocation location').loc
-            if not <| k.[TSize-location'.height] then
-                (digestSMTOpt serializer smtr <| rightLocation location') :: (innerAuditSMTOpt smtl k (leftLocation location'))
-            else
-                (digestSMTOpt serializer smtl <| leftLocation location') :: (innerAuditSMTOpt smtr k (rightLocation location'))
-    fun key -> List.toArray <| innerAuditSMTOpt smt (bytesToBits key) location
+let optUpdateSMT ({cTW=cTW; kv=kv; digests=digests; defaultDigests=defaultDigests; serializer=serializer} as smt) location kvs =
+    let updateKV = fun k mv ->
+        match mv with
+        | None -> smt.kv <- smt.kv.Remove k
+        | Some v ->
+            smt.kv <- smt.kv.Add (k, v)
+    Map.iter updateKV kvs
+    let kvHashed = Map.map (fun _ y -> serializer y) smt.kv
+    let ret = optUpdate cTW kvHashed &smt.digests defaultDigests location kvs
+    ret
 
-let rec updateSMT (serializer:'V->byte[]) ({cTW=cTW;kv=kv;digests=digests;defaultDigests=defaultDigests}:SMT<'V> as smt) ({height=height;loc=loc} as location:Loc) (kvs:Map<Hash,'V>) =
-    failwith "not implemented"
+let updateSMT smt location kvs = fromOpt (fun s l -> optUpdateSMT s l kvs) smt location
 
-let rec updateSMTOpt (serializer:'V->byte[]) (rootSmt : SMT<'V>) ({cTW=cTW;kv=kv;digests=digests;defaultDigests=defaultDigests}:SMT<'V> as smt) ({height=height;loc=loc} as location:Loc) (kvs:Map<Hash,'V option>) =
-    if height=0 then
-        let newval = Option.bind id (kvs.TryFind <| bitsToBytes loc)
-        match newval with
-        | Some v -> rootSmt.kv <- rootSmt.kv.Add (bitsToBytes loc, v)
-        | None -> rootSmt.kv <- rootSmt.kv.Remove (bitsToBytes loc)
-        lhopt' serializer cTW loc newval
+let rec optFindRoot cTW defaultDigests (path: Hash option list) k v location =
+    if location.h = 0 then optLeafHash cTW location.b v
+    elif not <| bitAt location.h k then
+        optInnerHash defaultDigests (optFindRoot cTW defaultDigests path k v (left location)) (path.[TSize-location.h]) location
     else
-        let kvl, kvu = splitm kvs (rightLocation location).loc
-        let smtl, smtu = split smt (rightLocation location).loc
-        match kvl.Count, kvu.Count with
-        | 0, 0 -> digestSMTOpt serializer smt location
-        | 0, _ ->
-            cacheOpt rootSmt smt height loc <|
-            digestSMTOpt serializer smtl (leftLocation location) <|
-            updateSMTOpt serializer rootSmt smtu (rightLocation location) kvs 
-        | _, 0 ->
-            cacheOpt rootSmt smt height loc <|
-            updateSMTOpt serializer rootSmt smtl (leftLocation location) kvs <|
-            digestSMTOpt serializer smtu (rightLocation location)
-        | _, _ ->
-            cacheOpt rootSmt smt height loc <|
-            updateSMTOpt serializer rootSmt smtl (leftLocation location) kvl <|
-            updateSMTOpt serializer rootSmt smtu (rightLocation location) kvu
+        optInnerHash defaultDigests (path.[TSize-location.h]) (optFindRoot cTW defaultDigests path k v (right location)) location
 
+let rec optAudit cTW kv digests ddigests location key =
+    if location.h = 0 then []
+    elif not <| bitAt location.h key then
+        let kvl, kvr = splitmap kv (right location).b
+        (digestOpt cTW kvr digests ddigests (right location) ) :: optAudit cTW kvl digests ddigests (right location) key
+    else
+        let kvl, kvr = splitmap kv (right location).b
+        (digestOpt cTW kvl digests ddigests (left location)) :: optAudit cTW kvr digests ddigests (left location) key
+
+let optAuditSMT smt key  =
+    let location = baseLocation
+    let kvm = Map.map (fun _ y -> smt.serializer y) smt.kv
+    optAudit smt.cTW kvm smt.digests smt.defaultDigests location key 

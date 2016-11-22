@@ -87,8 +87,9 @@ type SpendSerializer(ownerContext) =
                 raise <| new SerializationException("Bad asset for Spend")
             elif not <| subtreeReader.ReadUInt64(&amount) then
                 raise <| new SerializationException("Bad amount for Spend")
+            // TODO: Review this check to determine if it should occur here.
             elif asset.Length <> ContractHashBytes then
-                raise <| new SerializationException("Bad asset for Spend")
+                raise <| new SerializationException("Asset of Spend has the wrong length.")
             else 
                 {asset=asset; amount=amount} : Spend
 

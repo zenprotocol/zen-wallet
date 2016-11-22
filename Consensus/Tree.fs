@@ -47,7 +47,7 @@ type LocData<'T> = {data:'T; location:Loc}
 let rightLocation = function
     | {loc=loc;height=height} ->
         let l = Array.copy loc
-        l.SetValue(true, Array.length l - height)
+        l.SetValue(true, (Array.length l) - height)
         {height=height-1;loc=l}
 
 let leftLocation = function
