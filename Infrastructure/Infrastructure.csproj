@@ -43,6 +43,7 @@
     <Compile Include="Utils.cs" />
     <Compile Include="JsonLoader.cs" />
     <Compile Include="IResourceOwner.cs" />
+    <Compile Include="ResourceOwner.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

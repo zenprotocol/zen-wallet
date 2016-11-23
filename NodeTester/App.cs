@@ -9,7 +9,7 @@ namespace NodeTester
 		static App() {
 			JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeTester.json";
 			JsonLoader<Settings>.Instance.FileName = "NodeTester.json";
-}
+		}
 
 		public static App<T> Create()
 		{

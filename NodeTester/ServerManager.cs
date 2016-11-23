@@ -44,7 +44,7 @@ namespace NodeTester
 		public class DisconnectedMessage : IMessage {}
 		public class ErrorMessage : IMessage {}
 		public class NodeConnectedMessage : IMessage { public NodeInfo NodeInfo { get; set; } }
-		public class MessageRecievedMessage : IMessage { public NodeInfo NodeInfo { get; set; } public MessageInfo MessageInfo { get; set; } }
+		public class MessageReceivedMessage : IMessage { public NodeInfo NodeInfo { get; set; } public MessageInfo MessageInfo { get; set; } }
 		public class MessageSentMessage : IMessage { public NodeInfo NodeInfo { get; set; } public MessageInfo MessageInfo { get; set; } }
 
 		private LogMessageContext LogMessageContext = new LogMessageContext("Server");
@@ -66,22 +66,22 @@ namespace NodeTester
 				ReceivingMessageAction = (Node, Payload) => {
 					String fromNode = Node == null ? "-" : Node.RemoteSocketAddress + ":" + Node.RemoteSocketPort;
 
-					LogMessageContext.Create ("Recieved message (" + fromNode + ") : " + Utils.GetPayloadContent(Payload));
-					MessageRecievedMessage MessageRecievedMessage = new MessageRecievedMessage ();
+					LogMessageContext.Create ("Received message (" + fromNode + ") : " + Utils.GetPayloadContent(Payload));
+					MessageReceivedMessage MessageReceivedMessage = new MessageReceivedMessage ();
 
 					if (Node != null) {
-						MessageRecievedMessage.NodeInfo = new NodeInfo () { 
+						MessageReceivedMessage.NodeInfo = new NodeInfo () { 
 							Address = fromNode,
 							PeerAddress = Node.RemoteSocketAddress + ":" + Node.RemoteSocketPort
 						};
 					}
 
-					MessageRecievedMessage.MessageInfo = new MessageInfo () {
+					MessageReceivedMessage.MessageInfo = new MessageInfo () {
 						Type = Payload.GetType ().ToString (),
 						Content = Utils.GetPayloadContent(Payload)
 					};
 
-					PushMessage (MessageRecievedMessage);
+					PushMessage (MessageReceivedMessage);
 				},
 				SendingMessageAction = (Node, Payload) => {
 					String toNode = Node == null ? "-" : Node.RemoteSocketAddress + ":" + Node.RemoteSocketPort;
@@ -129,10 +129,9 @@ namespace NodeTester
 				Stop ();
 			}
 
-			_Server = new Server(resourceOwner, externalEndpoint, parameters => {
-				parameters.TemplateBehaviors.Add(DemoHub.Instance.BroadcastHubBehavior);
-				parameters.TemplateBehaviors.Add(DemoHub.Instance.SPVBehavior);
-			});
+			_Server = new Server(resourceOwner, externalEndpoint);
+			WalletManager.Instance.Setup(_Server.Behaviors);
+
 
 			InitHandlers();
 
