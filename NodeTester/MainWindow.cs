@@ -139,13 +139,13 @@ public partial class MainWindow : ResourceOwnerWindow
 
 					listStoreConnected.AppendValues (NodeInfo.Address, NodeInfo.PeerAddress);
 					connectionsCount++;
-				} else if (ServerManagerMessage is NodeTester.ServerManager.MessageRecievedMessage) {
-					NodeTester.ServerManager.MessageRecievedMessage MessageRecievedMessage = (NodeTester.ServerManager.MessageRecievedMessage)ServerManagerMessage;
+				} else if (ServerManagerMessage is NodeTester.ServerManager.MessageReceivedMessage) {
+					NodeTester.ServerManager.MessageReceivedMessage MessageReceivedMessage = (NodeTester.ServerManager.MessageReceivedMessage)ServerManagerMessage;
 
-					NodeTester.ServerManager.NodeInfo NodeInfo = MessageRecievedMessage.NodeInfo;
-					NodeTester.ServerManager.MessageInfo MessageInfo = MessageRecievedMessage.MessageInfo;
+					NodeTester.ServerManager.NodeInfo NodeInfo = MessageReceivedMessage.NodeInfo;
+					NodeTester.ServerManager.MessageInfo MessageInfo = MessageReceivedMessage.MessageInfo;
 
-					listStoreMessages.AppendValues (NodeInfo.PeerAddress, "Recieved", MessageInfo.Type, MessageInfo.Content);
+					listStoreMessages.AppendValues (NodeInfo.PeerAddress, "Received", MessageInfo.Type, MessageInfo.Content);
 					messagesCount++;
 				} else if (ServerManagerMessage is NodeTester.ServerManager.MessageSentMessage) {
 					NodeTester.ServerManager.MessageSentMessage MessageSentMessage = (NodeTester.ServerManager.MessageSentMessage)ServerManagerMessage;

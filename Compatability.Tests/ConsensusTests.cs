@@ -46,5 +46,14 @@ namespace BlockChain.Tests
 
 			Assert.IsTrue(t.Equals(tx));
 		}
+
+		[Test()]
+		public void CanHasHtransaction()
+		{
+			var hash = Merkle.transactionHasher.Invoke(Consensus.Tests.tx);
+
+			Assert.IsNotNull(hash);
+
+		}
 	}
 }

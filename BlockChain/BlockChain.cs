@@ -3,16 +3,19 @@ using Consensus;
 using System.Linq;
 using BlockChain.Store;
 using Store;
+using Infrastructure;
 
 namespace BlockChain
 {
-	public class BlockChain : IDisposable
+	public class BlockChain : ResourceOwner
 	{
 		private readonly TxMempool _TxMempool;
 		private readonly TxStore _TxStore;
 		private readonly BlockStore _BlockStore;
 		private readonly DBContext _DBContext;
 		private readonly BlockDifficultyTable _BlockDifficultyTable;
+
+		public event Action<Types.Transaction> OnAddedToMempool;
 
 		public BlockChain(string dbName)
 		{
@@ -21,11 +24,13 @@ namespace BlockChain
 			_TxStore = new TxStore();
 			_BlockStore = new BlockStore();
 			_BlockDifficultyTable = new BlockDifficultyTable();
-		}
 
-		public void Dispose()
-		{
-			_DBContext.Dispose();
+			OwnResource(_DBContext);
+			OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
+				new EventLoopMessageListener<TxMempool.AddedMessage>(m => {
+					OnAddedToMempool(m.Transaction.Value);
+				})
+			));
 		}
 
 		public void HandleNewBlock(Types.Block block) //TODO: use Keyed type
@@ -41,6 +46,30 @@ namespace BlockChain
 				context.Commit();
 			}
 		}
+
+		public bool HandleNewTransaction(Types.Transaction transaction) //TODO: use Keyed type
+		{
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				var result = new BlockChainAddTransactionOperation(
+					context,
+					new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction),
+					_TxMempool
+				).Start();
+
+				return result != BlockChainAddTransactionOperation.Result.Rejected;
+				//switch (result)
+				//{
+				//	case BlockChainAddTransactionOperation.Result.Added:
+				//		break;
+				//	case BlockChainAddTransactionOperation.Result.AddedOrphaned:
+				//		break;
+				//	case BlockChainAddTransactionOperation.Result.Rejected:
+				//		break;
+				//}
+			}
+		}
+
 
 		private Double GetDifficultyRecursive(TransactionContext context, Types.Block block)
 		{

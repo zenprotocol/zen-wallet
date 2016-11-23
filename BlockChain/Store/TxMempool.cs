@@ -3,16 +3,23 @@ using BlockChain.Data;
 using Consensus;
 using System.Linq;
 using Store;
+using Infrastructure;
 
 namespace BlockChain.Store
 {
 	public class TxMempool
 	{
+		public class AddedMessage { public Keyed<Types.Transaction> Transaction { get; set; }}
+
 		private readonly HashDictionary<Keyed<Types.Transaction>> _Transactions;
 		private readonly List<Types.Outpoint> _TransactionsInputs;
 
 		private readonly HashDictionary<Keyed<Types.Transaction>> _OrphanedTransactions;
 		private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanedTransactionsInputs;
+
+		//TODO: If the transaction is "ours", i.e. involves one of our addresses or contracts, tell the wallet.
+		//Relay transaction to peers
+		private static MessageProducer<AddedMessage> _Producer = MessageProducer<AddedMessage>.Instance;
 
 		public TxMempool()
 		{
@@ -67,6 +74,8 @@ namespace BlockChain.Store
 			{
 				_Transactions.Add(transaction.Key, transaction);
 				_TransactionsInputs.AddRange(transaction.Value.inputs);
+
+				_Producer.PushMessage(new AddedMessage() { Transaction = transaction });
 			}
 		}
 	}

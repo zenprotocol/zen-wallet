@@ -9,7 +9,6 @@ namespace NodeTester
 	{
 		public static void Main (string[] args)
 		{
-
 			using (var consoleWriter = ConsoleMessage.Out)
 			{
 				GLib.ExceptionManager.UnhandledException += (GLib.UnhandledExceptionArgs e) =>
