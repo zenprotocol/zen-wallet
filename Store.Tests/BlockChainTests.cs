@@ -24,7 +24,7 @@ namespace BlockChain.Tests
 
 				using (BlockChain blockChain = new BlockChain(dbName))
 				{
-					blockChain.HandleNewValueBlock(newBlock);
+					blockChain.HandleNewBlock(newBlock);
 				}
 
 				blocks.Add(newBlock);
@@ -62,7 +62,7 @@ namespace BlockChain.Tests
 
 			Double difficultyAgg = 0;
 
-			List<Tuple<Types.Block, Double>> blocks = new List<Tuple<Types.Block, Double>>();
+			var blocks = new List<Tuple<Types.Block, Double>>();
 
 			Types.Block lastBlock = null;
 
@@ -78,7 +78,7 @@ namespace BlockChain.Tests
 				{
 					Console.WriteLine("Handling block with difficulty: " + difficultyNew);
 
-					blockChain.HandleNewValueBlock(newBlock);
+					blockChain.HandleNewBlock(newBlock);
 				}
 
 				difficultyAgg += difficultyNew;

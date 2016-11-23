@@ -10,23 +10,6 @@ using NodeTester;
 
 namespace NodeTester
 {
-	public class DemoHub : Singleton<DemoHub>
-	{
-		public BroadcastHubBehavior BroadcastHubBehavior { get; set; }
-		public SPVBehavior SPVBehavior { get; set; }
-
-		public DemoHub()
-		{
-			BroadcastHubBehavior = new BroadcastHubBehavior();
-			SPVBehavior = new SPVBehavior(t =>
-			{
-				Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-				Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-				Console.WriteLine("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-			});
-		}
-	}
-
 	public class DiscoveryManager : Singleton<DiscoveryManager>, IDisposable
 	{
 		protected NodesGroup nodesGroup = null;
@@ -87,8 +70,8 @@ namespace NodeTester
 
 			NodeConnectionParameters parameters = new NodeConnectionParameters();
 			parameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
-			parameters.TemplateBehaviors.Add(DemoHub.Instance.BroadcastHubBehavior);
-			parameters.TemplateBehaviors.Add(DemoHub.Instance.SPVBehavior);
+
+			WalletManager.Instance.Setup(parameters.TemplateBehaviors);
 
 			if (ExternalIPAddress != null)
 			{

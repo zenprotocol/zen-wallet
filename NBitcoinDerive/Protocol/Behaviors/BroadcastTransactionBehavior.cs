@@ -102,7 +102,15 @@ namespace NBitcoin.Protocol.Behaviors
 		//demo
 		private byte[] GetHash(Types.Transaction transaction)
 		{
-			return Merkle.transactionHasher.Invoke(transaction);
+			try
+			{
+				return Merkle.transactionHasher.Invoke(transaction);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				return null;
+			}
 		}
 
 		/// <summary>
@@ -292,20 +300,17 @@ namespace NBitcoin.Protocol.Behaviors
 			InvPayload invPayload = message.Message.Payload as InvPayload;
 			if (invPayload != null)
 			{
-				//Sharon
-				node.SendMessageAsync(new GetDataPayload(invPayload.ToArray()));
-
-				//foreach (var hash in invPayload.Where(i => i.Type == InventoryType.MSG_TX).Select(i => i.Hash))
-				//{
-				//	var tx = GetTransaction(hash, true);
-				//	if (tx != null)
-				//		tx.State = BroadcastState.Accepted;
-				//	Types.Transaction unused;
-				//	if (_BroadcastHub.BroadcastedTransaction.TryRemove(hash, out unused))
-				//	{
-				//		_BroadcastHub.OnTransactionBroadcasted(tx.Transaction);
-				//	}
-				//}
+				foreach (var hash in invPayload.Where(i => i.Type == InventoryType.MSG_TX).Select(i => i.Hash))
+				{
+					var tx = GetTransaction(hash, true);
+					if (tx != null)
+						tx.State = BroadcastState.Accepted;
+					Types.Transaction unused;
+					if (_BroadcastHub.BroadcastedTransaction.TryRemove(hash, out unused))
+					{
+						_BroadcastHub.OnTransactionBroadcasted(tx.Transaction);
+					}
+				}
 			}
 			RejectPayload reject = message.Message.Payload as RejectPayload;
 			if (reject != null && reject.Message == "tx")

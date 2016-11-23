@@ -5,6 +5,7 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/obj/Debug/NBitcoinDerive.Tests.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/obj/Debug/NBitcoinDerive.Tests.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/nunit.framework.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Consensus.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Infrastructure.dll
@@ -12,6 +13,10 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Infrastructure.Testing.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Infrastructure.Testing.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/MsgPack.dll
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Consensus.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/BouncyCastle.Crypto.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Newtonsoft.Json.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/BlockChain.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/BlockChain.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Store.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Store.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/DBreeze.dll

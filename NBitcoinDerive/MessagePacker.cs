@@ -98,9 +98,9 @@ namespace NBitcoin
 			{
 				if (_Context == null)
 				{
-					_Context = new SerializationContext { SerializationMethod = SerializationMethod.Map }; //TODO
+					_Context = Consensus.Serialization.context; // */ new SerializationContext { SerializationMethod = SerializationMethod.Map }; //TODO
 					_Context.Serializers.RegisterOverride(new CustomIPEndPointSerializer(_Context));
-					_Context.Serializers.RegisterOverride(new CustomXxxSerializer(_Context));
+			//		_Context.Serializers.RegisterOverride(new CustomXxxSerializer(_Context));
 				}
 
 				return _Context;

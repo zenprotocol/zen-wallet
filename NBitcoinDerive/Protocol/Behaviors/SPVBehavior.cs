@@ -11,27 +11,30 @@ namespace NBitcoin.Protocol.Behaviors
 {
 	public class SPVBehavior : NodeBehavior
 	{
-		Action<Types.Transaction> onNewTransaction;
+		//private Action<Types.Transaction> _NewTransactionHandler;
+		private BlockChain.BlockChain _BlockChain;
+
 		//demo
 		private byte[] GetHash(Types.Transaction transaction)
 		{
 			return Merkle.transactionHasher.Invoke(transaction);
 		}
 
-		//BlockchainBuilder _Builder;
-		public SPVBehavior(/*BlockchainBuilder builder*/Action<Types.Transaction> onNewTransaction)
+		public SPVBehavior(/*Action<Types.Transaction> newTransactionHandler*/ BlockChain.BlockChain blockChain)
 		{
-			this.onNewTransaction = onNewTransaction;
-		//	_Builder = builder;
+			//this._NewTransactionHandler = newTransactionHandler;
+			_BlockChain = blockChain;
 		}
+
 		protected override void AttachCore()
 		{
 			lock (Nodes)
 			{
 				Nodes.Add(AttachedNode);
 			}
-		//	_Builder.NewBlock += _Builder_NewBlock;
-		//	_Builder.NewTransaction += _Builder_NewTransaction;
+			//	_Builder.NewBlock += _Builder_NewBlock;
+			//	_Builder.NewTransaction += _Builder_NewTransaction;
+			_BlockChain.OnAddedToMempool += _BlockChain_OnAddedToMempool;
 			AttachedNode.MessageReceived += AttachedNode_MessageReceived;
 		}
 
@@ -98,12 +101,21 @@ namespace NBitcoin.Protocol.Behaviors
 				//}
 				//else
 				//{
-					foreach (var other in Nodes.Where(n => n != node))
-					{
-						other.SendMessageAsync(new InvPayload(txPayload.Transaction));
-					}
+				//	foreach (var other in Nodes.Where(n => n != node))
+				//	{
+				//		other.SendMessageAsync(new InvPayload(txPayload.Transaction));
+				//	}
 				//}
-				onNewTransaction(txPayload.Transaction);
+
+				if (!_BlockChain.HandleNewTransaction(txPayload.Transaction))
+				{
+					node.SendMessageAsync(new RejectPayload()
+					{
+						Hash = GetHash(txPayload.Transaction),
+						Code = RejectCode.INVALID,
+						Message = "tx"
+					});
+				}
 			}
 		}
 
@@ -119,6 +131,14 @@ namespace NBitcoin.Protocol.Behaviors
 		//	_Transactions.AddOrReplace(obj.GetHash(), obj);
 		//	BroadcastCore(obj);
 		//}
+
+		void _BlockChain_OnAddedToMempool(Types.Transaction transaction)
+		{
+			foreach (var other in Nodes)
+			{
+				other.SendMessageAsync(new InvPayload(transaction));
+			}
+		}
 
 		//private void BroadcastCore(Types.Transaction obj)
 		//{
@@ -142,6 +162,7 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 		//	_Builder.NewTransaction -= _Builder_NewTransaction;
 		//	_Builder.NewBlock -= _Builder_NewBlock;
+			_BlockChain.OnAddedToMempool -= _BlockChain_OnAddedToMempool;
 			AttachedNode.MessageReceived -= AttachedNode_MessageReceived;
 		}
 
@@ -149,7 +170,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		public override object Clone()
 		{
-			var behavior = new SPVBehavior(/*_Builder*/ onNewTransaction);
+			var behavior = new SPVBehavior(_BlockChain);
 		//	behavior._Blocks = _Blocks;
 			behavior._Transactions = _Transactions;
 			behavior._ReceivedTransactions = _ReceivedTransactions;

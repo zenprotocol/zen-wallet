@@ -40,6 +40,9 @@
     <Compile Include="TestServerSet.cs" />
     <Compile Include="TestNetwork.cs" />
     <Compile Include="Tests\NetworkTests.cs" />
+    <Compile Include="TestBlockChain.cs" />
+    <Compile Include="TestTransaction.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -57,6 +60,14 @@
     <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
       <Name>Infrastructure.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

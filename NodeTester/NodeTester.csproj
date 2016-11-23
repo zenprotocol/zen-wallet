@@ -102,6 +102,8 @@
     <Compile Include="Runtime.cs" />
     <Compile Include="TransactionsPane.cs" />
     <Compile Include="gtk-gui\NodeTester.TransactionsPane.cs" />
+    <Compile Include="BlockChainManager.cs" />
+    <Compile Include="WalletManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -132,6 +134,10 @@
     <ProjectReference Include="..\Wallet\Wallet.csproj">
       <Project>{237D9317-5976-41EE-A578-EABDF0B397B4}</Project>
       <Name>Wallet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -7,16 +7,6 @@ using Infrastructure;
 
 namespace BlockChain
 {
-	public class AddedToMempoolMessage
-	{
-		public Keyed<Types.Transaction> Transaction { get; private set; }
-
-		public AddedToMempoolMessage(Keyed<Types.Transaction> transaction)
-		{
-			Transaction = transaction;
-		}
-	}
-
 	public class BlockChainAddTransactionOperation
 	{
 		private readonly TransactionContext _TransactionContext;
@@ -25,12 +15,6 @@ namespace BlockChain
 		private readonly TxStore _TxStore;
 		private readonly UTXOStore _UTXOStore;
 		private Dictionary<Types.Outpoint, InputLocationEnum> _InputLocations;
-		private static MessageProducer<AddedToMempoolMessage> _Producer = MessageProducer<AddedToMempoolMessage>.Instance;
-
-		//private static IDisposable AddListener(Action<AddedToMempoolMessage> action)
-		//{
-		//	return _Producer.AddMessageListener(new EventLoopMessageListener(action));
-		//}
 
 		private enum InputLocationEnum
 		{
@@ -90,11 +74,6 @@ namespace BlockChain
 
 			_TxMempool.Add(_NewTransaction);
 
-			//TODO: If the transaction is "ours", i.e. involves one of our addresses or contracts, tell the wallet.
-
-			//Relay transaction to peers
-			_Producer.PushMessage(new AddedToMempoolMessage(_NewTransaction));
-
 			foreach (var transaction in _TxMempool.GetOrphanedsOf(_NewTransaction)) 
 			{
 				BlockChainTrace.Information("Start with orphan");
@@ -102,7 +81,6 @@ namespace BlockChain
 			}
 
 			return Result.Added;
-
 		}
 
 		private bool IsValid()
