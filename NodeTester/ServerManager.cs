@@ -10,16 +10,16 @@ namespace NodeTester
 {
 	class MessagingFilter : INodeFilter 
 	{
-		public Action<Node, Payload> ReceivingMessageAction { get; set; }
-		public Action<Node, Payload> SendingMessageAction { get; set; }
+		public Action<Node, IncomingMessage> ReceivingMessageAction { get; set; }
+		public Action<Node, Object> SendingMessageAction { get; set; }
 
 		public void OnReceivingMessage(IncomingMessage message, Action next)
 		{
-			ReceivingMessageAction (message.Node, message.Message.Payload);
+			ReceivingMessageAction (message.Node, message);
 			next ();
 		}
 
-		public void OnSendingMessage(Node node, Payload payload, Action next)
+		public void OnSendingMessage(Node node, Object payload, Action next)
 		{
 			SendingMessageAction (node, payload);
 			next ();

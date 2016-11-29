@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MsgPack;
 
 namespace NBitcoin.Protocol
 {
-	public class PingPayload : Payload
+	public class PingPayload
 	{
-
 		public PingPayload()
 		{
 			_Nonce = RandomUtils.GetUInt64();
