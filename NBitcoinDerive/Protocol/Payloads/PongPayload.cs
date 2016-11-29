@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MsgPack;
 
 namespace NBitcoin.Protocol
 {
-	public class PongPayload : Payload
+	public class PongPayload
 	{
 		private ulong _Nonce;
 		public ulong Nonce

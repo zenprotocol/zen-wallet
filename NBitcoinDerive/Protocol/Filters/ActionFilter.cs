@@ -10,11 +10,11 @@ namespace NBitcoin.Protocol.Filters
 	public class ActionFilter : INodeFilter
 	{
 		Action<IncomingMessage, Action> _OnIncoming;
-		Action<Node, Payload, Action> _OnSending;
-		public ActionFilter(Action<IncomingMessage, Action> onIncoming = null, Action<Node, Payload, Action> onSending = null)
+		Action<Node, Object, Action> _OnSending;
+		public ActionFilter(Action<IncomingMessage, Action> onIncoming = null, Action<Node, Object, Action> onSending = null)
 		{
 			_OnIncoming = onIncoming ?? new Action<IncomingMessage, Action>((m, n) => n());
-			_OnSending = onSending ?? new Action<Node, Payload, Action>((m, p, n) => n());
+			_OnSending = onSending ?? new Action<Node, Object, Action>((m, p, n) => n());
 		}
 		#region INodeFilter Members
 
@@ -23,7 +23,7 @@ namespace NBitcoin.Protocol.Filters
 			_OnIncoming(message, next);
 		}
 
-		public void OnSendingMessage(Node node, Payload payload, Action next)
+		public void OnSendingMessage(Node node, Object payload, Action next)
 		{
 			_OnSending(node, payload, next);
 		}

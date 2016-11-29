@@ -36,7 +36,7 @@ namespace NBitcoin.Protocol
 
 		public static void ExternalIpReceived(string ip)
 		{
-			_Trace.TraceInformation("External ip received : " + ip);
+			_Trace.TraceEvent(TraceEventType.Information, 0, "External ip received : " + ip);
 		}
 
 		internal static void ExternalIpFailed(Exception ex)
@@ -46,7 +46,7 @@ namespace NBitcoin.Protocol
 
 		internal static void Information(string info)
 		{
-			_Trace.TraceInformation(info);
+			_Trace.TraceEvent(TraceEventType.Information, 0, info);
 		}
 
 		internal static void Error(string msg, Exception ex)
@@ -61,7 +61,7 @@ namespace NBitcoin.Protocol
 
 		internal static void PeerTableRemainingPeerToGet(int count)
 		{
-			_Trace.TraceInformation("Remaining peer to get : " + count);
+			_Trace.TraceEvent(TraceEventType.Information, 0, "Remaining peer to get : " + count);
 		}
 
 		internal static void ConnectionToSelfDetected()

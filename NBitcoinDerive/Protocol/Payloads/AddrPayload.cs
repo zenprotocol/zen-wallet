@@ -1,16 +1,13 @@
 ﻿#if !NOSOCKET
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using MsgPack;
 namespace NBitcoin.Protocol
 {
 	/// <summary>
 	/// An available peer address in the bitcoin network is announce (unsollicited or after a getaddr)
 	/// </summary>
-	public class AddrPayload : Payload
+	public class AddrPayload
 	{
 		NetworkAddress[] addr_list = new NetworkAddress[0];
 

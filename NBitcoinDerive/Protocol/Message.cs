@@ -1,23 +1,10 @@
-﻿using MsgPack.Serialization;
+﻿using System;
+using MsgPack.Serialization;
 
 namespace NBitcoin.Protocol
 {
 	public class Message
 	{
-		uint magic;
-
-		public uint Magic
-		{
-			get
-			{
-				return magic;
-			}
-			set
-			{
-				magic = value;
-			}
-		}
-
 		[MessagePackKnownType("1", typeof(VerAckPayload))]
 		[MessagePackKnownType("2", typeof(VersionPayload))]
 		[MessagePackKnownType("3", typeof(PingPayload))]
@@ -25,15 +12,46 @@ namespace NBitcoin.Protocol
 		[MessagePackKnownType("5", typeof(AddrPayload))]
 		[MessagePackKnownType("6", typeof(GetAddrPayload))]
 		[MessagePackKnownType("7", typeof(RejectPayload))]
-		[MessagePackKnownType("8", typeof(TransactionPayload))]
-		[MessagePackKnownType("9", typeof(InvPayload))]
-		[MessagePackKnownType("A", typeof(GetDataPayload))]
-		[MessagePackKnownType("B", typeof(TxPayload))]
-		public Payload Payload { get; set; }
+		public Object _Payload { get; set; }
+
+		public Message(Object Payload)
+		{
+			_Payload = Payload;
+		}
 
 		public override string ToString()
 		{
-			return string.Format($"[Message: Payload={Payload}]");
+			return string.Format($"[Message: Payload={_Payload}]");
+		}
+
+		public bool IfPayloadIs<T>(Action<T> action = null) where T : class
+		{
+			var payload = _Payload as T;
+			if (payload != null)
+				action(payload);
+			return payload != null;
+		}
+
+		internal T AssertPayload<T>()
+		{
+			if (_Payload is T)
+				return (T)(_Payload);
+			else
+			{
+				var ex = new ProtocolException("Expected message " + typeof(T).Name + " but got " + _Payload.GetType().Name);
+				throw ex;
+			}
+		}
+
+		internal bool IsPayloadTypeOf(params Type[] types)
+		{
+			foreach (Type type in types)
+			{
+				if (_Payload.GetType().Equals(type)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }

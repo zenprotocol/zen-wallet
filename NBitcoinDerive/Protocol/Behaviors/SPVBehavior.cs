@@ -81,14 +81,12 @@ namespace NBitcoin.Protocol.Behaviors
 			//	}
 			//}
 
-			var invs = message.Message.Payload as InvPayload;
-			if (invs != null)
+			message.IfPayloadIs<InvPayload>(invs =>
 			{
 				node.SendMessageAsync(new GetDataPayload(invs.ToArray()));
-			}
+			});
 
-			var txPayload = message.Message.Payload as TxPayload;
-			if (txPayload != null)
+			message.IfPayloadIs<Types.Transaction>(tx =>
 			{
 				//if (!_ReceivedTransactions.TryAdd(GetHash(txPayload.Transaction), txPayload.Transaction))
 				//{
@@ -107,16 +105,16 @@ namespace NBitcoin.Protocol.Behaviors
 				//	}
 				//}
 
-				if (!_BlockChain.HandleNewTransaction(txPayload.Transaction))
+				if (!_BlockChain.HandleNewTransaction(tx))
 				{
 					node.SendMessageAsync(new RejectPayload()
 					{
-						Hash = GetHash(txPayload.Transaction),
+						Hash = GetHash(tx),
 						Code = RejectCode.INVALID,
 						Message = "tx"
 					});
 				}
-			}
+			});
 		}
 
 		internal List<Node> Nodes = new List<Node>();

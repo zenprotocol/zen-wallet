@@ -52,6 +52,21 @@ namespace NBitcoinDerive.Tests
 
 		protected Node Handshake(NodeServer originServer, NodeServer destServer)
 		{
+			Node node = Connect(originServer, destServer);
+
+			node.Advertize = true;
+			node.MyVersion.AddressFrom = originServer.ExternalEndpoint;
+			node.VersionHandshake();
+
+			Assert.AreEqual(NodeState.HandShaked, node.State);
+
+			Trace.Information($"\n\nHandshaked from {originServer.ExternalEndpoint} to {destServer.ExternalEndpoint}\n\n");
+
+			return node;
+		}
+
+		protected Node Connect(NodeServer originServer, NodeServer destServer)
+		{
 			NodeConnectionParameters nodeConnectionParameters = new NodeConnectionParameters();
 
 			AddressManager addressManager = new AddressManager();
@@ -63,13 +78,7 @@ namespace NBitcoinDerive.Tests
 
 			Assert.AreEqual(NodeState.Connected, node.State);
 
-			node.Advertize = true;
-			node.MyVersion.AddressFrom = originServer.ExternalEndpoint;
-			node.VersionHandshake();
-
-			Assert.AreEqual(NodeState.HandShaked, node.State);
-
-			Trace.Information($"\n\nHandshaked from {originServer.ExternalEndpoint} to {destServer.ExternalEndpoint}\n\n");
+			Trace.Information($"\n\nConncted from {originServer.ExternalEndpoint} to {destServer.ExternalEndpoint}\n\n");
 
 			return node;
 		}

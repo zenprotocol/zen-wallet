@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿//using MsgPack;
 
-namespace NBitcoin.Protocol
-{
-	public interface Payload 
-	{
-	}
-}
+//namespace NBitcoin.Protocol
+//{
+//	public abstract class Payload
+//	{
+//		public abstract void Pack(Packer packer);
+//		public abstract void Unpack(Unpacker unpacker);
+//	}
+//}

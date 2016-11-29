@@ -30,14 +30,15 @@ namespace NBitcoin.Protocol
 			_Predicates.Add(predicate);
 			return this;
 		}
-		public NodeListener OfType<TPayload>() where TPayload : Payload
+		public NodeListener OfType<TPayload>() 
+			where TPayload : class
 		{
-			_Predicates.Add(i => i.Message.Payload is TPayload);
+			_Predicates.Add(i => i.IfPayloadIs<TPayload>());
 			return this;
 		}
 
-		public TPayload ReceivePayload<TPayload>(CancellationToken cancellationToken = default(CancellationToken))
-			where TPayload : Payload
+		public TPayload ReceivePayload<TPayload>(CancellationToken cancellationToken = default(CancellationToken)) 
+			where TPayload : class
 		{
 			if(!Node.IsConnected)
 				throw new InvalidOperationException("The node is not in a connected state");
@@ -49,8 +50,11 @@ namespace NBitcoin.Protocol
 					var message = ReceiveMessage(CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, Node._Connection.Cancel.Token).Token);
 					if(_Predicates.All(p => p(message)))
 					{
-						if(message.Message.Payload is TPayload)
-							return (TPayload)message.Message.Payload;
+						TPayload payload = null;
+						if (message.IfPayloadIs<TPayload>(p => payload = p))
+						{
+							return payload;
+						}
 						else
 						{
 							pushedAside.Enqueue(message);

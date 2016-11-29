@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Consensus;
+using MsgPack;
 
 namespace NBitcoin.Protocol
 {
 	/// <summary>
 	/// Announce the hash of a transaction or block
 	/// </summary>
-	public class InvPayload : Payload, IEnumerable<InventoryVector>
+	public class InvPayload : IEnumerable<InventoryVector>
 	{
 		//demo
 		private static byte[] GetHash(Types.Transaction transaction)

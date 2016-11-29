@@ -8,22 +8,10 @@ using System.Threading.Tasks;
 
 namespace NBitcoin.Protocol
 {
-	public class IncomingMessage
+	public class IncomingMessage : Message
 	{
-		public IncomingMessage()
+		public IncomingMessage(Object payload) : base(payload)
 		{
-
-		}
-		public IncomingMessage(Payload payload, Network network)
-		{
-			Message = new Message();
-			Message.Magic = network.Magic;
-			Message.Payload = payload;
-		}
-		public Message Message
-		{
-			get;
-			set;
 		}
 		internal Socket Socket
 		{
@@ -39,17 +27,6 @@ namespace NBitcoin.Protocol
 		{
 			get;
 			set;
-		}
-
-		internal T AssertPayload<T>() where T : Payload
-		{
-			if(Message.Payload is T)
-				return (T)(Message.Payload);
-			else
-			{
-				var ex = new ProtocolException("Expected message " + typeof(T).Name + " but got " + Message.Payload.GetType().Name);
-				throw ex;
-			}
 		}
 	}
 }

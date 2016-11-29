@@ -28,11 +28,11 @@ namespace NodeTester
 			{
 			};
 			_BroadcastHubBehavior = new BroadcastHubBehavior();
-			_SPVBehavior = new SPVBehavior(transaction => {
-				LogMessageContext.Create("TransactionReceived");
-				PushMessage(new TransactionReceivedMessage() { Transaction = transaction });
-				_BlockChain.HandleNewTransaction(transaction);
-			});
+			//_SPVBehavior = new SPVBehavior(transaction => {
+			//	LogMessageContext.Create("TransactionReceived");
+			//	PushMessage(new TransactionReceivedMessage() { Transaction = transaction });
+			//	_BlockChain.HandleNewTransaction(transaction);
+			//});
 		}
 
 		public void Setup(NodeBehaviorsCollection nodeBehaviorsCollection)

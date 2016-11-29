@@ -121,20 +121,18 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 			if((Mode & AddressManagerBehaviorMode.Advertize) != 0)
 			{
-				var getaddr = message.Message.Payload as GetAddrPayload;
-				if(getaddr != null)
+				message.IfPayloadIs<GetAddrPayload>(getaddr =>
 				{
 					node.SendMessageAsync(new AddrPayload(AddressManager.GetAddr().Take(1000).ToArray()));
-				}
+				});
 			}
 
 			if((Mode & AddressManagerBehaviorMode.Discover) != 0)
 			{
-				var addr = message.Message.Payload as AddrPayload;
-				if(addr != null)
+				message.IfPayloadIs<AddrPayload>(addr =>
 				{
 					AddressManager.Add(addr.Addresses, node.RemoteSocketAddress);
-				}
+				});
 			}
 		}
 

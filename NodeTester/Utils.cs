@@ -30,7 +30,7 @@ namespace NodeTester
 
 	public class Utils
 	{
-		public static String GetPayloadContent(Payload payload) {
+		public static String GetPayloadContent(System.Object payload) {
 			String returnValue = payload.ToString ();
 
 			if (payload is AddrPayload) {

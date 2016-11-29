@@ -297,8 +297,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		void AttachedNode_MessageReceived(Node node, IncomingMessage message)
 		{
-			InvPayload invPayload = message.Message.Payload as InvPayload;
-			if (invPayload != null)
+			message.IfPayloadIs<InvPayload>(invPayload =>
 			{
 				foreach (var hash in invPayload.Where(i => i.Type == InventoryType.MSG_TX).Select(i => i.Hash))
 				{
@@ -311,23 +310,25 @@ namespace NBitcoin.Protocol.Behaviors
 						_BroadcastHub.OnTransactionBroadcasted(tx.Transaction);
 					}
 				}
-			}
-			RejectPayload reject = message.Message.Payload as RejectPayload;
-			if (reject != null && reject.Message == "tx")
+			});
+
+			message.IfPayloadIs<RejectPayload>(reject =>
 			{
-				var tx = GetTransaction(reject.Hash, true);
-				if (tx != null)
-					tx.State = BroadcastState.Rejected;
-				Types.Transaction tx2;
-				if (_BroadcastHub.BroadcastedTransaction.TryRemove(reject.Hash, out tx2))
+				if (reject.Message == "tx")
 				{
-					_BroadcastHub.OnTransactionRejected(tx2, reject);
+					var tx = GetTransaction(reject.Hash, true);
+					if (tx != null)
+						tx.State = BroadcastState.Rejected;
+					Types.Transaction tx2;
+					if (_BroadcastHub.BroadcastedTransaction.TryRemove(reject.Hash, out tx2))
+					{
+						_BroadcastHub.OnTransactionRejected(tx2, reject);
+					}
+
 				}
+			});
 
-			}
-
-			GetDataPayload getData = message.Message.Payload as GetDataPayload;
-			if (getData != null)
+			message.IfPayloadIs<GetDataPayload>(getData =>
 			{
 				foreach (var inventory in getData.Inventory.Where(i => i.Type == InventoryType.MSG_TX))
 				{
@@ -338,14 +339,13 @@ namespace NBitcoin.Protocol.Behaviors
 						var ping = new PingPayload();
 						tx.PingValue = ping.Nonce;
 						_PingToTransaction.TryAdd(tx.PingValue, tx);
-						node.SendMessageAsync(new TxPayload(tx.Transaction));
+						node.SendMessageAsync(tx.Transaction);
 						node.SendMessageAsync(ping);
 					}
 				}
-			}
+			});
 
-			PongPayload pong = message.Message.Payload as PongPayload;
-			if (pong != null)
+			message.IfPayloadIs<PongPayload>(pong =>
 			{
 				var tx = GetTransaction(pong.Nonce, true);
 				if (tx != null)
@@ -357,7 +357,7 @@ namespace NBitcoin.Protocol.Behaviors
 						_BroadcastHub.OnTransactionBroadcasted(tx.Transaction);
 					}
 				}
-			}
+			});
 		}
 
 		public override object Clone()
