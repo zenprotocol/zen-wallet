@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MsgPack;
 
 namespace NBitcoin.Protocol
 {
@@ -22,7 +23,7 @@ namespace NBitcoin.Protocol
 		MSG_WITNESS_TX = MSG_TX | MSG_WITNESS_FLAG,
 		MSG_FILTERED_WITNESS_BLOCK = MSG_FILTERED_BLOCK | MSG_WITNESS_FLAG
 	}
-	public class InventoryVector : Payload
+	public class InventoryVector
 	{
 		uint type;
 		byte[] hash;

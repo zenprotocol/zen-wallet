@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using NBitcoin.DataEncoders;
+using MsgPack;
 
 #if WINDOWS_UWP
 using Windows.ApplicationModel;
@@ -43,7 +44,7 @@ namespace NBitcoin.Protocol
 		/// </summary> 
 		NODE_WITNESS = (1 << 3),
 	}
-	public class VersionPayload : Payload
+	public class VersionPayload 
 	{
 		static string _NUserAgent;
 		public static string GetNBitcoinUserAgent()

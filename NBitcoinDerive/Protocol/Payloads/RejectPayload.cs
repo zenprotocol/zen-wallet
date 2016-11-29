@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MsgPack;
 
 namespace NBitcoin.Protocol
 {
@@ -31,7 +32,7 @@ namespace NBitcoin.Protocol
 	/// <summary>
 	/// A transaction or block are rejected being transmitted through tx or block messages
 	/// </summary>
-	public class RejectPayload : Payload
+	public class RejectPayload
 	{
 		VarString _Message = new VarString();
 		/// <summary>
@@ -127,7 +128,6 @@ namespace NBitcoin.Protocol
 				_Hash = value;
 			}
 		}
-
 	}
 #endif
 }

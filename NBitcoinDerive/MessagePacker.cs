@@ -100,7 +100,6 @@ namespace NBitcoin
 				{
 					_Context = Consensus.Serialization.context; // */ new SerializationContext { SerializationMethod = SerializationMethod.Map }; //TODO
 					_Context.Serializers.RegisterOverride(new CustomIPEndPointSerializer(_Context));
-			//		_Context.Serializers.RegisterOverride(new CustomXxxSerializer(_Context));
 				}
 
 				return _Context;
@@ -114,16 +113,7 @@ namespace NBitcoin
 
 		public byte[] Pack(Message message)
 		{
-			MemoryStream memoryStream = new MemoryStream();
-
-			MessagePackSerializer.Pack(memoryStream, message);
-			return GetBytes(memoryStream);
-		}
-
-		private byte[] GetBytes(MemoryStream stream)
-		{
-			stream.Position = 0;
-			return stream.ToArray();
+			return MessagePackSerializer.PackSingleObject(message);
 		}
 	}
 }

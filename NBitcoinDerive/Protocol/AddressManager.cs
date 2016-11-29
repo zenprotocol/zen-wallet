@@ -1058,13 +1058,12 @@ namespace NBitcoin.Protocol
 								n.VersionHandshake(cancelConnection.Token);
 								n.MessageReceived += (s, a) =>
 								{
-									var addr = (a.Message.Payload as AddrPayload);
-									if(addr != null)
+									a.IfPayloadIs<AddrPayload>(addr =>
 									{
 										Interlocked.Add(ref found, addr.Addresses.Length);
-										if(found >= peerToFind)
+										if (found >= peerToFind)
 											peerTableFull.Cancel();
-									}
+									});
 								};
 								n.SendMessageAsync(new GetAddrPayload());
 								loopCancel.WaitHandle.WaitOne(2000);

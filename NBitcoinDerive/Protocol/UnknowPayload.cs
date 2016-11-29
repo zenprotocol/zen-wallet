@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MsgPack;
 
 namespace NBitcoin.Protocol
 {
-	public class UnknowPayload : Payload
+	public class UnknowPayload
 	{
 		public UnknowPayload()
 		{
@@ -25,5 +26,6 @@ namespace NBitcoin.Protocol
 				_Data = value;
 			}
 		}
+
 	}
 }

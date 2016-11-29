@@ -14,6 +14,7 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NBitcoinDerive.Serialization;
 
 namespace NBitcoin.Protocol
 {
@@ -89,7 +90,7 @@ namespace NBitcoin.Protocol
 	{
 		internal class SentMessage
 		{
-			public Payload Payload;
+			public Object Payload;
 			public TaskCompletionSource<bool> Completion;
 			public Guid ActivityId;
 		}
@@ -170,9 +171,7 @@ namespace NBitcoin.Protocol
 						{
 							processing = kv;
 							var payload = kv.Payload;
-							var message = new Message();
-							message.Magic = _Node.Network.Magic;
-							message.Payload = payload;
+
 							if(isVerbose)
 							{
 								Trace.CorrelationManager.ActivityId = kv.ActivityId;
@@ -181,10 +180,11 @@ namespace NBitcoin.Protocol
 									NodeServerTrace.Transfer(TraceCorrelation.Activity);
 									Trace.CorrelationManager.ActivityId = TraceCorrelation.Activity;
 								}
-								NodeServerTrace.Verbose("Sending message " + message);
+								NodeServerTrace.Verbose("Sending payload " + payload);
 							}
 
-							var bytes = MessagePacker.Instance.Pack(message);
+							//var bytes = MessagePacker.Instance.Pack(new Protocol.Message(payload));
+							var bytes = WireSerialization.Instance.Pack(payload);
 
 							evt.SetBuffer(bytes, 0, bytes.Length);
 							_Node.Counter.AddWritten(bytes.Length);
@@ -247,15 +247,15 @@ namespace NBitcoin.Protocol
 							{
 								//PerformanceCounter counter;
 
-								var message = MessagePacker.Instance.Unpack(stream);
+								//var payload = MessagePacker.Instance.Unpack(stream);
+								var payload = WireSerialization.Instance.Unpack(stream);
 
 								if(NodeServerTrace.Trace.Switch.ShouldTrace(TraceEventType.Verbose))
-									NodeServerTrace.Verbose("Receiving message : " + message.Payload);
+									NodeServerTrace.Verbose("Receiving payload : " + payload);
 								Node.LastSeen = DateTimeOffset.UtcNow;
 								//Node.Counter.Add(counter);
-								Node.OnMessageReceived(new IncomingMessage()
+								Node.OnMessageReceived(new IncomingMessage(payload)
 								{
-									Message = message,
 									Socket = Socket,
 									//Length = counter.ReadenBytes,
 									Node = Node
@@ -375,15 +375,17 @@ namespace NBitcoin.Protocol
 		public event NodeEventMessageIncoming MessageReceived;
 		protected void OnMessageReceived(IncomingMessage message)
 		{
-			var version = message.Message.Payload as VersionPayload;
-			if(version != null && State == NodeState.HandShaked)
+			message.IfPayloadIs<VersionPayload>(version =>
 			{
-				if(message.Node.Version >= ProtocolVersion.REJECT_VERSION)
-					message.Node.SendMessageAsync(new RejectPayload()
-					{
-						Code = RejectCode.DUPLICATE
-					});
-			}
+				if (State == NodeState.HandShaked)
+				{
+					if (message.Node.Version >= ProtocolVersion.REJECT_VERSION)
+						message.Node.SendMessageAsync(new RejectPayload()
+						{
+							Code = RejectCode.DUPLICATE
+						});
+				}
+			});
 			//if(version != null)
 			//{
 			//	if((version.Services & NodeServices.NODE_WITNESS) != 0)
@@ -419,13 +421,13 @@ namespace NBitcoin.Protocol
 		}
 
 
-		private void OnSendingMessage(Payload payload, Action final)
+		private void OnSendingMessage(Object payload, Action final)
 		{
 			var enumerator = Filters.Concat(new[] { new ActionFilter(null, (n, p, a) => final()) }).GetEnumerator();
 			FireFilters(enumerator, payload);
 		}
 
-		private void FireFilters(IEnumerator<INodeFilter> enumerator, Payload payload)
+		private void FireFilters(IEnumerator<INodeFilter> enumerator, Object payload)
 		{
 			if(enumerator.MoveNext())
 			{
@@ -809,7 +811,7 @@ namespace NBitcoin.Protocol
 		/// </summary>
 		/// <param name="payload">The payload to send</param>
 		/// <param name="System.OperationCanceledException">The node has been disconnected</param>
-		public Task SendMessageAsync(Payload payload)
+		public Task SendMessageAsync(Object payload)
 		{
 			if(payload == null)
 				throw new ArgumentNullException("payload");
@@ -841,7 +843,7 @@ namespace NBitcoin.Protocol
 		/// <param name="payload">The payload to send</param>
 		/// <exception cref="System.ArgumentNullException">Payload is null</exception>
 		/// <param name="System.OperationCanceledException">The node has been disconnected, or the cancellation token has been set to canceled</param>
-		public void SendMessage(Payload payload, CancellationToken cancellation = default(CancellationToken))
+		public void SendMessage(Object payload, CancellationToken cancellation = default(CancellationToken))
 		{
 			try
 			{
@@ -896,16 +898,16 @@ namespace NBitcoin.Protocol
 			}
 		}
 
-		public TPayload ReceiveMessage<TPayload>(TimeSpan timeout) where TPayload : Payload
+		public TPayload ReceiveMessage<TPayload>(TimeSpan timeout) 
+			where TPayload : class
 		{
 			var source = new CancellationTokenSource();
 			source.CancelAfter(timeout);
 			return ReceiveMessage<TPayload>(source.Token);
 		}
 
-
-
-		public TPayload ReceiveMessage<TPayload>(CancellationToken cancellationToken = default(CancellationToken)) where TPayload : Payload
+		public TPayload ReceiveMessage<TPayload>(CancellationToken cancellationToken = default(CancellationToken))
+			where TPayload : class
 		{
 			using(var listener = new NodeListener(this))
 			{
@@ -947,14 +949,12 @@ namespace NBitcoin.Protocol
 		public void VersionHandshake(NodeRequirement requirements, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			requirements = requirements ?? new NodeRequirement();
-			using(var listener = CreateListener()
-									.Where(p => p.Message.Payload is VersionPayload ||
-												p.Message.Payload is RejectPayload ||
-												p.Message.Payload is VerAckPayload))
+			using (var listener = CreateListener()
+				  .Where(p => p.IsPayloadTypeOf(typeof(VersionPayload), typeof(RejectPayload), typeof(VerAckPayload))))
 			{
 
 				SendMessageAsync(MyVersion);
-				var payload = listener.ReceivePayload<Payload>(cancellationToken);
+				var payload = listener.ReceivePayload<Object>(cancellationToken);
 				if(payload is RejectPayload)
 				{
 					throw new ProtocolException("Handshake rejected : " + ((RejectPayload)payload).Reason);
@@ -1003,14 +1003,16 @@ namespace NBitcoin.Protocol
 		{
 			using(TraceCorrelation.Open())
 			{
-				using(var list = CreateListener().Where(m => m.Message.Payload is VerAckPayload || m.Message.Payload is RejectPayload))
+				using (var list = CreateListener().Where(m => m.IsPayloadTypeOf(typeof(VerAckPayload), typeof(RejectPayload))))
 				{
 					NodeServerTrace.Information("Responding to handshake");
 					SendMessageAsync(MyVersion);
 					var message = list.ReceiveMessage(cancellation);
-					var reject = message.Message.Payload as RejectPayload;
-					if(reject != null)
+
+					message.IfPayloadIs<RejectPayload>(reject =>
+					{
 						throw new ProtocolException("Version rejected " + reject.Code + " : " + reject.Reason);
+					});
 					SendMessageAsync(new VerAckPayload());
 					State = NodeState.HandShaked;
 				}

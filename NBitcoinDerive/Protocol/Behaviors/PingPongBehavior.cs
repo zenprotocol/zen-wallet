@@ -160,23 +160,28 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 			if(!PingVersion())
 				return;
-			var ping = message.Message.Payload as PingPayload;
-			if(ping != null && Mode.HasFlag(PingPongMode.RespondPong))
+			
+			message.IfPayloadIs<PingPayload>(ping =>
 			{
-				node.SendMessageAsync(new PongPayload()
+				if (Mode.HasFlag(PingPongMode.RespondPong))
 				{
-					Nonce = ping.Nonce
-				});
-			}
-			var pong = message.Message.Payload as PongPayload;
-			if(pong != null &&
-				Mode.HasFlag(PingPongMode.SendPing) &&
+					node.SendMessageAsync(new PongPayload()
+					{
+						Nonce = ping.Nonce
+					});
+				}
+			});
+
+			message.IfPayloadIs<PongPayload>(pong =>
+			{
+				if (Mode.HasFlag(PingPongMode.SendPing) &&
 				_CurrentPing != null &&
 				_CurrentPing.Nonce == pong.Nonce)
-			{
-				Latency = DateTimeOffset.UtcNow - _DateSent;
-				ClearCurrentPing();
-			}
+				{
+					Latency = DateTimeOffset.UtcNow - _DateSent;
+					ClearCurrentPing();
+				}
+			});
 		}
 
 		private void ClearCurrentPing()
