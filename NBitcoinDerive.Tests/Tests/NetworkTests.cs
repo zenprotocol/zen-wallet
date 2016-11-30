@@ -63,7 +63,7 @@ namespace NBitcoinDerive.Tests
 				{
 					Trace.Information("-- Sending transaction from node group");
 					hub.BroadcastTransactionAsync(p["test1"].Value);
-					Thread.Sleep(1500);
+					Thread.Sleep(1500); //TODO: use reset events instead of sleep?
 					hub.BroadcastTransactionAsync(p["test2"].Value);
 
 					Assert.True(waitForTransaction.WaitOne(15000));
@@ -134,7 +134,7 @@ namespace NBitcoinDerive.Tests
 
 					#endregion
 
-					Assert.True(waitForConnection.WaitOne(10000));
+					Assert.True(waitForConnection.WaitOne(10000)); //TODO: use reset events instead of sleep
 					Assert.True(connected);
 
 					actionSender(BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters));
@@ -153,11 +153,11 @@ namespace NBitcoinDerive.Tests
 				//Assert.AreEqual(true, AddressManagerContains(servers[1], node0address));
 
 				Node node0to1 = Handshake(servers[0], servers[1]);
-				Thread.Sleep(200);
+				Thread.Sleep(200); //TODO: use reset events instead of sleep
 
 				Assert.AreEqual(true, AddressManagerContains(servers[1], node0to1.MyVersion.AddressFrom));
 
-				Thread.Sleep(200);
+				Thread.Sleep(200); //TODO: use reset events instead of sleep
 			});
 		}
 
@@ -174,7 +174,7 @@ namespace NBitcoinDerive.Tests
 
 				node.VersionHandshake();
 
-				Thread.Sleep(200);
+				Thread.Sleep(200); //TODO: use reset events instead of sleep
 			});
 		}
 
@@ -186,7 +186,7 @@ namespace NBitcoinDerive.Tests
 			WithServerSet(2, servers =>
 			{
 				Node node0to1 = Connect(servers[0], servers[1]);
-				Thread.Sleep(200);
+				Thread.Sleep(200); //TODO: use reset events instead of sleep
 			});
 		}
 
@@ -220,7 +220,7 @@ namespace NBitcoinDerive.Tests
 				#region Setup Parameters for NodeGroup
 
 				AddressManager addressManager = new AddressManager();
-				addressManager.PeersToFind = ToBeConnected.Count;
+				addressManager.PeersToFind = ToBeConnected.Count * 2; // nodes answer to GetAddr with random nodes, so keep trying until we get all expected items
 
 				NodeConnectionParameters parameters = new NodeConnectionParameters();
 				parameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
@@ -235,29 +235,29 @@ namespace NBitcoinDerive.Tests
 
 				nodesGroup.Connect();
 
-				int connectedNodesCounter = 0;
+				AutoResetEvent waitForDiscoveredAll = new AutoResetEvent(false);
+				var discoveredAll = false;
 
 				nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
 				{
 					Console.WriteLine($"\n\n\nPeer found: {e.Node.Peer.Endpoint}\n\n\n");	
-					connectedNodesCounter++;
-					Node Node = ToBeDiscovered.Find(node => node.MyVersion.AddressFrom.Equals(e.Node.Peer.Endpoint));
 
-					Assert.IsNotNull(Node);
-					ToBeDiscovered.Remove(Node);
+					Node node = ToBeDiscovered.Find(n => n.MyVersion.AddressFrom.Equals(e.Node.Peer.Endpoint));
 
-					//if (ToBeDiscovered.Count == 0 && ToBeConnected.Count == connectedNodesCounter)
-					//{
-					//	return;
-					//}
+					if (node != null && ToBeDiscovered.Contains(node))
+					{
+						ToBeDiscovered.Remove(node);
+
+						if (ToBeDiscovered.Count == 0)
+						{
+							discoveredAll = true;
+							waitForDiscoveredAll.Set();
+						}
+					}
 				};
 
-				Thread.Sleep(19000);  //TODO: use reset events instead of sleep
-
-				//throw new Exception();
-
-				Assert.IsEmpty(ToBeDiscovered);
-				Assert.AreEqual(ToBeConnected.Count, connectedNodesCounter); 
+				Assert.True(waitForDiscoveredAll.WaitOne(30000));
+				Assert.True(discoveredAll);
 			});
 		}
 	}

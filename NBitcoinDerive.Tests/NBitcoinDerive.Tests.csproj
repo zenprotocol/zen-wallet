@@ -35,12 +35,12 @@
     <Reference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NetworkTestBase.cs" />
+    <Compile Include="TestBlockChain.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="TestServerSet.cs" />
     <Compile Include="TestNetwork.cs" />
     <Compile Include="Tests\NetworkTests.cs" />
-    <Compile Include="TestBlockChain.cs" />
+    <Compile Include="NetworkTestBase.cs" />
     <Compile Include="TestTransaction.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Tests\WireSerializationTests.cs" />
