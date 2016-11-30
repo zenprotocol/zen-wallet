@@ -27,9 +27,9 @@ namespace BlockChain.Tests
 			p.Add("test", 1);
 			p.Render();
 
-			var test = p.TakeOut("test");
+			var test = p.TakeOut("test").Value;
 
-			var data = Merkle.serialize<Types.Transaction>(test.Value);
+			var data = Merkle.serialize<Types.Transaction>(test);
 
 			var t = Serialization.context.GetSerializer<Types.Transaction>().UnpackSingleObject(data);
 
