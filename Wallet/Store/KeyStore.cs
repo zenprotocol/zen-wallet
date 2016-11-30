@@ -10,17 +10,14 @@ namespace Wallet.Store
 		{
 		}
 
-		protected override StoredItem<Key> Wrap(Key item)
-		{
-			var data = MessagePacker.Instance.Pack<Key>(item);
-			var key = Merkle.innerHash(data);
-
-			return new StoredItem<Key>(key, item, data);
-		}
-
-		protected override Key FromBytes(byte[] data, byte[] key)
+		protected override Key Unpack(byte[] data, byte[] key)
 		{
 			return MessagePacker.Instance.Unpack<Key>(data);
+		}
+
+		protected override byte[] Pack(Key item)
+		{
+			return MessagePacker.Instance.Pack<Key>(item);
 		}
 	}
 }

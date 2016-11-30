@@ -14,7 +14,7 @@ namespace Store
 		{
 			foreach (var row in transactionContext.Transaction.SelectForward<byte[], byte[]>(_TableName))
 			{
-				yield return new Keyed<T>(row.Key, FromBytes(row.Value, row.Key));
+				yield return new Keyed<T>(row.Key, Unpack(row.Value, row.Key));
 			}
 		}
 	}

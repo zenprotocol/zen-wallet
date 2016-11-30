@@ -55,6 +55,7 @@
     <Compile Include="Data\Block.cs" />
     <Compile Include="BlockChainTrace.cs" />
     <Compile Include="Data\KeyedTransaction.cs" />
+    <Compile Include="Store\ConsensusTypeStore.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

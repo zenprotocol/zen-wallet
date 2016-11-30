@@ -22,8 +22,8 @@ namespace BlockChain.Tests
 
 					var txStore = new TxStore();
 
-					txStore.Put(transactionContext, p["test1"].Value);
-					txStore.Put(transactionContext, p["test2"].Value);
+					txStore.Put(transactionContext, p["test1"]);
+					txStore.Put(transactionContext, p["test2"]);
 
 					Assert.IsTrue(txStore.ContainsKey(transactionContext, p["test1"].Key));
 					Assert.IsTrue(txStore.ContainsKey(transactionContext, p["test2"].Key));

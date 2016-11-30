@@ -15,7 +15,7 @@ namespace BlockChain.Tests
 		{
 			String dbName = "test-" + new Random().Next(0, 1000);
 
-			BlockStore blockStore = new BlockStore();
+			MainBlockStore blockStore = new MainBlockStore();
 
 			List<Types.Block> blocks = new List<Types.Block>();
 
@@ -27,7 +27,7 @@ namespace BlockChain.Tests
 				{
 					using (TransactionContext context = dbContext.GetTransactionContext())
 					{
-						blockStore.Put(context, newBlock);
+						blockStore.Put(context, new Keyed<Types.Block>(Merkle.blockHasher.Invoke(newBlock), newBlock));
 						context.Commit();
 					}
 				}

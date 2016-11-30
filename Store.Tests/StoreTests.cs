@@ -4,6 +4,7 @@ using Consensus;
 using System.Collections.Generic;
 using System.Linq;
 using BlockChain.Store;
+using Store;
 
 namespace BlockChain.Tests
 {
@@ -26,7 +27,7 @@ namespace BlockChain.Tests
 
 					using (var transaction = dbContext.GetTransactionContext())
 					{
-						dbContext.Store.Put(transaction, putTransaction);
+						dbContext.Store.Put(transaction, new Keyed<Types.Transaction>(key, putTransaction));
 						transaction.Commit();
 					}
 
@@ -60,7 +61,7 @@ namespace BlockChain.Tests
 
 				using (var transaction = dbContext.GetTransactionContext())
 				{
-					dbContext.Store.Put(transaction, putTransactions.Select(t => t.Item2).ToArray());
+					dbContext.Store.Put(transaction, putTransactions.Select(t => new Keyed<Types.Transaction>(t.Item1, t.Item2)).ToArray());
 					transaction.Commit();
 				}
 
