@@ -28,11 +28,11 @@ namespace Wallet
 
 		public void AddKey(Key key)
 		{
-			using (var transaction = _DBContext.GetTransactionContext())
-			{
-				_KeyStore.Put(transaction, key);
-				transaction.Commit();
-			}
+			//using (var transaction = _DBContext.GetTransactionContext())
+			//{
+			//	_KeyStore.Put(transaction, key);
+			//	transaction.Commit();
+			//}
 		}
 
 		public void Dispose()

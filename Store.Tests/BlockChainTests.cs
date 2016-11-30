@@ -5,12 +5,23 @@ using System.Collections.Generic;
 using System.IO;
 using BlockChain.Store;
 using Store;
+using System.Linq;
 
 namespace BlockChain.Tests
 {
 	[TestFixture()]
 	public class BlockChainTests
 	{
+		[Test()]
+		public void ShoudRejectDuplicateBlock()
+		{
+			WithBlockChains(1, blockChain =>
+			{
+				Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.AddedOrpan));
+				Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.Rejected));
+			});
+		}
+
 		[Test()]
 		public void CanStoreBlocks()
 		{
@@ -31,7 +42,7 @@ namespace BlockChain.Tests
 			}
 
 
-			BlockStore blockStore = new BlockStore();
+			MainBlockStore blockStore = new MainBlockStore();
 
 			using (DBContext dbContext = new DBContext(dbName))
 			{
@@ -45,7 +56,7 @@ namespace BlockChain.Tests
 
 						Types.Block found = blockStore.Get(context, key).Value;
 
-                      	Assert.AreEqual(expected, found, "match expected/found block");
+						Assert.AreEqual(expected, found, "match expected/found block");
 					}
 				}
 			}
@@ -125,5 +136,43 @@ namespace BlockChain.Tests
 
 		//	Directory.Delete(dbName, true);
 		//}
+
+		//copied from elsewhere
+		private void WithBlockChains(int blockChains, Action<BlockChain[]> action)
+		{
+			var testBlockChains = new List<TestBlockChain>();
+
+			for (int i = 0; i < blockChains; i++)
+			{
+				String dbName = "test-" + new Random().Next(0, 1000);
+				testBlockChains.Add(new TestBlockChain(dbName));
+			}
+
+			action(testBlockChains.Select(t => t.BlockChain).ToArray());
+
+			foreach (var testBlockChain in testBlockChains)
+			{
+				testBlockChain.Dispose();
+			}
+		}
+
+       //copied from elsewhere
+		private class TestBlockChain : IDisposable
+		{
+			private readonly String _DbName;
+			public BlockChain BlockChain { get; private set; }
+
+			public TestBlockChain(String dbName)
+			{
+				_DbName = dbName;
+				BlockChain = new BlockChain(dbName);
+			}
+
+			public void Dispose()
+			{
+				BlockChain.Dispose();
+				Directory.Delete(_DbName, true);
+			}
+		}
 	}
 }

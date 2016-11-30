@@ -14,13 +14,13 @@ namespace Store
 		}
 	}
 
-	public class StoredItem<T> : Keyed<T>
-	{
-		public byte[] Data { get; private set; }
+	//public class StoredItem<T> : Keyed<T>
+	//{
+	//	public byte[] Data { get; private set; }
 
-		public StoredItem(byte[] key, T value, byte[] data) : base(key, value)
-		{
-			Data = data;
-		}
-	}
+	//	public StoredItem(byte[] key, T value, byte[] data) : base(key, value)
+	//	{
+	//		Data = data;
+	//	}
+	//}
 }

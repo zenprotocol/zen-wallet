@@ -11,7 +11,9 @@ namespace BlockChain
 	{
 		private readonly TxMempool _TxMempool;
 		private readonly TxStore _TxStore;
-		private readonly BlockStore _BlockStore;
+		private readonly BlockStore _MainBlockStore;
+		private readonly BlockStore _BranchBlockStore;
+		private readonly BlockStore _OrphanBlockStore;
 		private readonly DBContext _DBContext;
 		private readonly BlockDifficultyTable _BlockDifficultyTable;
 
@@ -22,7 +24,9 @@ namespace BlockChain
 			_DBContext = new DBContext(dbName);
 			_TxMempool = new TxMempool();
 			_TxStore = new TxStore();
-			_BlockStore = new BlockStore();
+			_MainBlockStore = new MainBlockStore();
+			_BranchBlockStore = new BranchBlockStore();
+			_OrphanBlockStore = new OrphanBlockStore();
 			_BlockDifficultyTable = new BlockDifficultyTable();
 
 			OwnResource(_DBContext);
@@ -33,17 +37,46 @@ namespace BlockChain
 			));
 		}
 
-		public void HandleNewBlock(Types.Block block) //TODO: use Keyed type
+		public enum HandleNewBlockResult
 		{
+			Rejected,
+			Accepeted,
+			AddedOrpan,
+		}
+
+		public HandleNewBlockResult HandleNewBlock(Types.Block block) //TODO: use Keyed type
+		{
+			var keyedBlock = new Keyed<Types.Block>(Merkle.blockHasher.Invoke(block), block);
+
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				var key = Merkle.blockHasher.Invoke(block); //TODO: id should be hash of block header, blockHasher may be redundant and wrong to use here
+				if (_MainBlockStore.ContainsKey(context, keyedBlock.Key) ||
+					_BranchBlockStore.ContainsKey(context, keyedBlock.Key) ||
+					_OrphanBlockStore.ContainsKey(context, keyedBlock.Key))
+				{
+					return HandleNewBlockResult.Rejected;
+				}
 
-				_BlockStore.Put(context, block);
-				_TxStore.Put(context, block.transactions.ToArray());
-				_BlockDifficultyTable.Context(context)[key] = GetDifficultyRecursive(context, block);
+				var parent = keyedBlock.Value.header.parent;
 
-				context.Commit();
+				if (!_MainBlockStore.ContainsKey(context, parent) &&
+					!_BranchBlockStore.ContainsKey(context, parent))
+				{
+					_OrphanBlockStore.Put(context, keyedBlock);
+					context.Commit();
+					return HandleNewBlockResult.AddedOrpan;
+				}
+				else 
+				{
+					_MainBlockStore.Put(context, keyedBlock);
+					//_TxStore.Put(context, block.transactions.ToArray());
+					////TODO: fix that. difficulty is not computed recursively
+					//_BlockDifficultyTable.Context(context)[key] = GetDifficultyRecursive(context, block);
+
+					context.Commit();
+
+					return HandleNewBlockResult.Accepeted;
+				}
 			}
 		}
 
@@ -71,23 +104,23 @@ namespace BlockChain
 		}
 
 
-		private Double GetDifficultyRecursive(TransactionContext context, Types.Block block)
-		{
-			Double result = block.header.pdiff;
+		//private Double GetDifficultyRecursive(TransactionContext context, Types.Block block)
+		//{
+		//	Double result = block.header.pdiff;
 
-			if (block.header.parent == null || block.header.parent.Length == 0)
-			{
-				return result;
-			}
+		//	if (block.header.parent == null || block.header.parent.Length == 0)
+		//	{
+		//		return result;
+		//	}
 
-			Types.Block parentBlock = _BlockStore.Get(context, block.header.parent).Value;
+		//	Types.Block parentBlock = _BlockStore.Get(context, block.header.parent).Value;
 
-			if (parentBlock == null)
-			{
-				throw new Exception("Missing parent block");
-			}
+		//	if (parentBlock == null)
+		//	{
+		//		throw new Exception("Missing parent block");
+		//	}
 
-			return result + GetDifficultyRecursive(context, parentBlock);
-		}
+		//	return result + GetDifficultyRecursive(context, parentBlock);
+		//}
 	}
 }
