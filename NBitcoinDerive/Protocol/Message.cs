@@ -5,14 +5,7 @@ namespace NBitcoin.Protocol
 {
 	public class Message
 	{
-		[MessagePackKnownType("1", typeof(VerAckPayload))]
-		[MessagePackKnownType("2", typeof(VersionPayload))]
-		[MessagePackKnownType("3", typeof(PingPayload))]
-		[MessagePackKnownType("4", typeof(PongPayload))]
-		[MessagePackKnownType("5", typeof(AddrPayload))]
-		[MessagePackKnownType("6", typeof(GetAddrPayload))]
-		[MessagePackKnownType("7", typeof(RejectPayload))]
-		public Object _Payload { get; set; }
+		private Object _Payload { get; set; }
 
 		public Message(Object Payload)
 		{

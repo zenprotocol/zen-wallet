@@ -10,30 +10,25 @@ using NBitcoin.Protocol;
 
 namespace NBitcoinDerive.Serialization
 {
+	//TODO: add version
 	public class WireSerialization : Singleton<WireSerialization>
 	{
 		private const int _Magic = 1;
-		private Dictionary<Type, MessagePackSerializer> consensusExtSerializers;
-		private Dictionary<byte, Type> consensusExtTypes;
-
-		//TODO
-		private const byte COMMAND_TYPE_CODE_ADDR = 0x01;
-		private const byte COMMAND_TYPE_CODE_GETADDR = 0x02;
-		private const byte COMMAND_TYPE_CODE_GETDATA = 0x03;
-		private const byte COMMAND_TYPE_CODE_INV = 0x04;
-		private const byte COMMAND_TYPE_CODE_PING = 0x05;
-		private const byte COMMAND_TYPE_CODE_PONG = 0x06;
-		private const byte COMMAND_TYPE_CODE_REJECT = 0x07;
-		private const byte COMMAND_TYPE_CODE_VERACK = 0x08;
-		private const byte COMMAND_TYPE_CODE_VER = 0x09;
+		private Dictionary<Type, MessagePackSerializer> _ConsensusExtSerializers;
+		private Dictionary<byte, Type> _ConsensusExtTypes;
+		private Dictionary<string, Type> _NetworkingPayloadTypes;
+		private Dictionary<Type, string> _NetworkingPayloadCodes;
+		private List<Type> _EmptyNetworkingPayloadTypes;
 
 		public WireSerialization()
 		{
-			IPEndPointSerializer.Register(SerializationContext.Default);
-		//	SerializationContext.Default.SerializationMethod = SerializationMethod.Map;
+			IPEndPointSerializer.Register();
 
-			consensusExtSerializers = new Dictionary<Type, MessagePackSerializer>();
-			consensusExtTypes = new Dictionary<byte, Type>();
+			_ConsensusExtSerializers = new Dictionary<Type, MessagePackSerializer>();
+			_ConsensusExtTypes = new Dictionary<byte, Type>();
+			_NetworkingPayloadTypes = new Dictionary<string, Type>();
+			_EmptyNetworkingPayloadTypes = new List<Type>();
+			_NetworkingPayloadCodes = new Dictionary<Type, string>();
 
 			var mapping = Consensus.Serialization.context.ExtTypeCodeMapping;
 			foreach (var item in mapping)
@@ -43,41 +38,29 @@ namespace NBitcoinDerive.Serialization
 				{
 					case "Transaction":
 						type = typeof(Consensus.Types.Transaction);
-						consensusExtSerializers[type] = Consensus.Serialization.context.GetSerializer<Consensus.Types.Transaction>();
-						consensusExtTypes[mapping[item.Key]] = type;
+						_ConsensusExtSerializers[type] = Consensus.Serialization.context.GetSerializer<Consensus.Types.Transaction>();
+						_ConsensusExtTypes[mapping[item.Key]] = type;
 						break;
 				}
 			}
-		}
 
-		//stream - as member / parameter??
-		public void Pack<T>(Stream stream, T payloadObject)
-		{
-			NodeServerTrace.Information("----- pack start " + payloadObject);
+			_NetworkingPayloadTypes["addr"] = typeof(AddrPayload);
+			_NetworkingPayloadTypes["getaddr"] = typeof(GetAddrPayload);
+			_NetworkingPayloadTypes["getdata"] = typeof(GetDataPayload);
+			_NetworkingPayloadTypes["inv"] = typeof(InvPayload);
+			_NetworkingPayloadTypes["ping"] = typeof(PingPayload);
+			_NetworkingPayloadTypes["pong"] = typeof(PongPayload);
+			_NetworkingPayloadTypes["reject"] = typeof(RejectPayload);
+			_NetworkingPayloadTypes["ver"] = typeof(VersionPayload);
+			_NetworkingPayloadTypes["verack"] = typeof(VerAckPayload);
 
-			Packer packer = Packer.Create(stream);
+			_EmptyNetworkingPayloadTypes.Add(typeof(VerAckPayload));
+			_EmptyNetworkingPayloadTypes.Add(typeof(GetAddrPayload));
 
-			packer.PackArrayHeader(3);
-			packer.Pack(_Magic);
-			packer.Pack(GetChecksum(payloadObject));
-
-			Type type = payloadObject.GetType();
-			if (consensusExtSerializers.ContainsKey(type))
+			foreach (var item in _NetworkingPayloadTypes)
 			{
-				packer.PackRawBody(Consensus.Serialization.context.GetSerializer<T>().PackSingleObject(payloadObject));
+				_NetworkingPayloadCodes[item.Value] = item.Key;
 			}
-			else
-			{
-				packer.PackArrayHeader(2);
-				packer.Pack(GetCommandTypeCode(payloadObject));
-
-			//	var serializer = MessagePackSerializer.Get<VerAckPayload>(SerializationContext.Default);
-			//	serializer.PackTo(packer);
-				packer.Pack(payloadObject);
-			}
-
-			NodeServerTrace.Information("----- pack end " + payloadObject);
-
 		}
 
 		public byte[] Pack<T>(T payloadObject)
@@ -85,107 +68,50 @@ namespace NBitcoinDerive.Serialization
 			MemoryStream stream = new MemoryStream();
 
 			Pack(stream, payloadObject);
-			stream.Position = 0;
 
-			return stream.GetBuffer();
+			return stream.ToArray();
 		}
 
-		//don't want any reflection, considered to be slow
-		private Func<object> GetUnpacker(byte commandTypeCode, Unpacker unpacker)
+		public void Pack<T>(Stream stream, T payloadObject)
 		{
-			switch (commandTypeCode)
-			{
-				case COMMAND_TYPE_CODE_ADDR:
-					return unpacker.Unpack<AddrPayload>;
-				case COMMAND_TYPE_CODE_GETADDR:
-					return unpacker.Unpack<GetAddrPayload>;
-				case COMMAND_TYPE_CODE_GETDATA:
-					return unpacker.Unpack<GetDataPayload>;
-				case COMMAND_TYPE_CODE_INV:
-					return unpacker.Unpack<InvPayload>;
-				case COMMAND_TYPE_CODE_PING:
-					return unpacker.Unpack<PingPayload>;
-				case COMMAND_TYPE_CODE_PONG:
-					return unpacker.Unpack<PongPayload>;
-				case COMMAND_TYPE_CODE_REJECT:
-					return unpacker.Unpack<RejectPayload>;
-				case COMMAND_TYPE_CODE_VERACK:
-					return unpacker.Unpack<VerAckPayload>;
-				case COMMAND_TYPE_CODE_VER:
-					return unpacker.Unpack<VersionPayload>;
-			}
+			Type type = payloadObject.GetType();
 
-			throw new SerializationException();
+			if (_ConsensusExtSerializers.ContainsKey(type))
+			{
+				PackConsensusPayload<T>(stream, payloadObject);
+			}
+			else
+			{
+				PackNetworkingPayload<T>(stream, payloadObject);
+			}
 		}
 
-		//private Func<MessagePackSerializer> GetSerializer(byte commandTypeCode, Unpacker unpacker)
-		//{
-		//	switch (commandTypeCode)
-		//	{
-		//		case COMMAND_TYPE_CODE_ADDR:
-		//			return MessagePackSerializer.Get<AddrPayload>;
-		//		case COMMAND_TYPE_CODE_GETADDR:
-		//			return MessagePackSerializer.Get<GetAddrPayload>;
-		//		case COMMAND_TYPE_CODE_GETDATA:
-		//			return MessagePackSerializer.Get<GetDataPayload>;
-		//		case COMMAND_TYPE_CODE_INV:
-		//			return MessagePackSerializer.Get<InvPayload>;
-		//		case COMMAND_TYPE_CODE_PING:
-		//			return MessagePackSerializer.Get<PingPayload>;
-		//		case COMMAND_TYPE_CODE_PONG:
-		//			return MessagePackSerializer.Get<PongPayload>;
-		//		case COMMAND_TYPE_CODE_REJECT:
-		//			return MessagePackSerializer.Get<RejectPayload>;
-		//		case COMMAND_TYPE_CODE_VERACK:
-		//			return MessagePackSerializer.Get<VerAckPayload>;
-		//		case COMMAND_TYPE_CODE_VER:
-		//			return MessagePackSerializer.Get<VersionPayload>;
-		//	}
-
-		//	throw new SerializationException();
-		//}
-
-		private byte GetCommandTypeCode(Object networkProtocolMessage)
+		private void PackConsensusPayload<T>(Stream stream, T payloadObject)
 		{
-			if (networkProtocolMessage is AddrPayload)
+			Packer packer = Packer.Create(stream);
+
+			packer.PackArrayHeader(3);
+			packer.Pack(_Magic);
+			packer.Pack(GetChecksum(payloadObject));
+			packer.PackRawBody(Consensus.Serialization.context.GetSerializer<T>().PackSingleObject(payloadObject));
+		}
+
+
+		private void PackNetworkingPayload<T>(Stream stream, T payloadObject)
+		{
+			Packer packer = Packer.Create(stream);
+
+			var isEmptyPayload = _EmptyNetworkingPayloadTypes.Contains(payloadObject.GetType());
+			packer.PackArrayHeader(isEmptyPayload ? 3 : 4);
+			packer.Pack(_Magic);
+			packer.Pack(GetChecksum(payloadObject));
+
+			string payloadType = _NetworkingPayloadCodes[payloadObject.GetType()];
+			packer.Pack(payloadType);
+
+			if (!isEmptyPayload)
 			{
-				return COMMAND_TYPE_CODE_ADDR;
-			}
-			else if (networkProtocolMessage is GetAddrPayload)
-			{
-				return COMMAND_TYPE_CODE_GETADDR;
-			}
-			else if (networkProtocolMessage is GetDataPayload)
-			{
-				return COMMAND_TYPE_CODE_GETDATA;
-			}
-			else if (networkProtocolMessage is InvPayload)
-			{
-				return COMMAND_TYPE_CODE_INV;
-			}
-			else if (networkProtocolMessage is PingPayload)
-			{
-				return COMMAND_TYPE_CODE_PING;
-			}
-			else if (networkProtocolMessage is PongPayload)
-			{
-				return COMMAND_TYPE_CODE_PONG;
-			}
-			else if (networkProtocolMessage is RejectPayload)
-			{
-				return COMMAND_TYPE_CODE_REJECT;
-			}
-			else if (networkProtocolMessage is VerAckPayload)
-			{
-				return COMMAND_TYPE_CODE_VERACK;
-			}
-			else if (networkProtocolMessage is VersionPayload)
-			{
-				return COMMAND_TYPE_CODE_VER;
-			}
-			else 
-			{
-				throw new SerializationException();
+				MessagePackSerializer.Get<T>().PackTo(packer, payloadObject);
 			}
 		}
 
@@ -195,10 +121,11 @@ namespace NBitcoinDerive.Serialization
 
 			Unpacker unpacker = Unpacker.Create(stream);
 
-			Assert(unpacker.Read());
+			unpacker.Read();
 			Assert(unpacker.IsArrayHeader);
-			//	Unpacker subTreeUnpacker = unpacker.ReadSubtree(); - checkout readsubtree
-			Assert(unpacker.ItemsCount == 3);
+			Assert(unpacker.ItemsCount == 3 || unpacker.ItemsCount == 4);
+
+			var mainItemsCount = unpacker.ItemsCount;
 
 			Assert(unpacker.Read());
 			var magic = unpacker.LastReadData.AsInt32();
@@ -208,29 +135,32 @@ namespace NBitcoinDerive.Serialization
 			var checksum = unpacker.LastReadData.AsBinary();
 
 			Assert(unpacker.Read());
-			if (unpacker.IsArrayHeader)
+			if (unpacker.LastReadData.UnderlyingType == typeof(String))
 			{
-				Assert(unpacker.ItemsCount == 2);
-				Assert(unpacker.Read());
-				var commandTypeCode = unpacker.LastReadData.AsByte();
-				var payloadUnpacker = GetUnpacker(commandTypeCode, unpacker);
-				Assert(unpacker.Read());
-				returnValue = payloadUnpacker();
+				var payloadTypeCode = unpacker.LastReadData.AsString();
 
-				NodeServerTrace.Information("----- unpacked " + returnValue);
+				Type payloadType = _NetworkingPayloadTypes[payloadTypeCode];
+
+				if (_EmptyNetworkingPayloadTypes.Contains(payloadType))
+				{
+					Assert(mainItemsCount == 3);
+					returnValue = Activator.CreateInstance(payloadType);
+				}
+				else 
+				{
+					Assert(mainItemsCount == 4);
+					Assert(unpacker.Read());
+					returnValue = MessagePackSerializer.Get(payloadType).UnpackFrom(unpacker);
+				}
 			}
 			else
 			{
-				var data = unpacker.LastReadData.AsMessagePackExtendedTypeObject();
-				Type type = consensusExtTypes[data.TypeCode];
-
-				if (consensusExtSerializers.ContainsKey(type))
-				{
-					returnValue = consensusExtSerializers[type].UnpackFrom(unpacker);
-				}
+				var extObject = unpacker.LastReadData.AsMessagePackExtendedTypeObject();
+				Type type = _ConsensusExtTypes[extObject.TypeCode];
+				Assert(_ConsensusExtSerializers.ContainsKey(type));
+				returnValue = _ConsensusExtSerializers[type].UnpackFrom(unpacker);
 			}
 
-			Assert(returnValue != null);
 			Assert(checksum.SequenceEqual(GetChecksum(returnValue)));
 
 			return returnValue;

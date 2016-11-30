@@ -8,9 +8,17 @@ namespace NBitcoinDerive.Serialization
 {
 	public class IPEndPointSerializer : MessagePackSerializer<IPEndPoint>
 	{
-		public static void Register(SerializationContext context)
+		public static IPEndPointSerializer Register()
 		{
-			context.Serializers.RegisterOverride(new IPEndPointSerializer(context));
+			return Register(SerializationContext.Default);
+		}
+
+		public static IPEndPointSerializer Register(SerializationContext context)
+		{
+			var serializer = new IPEndPointSerializer(context);
+			context.Serializers.RegisterOverride(serializer);
+
+			return serializer;
 		}
 
 		private IPEndPointSerializer(SerializationContext context) : base(context)

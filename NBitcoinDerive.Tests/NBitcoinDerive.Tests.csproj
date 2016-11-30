@@ -33,9 +33,6 @@
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core" />
-    <Reference Include="MsgPack">
-      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NetworkTestBase.cs" />
@@ -46,8 +43,6 @@
     <Compile Include="TestBlockChain.cs" />
     <Compile Include="TestTransaction.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="Tests\WireSerializationTests_old.cs" />
-    <Compile Include="Tests\SerializationTests_old.cs" />
     <Compile Include="Tests\WireSerializationTests.cs" />
   </ItemGroup>
   <ItemGroup>
