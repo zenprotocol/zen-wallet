@@ -91,7 +91,7 @@ namespace BlockChain.Tests
 			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
 			{
 				p.Render();
-				txstore.Put(context, p["test1"].Value);
+				txstore.Put(context, p["test1"]);
 			});
 		}
 
@@ -145,7 +145,7 @@ namespace BlockChain.Tests
 
 			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
 			{
-				txstore.Put(context, test1.Value);
+				txstore.Put(context, test1);
 			}, postAction: (mempool, txstore, context) =>
 			{
 				var result = new BlockChainAddTransactionOperation(

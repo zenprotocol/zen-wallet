@@ -17,9 +17,9 @@ namespace Store
 			_TableName = tableName;
 		}
 
-		public void Put(TransactionContext transactionContext, T item) //TODO: used Keyed?
+		public void Put(TransactionContext transactionContext, Keyed<T> item) //TODO: used Keyed?
 		{
-			Put(transactionContext, new T[] { item });
+			Put(transactionContext, new Keyed<T>[] { item });
 		}
 
 		public void Put(TransactionContext transactionContext, byte[] key, byte[] value)
@@ -27,12 +27,11 @@ namespace Store
 			Put(transactionContext, new Tuple<byte[],byte[]>[] { new Tuple<byte[], byte[]>(key, value) });
 		}
 
-		public void Put(TransactionContext transactionContext, T[] items)
+		public void Put(TransactionContext transactionContext, Keyed<T>[] items)
 		{
-			foreach (T item in items) {
-				StoredItem<T> storedItem = Wrap(item);
-				Trace.Write(_TableName, storedItem.Key);
-				transactionContext.Transaction.Insert<byte[], byte[]> (_TableName, storedItem.Key, storedItem.Data);
+			foreach (Keyed<T> item in items) {
+				Trace.Write(_TableName, item.Key);
+				transactionContext.Transaction.Insert<byte[], byte[]> (_TableName, item.Key, Pack(item.Value));
 			}
 		}
 
@@ -55,10 +54,10 @@ namespace Store
 		{
 			Trace.Read(_TableName, key);
 			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
-			return row.Exists ? new Keyed<T>(key, FromBytes(row.Value, row.Key)) : null;
+			return row.Exists ? new Keyed<T>(key, Unpack(row.Value, row.Key)) : null;
 		}
 
-		protected abstract StoredItem<T> Wrap(T item);
-		protected abstract T FromBytes(byte[] data, byte[] key);
+		protected abstract byte[] Pack(T item);
+		protected abstract T Unpack(byte[] data, byte[] key);
 	}
 }
