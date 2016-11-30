@@ -3,7 +3,7 @@ using System;
 using Consensus;
 using System.Collections.Generic;
 
-namespace BlockChain.Tests
+namespace Compatability.Tests
 {
 	[TestFixture()]
 	public class TestFSharp

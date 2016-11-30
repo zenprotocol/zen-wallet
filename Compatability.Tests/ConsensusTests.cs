@@ -1,8 +1,9 @@
 ﻿using NUnit.Framework;
 using System;
 using Consensus;
+using BlockChain.Tests;
 
-namespace BlockChain.Tests
+namespace Compatability.Tests
 {
 	[TestFixture()]
 	public class ConsensusTests
