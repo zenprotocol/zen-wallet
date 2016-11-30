@@ -183,7 +183,6 @@ namespace NBitcoin.Protocol
 								NodeServerTrace.Verbose("Sending payload " + payload);
 							}
 
-							//var bytes = MessagePacker.Instance.Pack(new Protocol.Message(payload));
 							var bytes = WireSerialization.Instance.Pack(payload);
 
 							evt.SetBuffer(bytes, 0, bytes.Length);
@@ -247,7 +246,6 @@ namespace NBitcoin.Protocol
 							{
 								//PerformanceCounter counter;
 
-								//var payload = MessagePacker.Instance.Unpack(stream);
 								var payload = WireSerialization.Instance.Unpack(stream);
 
 								if(NodeServerTrace.Trace.Switch.ShouldTrace(TraceEventType.Verbose))

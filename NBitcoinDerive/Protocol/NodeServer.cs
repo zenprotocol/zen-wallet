@@ -175,7 +175,6 @@ namespace NBitcoin.Protocol
 						cancel.Token.ThrowIfCancellationRequested();
 						//PerformanceCounter counter;
 						var payload = WireSerialization.Instance.Unpack(stream);
-						//var payload = MessagePacker.Instance.Unpack(stream);
 
 						_MessageProducer.PushMessage(new IncomingMessage(payload)
 						{

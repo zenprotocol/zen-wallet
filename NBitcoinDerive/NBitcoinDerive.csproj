@@ -61,7 +61,6 @@
     <Compile Include="Protocol\NodeServer.cs" />
     <Compile Include="Protocol\NodeServerTrace.cs" />
     <Compile Include="Protocol\NodesGroup.cs" />
-    <Compile Include="Protocol\Payload.cs" />
     <Compile Include="Protocol\Payloads\AddrPayload.cs" />
     <Compile Include="Protocol\Payloads\GetAddrPayload.cs" />
     <Compile Include="Protocol\Payloads\PingPayload.cs" />
@@ -70,7 +69,6 @@
     <Compile Include="Protocol\Payloads\VersionPayload.cs" />
     <Compile Include="Protocol\PerformanceCounter.cs" />
     <Compile Include="Protocol\ProtocolException.cs" />
-    <Compile Include="Protocol\UnknowPayload.cs" />
     <Compile Include="Protocol\VarInt.cs" />
     <Compile Include="Protocol\VarString.cs" />
     <Compile Include="Protocol\Versions.cs" />
