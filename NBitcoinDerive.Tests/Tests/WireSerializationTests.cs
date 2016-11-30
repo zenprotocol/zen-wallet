@@ -4,6 +4,7 @@ using NBitcoinDerive.Serialization;
 using System.IO;
 using NBitcoin.Protocol;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace NBitcoinDerive.Tests
 {
@@ -32,25 +33,16 @@ namespace NBitcoinDerive.Tests
 		public void CanSerializeDeserializePingPayload()
 		{
 			CanSerializeDeserializePayload<PingPayload>(
-				(p1, p2) => Assert.That(p1.Nonce, Is.EqualTo(p2.Nonce))
+				(p1, p2) => Assert.That(p1.Nonce, Is.EqualTo(p2.Nonce)),
+				p => p.xxx = "xxxx"
 			);
 		}
-
 
 		[Test()]
 		public void CanSerializeDeserializeVerAckPayload()
 		{
 			CanSerializeDeserializePayload<VerAckPayload>();
 		}
-
-		//[Test()]
-		//public void CanSerializeDeserializeAddrPayload()
-		//{
-		//	CanSerializeDeserializePayload<AddrPayload>(
-		//		(p1, p2) => CollectionAssert.AreEqual(p1.IPEndPoints, p2.IPEndPoints),
-		//		p => p.IPEndPoints = new List<IPEndPoint>() { new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9999) }
-		//	);
-		//}
 
 		private void CanSerializeDeserializePayload<T>(Action<T, T> assert = null, Action<T> initialize = null) where T : class, new()
 		{
@@ -66,7 +58,6 @@ namespace NBitcoinDerive.Tests
 			WireSerialization.Instance.Pack(stream, payload);
 			stream.Position = 0;
 
-			Console.WriteLine(BitConverter.ToString(stream.GetBuffer()));
 			var deserializedPayload = WireSerialization.Instance.Unpack(stream);
 
 			Assert.That(deserializedPayload, Is.TypeOf(typeof(T)));
@@ -75,6 +66,5 @@ namespace NBitcoinDerive.Tests
 				assert(deserializedPayload as T, payload);
 			}
 		}
-
 	}
 }

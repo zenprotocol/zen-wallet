@@ -145,7 +145,7 @@ namespace NBitcoinDerive.Tests
 		}
 
 		[Test()]
-		public void CanHandshake()
+		public void CanHandshakeWithAdvertize()
 		{
 			WithServerSet(2, servers =>
 			{
@@ -162,7 +162,7 @@ namespace NBitcoinDerive.Tests
 		}
 
 		[Test()]
-		public void CanHandshake2()
+		public void CanHandshakeSimple()
 		{
 			WithServerSet(1, servers =>
 			{
@@ -252,7 +252,7 @@ namespace NBitcoinDerive.Tests
 					//}
 				};
 
-				Thread.Sleep(19000);  //TODO
+				Thread.Sleep(19000);  //TODO: use reset events instead of sleep
 
 				//throw new Exception();
 
