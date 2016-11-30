@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Consensus;
 using Microsoft.FSharp.Collections;
 
-namespace BlockChain.Tests
+namespace Compatability.Tests
 {
 	public class Util
 	{

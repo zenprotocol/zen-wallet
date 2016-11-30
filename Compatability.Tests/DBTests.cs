@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
-namespace BlockChain.Tests
+namespace Compatability.Tests
 {
 	//TOOD: benchmark compare with iBoxDb?
 
