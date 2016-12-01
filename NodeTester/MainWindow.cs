@@ -250,8 +250,6 @@ public partial class MainWindow : ResourceOwnerWindow
 
 		if (consoleWindow != null)
 		{
-			((ResourceOwnerWindow)consoleWindow).DisposeResources();
-
 			consoleWindow.Destroy();
 		}
 
@@ -283,7 +281,7 @@ public partial class MainWindow : ResourceOwnerWindow
 
 	private void OpenConsole()
 	{
-		consoleWindow = new ConsoleWindow();
+		consoleWindow = new ConsoleWindow(this);
 
 		consoleWindow.DestroyEvent += (o, args) =>
 		{

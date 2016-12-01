@@ -19,12 +19,19 @@ namespace Wallet
 		{
 		}
 
-		public void DisposeResources()
+		private void DisposeResources()
 		{
 			foreach (IDisposable disposable in disposables)
 			{
 				disposable.Dispose();
 			}
+		}
+
+		public void Dispose()
+		{
+			DisposeResources();
+
+			base.Dispose();
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace NodeTester
 		{
 		}
 			
-		public void DisposeResources() {
+		protected void DisposeResources() {
 			foreach (IDisposable disposable in disposables) {
 				disposable.Dispose ();
 			}
