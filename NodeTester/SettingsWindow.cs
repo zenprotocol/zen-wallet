@@ -1,6 +1,5 @@
 using System;
 using Gtk;
-using NodeCore;
 using Infrastructure;
 
 namespace NodeTester

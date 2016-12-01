@@ -782,7 +782,9 @@ public partial class MainWindow
 		this.notebook2.SetTabLabel(this.vbox6, this.label8);
 		this.label8.ShowAll();
 		// Container child notebook2.Gtk.Notebook+NotebookChild
-		this.transactionspane1 = null;
+		this.transactionspane1 = new global::NodeTester.TransactionsPane();
+		this.transactionspane1.Events = ((global::Gdk.EventMask)(256));
+		this.transactionspane1.Name = "transactionspane1";
 		this.notebook2.Add(this.transactionspane1);
 		global::Gtk.Notebook.NotebookChild w55 = ((global::Gtk.Notebook.NotebookChild)(this.notebook2[this.transactionspane1]));
 		w55.Position = 5;

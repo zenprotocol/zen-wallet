@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Store
 {
@@ -55,6 +56,14 @@ namespace Store
 			Trace.Read(_TableName, key);
 			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
 			return row.Exists ? new Keyed<T>(key, Unpack(row.Value, row.Key)) : null;
+		}
+
+		public IEnumerable<Keyed<T>> All(TransactionContext transactionContext)
+		{
+			foreach (var row in transactionContext.Transaction.SelectForward<byte[], byte[]>(_TableName))
+			{
+				yield return new Keyed<T>(row.Key, Unpack(row.Value, row.Key));
+			}
 		}
 
 		protected abstract byte[] Pack(T item);
