@@ -7,6 +7,7 @@ namespace Wallet
 {
 	class Program
 	{
+		public static Window temp; //TODO: remove
 		private static App _App;
 
 		public static void Main(string[] args)

@@ -28,6 +28,7 @@ namespace Wallet
 			{
 
 				_MainWindow = new MainWindow();
+				Program.temp = _MainWindow; //TODO: remove
 				_MainWindow.Show();
 
 				_Node = new NodeManager();
