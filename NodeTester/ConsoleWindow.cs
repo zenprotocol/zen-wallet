@@ -5,17 +5,16 @@ using Infrastructure.TestingGtk;
 
 namespace NodeTester
 {
-	public partial class ConsoleWindow : ResourceOwnerWindow
+	public partial class ConsoleWindow : Window
 	{
-		public ConsoleWindow () :
+		public ConsoleWindow (IResourceOwner resourceOwner) :
 			base (Gtk.WindowType.Toplevel)
 		{
 			this.Build ();
 
 			textviewConsole.SizeAllocated += new SizeAllocatedHandler(ScrollToEnd);
 
-
-			OwnResource (MessageProducer<ConsoleMessage>.Instance.AddMessageListener (new EventLoopMessageListener<ConsoleMessage> (ConsoleMessage => {
+			resourceOwner.OwnResource (MessageProducer<ConsoleMessage>.Instance.AddMessageListener (new EventLoopMessageListener<ConsoleMessage> (ConsoleMessage => {
 				Gtk.Application.Invoke (delegate {
 					textviewConsole.Buffer.Insert(textviewConsole.Buffer.EndIter, ConsoleMessage.Text);
 				});
@@ -24,7 +23,6 @@ namespace NodeTester
 
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 		{
-			DisposeResources ();
 		}
 
 		protected void Button_Clear (object sender, EventArgs e)

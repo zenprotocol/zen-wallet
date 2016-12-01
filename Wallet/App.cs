@@ -33,7 +33,7 @@ namespace Wallet
 
 				_Node = new NodeManager();
 
-				var consoleWindow = new ConsoleWindow();
+				var consoleWindow = new ConsoleWindow(_MainWindow);
 
 				consoleWindow.DestroyEvent += (o, args) =>
 				{
