@@ -37,47 +37,50 @@ namespace BlockChain
 			));
 		}
 
-		public enum HandleNewBlockResult
+		public bool HandleNewBlock(Types.Block block) //TODO: use Keyed type
 		{
-			Rejected,
-			Accepeted,
-			AddedOrpan,
-		}
-
-		public HandleNewBlockResult HandleNewBlock(Types.Block block) //TODO: use Keyed type
-		{
-			var keyedBlock = new Keyed<Types.Block>(Merkle.blockHasher.Invoke(block), block);
+			var _block = new Keyed<Types.Block>(Merkle.blockHasher.Invoke(block), block);
 
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				if (_MainBlockStore.ContainsKey(context, keyedBlock.Key) ||
-					_BranchBlockStore.ContainsKey(context, keyedBlock.Key) ||
-					_OrphanBlockStore.ContainsKey(context, keyedBlock.Key))
-				{
-					return HandleNewBlockResult.Rejected;
-				}
+				//var result = new BlockChainAddBlockOperation(
+				//	context,
+				//	new Keyed<Types.Block>(Merkle.blockHasher.Invoke(block), block),
+				//	_TxMempool
+				//).Start();
 
-				var parent = keyedBlock.Value.header.parent;
+				//return result;
 
-				if (!_MainBlockStore.ContainsKey(context, parent) &&
-					!_BranchBlockStore.ContainsKey(context, parent))
-				{
-					_OrphanBlockStore.Put(context, keyedBlock);
-					context.Commit();
-					return HandleNewBlockResult.AddedOrpan;
-				}
-				else 
-				{
-					_MainBlockStore.Put(context, keyedBlock);
-					//_TxStore.Put(context, block.transactions.ToArray());
-					////TODO: fix that. difficulty is not computed recursively
-					//_BlockDifficultyTable.Context(context)[key] = GetDifficultyRecursive(context, block);
+				//if (_MainBlockStore.ContainsKey(context, _block.Key) ||
+				//	_BranchBlockStore.ContainsKey(context, _block.Key) ||
+				//	_OrphanBlockStore.ContainsKey(context, _block.Key))
+				//{
+				//	return HandleNewBlockResult.Rejected;
+				//}
 
-					context.Commit();
+				//var parent = _block.Value.header.parent;
 
-					return HandleNewBlockResult.Accepeted;
-				}
+				//if (!_MainBlockStore.ContainsKey(context, parent) &&
+				//	!_BranchBlockStore.ContainsKey(context, parent))
+				//{
+				//	_OrphanBlockStore.Put(context, _block);
+				//	context.Commit();
+				//	return HandleNewBlockResult.AddedOrpan;
+				//}
+				//else 
+				//{
+				//	_MainBlockStore.Put(context, _block);
+				//	//_TxStore.Put(context, block.transactions.ToArray());
+				//	////TODO: fix that. difficulty is not computed recursively
+				//	//_BlockDifficultyTable.Context(context)[key] = GetDifficultyRecursive(context, block);
+
+				//	context.Commit();
+
+				//	return HandleNewBlockResult.Accepeted;
+				//}
 			}
+
+			return false;
 		}
 
 		public bool HandleNewTransaction(Types.Transaction transaction) //TODO: use Keyed type

@@ -28,7 +28,7 @@ namespace NodeTester
 
 		void ButtonKeyCreate_Clicked(object sender, EventArgs e)
 		{
-			Wallet.Wallet.Instance.AddKey(new Wallet.Key() { IsChange = true });
+			Wallet.core.Wallet.Instance.AddKey(new Wallet.core.Data.Key() { IsChange = true });
 			Populate(treeviewKeysUnused, false, true);
 		}
 
@@ -54,7 +54,7 @@ namespace NodeTester
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
-			Wallet.Wallet.Instance.GetKeys(used, isChange).ToList().ForEach(key =>
+			Wallet.core.Wallet.Instance.GetKeys(used, isChange).ToList().ForEach(key =>
 			{
 				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.IsChange ? "Yes" : "No");
 			});
