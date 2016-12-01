@@ -29,8 +29,16 @@ namespace Infrastructure
 
 	public class EventLoopMessageListener<T> : IMessageListener<T>, IDisposable
 	{
+#if DEBUG
+		public string _CreatorStackTrace;
+#endif
+
 		public EventLoopMessageListener(Action<T> processMessage)
 		{
+#if DEBUG
+			_CreatorStackTrace = Environment.StackTrace;
+#endif
+
 			new Thread(new ThreadStart(() =>
 				{
 					try
