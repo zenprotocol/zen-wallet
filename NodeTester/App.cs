@@ -4,7 +4,7 @@ using NodeCore;
 
 namespace NodeTester
 {
-	public class App<T> where T : ResourceOwnerWindow, new()
+	public class App<T> where T : Gtk.Window, IResourceOwner, new()
 	{
 		static App() {
 			JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeTester.json";

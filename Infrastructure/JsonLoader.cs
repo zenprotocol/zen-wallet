@@ -6,6 +6,8 @@ namespace Infrastructure
 {
 	public class JsonLoader<T> : Singleton<JsonLoader<T>> where T : class, new()
 	{
+		public event Action OnSaved;
+
 		private String _FileName = null;
 		public String FileName { 
 			set {
@@ -69,6 +71,9 @@ namespace Infrastructure
 			File.WriteAllText (_FileName, JsonConvert.SerializeObject (_Value));
 			_Corrupt = false;
 			_IsNew = false;
+
+			if (OnSaved != null)
+				OnSaved();
 		}
 
 		public void Delete() {

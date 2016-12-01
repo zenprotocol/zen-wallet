@@ -43,7 +43,7 @@
     <Compile Include="SettingsManager.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="App.cs" />
+    <Compile Include="NodeManager.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Networks.cs" />
     <Compile Include="DiscoveryManager.cs" />

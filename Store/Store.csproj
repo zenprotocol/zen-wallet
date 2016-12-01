@@ -31,6 +31,9 @@
     <Reference Include="DBreeze">
       <HintPath>..\packages\DBreeze.1.79.0\lib\net45\DBreeze.dll</HintPath>
     </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -42,6 +45,7 @@
     <Compile Include="StoredItem.cs" />
     <Compile Include="EnumerableStore.cs" />
     <Compile Include="CachingStore.cs" />
+    <Compile Include="MsgPackStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">

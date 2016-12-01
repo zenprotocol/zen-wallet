@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Testing", "I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatability.Tests", "Compatability.Tests\Compatability.Tests.csproj", "{D7156357-AC86-41BD-AF6E-14C9D545CD1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet", "Wallet\Wallet.csproj", "{237D9317-5976-41EE-A578-EABDF0B397B4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain", "BlockChain\BlockChain.csproj", "{9D566AD5-659D-4042-A5CA-F804287CA992}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store", "Store\Store.csproj", "{1D6CF29D-253C-44BB-813A-701676A1349F}"
@@ -30,6 +28,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NBitcoinDerive.Tests", "NBitcoinDerive.Tests\NBitcoinDerive.Tests.csproj", "{86E32AC1-F7B6-40FE-A6D3-F53F931A0363}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.TestingGtk", "Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj", "{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet", "Wallet\Wallet.csproj", "{6B1189D4-2B5A-4764-A1D7-6E8258730303}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.core", "Wallet.core\Wallet.core.csproj", "{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,10 +67,6 @@ Global
 		{D7156357-AC86-41BD-AF6E-14C9D545CD1D}.Debug|x86.Build.0 = Debug|Any CPU
 		{D7156357-AC86-41BD-AF6E-14C9D545CD1D}.Release|x86.ActiveCfg = Release|Any CPU
 		{D7156357-AC86-41BD-AF6E-14C9D545CD1D}.Release|x86.Build.0 = Release|Any CPU
-		{237D9317-5976-41EE-A578-EABDF0B397B4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{237D9317-5976-41EE-A578-EABDF0B397B4}.Debug|x86.Build.0 = Debug|Any CPU
-		{237D9317-5976-41EE-A578-EABDF0B397B4}.Release|x86.ActiveCfg = Release|Any CPU
-		{237D9317-5976-41EE-A578-EABDF0B397B4}.Release|x86.Build.0 = Release|Any CPU
 		{9D566AD5-659D-4042-A5CA-F804287CA992}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{9D566AD5-659D-4042-A5CA-F804287CA992}.Debug|x86.Build.0 = Debug|Any CPU
 		{9D566AD5-659D-4042-A5CA-F804287CA992}.Release|x86.ActiveCfg = Release|Any CPU
@@ -97,5 +95,13 @@ Global
 		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Debug|x86.Build.0 = Debug|Any CPU
 		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Release|x86.ActiveCfg = Release|Any CPU
 		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Release|x86.Build.0 = Release|Any CPU
+		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Debug|x86.ActiveCfg = Debug|x86
+		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Debug|x86.Build.0 = Debug|x86
+		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.ActiveCfg = Release|x86
+		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.Build.0 = Release|x86
+		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Debug|x86.Build.0 = Debug|Any CPU
+		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Release|x86.ActiveCfg = Release|Any CPU
+		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
