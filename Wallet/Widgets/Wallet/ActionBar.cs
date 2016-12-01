@@ -30,7 +30,7 @@ namespace Wallet
 			}, labelAmount, labelAmountConverted);
 
 			ButtonPressEvent (eventboxSend, () => {
-				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(null); //Program.MainWindow);
+				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(Program.temp); //TODO: fuck this.
 			});
 
 			HeightRequest = 130;
