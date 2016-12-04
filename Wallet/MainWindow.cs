@@ -29,7 +29,7 @@ namespace Wallet
 //			this.Style = style;
 
 			ModifyBg (Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
-			
+
 			Show ();
 		}
 

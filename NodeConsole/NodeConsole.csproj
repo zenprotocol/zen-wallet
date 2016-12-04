@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C5C0B292-9D72-4E82-95C9-E176C07D6DBF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>NodeConsole</RootNamespace>
+    <AssemblyName>NodeConsole</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+    <Externalconsole>true</Externalconsole>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Actions\EnsureSettingAction.cs" />
+    <Compile Include="InteractiveConsole.cs" />
+    <Compile Include="Settings.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Actions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NodeCore\NodeCore.csproj">
+      <Project>{125F2D2D-5FB6-447F-81D9-B97B1FB1DDB4}</Project>
+      <Name>NodeCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Console\Infrastructure.Console.csproj">
+      <Project>{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}</Project>
+      <Name>Infrastructure.Console</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
+      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
+      <Name>Infrastructure.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
+      <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
+      <Name>NBitcoinDerive</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+</Project>

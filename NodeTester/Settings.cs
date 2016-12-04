@@ -10,5 +10,6 @@ namespace NodeTester
 		public int MaximumNodeConnection;
 		public int ServerPort;
 		public bool AutoConfigure;
+		public bool DowngradeToLAN;
 	}
 }

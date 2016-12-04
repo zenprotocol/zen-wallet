@@ -129,7 +129,9 @@ namespace NodeTester
 				Stop ();
 			}
 
-			_Server = new Server(resourceOwner, externalEndpoint);
+			NBitcoin.Network network = TestNetwork.Instance;
+
+			_Server = new Server(resourceOwner, externalEndpoint, network);
 			WalletManager.Instance.Setup(_Server.Behaviors);
 
 

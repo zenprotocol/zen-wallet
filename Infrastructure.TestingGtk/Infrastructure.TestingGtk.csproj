@@ -33,8 +33,8 @@
     <Compile Include="MyClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IShowMessageWindow.cs" />
-    <Compile Include="ConsoleWriter.cs" />
     <Compile Include="ConsoleMessage.cs" />
+    <Compile Include="ConsoleWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
