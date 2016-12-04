@@ -60,6 +60,9 @@
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">

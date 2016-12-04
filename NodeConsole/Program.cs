@@ -39,7 +39,7 @@ namespace NodeConsole
 				Console.WriteLine("Console Tester (Seed Node)");
 				//Thread.Sleep (500);
 
-				/*
+
 				If<JsonLoader<Settings>> (JsonLoader<Settings>.Instance, s => !s.IsNew, printSettings, offerDelete);
 
 				Settings settings = JsonLoader<Settings>.Instance.Value;
@@ -48,11 +48,11 @@ namespace NodeConsole
 //				If<Settings> (settings, s => s.PeersToFind == 0, s => s.PeersToFind = GetSingle<int> ("Peers to find").Value, save);
 				If<Settings> (settings, s => string.IsNullOrEmpty(s.ExternalIPAddress), s => s.ExternalIPAddress = GetSingle<String> ("ExternalIPAddress").Value, save);
 				If<Settings> (settings, s => s.ServerPort == 0, s => s.ServerPort = GetSingle<int> ("Server Port").Value, save);
-*/
 
-				Settings settings = new Settings ();
-				settings.ExternalIPAddress = "54.187.93.213";
-				settings.ServerPort = 9999;
+
+				//Settings settings = new Settings ();
+				//settings.ExternalIPAddress = "54.187.93.213";
+				//settings.ServerPort = 9999;
 
 				if (YesNo("Start node?"))
 				{

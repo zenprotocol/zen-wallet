@@ -17,17 +17,17 @@ namespace NBitcoin.Crypto
 	public static class Hashes
 	{
 		#region Hash256
-		public static uint256 Hash256(byte[] data)
+		public static byte[] Hash256(byte[] data)
 		{
 			return Hash256(data, 0, data.Length);
 		}
 
-		public static uint256 Hash256(byte[] data, int count)
+		public static byte[] Hash256(byte[] data, int count)
 		{
 			return Hash256(data, 0, count);
 		}
 
-		public static uint256 Hash256(byte[] data, int offset, int count)
+		public static byte[] Hash256(byte[] data, int offset, int count)
 		{
 #if USEBC || WINDOWS_UWP || NETCORE
 			Sha256Digest sha256 = new Sha256Digest();
@@ -41,28 +41,12 @@ namespace NBitcoin.Crypto
 			using(var sha = new SHA256Managed())
 			{
 				var h = sha.ComputeHash(data, offset, count);
-				return new uint256(sha.ComputeHash(h, 0, h.Length));
+				return sha.ComputeHash(h, 0, h.Length);
 			}
 #endif
 		}
 		#endregion
 
-		#region Hash160
-		public static uint160 Hash160(byte[] data)
-		{
-			return Hash160(data, 0, data.Length);
-		}
-
-		public static uint160 Hash160(byte[] data, int count)
-		{
-			return Hash160(data, 0, count);
-		}
-
-		public static uint160 Hash160(byte[] data, int offset, int count)
-		{
-			return new uint160(RIPEMD160(SHA256(data, offset, count)));
-		}
-		#endregion
 
 		#region RIPEMD160
 		private static byte[] RIPEMD160(byte[] data)
@@ -178,62 +162,62 @@ namespace NBitcoin.Crypto
 				return v0 ^ v1 ^ v2 ^ v3;
 			}
 
-			public static ulong SipHashUint256(ulong k0, ulong k1, uint256 val)
-			{
-				/* Specialized implementation for efficiency */
-				ulong d = GetULong(val, 0);
+//			public static ulong SipHashUint256(ulong k0, ulong k1, byte[] val)
+//			{
+//				/* Specialized implementation for efficiency */
+//				ulong d = GetULong(val, 0);
+//
+//				ulong v0 = 0x736f6d6570736575UL ^ k0;
+//				ulong v1 = 0x646f72616e646f6dUL ^ k1;
+//				ulong v2 = 0x6c7967656e657261UL ^ k0;
+//				ulong v3 = 0x7465646279746573UL ^ k1 ^ d;
+//
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				v0 ^= d;
+//				d = GetULong(val, 1);
+//				v3 ^= d;
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				v0 ^= d;
+//				d = GetULong(val, 2);
+//				v3 ^= d;
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				v0 ^= d;
+//				d = GetULong(val, 3);
+//				v3 ^= d;
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				v0 ^= d;
+//				v3 ^= ((ulong)4) << 59;
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				v0 ^= ((ulong)4) << 59;
+//				v2 ^= 0xFF;
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				SIPROUND(ref v0, ref v1, ref v2, ref v3);
+//				return v0 ^ v1 ^ v2 ^ v3;
+//			}
 
-				ulong v0 = 0x736f6d6570736575UL ^ k0;
-				ulong v1 = 0x646f72616e646f6dUL ^ k1;
-				ulong v2 = 0x6c7967656e657261UL ^ k0;
-				ulong v3 = 0x7465646279746573UL ^ k1 ^ d;
-
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				v0 ^= d;
-				d = GetULong(val, 1);
-				v3 ^= d;
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				v0 ^= d;
-				d = GetULong(val, 2);
-				v3 ^= d;
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				v0 ^= d;
-				d = GetULong(val, 3);
-				v3 ^= d;
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				v0 ^= d;
-				v3 ^= ((ulong)4) << 59;
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				v0 ^= ((ulong)4) << 59;
-				v2 ^= 0xFF;
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				SIPROUND(ref v0, ref v1, ref v2, ref v3);
-				return v0 ^ v1 ^ v2 ^ v3;
-			}
-
-			internal static ulong GetULong(uint256 val, int position)
-			{
-				switch(position)
-				{
-					case 0:
-						return (ulong)val.pn0 + (ulong)((ulong)val.pn1 << 32);
-					case 1:
-						return (ulong)val.pn2 + (ulong)((ulong)val.pn3 << 32);
-					case 2:
-						return (ulong)val.pn4 + (ulong)((ulong)val.pn5 << 32);
-					case 3:
-						return (ulong)val.pn6 + (ulong)((ulong)val.pn7 << 32);
-					default:
-						throw new ArgumentOutOfRangeException("position should be less than 4", "position");
-				}
-			}
+//			internal static ulong GetULong(byte[] val, int position)
+//			{
+//				switch(position)
+//				{
+//					case 0:
+//						return (ulong)val.pn0 + (ulong)((ulong)val.pn1 << 32);
+//					case 1:
+//						return (ulong)val.pn2 + (ulong)((ulong)val.pn3 << 32);
+//					case 2:
+//						return (ulong)val.pn4 + (ulong)((ulong)val.pn5 << 32);
+//					case 3:
+//						return (ulong)val.pn6 + (ulong)((ulong)val.pn7 << 32);
+//					default:
+//						throw new ArgumentOutOfRangeException("position should be less than 4", "position");
+//				}
+//			}
 
 			static void SIPROUND(ref ulong v_0, ref ulong v_1, ref ulong v_2, ref ulong v_3)
 			{
@@ -254,10 +238,10 @@ namespace NBitcoin.Crypto
 			}
 		}
 
-		public static ulong SipHash(ulong k0, ulong k1, uint256 val)
-		{
-			return SipHasher.SipHashUint256(k0, k1, val);
-		}
+//		public static ulong SipHash(ulong k0, ulong k1, byte[] val)
+//		{
+//			return SipHasher.SipHashUint256(k0, k1, val);
+//		}
 
 		public static byte[] SHA1(byte[] data, int offset, int count)
 		{

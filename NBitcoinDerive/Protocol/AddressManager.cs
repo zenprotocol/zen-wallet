@@ -127,38 +127,38 @@ namespace NBitcoin.Protocol
 
 			#endregion
 
-			internal int GetNewBucket(uint256 nKey)
+			internal int GetNewBucket(byte[] nKey)
 			{
 				return GetNewBucket(nKey, Source);
 			}
 
-			internal int GetNewBucket(uint256 nKey, IPAddress src)
+			internal int GetNewBucket(byte[] nKey, IPAddress src)
 			{
 				byte[] vchSourceGroupKey = src.GetGroup();
 				UInt64 hash1 = Cheap(Hashes.Hash256(
-					nKey.ToBytes(true)
+					nKey
 					.Concat(Address.Endpoint.Address.GetGroup())
 					.Concat(vchSourceGroupKey)
 					.ToArray()));
 
 				UInt64 hash2 = Cheap(Hashes.Hash256(
-					nKey.ToBytes(true)
+					nKey
 					.Concat(vchSourceGroupKey)
 					.Concat(Utils.ToBytes(hash1 % AddressManager.ADDRMAN_NEW_BUCKETS_PER_SOURCE_GROUP, true))
 					.ToArray()));
 				return (int)(hash2 % ADDRMAN_NEW_BUCKET_COUNT);
 			}
 
-			private ulong Cheap(uint256 v)
+			private ulong Cheap(byte[] v)
 			{
-				return Utils.ToUInt64(v.ToBytes(), true);
+				return Utils.ToUInt64(v, true);
 			}
 
-			internal int GetBucketPosition(uint256 nKey, bool fNew, int nBucket)
+			internal int GetBucketPosition(byte[] nKey, bool fNew, int nBucket)
 			{
 				UInt64 hash1 = Cheap(
 					Hashes.Hash256(
-						nKey.ToBytes()
+						nKey
 						.Concat(new byte[] { (fNew ? (byte)'N' : (byte)'K') })
 						.Concat(Utils.ToBytes((uint)nBucket, false))
 						.Concat(Address.GetKey())
@@ -166,10 +166,10 @@ namespace NBitcoin.Protocol
 				return (int)(hash1 % ADDRMAN_BUCKET_SIZE);
 			}
 
-			internal int GetTriedBucket(uint256 nKey)
+			internal int GetTriedBucket(byte[] nKey)
 			{
-				UInt64 hash1 = Cheap(Hashes.Hash256(nKey.ToBytes().Concat(Address.GetKey()).ToArray()));
-				UInt64 hash2 = Cheap(Hashes.Hash256(nKey.ToBytes().Concat(Address.Endpoint.Address.GetGroup()).Concat(Utils.ToBytes(hash1 % AddressManager.ADDRMAN_TRIED_BUCKETS_PER_GROUP, true)).ToArray()));
+				UInt64 hash1 = Cheap(Hashes.Hash256(nKey.Concat(Address.GetKey()).ToArray()));
+				UInt64 hash2 = Cheap(Hashes.Hash256(nKey.Concat(Address.Endpoint.Address.GetGroup()).Concat(Utils.ToBytes(hash1 % AddressManager.ADDRMAN_TRIED_BUCKETS_PER_GROUP, true)).ToArray()));
 				return (int)(hash2 % ADDRMAN_TRIED_BUCKET_COUNT);
 			}
 
@@ -288,7 +288,7 @@ namespace NBitcoin.Protocol
 				fs.Read(hash, 0, 32);
 			}
 			var actual = Hashes.Hash256(data);
-			var expected = new uint256(hash);
+			var expected = hash;
 			if(expected != actual)
 				throw new FormatException("Invalid address manager file");
 
@@ -351,7 +351,7 @@ namespace NBitcoin.Protocol
 		private void Clear()
 		{
 			vRandom = new List<int>();
-			nKey = new uint256(RandomUtils.GetBytes(32));
+			nKey = RandomUtils.GetBytes(32);
 			vvNew = new int[ADDRMAN_NEW_BUCKET_COUNT, ADDRMAN_BUCKET_SIZE];
 			for(int i = 0; i < ADDRMAN_NEW_BUCKET_COUNT; i++)
 				for(int j = 0; j < ADDRMAN_BUCKET_SIZE; j++)
@@ -369,7 +369,7 @@ namespace NBitcoin.Protocol
 
 		byte nVersion = 1;
 		byte nKeySize = 32;
-		internal uint256 nKey;
+		internal byte[] nKey;
 		internal int nNew;
 		internal int nTried;
 		List<int> vRandom;
@@ -692,7 +692,7 @@ namespace NBitcoin.Protocol
 				return -13;
 			if(mapNew.Count != 0)
 				return -15;
-			if(nKey == null || nKey == uint256.Zero)
+			if(nKey == null || nKey == new byte[] {})
 				return -16;
 			return 0;
 		}
