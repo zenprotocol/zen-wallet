@@ -18,7 +18,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <IntermediateOutputPath></IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -212,7 +211,6 @@
     <Compile Include="Crypto\Cryptsharp\Salsa20Core.cs" />
     <Compile Include="Crypto\Cryptsharp\SCrypt.cs" />
     <Compile Include="Crypto\Cryptsharp\Security.cs" />
-    <Compile Include="Crypto\Hashes.cs" />
     <Compile Include="TraceCorrelationScope.cs" />
     <Compile Include="IpExtensions.cs" />
     <Compile Include="Network.cs" />
@@ -220,9 +218,6 @@
     <Compile Include="DataEncoders\ASCIIEncoder.cs" />
     <Compile Include="DataEncoders\Encoders.cs" />
     <Compile Include="DataEncoders\HexEncoder.cs" />
-    <Compile Include="UInt256.cs">
-      <DependentUpon>UInt256.tt</DependentUpon>
-    </Compile>
     <Compile Include="Utils\ActionDisposable.cs" />
     <Compile Include="Utils\BoundedDictionary.cs" />
     <Compile Include="Utils\ThreadSafeCollection.cs" />
@@ -241,6 +236,7 @@
     <Compile Include="Protocol\Behaviors\ByteArrayComparer.cs" />
     <Compile Include="Protocol\Serialization\WireSerialization.cs" />
     <Compile Include="Protocol\Serialization\IPEndPointSerializer.cs" />
+    <Compile Include="Crypto\Hashes.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Protocol\" />
@@ -252,10 +248,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="UInt256.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>UInt256.cs</LastGenOutput>
-    </None>
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
