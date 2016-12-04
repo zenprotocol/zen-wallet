@@ -14,6 +14,8 @@ namespace NodeTester
 
 		private global::Gtk.Button buttonClear;
 
+		private global::Gtk.Button buttonConsoleSettings;
+
 		protected virtual void Build()
 		{
 			global::Stetic.Gui.Initialize(this);
@@ -53,11 +55,22 @@ namespace NodeTester
 			w3.Position = 0;
 			w3.Expand = false;
 			w3.Fill = false;
-			this.vbox1.Add(this.hbox1);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox1]));
-			w4.Position = 1;
+			// Container child hbox1.Gtk.Box+BoxChild
+			this.buttonConsoleSettings = new global::Gtk.Button();
+			this.buttonConsoleSettings.CanFocus = true;
+			this.buttonConsoleSettings.Name = "buttonConsoleSettings";
+			this.buttonConsoleSettings.UseUnderline = true;
+			this.buttonConsoleSettings.Label = global::Mono.Unix.Catalog.GetString("Settings");
+			this.hbox1.Add(this.buttonConsoleSettings);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.buttonConsoleSettings]));
+			w4.Position = 2;
 			w4.Expand = false;
 			w4.Fill = false;
+			this.vbox1.Add(this.hbox1);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox1]));
+			w5.Position = 1;
+			w5.Expand = false;
+			w5.Fill = false;
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{

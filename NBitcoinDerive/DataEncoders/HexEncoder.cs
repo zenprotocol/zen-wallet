@@ -54,6 +54,8 @@ namespace NBitcoin.DataEncoders
 
 		static HexEncoder()
 		{
+			Console.WriteLine ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! - 1111");
+
 			var hexDigits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
 																				  'A', 'B', 'C', 'D', 'E', 'F' };
 			var hexValues = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -61,8 +63,14 @@ namespace NBitcoin.DataEncoders
 
 			var max = hexDigits.Max();
 			hexValueArray = new int[max + 1];
+
+			Console.WriteLine ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
 			for(int i = 0; i < hexValueArray.Length; i++)
 			{
+				Console.WriteLine ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + i);
+
+
 				var idx = Array.IndexOf(hexDigits, (char)i);
 				var value = -1;
 				if(idx != -1)

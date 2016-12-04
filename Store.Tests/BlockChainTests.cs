@@ -17,8 +17,8 @@ namespace BlockChain.Tests
 		{
 			WithBlockChains(1, blockChain =>
 			{
-				Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.AddedOrpan));
-				Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.Rejected));
+	//			Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.AddedOrpan));
+	//			Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.Rejected));
 			});
 		}
 

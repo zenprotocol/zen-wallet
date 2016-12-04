@@ -11,7 +11,7 @@ namespace NodeCore
 	public class AddressManager : Singleton<AddressManager>
 	{
 //		LogMessageContext LogMessageContext = new LogMessageContext("Address Manager");
-		Network network = TestNetwork.Instance;
+//		Network network = TestNetwork.Instance;
 		String addressManagerFile = "test.dat";
 		NBitcoin.Protocol.AddressManager addressManager = null;
 
@@ -22,7 +22,7 @@ namespace NodeCore
 //				LogMessageContext.Create ("Loaded " + Count() + " address(es)");
 			} else {
 				addressManager = new NBitcoin.Protocol.AddressManager ();
-				addressManager.SavePeerFile (addressManagerFile, network);
+//				addressManager.SavePeerFile (addressManagerFile, network);
 //				LogMessageContext.Create ("Created");
 			}
 		}
@@ -38,7 +38,7 @@ namespace NodeCore
 		}
 
 		public void Save() {
-			addressManager.SavePeerFile (addressManagerFile, network);
+//			addressManager.SavePeerFile (addressManagerFile, network);
 //			LogMessageContext.Create ("Saved");
 		}
 

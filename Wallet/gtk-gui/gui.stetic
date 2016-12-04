@@ -376,7 +376,7 @@
               <placeholder />
             </child>
             <child>
-              <widget class="Gtk.Image" id="image1">
+              <widget class="Gtk.Image" id="imageLogo">
                 <property name="MemberName" />
                 <property name="Pixbuf">resource:Wallet.Assets.logosmall.png</property>
               </widget>

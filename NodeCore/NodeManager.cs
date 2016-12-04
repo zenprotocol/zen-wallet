@@ -4,11 +4,17 @@ using System.Threading.Tasks;
 
 namespace NodeCore
 {
-	public class NodeManager
+	public interface INodeManager
+	{
+		Task Start(IResourceOwner resourceOwner, NBitcoin.Network network);
+		void Stop();
+	}
+
+	public class NodeManager : INodeManager
 	{
 		private Server _Server = null;
 		
-		public async Task Start (IResourceOwner resourceOwner)
+		public async Task Start (IResourceOwner resourceOwner, NBitcoin.Network network)
 		{
 			await NATManager.Instance.Init ().ContinueWith (t => {
 				var Settings = JsonLoader<Settings>.Instance.Value;
@@ -19,7 +25,7 @@ namespace NodeCore
 
 					var ipEndpoint = new System.Net.IPEndPoint(NATManager.Instance.ExternalIPAddress, Settings.ServerPort);
 
-					_Server = new Server(resourceOwner, ipEndpoint);
+					_Server = new Server(resourceOwner, ipEndpoint, network);
 
 					if (_Server.Start())
 					{
