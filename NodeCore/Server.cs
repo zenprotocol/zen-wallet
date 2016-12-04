@@ -20,11 +20,9 @@ namespace NodeCore
 			}
 		}
 
-		public Server(IResourceOwner resourceOwner, IPEndPoint ExternalEndpoint)
+		public Server(IResourceOwner resourceOwner, IPEndPoint externalEndpoint, NBitcoin.Network network)
 		{
-			NBitcoin.Network network = TestNetwork.Instance;
-
-			_Server = new NodeServer(network, internalPort: JsonLoader<Settings>.Instance.Value.ServerPort);
+			_Server = new NodeServer(network, internalPort: externalEndpoint.Port);
 			resourceOwner.OwnResource(_Server);
 
 			NodeConnectionParameters nodeConnectionParameters = new NodeConnectionParameters();
@@ -34,9 +32,9 @@ namespace NodeCore
 
 			_Server.InboundNodeConnectionParameters = nodeConnectionParameters;
 			_Server.AllowLocalPeers = true; //TODO
-			_Server.ExternalEndpoint = ExternalEndpoint;
+			_Server.ExternalEndpoint = externalEndpoint;
 
-			Trace.Information($"Server setup at {ExternalEndpoint}");
+			Trace.Information($"Server setup at {externalEndpoint}");
 		}
 
 		public bool Start()

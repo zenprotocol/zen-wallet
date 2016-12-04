@@ -104,6 +104,7 @@
     <Compile Include="gtk-gui\NodeTester.TransactionsPane.cs" />
     <Compile Include="BlockChainManager.cs" />
     <Compile Include="WalletManager.cs" />
+    <Compile Include="LanNodeManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

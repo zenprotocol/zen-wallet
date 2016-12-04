@@ -8,7 +8,7 @@ namespace Wallet
 
 		private global::Gtk.HBox hbox4;
 
-		private global::Gtk.Image image1;
+		private global::Gtk.Image imageLogo;
 
 		private global::Wallet.MainMenu MainMenu1;
 
@@ -35,11 +35,11 @@ namespace Wallet
 			this.hbox4.Homogeneous = true;
 			this.hbox4.Spacing = 6;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.image1 = new global::Gtk.Image();
-			this.image1.Name = "image1";
-			this.image1.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.logosmall.png");
-			this.hbox4.Add(this.image1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.image1]));
+			this.imageLogo = new global::Gtk.Image();
+			this.imageLogo.Name = "imageLogo";
+			this.imageLogo.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.logosmall.png");
+			this.hbox4.Add(this.imageLogo);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.imageLogo]));
 			w1.Position = 1;
 			w1.Expand = false;
 			w1.Fill = false;

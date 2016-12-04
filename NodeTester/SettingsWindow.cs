@@ -20,6 +20,7 @@ namespace NodeTester
 			entryServerPort.Text = "" + JsonLoader<Settings>.Instance.Value.ServerPort;
 		//	entryExternalEndpoint.Text = JsonLoader<Settings>.Instance.Value.ExternalEndpoint;
 			checkbuttonAutoConfigure.Active = JsonLoader<Settings>.Instance.Value.AutoConfigure;
+			checkbuttonDowngradeToLAN.Active = JsonLoader<Settings>.Instance.Value.DowngradeToLAN;
 		}
 			
 		private void InitSeedsTreeView(TreeView treeView) {
@@ -81,6 +82,7 @@ namespace NodeTester
 			}
 
 			JsonLoader<Settings>.Instance.Value.AutoConfigure = checkbuttonAutoConfigure.Active;
+			JsonLoader<Settings>.Instance.Value.DowngradeToLAN = checkbuttonDowngradeToLAN.Active;
 
 			JsonLoader<Settings>.Instance.Save ();
 			Destroy ();

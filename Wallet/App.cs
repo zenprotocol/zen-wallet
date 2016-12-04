@@ -6,27 +6,34 @@ using NodeTester;
 
 namespace Wallet
 {
-	public class App
+	public class App : Singleton<App>
 	{
 		private ResourceOwnerWindow _MainWindow;
+		private INodeManager _Node;
 
-		private NodeManager _Node;
-
-		static App() {
+		public App()
+		{
 			JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeCore.Settings.json";
 			JsonLoader<NodeTester.Settings>.Instance.FileName = "NodeTester.Settings.json";
+
+			GLib.ExceptionManager.UnhandledException += (GLib.UnhandledExceptionArgs e) =>
+			{
+				Console.WriteLine(e.ExceptionObject as Exception);
+			};
+
+			System.Threading.Thread.GetDomain().UnhandledException += (object sender, UnhandledExceptionEventArgs e) =>
+			{
+				Console.WriteLine(e.ExceptionObject as Exception);
+			};
 		}
 
-		public static App Create()
+		public void Start()
 		{
-			return new App();
-		}
+			Gtk.Application.Init();
 
-		private App()
-		{
 			using (var consoleWriter = ConsoleMessage.Out)
 			{
-
+				
 				_MainWindow = new MainWindow();
 				Program.temp = _MainWindow; //TODO: remove
 				_MainWindow.Show();
@@ -35,28 +42,38 @@ namespace Wallet
 
 				var consoleWindow = new ConsoleWindow(_MainWindow);
 
-				consoleWindow.DestroyEvent += (o, args) =>
-				{
-					consoleWindow = null;
-				//	DisposeResources(); //WTF??
-				};
-
+				consoleWindow.OnSettingsClicked += OpenSettings;
 				consoleWindow.Show();
 
-				JsonLoader<NodeTester.Settings>.Instance.OnSaved += async () =>
-				{
-					await _Node.Start(_MainWindow);
-				};
+				JsonLoader<NodeTester.Settings>.Instance.OnSaved += StartNode;
 
 				if (JsonLoader<NodeTester.Settings>.Instance.IsNew)
 				{
-					new SettingsWindow().Show();
+					OpenSettings(); // temp
 				}
 				else
 				{
-					_Node.Start(_MainWindow);
+					StartNode();
 				}
 			}
+
+			Gtk.Application.Run();
+		}
+
+		public void OpenSettings()
+		{
+			new SettingsWindow();
+		}
+
+		private async void StartNode()
+		{
+#if DEBUG
+			if (JsonLoader<NodeTester.Settings>.Instance.Value.DowngradeToLAN)
+			{
+				_Node = new LanNodeManager();
+			}
+#endif
+			await _Node.Start(_MainWindow, NodeCore.TestNetwork.Instance);
 		}
 
 		public void Close()

@@ -7,6 +7,43 @@ using NodeCore;
 
 namespace NodeCore
 {
+	public class BetaNetwork : Singleton<BetaNetwork>, Network
+	{
+		private const uint MAGIC = 1; //TODO
+
+		public int DefaultPort
+		{
+			get
+			{
+				return 9999;
+			}
+		}
+
+		public IEnumerable<DNSSeedData> DNSSeeds
+		{
+			get
+			{
+				return new List<DNSSeedData>();
+			}
+		}
+
+		public uint Magic
+		{
+			get
+			{
+				return MAGIC;
+			}
+		}
+
+		public IEnumerable<NetworkAddress> SeedNodes
+		{
+			get
+			{
+				return new List<NetworkAddress>();
+			}
+		}
+	}
+
 	public class TestNetwork : Singleton<TestNetwork>, Network
 	{
 		private const uint MAGIC = 1; //TODO

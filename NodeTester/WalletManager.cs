@@ -37,8 +37,8 @@ namespace NodeTester
 
 		public void Setup(NodeBehaviorsCollection nodeBehaviorsCollection)
 		{
-			nodeBehaviorsCollection.Add(_BroadcastHubBehavior);
-			nodeBehaviorsCollection.Add(_SPVBehavior);
+		//	nodeBehaviorsCollection.Add(_BroadcastHubBehavior);
+		//	nodeBehaviorsCollection.Add(_SPVBehavior);
 		}
 	}
 }

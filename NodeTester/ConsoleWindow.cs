@@ -7,6 +7,8 @@ namespace NodeTester
 {
 	public partial class ConsoleWindow : Window
 	{
+		public System.Action OnSettingsClicked;
+
 		public ConsoleWindow (IResourceOwner resourceOwner) :
 			base (Gtk.WindowType.Toplevel)
 		{
@@ -19,6 +21,14 @@ namespace NodeTester
 					textviewConsole.Buffer.Insert(textviewConsole.Buffer.EndIter, ConsoleMessage.Text);
 				});
 			})));
+
+			buttonConsoleSettings.Clicked += (sender, e) =>
+			{
+				if (OnSettingsClicked != null)
+				{
+					OnSettingsClicked();
+				}
+			};
 		}
 
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
