@@ -231,7 +231,6 @@
     <Compile Include="Protocol\InventoryVector.cs" />
     <Compile Include="Protocol\Payloads\InvPayload.cs" />
     <Compile Include="Protocol\Payloads\GetDataPayload.cs" />
-    <Compile Include="Protocol\Payloads\TxPayload.cs" />
     <Compile Include="Protocol\Behaviors\SPVBehavior.cs" />
     <Compile Include="Protocol\Behaviors\ByteArrayComparer.cs" />
     <Compile Include="Protocol\Serialization\WireSerialization.cs" />

@@ -14,7 +14,7 @@ namespace NodeCore
 	{
 		private Server _Server = null;
 		
-		public async Task Start (IResourceOwner resourceOwner, NBitcoin.Network network)
+		public async Task Start(IResourceOwner resourceOwner, NBitcoin.Network network)
 		{
 			await NATManager.Instance.Init ().ContinueWith (t => {
 				var Settings = JsonLoader<Settings>.Instance.Value;
