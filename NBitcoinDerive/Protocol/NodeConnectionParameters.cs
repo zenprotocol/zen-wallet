@@ -39,7 +39,7 @@ namespace NBitcoin.Protocol
 			AddressFrom = other.AddressFrom;
 			IsTrusted = other.IsTrusted;
 			Nonce = other.Nonce;
-			Advertize = other.Advertize;
+		//	Advertize = other.Advertize;
 			ReuseBuffer = other.ReuseBuffer;
 
 			foreach(var behavior in other.TemplateBehaviors)
@@ -51,11 +51,11 @@ namespace NBitcoin.Protocol
 		/// <summary>
 		/// Send addr unsollicited message of the AddressFrom peer when passing to Handshaked state
 		/// </summary>
-		public bool Advertize
-		{
-			get;
-			set;
-		}
+//		public bool Advertize
+//		{
+//			get;
+//			set;
+//		}
 		public ProtocolVersion Version
 		{
 			get;

@@ -46,6 +46,7 @@ namespace NodeTester
 			if (nodesGroup != null) {
 				nodesGroup.Dispose ();
 				Trace.Information ("Discovery stopped");
+				PushMessage (new StoppedMessage ()); 
 			}
 		}
 
@@ -53,7 +54,7 @@ namespace NodeTester
 			stopWatcherThread = true;
 		}
 
-		public void Start (IResourceOwner resourceOwner, IPAddress ExternalIPAddress = null) {
+		public void Start (IResourceOwner resourceOwner, IPAddress ExternalIPAddress) {
 			if (IsRunning) {
 				Stop ();
 			}
@@ -69,14 +70,17 @@ namespace NodeTester
 			addressManager.PeersToFind = Settings.PeersToFind;
 
 			NodeConnectionParameters parameters = new NodeConnectionParameters();
-			parameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+			var addressManagerBehavior = new AddressManagerBehavior (addressManager);
+			parameters.TemplateBehaviors.Add(addressManagerBehavior);
 
 			WalletManager.Instance.Setup(parameters.TemplateBehaviors);
 
-			if (ExternalIPAddress != null)
-			{
-				parameters.Advertize = true;
-				parameters.AddressFrom = new IPEndPoint(ExternalIPAddress, JsonLoader<Settings>.Instance.Value.ServerPort);
+			if (ExternalIPAddress != null) {
+				//		parameters.Advertize = true;
+				addressManagerBehavior.Mode = AddressManagerBehaviorMode.AdvertizeDiscover;
+				parameters.AddressFrom = new IPEndPoint (ExternalIPAddress, JsonLoader<Settings>.Instance.Value.ServerPort);
+			} else {
+				addressManagerBehavior.Mode = AddressManagerBehaviorMode.Discover;
 			}
 
 			nodesGroup = new NodesGroup(network, parameters);

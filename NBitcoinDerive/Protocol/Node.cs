@@ -749,7 +749,7 @@ namespace NBitcoin.Protocol
 		private void InitDefaultBehaviors(NodeConnectionParameters parameters)
 		{
 			IsTrusted = parameters.IsTrusted != null ? parameters.IsTrusted.Value : Peer.Endpoint.Address.IsLocal();
-			Advertize = parameters.Advertize;
+		//	Advertize = parameters.Advertize;
 		//	PreferredTransactionOptions = parameters.PreferredTransactionOptions;
 			_ReuseBuffer = parameters.ReuseBuffer;
 
