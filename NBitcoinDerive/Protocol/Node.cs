@@ -180,7 +180,7 @@ namespace NBitcoin.Protocol
 									NodeServerTrace.Transfer(TraceCorrelation.Activity);
 									Trace.CorrelationManager.ActivityId = TraceCorrelation.Activity;
 								}
-								NodeServerTrace.Verbose("Sending payload " + payload + " to " + Node.RemoteSocketAddress + ":" + Node.RemoteSocketPort);
+								NodeServerTrace.Verbose("Sending " + payload + " to " + Node.RemoteSocketAddress + ":" + Node.RemoteSocketPort);
 							}
 
 							var bytes = WireSerialization.Instance.Pack(payload);
@@ -249,7 +249,7 @@ namespace NBitcoin.Protocol
 								var payload = WireSerialization.Instance.Unpack(stream);
 
 								if(NodeServerTrace.Trace.Switch.ShouldTrace(TraceEventType.Verbose))
-									NodeServerTrace.Verbose("Receiving payload : " + payload + " from " + _Node.RemoteSocketAddress + ":" + _Node.RemoteSocketPort + " to " + Node.MyVersion.AddressFrom);
+									NodeServerTrace.Verbose("Receiving " + payload + " from " + _Node.RemoteSocketAddress + ":" + _Node.RemoteSocketPort + " to " + Node.MyVersion.AddressFrom);
 								Node.LastSeen = DateTimeOffset.UtcNow;
 								//Node.Counter.Add(counter);
 								Node.OnMessageReceived(new IncomingMessage(payload)

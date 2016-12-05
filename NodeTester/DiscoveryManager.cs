@@ -114,15 +114,6 @@ namespace NodeTester
 			}).Start ();
 			resourceOwner.OwnResource (this); //only to stop the thread
 		}
-
-		public void SendTransaction(/*Consensus.Types.Transaction transaction*/)
-		{
-			Console.WriteLine("sending a transaction");
-
-			var hub = BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters);
-
-			hub.BroadcastTransactionAsync(Consensus.Tests.tx);
-		}
 	}
 }
 

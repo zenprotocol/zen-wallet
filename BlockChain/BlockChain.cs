@@ -31,7 +31,8 @@ namespace BlockChain
 
 			OwnResource(_DBContext);
 			OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
-				new EventLoopMessageListener<TxMempool.AddedMessage>(m => {
+				new EventLoopMessageListener<TxMempool.AddedMessage>(m =>
+				{
 					OnAddedToMempool(m.Transaction.Value);
 				})
 			));
@@ -103,6 +104,17 @@ namespace BlockChain
 				//	case BlockChainAddTransactionOperation.Result.Rejected:
 				//		break;
 				//}
+			}
+		}
+
+		public Types.Transaction GetTransaction(byte[] key) //TODO: make concurrent
+		{
+			if (_TxMempool.ContainsKey(key))
+			{
+				return _TxMempool.Get(key).Value;
+			}
+			else {
+				return null;
 			}
 		}
 

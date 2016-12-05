@@ -23,6 +23,11 @@ namespace NodeConsole
 			var blockChain = new BlockChain.BlockChain("db");
 			OwnResource(blockChain);
 
+			blockChain.OnAddedToMempool += transaction =>
+			{
+				Console.WriteLine("\n** Got Transaction **\n");
+			};
+
 			var server = new Server(this, ipEndpoint, BetaNetwork.Instance);
 
 			var addressManager = new NBitcoin.Protocol.AddressManager();
@@ -31,11 +36,12 @@ namespace NodeConsole
 				ipEndpoint.Address
 			);
 
-			addressManager.Good (new NetworkAddress (ipEndpoint));
+			addressManager.Connected (new NetworkAddress (ipEndpoint));
 				
 			server.Behaviors.Add(new AddressManagerBehavior (addressManager));
-			server.Behaviors.Add(new BroadcastHubBehavior());
-			server.Behaviors.Add(new SPVBehavior(blockChain));
+			var broadcastHubBehavior = new BroadcastHubBehavior();
+			server.Behaviors.Add(broadcastHubBehavior);
+			server.Behaviors.Add(new SPVBehavior(blockChain, broadcastHubBehavior.BroadcastHub));
 
 			server.Start();
 		}
@@ -45,7 +51,7 @@ namespace NodeConsole
 	{
 		public static void Main(string[] args)
 		{
-			System.Threading.Thread.GetDomain().UnhandledException += (object sender, UnhandledExceptionEventArgs e) =>
+			Thread.GetDomain().UnhandledException += (object sender, UnhandledExceptionEventArgs e) =>
 			{
 				Console.WriteLine(e.ExceptionObject as Exception);
 			};
@@ -75,24 +81,24 @@ namespace NodeConsole
 				If<Settings> (settings, s => string.IsNullOrEmpty(s.ExternalIPAddress), s => s.ExternalIPAddress = GetSingle<String> ("ExternalIPAddress").Value, save);
 				If<Settings> (settings, s => s.ServerPort == 0, s => s.ServerPort = GetSingle<int> ("Server Port").Value, save);
 
-				var thread = new Thread (() => {
-					while (true) {
-						Thread.Sleep (15000);
-						WriteLine ("running. press 'Y' to stop.");
-					}
-				});
+//				var thread = new Thread (() => {
+//					while (true) {
+//						Thread.Sleep (15000);
+//						WriteLine ("running. press 'Y' to stop.");
+//					}
+//				});
 
 				if (YesNo("Start node?"))
 				{
 					var consoleNode = new ConsoleNode();
-					thread.Start();
+					//thread.Start();
 
 					while (!YesNo ("Stop node?")) {
 					}
 
 					consoleNode.Dispose();
 					consoleNode = null;
-					thread.Abort();
+					//thread.Abort();
 				}
 
 				if (YesNo ("Quit?")) {
