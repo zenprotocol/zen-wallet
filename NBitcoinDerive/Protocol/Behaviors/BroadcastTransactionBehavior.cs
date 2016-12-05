@@ -162,14 +162,18 @@ namespace NBitcoin.Protocol.Behaviors
 
 	public class BroadcastHubBehavior : NodeBehavior
 	{
+		//private BlockChain.BlockChain _BlockChain;
+
 		ConcurrentDictionary<byte[], TransactionBroadcast> _HashToTransaction = new ConcurrentDictionary<byte[], TransactionBroadcast>(new ByteArrayComparer());
 		ConcurrentDictionary<ulong, TransactionBroadcast> _PingToTransaction = new ConcurrentDictionary<ulong, TransactionBroadcast>();
 
-		public BroadcastHubBehavior()
+		public BroadcastHubBehavior(/*BlockChain.BlockChain blockChain*/)
 		{
 			_BroadcastHub = new BroadcastHub();
+			//_BlockChain = blockChain;
 		}
-		public BroadcastHubBehavior(BroadcastHub hub)
+
+		public BroadcastHubBehavior(BroadcastHub hub/*, BlockChain.BlockChain blockChain*/)
 		{
 			_BroadcastHub = hub ?? new BroadcastHub();
 			foreach (var tx in _BroadcastHub.BroadcastedTransaction)
@@ -333,6 +337,12 @@ namespace NBitcoin.Protocol.Behaviors
 				foreach (var inventory in getData.Inventory.Where(i => i.Type == InventoryType.MSG_TX))
 				{
 					var tx = GetTransaction(inventory.Hash, false);
+
+					//if (tx == null)
+					//{
+					//	tx = _BlockChain.GetTransaction(inventory.Hash);
+					//}
+
 					if (tx != null)
 					{
 						tx.State = BroadcastState.Broadcasted;
@@ -362,7 +372,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		public override object Clone()
 		{
-			return new BroadcastHubBehavior(_BroadcastHub);
+			return new BroadcastHubBehavior(_BroadcastHub /*, _BlockChain*/);
 		}
 
 		public IEnumerable<TransactionBroadcast> Broadcasts

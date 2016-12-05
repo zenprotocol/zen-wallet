@@ -30,6 +30,11 @@ namespace NBitcoin.Protocol
 				return inventory;
 			}
 		}
+
+		public override string ToString()
+		{
+			return "GetData";
+		}
 	}
 }
 
