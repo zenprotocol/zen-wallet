@@ -13,6 +13,7 @@ namespace NBitcoin.Protocol.Behaviors
 	{
 		//private Action<Types.Transaction> _NewTransactionHandler;
 		private BlockChain.BlockChain _BlockChain;
+		private BroadcastHub _BroadcastHub;
 
 		//demo
 		private byte[] GetHash(Types.Transaction transaction)
@@ -20,10 +21,11 @@ namespace NBitcoin.Protocol.Behaviors
 			return Merkle.transactionHasher.Invoke(transaction);
 		}
 
-		public SPVBehavior(/*Action<Types.Transaction> newTransactionHandler*/ BlockChain.BlockChain blockChain)
+		public SPVBehavior(/*Action<Types.Transaction> newTransactionHandler*/ BlockChain.BlockChain blockChain, BroadcastHub broadcastHub)
 		{
 			//this._NewTransactionHandler = newTransactionHandler;
 			_BlockChain = blockChain;
+			_BroadcastHub = broadcastHub;
 		}
 
 		protected override void AttachCore()
@@ -81,9 +83,34 @@ namespace NBitcoin.Protocol.Behaviors
 			//	}
 			//}
 
-			message.IfPayloadIs<InvPayload>(invs =>
+			message.IfPayloadIs<InvPayload>(invPayload =>
 			{
-				node.SendMessageAsync(new GetDataPayload(invs.ToArray()));
+				var list = new List<InventoryVector>();
+
+				foreach (var item in invPayload.Where(i => i.Type == InventoryType.MSG_TX))
+				{
+					var tx = _BlockChain.GetTransaction(item.Hash);
+
+					if (tx == null)
+					{
+						list.Add(item);
+					}
+				}
+
+				node.SendMessageAsync(new GetDataPayload(list.ToArray()));
+			});
+
+			message.IfPayloadIs<GetDataPayload>(getData =>
+			{
+				foreach (var inventory in getData.Inventory.Where(i => i.Type == InventoryType.MSG_TX))
+				{
+					var tx = _BlockChain.GetTransaction(inventory.Hash);
+
+					if (tx != null)
+					{
+						_BroadcastHub.BroadcastTransactionAsync(tx);
+					}
+				}
 			});
 
 			message.IfPayloadIs<Types.Transaction>(tx =>
@@ -168,7 +195,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		public override object Clone()
 		{
-			var behavior = new SPVBehavior(_BlockChain);
+			var behavior = new SPVBehavior(_BlockChain, _BroadcastHub);
 		//	behavior._Blocks = _Blocks;
 			behavior._Transactions = _Transactions;
 			behavior._ReceivedTransactions = _ReceivedTransactions;

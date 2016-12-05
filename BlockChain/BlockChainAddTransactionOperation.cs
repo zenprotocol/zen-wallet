@@ -90,12 +90,20 @@ namespace BlockChain
 
 		private bool IsInMempool()
 		{
-			return _TxMempool.ContainsKey(_NewTransaction.Key);
+			var result = _TxMempool.ContainsKey(_NewTransaction.Key);
+
+			BlockChainTrace.Information($"IsInMempool = {result}");
+
+			return result;
 		}
 
 		private bool IsInTxStore()
 		{
-			return _TxStore.ContainsKey(_TransactionContext, _NewTransaction.Key);
+			var result = _TxStore.ContainsKey(_TransactionContext, _NewTransaction.Key);
+
+			BlockChainTrace.Information($"IsInTxStore = {result}");
+
+			return result;
 		}
 
 		private bool IsMempoolContainsSpendingInput()
