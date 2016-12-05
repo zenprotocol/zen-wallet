@@ -28,7 +28,9 @@ namespace NodeCore
 			NodeConnectionParameters nodeConnectionParameters = new NodeConnectionParameters();
 			NBitcoin.Protocol.AddressManager addressManager = AddressManager.Instance.GetBitcoinAddressManager(); // new NBitcoin.Protocol.AddressManager ();
 
-			nodeConnectionParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+			var addressManagerBehavior = new AddressManagerBehavior (addressManager);
+		//	addressManagerBehavior.Mode = hasExternal ? AddressManagerBehaviorMode.AdvertizeDiscover : AddressManagerBehaviorMode.Discover;
+			nodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
 			_Server.InboundNodeConnectionParameters = nodeConnectionParameters;
 			_Server.AllowLocalPeers = true; //TODO
