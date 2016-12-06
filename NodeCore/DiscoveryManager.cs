@@ -42,12 +42,19 @@
 //			addressManager.PeersToFind = Settings.PeersToFind;
 
 //			NodeConnectionParameters parameters = new NodeConnectionParameters();
-//			parameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+//			var addressManagerBehavior = new AddressManagerBehavior(addressManager);
+//			parameters.TemplateBehaviors.Add(addressManagerBehavior);
 
+//			WalletManager.Instance.Setup(parameters.TemplateBehaviors);
+	
 //			if (ExternalIPAddress != null)
 //			{
-//				parameters.Advertize = true;
+//				//		parameters.Advertize = true;
+//				addressManagerBehavior.Mode = AddressManagerBehaviorMode.AdvertizeDiscover;
 //				parameters.AddressFrom = new IPEndPoint(ExternalIPAddress, JsonLoader<Settings>.Instance.Value.ServerPort);
+//			}
+//			else {
+//				addressManagerBehavior.Mode = AddressManagerBehaviorMode.Discover;
 //			}
 
 //			nodesGroup = new NodesGroup(network, parameters);
