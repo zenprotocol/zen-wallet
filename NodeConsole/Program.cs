@@ -30,7 +30,10 @@ namespace NodeConsole
 
 			var server = new Server(this, ipEndpoint, BetaNetwork.Instance);
 
-			var addressManager = new NBitcoin.Protocol.AddressManager();
+
+			var addressManagerBehavior = server.Behaviors.Find<AddressManagerBehavior>();
+
+			var addressManager = addressManagerBehavior.AddressManager;
 			addressManager.Add(
 				new NetworkAddress(ipEndpoint),
 				ipEndpoint.Address
@@ -38,7 +41,6 @@ namespace NodeConsole
 
 			addressManager.Connected (new NetworkAddress (ipEndpoint));
 				
-			server.Behaviors.Add(new AddressManagerBehavior (addressManager));
 			var broadcastHubBehavior = new BroadcastHubBehavior();
 			server.Behaviors.Add(broadcastHubBehavior);
 			server.Behaviors.Add(new SPVBehavior(blockChain, broadcastHubBehavior.BroadcastHub));

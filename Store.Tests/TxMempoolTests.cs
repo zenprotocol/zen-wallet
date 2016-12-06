@@ -109,11 +109,11 @@ namespace BlockChain.Tests
 
 			var mempool = new TxMempool();
 
-			Assert.IsFalse(mempool.GetOrphanedsOf(p["parent"]).Contains(p["orphan"]));
+			Assert.IsFalse(mempool.GetOrphansOf(p["parent"]).Contains(p["orphan"]));
 
 			mempool.Add(p["orphan"], true);
 
-			Assert.IsTrue(mempool.GetOrphanedsOf(p["parent"]).Contains(p["orphan"]));
+			Assert.IsTrue(mempool.GetOrphansOf(p["parent"]).Contains(p["orphan"]));
 		}
 	}
 }

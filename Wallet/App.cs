@@ -1,8 +1,8 @@
 using System;
 using Infrastructure;
 using Infrastructure.TestingGtk;
-using NodeCore;
 using NodeTester;
+using Wallet.core;
 
 namespace Wallet
 {
@@ -67,12 +67,12 @@ namespace Wallet
 
 		private async void StartNode()
 		{
-#if DEBUG
-			if (JsonLoader<NodeTester.Settings>.Instance.Value.DowngradeToLAN)
-			{
-				_Node = new LanNodeManager();
-			}
-#endif
+//#if DEBUG
+//			if (JsonLoader<NodeTester.Settings>.Instance.Value.DowngradeToLAN)
+//			{
+//				_Node = new LanNodeManager();
+//			}
+//#endif
 			await _Node.Start(_MainWindow, NodeCore.TestNetwork.Instance);
 		}
 

@@ -35,14 +35,34 @@ namespace Wallet
 		}
 
 		public void Next() {
-			senddialogstep2.Waiting = true;
-			SetContent(senddialogstep2);
+			//senddialogstep2.Waiting = true;
+			//SetContent(senddialogstep2);
 
-			WalletController.GetInstance().SendStub.RequestSend("1",1,"1",1).ContinueWith(Action => {
-				Gtk.Application.Invoke(delegate {
-					senddialogstep2.Waiting = false;
-				});
-			});
+			//WalletController.GetInstance().SendStub.RequestSend("1",1,"1",1).ContinueWith(Action => {
+			//	Gtk.Application.Invoke(delegate {
+			//		senddialogstep2.Waiting = false;
+			//	});
+			//});
+
+			try
+			{
+				//String[] arr = senddialogstep1.To.Split('-');
+				//byte[] sendToBytes = new byte[arr.Length];
+				//for (int i = 0; i < arr.Length; i++)
+				//{
+				//	sendToBytes[i] = Convert.ToByte(arr[i], 16);
+				//}
+
+				Byte[] sendToBytes = new Byte[32];
+				new Random().NextBytes(sendToBytes);
+
+				core.WalletManager.Instance.SendTransaction(sendToBytes, (ulong)senddialogstep1.Amount);
+				CloseDialog();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
 		}
 
 		public void Back() {

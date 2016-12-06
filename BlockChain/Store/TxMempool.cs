@@ -4,6 +4,7 @@ using Consensus;
 using System.Linq;
 using Store;
 using Infrastructure;
+using System;
 
 namespace BlockChain.Store
 {
@@ -14,8 +15,8 @@ namespace BlockChain.Store
 		private readonly HashDictionary<Keyed<Types.Transaction>> _Transactions;
 		private readonly List<Types.Outpoint> _TransactionsInputs;
 
-		private readonly HashDictionary<Keyed<Types.Transaction>> _OrphanedTransactions;
-		private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanedTransactionsInputs;
+		private readonly HashDictionary<Keyed<Types.Transaction>> _OrphanTransactions;
+		private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanTransactionsInputs;
 
 		//TODO: If the transaction is "ours", i.e. involves one of our addresses or contracts, tell the wallet.
 		//Relay transaction to peers
@@ -26,13 +27,13 @@ namespace BlockChain.Store
 			_Transactions = new HashDictionary<Keyed<Types.Transaction>>();
 			_TransactionsInputs = new List<Types.Outpoint>();
 
-			_OrphanedTransactions = new HashDictionary<Keyed<Types.Transaction>>();
-			_OrphanedTransactionsInputs = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
+			_OrphanTransactions = new HashDictionary<Keyed<Types.Transaction>>();
+			_OrphanTransactionsInputs = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
 		}
 
 		public bool ContainsKey(byte[] key)
 		{
-			return _Transactions.ContainsKey(key);
+			return _Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
 		}
 
 		public Keyed<Types.Transaction> Get(byte[] key)
@@ -52,22 +53,30 @@ namespace BlockChain.Store
 			return false;
 	    }
 
-		public IEnumerable<Keyed<Types.Transaction>> GetOrphanedsOf(Keyed<Types.Transaction> parentTransaction)
+		public IEnumerable<Keyed<Types.Transaction>> GetOrphansOf(Keyed<Types.Transaction> parentTransaction)
 		{
-			return _OrphanedTransactionsInputs.Keys
+			return _OrphanTransactionsInputs.Keys
 				.Where(key => key.txHash.SequenceEqual(parentTransaction.Key))
-				.Select(key => _OrphanedTransactionsInputs[key]);
+				.Select(key => _OrphanTransactionsInputs[key]);
 		}
 
 		public void Add(Keyed<Types.Transaction> transaction, bool isOrphaned = false)
 		{
 			if (isOrphaned)
 			{
-				_OrphanedTransactions.Add(transaction.Key, transaction);
+				_OrphanTransactions.Add(transaction.Key, transaction);
 
 				foreach (Types.Outpoint input in transaction.Value.inputs)
 				{
-					_OrphanedTransactionsInputs.Add(input, transaction);
+					//temp
+					try
+					{
+						_OrphanTransactionsInputs.Add(input, transaction);
+					}
+					catch (Exception e)
+					{
+						BlockChainTrace.Error("XXXXXXX", e);
+					}
 				}
 			}
 			else 

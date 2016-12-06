@@ -4,6 +4,8 @@ using System.Linq;
 using BlockChain.Store;
 using Store;
 using Infrastructure;
+using System.Collections.Generic;
+using Microsoft.FSharp.Collections;
 
 namespace BlockChain
 {
@@ -36,6 +38,52 @@ namespace BlockChain
 					OnAddedToMempool(m.Transaction.Value);
 				})
 			));
+
+			EnsureGenesisTransaction();
+		}
+
+		//temp
+		public void EnsureGenesisTransaction()
+		{
+			Consensus.Types.Transaction genesis = GetGenesisTransaction();
+			byte[] key = Merkle.transactionHasher.Invoke(genesis);
+
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				if (!_TxStore.ContainsKey(context, key))
+				{
+					_TxStore.Put(context, new Keyed<Types.Transaction>(key, genesis));
+					context.Commit ();
+
+					BlockChainTrace.Error("New Genesis Transaction's Address is: " + BitConverter.ToString(key), null);
+				}
+				else {
+					BlockChainTrace.Error("Existing Genesis Transaction's Address is: " + BitConverter.ToString(key), null);
+				}
+			}
+		}
+
+		//temp
+		private Types.Transaction GetGenesisTransaction()
+		{
+			var outputs = new List<Types.Output>();
+
+			outputs.Add(new Types.Output(Consensus.Tests.cbaselock, new Types.Spend(Consensus.Tests.zhash, 1000)));
+
+			var inputs = new List<Types.Outpoint>();
+
+			var hashes = new List<byte[]>();
+
+			//hack Concensus into giving a different hash per each tx created
+			var version = (uint)1;
+
+			Types.Transaction transaction = new Types.Transaction(version,
+				ListModule.OfSeq(inputs),
+				ListModule.OfSeq(hashes),
+				ListModule.OfSeq(outputs),
+				null);
+
+			return transaction;
 		}
 
 		public bool HandleNewBlock(Types.Block block) //TODO: use Keyed type
