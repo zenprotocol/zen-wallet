@@ -13,6 +13,7 @@ namespace NodeTester
 			this.Build();
 
 			InitKeysPane();
+			InitTransactionsPane(treeviewTransactions);
 
 			buttonKeyCreate.Clicked += ButtonKeyCreate_Clicked;
 			buttonTransactionSend.Clicked += ButtonTransactionSend_Clicked;
@@ -20,10 +21,24 @@ namespace NodeTester
 
 		void ButtonTransactionSend_Clicked(object sender, EventArgs e)
 		{
-			var sendTo = entryTransactionSendTo.Text;
-			var amount = entryTransactionSendAmount.Text;
+			try
+			{
+				var sendTo = entryTransactionSendTo.Text;
+				var amount = UInt64.Parse(entryTransactionSendAmount.Text);
 
-			WalletManager.Instance.SendTransaction();
+				String[] arr = sendTo.Split('-');
+				byte[] sendToBytes = new byte[arr.Length];
+				for (int i = 0; i < arr.Length; i++)
+				{
+					sendToBytes[i] = Convert.ToByte(arr[i], 16);
+				}
+
+				WalletManager.Instance.SendTransaction(sendToBytes, amount);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
 		}
 
 		void ButtonKeyCreate_Clicked(object sender, EventArgs e)
@@ -50,6 +65,16 @@ namespace NodeTester
 			treeView.AppendColumn("Change?", new Gtk.CellRendererText(), "text", 3);
 
 			Populate(treeView, used, isChange);
+		}
+
+		private void InitTransactionsPane(TreeView treeView)
+		{
+			var store = new Gtk.ListStore(typeof(string));
+
+			treeView.Model = store;
+			treeView.AppendColumn("Amount", new Gtk.CellRendererText(), "text", 0);
+
+		//	WalletManager.Instance.
 		}
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)

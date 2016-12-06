@@ -6,12 +6,24 @@ using System.IO;
 using BlockChain.Store;
 using Store;
 using System.Linq;
+using Microsoft.FSharp.Collections;
 
 namespace BlockChain.Tests
 {
 	[TestFixture()]
 	public class BlockChainTests
 	{
+		//[Test()]
+		//public void CanUseGenesisTransaction()
+		//{
+		//	String dbName = "test-" + new Random().Next(0, 1000);
+
+		//	using (BlockChain blockChain = new BlockChain(dbName))
+		//	{
+		//		blockChain._TxStore.Put(GetGenesisTransaction()); 
+		//	}
+		//}
+
 		[Test()]
 		public void ShoudRejectDuplicateBlock()
 		{

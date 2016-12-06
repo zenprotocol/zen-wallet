@@ -1,1 +1,1 @@
-{"IPSeeds":["54.218.251.235:9999"],"PeersToFind":1,"MaximumNodeConnection":1,"ServerPort":9999,"AutoConfigure":false,"DowngradeToLAN":false}
+{"IPSeeds":["54.218.251.235:9999"],"PeersToFind":1,"MaximumNodeConnection":1,"ServerPort":9999,"AutoConfigure":true,"DowngradeToLAN":false}

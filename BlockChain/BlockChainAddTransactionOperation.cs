@@ -25,7 +25,7 @@ namespace BlockChain
 		public enum Result
 		{
 			Added,
-			AddedOrphaned,
+			AddedOrphan,
 			Rejected
 		}
 
@@ -48,17 +48,18 @@ namespace BlockChain
 				return Result.Rejected;
 			}
 
-			if (IsMempoolContainsSpendingInput())
-			{
-				BlockChainTrace.Information("Mempool contains spending input");
-				return Result.Rejected;
-			}
+			// temp
+			//if (IsMempoolContainsSpendingInput())
+			//{
+			//	BlockChainTrace.Information("Mempool contains spending input");
+			//	return Result.Rejected;
+			//}
 
-			if (IsOrphaned())
+			if (IsOrphan())
 			{
 				BlockChainTrace.Information("Added as orphan");
 				_TxMempool.Add(_NewTransaction, true);
-				return Result.AddedOrphaned;
+				return Result.AddedOrphan;
 			}
 
 			//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
@@ -74,7 +75,7 @@ namespace BlockChain
 
 			_TxMempool.Add(_NewTransaction);
 
-			foreach (var transaction in _TxMempool.GetOrphanedsOf(_NewTransaction)) 
+			foreach (var transaction in _TxMempool.GetOrphansOf(_NewTransaction)) 
 			{
 				BlockChainTrace.Information("Start with orphan");
 				new BlockChainAddTransactionOperation(_TransactionContext, transaction, _TxMempool).Start();
@@ -119,7 +120,7 @@ namespace BlockChain
 			return false;
 		}
 
-		private bool IsOrphaned()
+		private bool IsOrphan()
 		{
 			foreach (Types.Outpoint input in _NewTransaction.Value.inputs)
 			{
@@ -149,11 +150,12 @@ namespace BlockChain
 					return false;
 				}
 
-				if (ParentOutputSpent(input))
-				{
-					BlockChainTrace.Information("parent output spent");
-					return false;
-				}
+				//temp
+				//if (ParentOutputSpent(input))
+				//{
+				//	BlockChainTrace.Information("parent output spent");
+				//	return false;
+				//}
 			}
 
 			return true;

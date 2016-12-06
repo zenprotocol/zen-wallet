@@ -2,6 +2,7 @@
 using System.Threading;
 using Wallet.Domain;
 using Wallet.core;
+using Infrastructure;
 
 namespace Wallet
 {
@@ -51,18 +52,42 @@ namespace Wallet
 			}
 		}
 
-		public WalletController ()
+		IDisposable messageListener;
+
+		public WalletController()
 		{
-			tempThread = new Thread (Reset);
-			tempThread.Start ();
+			//tempThread = new Thread (Reset);
+			//tempThread.Start ();
+
+			messageListener = MessageProducer<WalletManager.IMessage>.Instance.AddMessageListener(
+				new EventLoopMessageListener<WalletManager.IMessage>(message =>
+				{
+					Gtk.Application.Invoke(delegate
+					{
+						if (message is WalletManager.TransactionReceivedMessage)
+						{
+							var tx = ((WalletManager.TransactionReceivedMessage)message).Transaction;
+
+							DirectionEnum direcion = DirectionEnum.Recieved;
+
+							Decimal amount = tx.outputs[0].spend.amount;
+							Decimal fee = 0;
+							DateTime date = DateTime.Now;
+
+							TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
+						}
+					});
+			}));
 		}
+	
 
 		public void Send(Decimal amount) {
 		}
 
 		public void Quit() {
+			messageListener.Dispose();
 			stopping = true;
-			tempThread.Join ();
+			//tempThread.Join ();
 		}
 
 		private void Reset() {

@@ -14,7 +14,7 @@ namespace BlockChain.Tests
 			var p = new TestTransactionBlockChainExpectationPool();
 
 			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
-			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphaned);
+			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphan);
 			p.Spend("test2", "test1", 0);
 
 			p.Render();
@@ -59,7 +59,7 @@ namespace BlockChain.Tests
 			var p = new TestTransactionBlockChainExpectationPool();
 
 			p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
-			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphaned);
+			p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphan);
 			p.Spend("test2", "test1", 0);
 
 			p.Render();

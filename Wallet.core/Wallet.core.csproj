@@ -29,16 +29,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="NBitcoin">
-      <HintPath>..\packages\NBitcoin.Mono.3.0.0.49\lib\net45\NBitcoin.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\NBitcoin.Mono.3.0.0.49\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Package>monodevelop</Package>
-    </Reference>
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -49,6 +43,9 @@
     <Compile Include="Store\MessagePacker.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Data\Key.cs" />
+    <Compile Include="WalletManager.cs" />
+    <Compile Include="NodeManager.cs" />
+    <Compile Include="DiscoveryManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -61,6 +58,18 @@
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
+      <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
+      <Name>NBitcoinDerive</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NodeCore\NodeCore.csproj">
+      <Project>{125F2D2D-5FB6-447F-81D9-B97B1FB1DDB4}</Project>
+      <Name>NodeCore</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

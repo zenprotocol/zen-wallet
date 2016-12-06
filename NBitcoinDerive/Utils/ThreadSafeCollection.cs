@@ -21,6 +21,14 @@ namespace NBitcoin
 		{
 			if(item == null)
 				throw new ArgumentNullException("item");
+
+			foreach (T _item in _Behaviors.Values)
+			{
+				if (_item.GetType().Equals(item.GetType())) {
+					throw new Exception("Exisiting type found: " + item.GetType());
+				}
+			}
+
 			OnAdding(item);
 			_Behaviors.TryAdd(item, item);
 			return new ActionDisposable(() =>

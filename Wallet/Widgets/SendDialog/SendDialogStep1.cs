@@ -3,8 +3,10 @@
 namespace Wallet
 {
 	public interface ISendDialogStep1 {
-		
+		decimal Amount { get; }
+		string To { get; }
 	}
+
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class SendDialogStep1 : WidgetBase
 	{

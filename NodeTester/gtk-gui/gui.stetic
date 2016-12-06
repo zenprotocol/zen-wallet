@@ -1755,7 +1755,7 @@
       <widget class="Gtk.Notebook" id="notebook2">
         <property name="MemberName" />
         <property name="CanFocus">True</property>
-        <property name="CurrentPage">2</property>
+        <property name="CurrentPage">1</property>
         <property name="BorderWidth">5</property>
         <child>
           <widget class="Gtk.Notebook" id="notebook3">
@@ -1901,7 +1901,7 @@
                 <property name="MemberName" />
                 <property name="ShadowType">In</property>
                 <child>
-                  <widget class="Gtk.TreeView" id="treeview1">
+                  <widget class="Gtk.TreeView" id="treeviewTransactions">
                     <property name="MemberName" />
                     <property name="CanFocus">True</property>
                     <property name="ShowScrollbars">True</property>
