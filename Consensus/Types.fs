@@ -61,20 +61,8 @@ let ContractHashBytes = 32
 let PubKeyHashBytes = 32
 let TxHashBytes = 32
 
-type Hashtype = uint8
-
-type PKWitness = PKWitness of Witness
-
-let hashtype (PKWitness pkw) =
-    Array.last pkw
-
-let edsig (PKWitness pkw) =
-    Array.take (pkw.Length - 1) pkw
-
 //type Transaction = {version: uint32; inputs: Outpoint list; witnesses: Witness list; outputs: Output list; contract: Contract option}
 type Transaction = {version: uint32; inputs: Outpoint list; witnesses: Witness list; outputs: Output list; contract: ExtendedContract option}
-
-type Validity = Valid of Contract option | Invalid
 
 type Nonce = byte[]
 
