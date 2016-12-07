@@ -197,15 +197,6 @@ type ExtendedContractSerializer(ownerContext) =
             | _ ->
                 HighVContract(version=v,data=contractData)
 
-// Currently unused and untested
-type PKWitnessSerializer(ownerContext) =
-    inherit MessagePackSerializer<PKWitness>(ownerContext: SerializationContext)
-
-    override __.PackToCore(packer: Packer, PKWitness pkw: PKWitness) =
-        packer.Pack<Witness>(pkw) |> ignore
-    
-    override __.UnpackFromCore(unpacker: Unpacker) : PKWitness =
-        PKWitness <| unpacker.Unpack<Witness>()
 
 type TransactionSerializer(ownerContext) =
     inherit MessagePackSerializer<Transaction>(ownerContext: SerializationContext)
@@ -363,7 +354,6 @@ context.Serializers.RegisterOverride<Output>(new OutputSerializer(context))
 context.Serializers.RegisterOverride<Outpoint>(new OutpointSerializer(context))
 context.Serializers.RegisterOverride<Contract>(new ContractSerializer(context))
 context.Serializers.RegisterOverride<ExtendedContract>(new ExtendedContractSerializer(context))
-context.Serializers.RegisterOverride<PKWitness>(new PKWitnessSerializer(context))
 context.Serializers.RegisterOverride<Transaction>(new TransactionSerializer(context))
 context.Serializers.RegisterOverride<BlockHeader>(new BlockHeaderSerializer(context))
 context.Serializers.RegisterOverride<Block>(new BlockSerializer(context))
