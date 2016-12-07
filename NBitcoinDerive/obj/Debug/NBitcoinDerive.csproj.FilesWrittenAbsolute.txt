@@ -4,13 +4,13 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/NBitcoinDerive.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/obj/Debug/NBitcoinDerive.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/obj/Debug/NBitcoinDerive.dll.mdb
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/MsgPack.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/Consensus.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/MsgPack.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/BouncyCastle.Crypto.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/BlockChain.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/BlockChain.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/Infrastructure.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/Infrastructure.dll.mdb
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/BouncyCastle.Crypto.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/nunit.framework.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/Store.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive/bin/Debug/Store.dll.mdb
