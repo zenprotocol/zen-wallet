@@ -57,6 +57,8 @@
     <Compile Include="Data\KeyedTransaction.cs" />
     <Compile Include="Store\ConsensusTypeStore.cs" />
     <Compile Include="BlockChainAddBlockOperation.cs" />
+    <Compile Include="Store\_UTXOStore.cs" />
+    <Compile Include="Store\ChainTip.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

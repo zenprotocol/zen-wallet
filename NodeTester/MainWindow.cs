@@ -19,6 +19,7 @@ public partial class MainWindow : ResourceOwnerWindow
 		Build ();
 
 		OwnResource(Wallet.core.Wallet.Instance);
+		OwnResource(WalletManager.Instance);
 
 //		statusbar3.Push (1, "xx");
 //		statusbar3.Push (1, "yy");

@@ -46,15 +46,15 @@ namespace Wallet
 
 			try
 			{
-				//String[] arr = senddialogstep1.To.Split('-');
-				//byte[] sendToBytes = new byte[arr.Length];
-				//for (int i = 0; i < arr.Length; i++)
-				//{
-				//	sendToBytes[i] = Convert.ToByte(arr[i], 16);
-				//}
+				String[] arr = senddialogstep1.To.Split('-');
+				byte[] sendToBytes = new byte[arr.Length];
+				for (int i = 0; i < arr.Length; i++)
+				{
+					sendToBytes[i] = Convert.ToByte(arr[i], 16);
+				}
 
-				Byte[] sendToBytes = new Byte[32];
-				new Random().NextBytes(sendToBytes);
+				//Byte[] sendToBytes = new Byte[32];
+				//new Random().NextBytes(sendToBytes);
 
 				core.WalletManager.Instance.SendTransaction(sendToBytes, (ulong)senddialogstep1.Amount);
 				CloseDialog();

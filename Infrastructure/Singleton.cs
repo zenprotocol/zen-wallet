@@ -4,13 +4,17 @@ namespace Infrastructure
 {
 	public class Singleton<T> where T : class, new()
 	{
+		private static readonly object _lock = new object();
 		private static T _instance = null;
 
 		public static T Instance {
 			get {
-				_instance = _instance ?? new T ();
+				lock (_lock)
+				{
+					_instance = _instance ?? new T();
 
-				return _instance;
+					return _instance;
+				}
 			}
 		}
 

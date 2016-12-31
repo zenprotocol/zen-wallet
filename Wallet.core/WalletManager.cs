@@ -7,12 +7,13 @@ using Microsoft.FSharp.Collections;
 
 namespace Wallet.core
 {
-	public class WalletManager : Singleton<WalletManager>
+	public class WalletManager : Singleton<WalletManager>, IDisposable
 	{
 		private readonly BroadcastHubBehavior _BroadcastHubBehavior;
 		private readonly SPVBehavior _SPVBehavior;
 		private readonly BlockChain.BlockChain _BlockChain;
 		private BroadcastHub _BroadcastHub;
+		private byte[] genesisBlockHash = new byte[] { 0x01, 0x02 };
 
 		public interface IMessage { }
 		public class TransactionReceivedMessage : IMessage { public Types.Transaction Transaction { get; set; } }
@@ -24,7 +25,7 @@ namespace Wallet.core
 
 		public WalletManager()
 		{
-			_BlockChain = new BlockChain.BlockChain("test");
+			_BlockChain = new BlockChain.BlockChain("test", genesisBlockHash);
 
 			_BlockChain.OnAddedToMempool += transaction => {
 				PushMessage (new TransactionReceivedMessage () { Transaction = transaction });
@@ -79,6 +80,11 @@ namespace Wallet.core
 			{
 				Console.WriteLine(e);
 			}
+		}
+
+		public void Dispose()
+		{
+			_BlockChain.Dispose();
 		}
 	}
 }

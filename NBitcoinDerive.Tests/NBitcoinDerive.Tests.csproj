@@ -70,6 +70,10 @@
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing.Blockchain\Infrastructure.Testing.Blockchain.csproj">
+      <Project>{75798183-9B5D-4CB3-80BD-644CAF13F317}</Project>
+      <Name>Infrastructure.Testing.Blockchain</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tests\" />

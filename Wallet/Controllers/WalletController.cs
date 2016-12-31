@@ -3,6 +3,7 @@ using System.Threading;
 using Wallet.Domain;
 using Wallet.core;
 using Infrastructure;
+using System.Linq;
 
 namespace Wallet
 {
@@ -56,9 +57,6 @@ namespace Wallet
 
 		public WalletController()
 		{
-			//tempThread = new Thread (Reset);
-			//tempThread.Start ();
-
 			messageListener = MessageProducer<WalletManager.IMessage>.Instance.AddMessageListener(
 				new EventLoopMessageListener<WalletManager.IMessage>(message =>
 				{
@@ -68,16 +66,23 @@ namespace Wallet
 						{
 							var tx = ((WalletManager.TransactionReceivedMessage)message).Transaction;
 
-							DirectionEnum direcion = DirectionEnum.Recieved;
+							foreach (var key_ in core.Wallet.Instance.GetKeys())
+							{
+								if (key_.Public.SequenceEqual(((Consensus.Types.OutputLock.PKLock) tx.outputs[0].@lock).pkHash))
+								{
+									DirectionEnum direcion = DirectionEnum.Recieved;
 
-							Decimal amount = tx.outputs[0].spend.amount;
-							Decimal fee = 0;
-							DateTime date = DateTime.Now;
+									Decimal amount = tx.outputs[0].spend.amount;
+									Decimal fee = 0;
+									DateTime date = DateTime.Now;
 
-							TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
+									TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
+								}
+							}
 						}
 					});
-			}));
+				})
+			);
 		}
 	
 
@@ -85,6 +90,7 @@ namespace Wallet
 		}
 
 		public void Quit() {
+			WalletManager.Instance.Dispose();
 			messageListener.Dispose();
 			stopping = true;
 			//tempThread.Join ();

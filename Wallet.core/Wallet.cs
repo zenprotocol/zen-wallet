@@ -23,17 +23,17 @@ namespace Wallet.core
 		public IEnumerable<Key> GetKeys(bool? used = null, bool? isChange = null)
 		{
 			return _KeyStore.All(_DBContext.GetTransactionContext())
-				            .Where(v => (!used.HasValue || v.Value.Used == used.Value) && (!isChange.HasValue || v.Value.IsChange == isChange.Value))
+				            .Where(v => (!used.HasValue || v.Value.Used == used.Value) && (!isChange.HasValue || v.Value.Change == isChange.Value))
 				            .Select(t => t.Value);
 		}
 
 		public void AddKey(Key key)
 		{
-			//using (var transaction = _DBContext.GetTransactionContext())
-			//{
-			//	_KeyStore.Put(transaction, key);
-			//	transaction.Commit();
-			//}
+			using (var transaction = _DBContext.GetTransactionContext())
+			{
+				_KeyStore.Put(transaction, new Keyed<Key>(key.Public, key));
+				transaction.Commit();
+			}
 		}
 
 		public void Dispose()

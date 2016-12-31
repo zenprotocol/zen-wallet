@@ -9,18 +9,50 @@ using System.Net;
 using NodeCore;
 using NBitcoin.Protocol.Behaviors;
 using NBitcoin.Protocol;
+using Infrastructure.Testing.Blockchain;
 
 namespace NodeConsole
 {
 	public class ConsoleNode : ResourceOwner
 	{
+		//private byte[] genesisBlockHash = new byte[] { 0x01, 0x02 };
+
 		public ConsoleNode()
 		{
+			var p = new TestTransactionPool();
+
+			p.Add("t1", 1);
+			p.Add("t2", 0);
+			p.Add("t3", 0);
+			p.Spend("t2", "t1", 0);
+
+			p.Render();
+
+			var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
+			var block1 = new TestBlock(p.TakeOut("t2").Value, p.TakeOut("t3").Value);
+			block1.Parent = genesisBlock;
+
+			genesisBlock.Render();
+			block1.Render();
+
+
 			Settings settings = JsonLoader<Settings>.Instance.Value;
 
 			var ipEndpoint = new System.Net.IPEndPoint(IPAddress.Parse(settings.ExternalIPAddress), settings.ServerPort);
 
-			var blockChain = new BlockChain.BlockChain("db");
+			var blockChain = new BlockChain.BlockChain("db", genesisBlock.Value.Key);
+
+			if (blockChain.GetBlock(genesisBlock.Value.Key) == null)
+			{
+				Console.WriteLine("Initializing blockchain...");
+				blockChain.HandleNewBlock(genesisBlock.Value.Value);
+				blockChain.HandleNewBlock(block1.Value.Value);
+			}
+			else
+			{
+				Console.WriteLine("Blockchain initialized.");
+			}
+
 			OwnResource(blockChain);
 
 			blockChain.OnAddedToMempool += transaction =>
@@ -44,6 +76,8 @@ namespace NodeConsole
 			var broadcastHubBehavior = new BroadcastHubBehavior();
 			server.Behaviors.Add(broadcastHubBehavior);
 			server.Behaviors.Add(new SPVBehavior(blockChain, broadcastHubBehavior.BroadcastHub));
+			server.Behaviors.Add(new MinerBehavior(blockChain));
+			server.Behaviors.Add(new ChainBehavior(blockChain));
 
 			server.Start();
 		}

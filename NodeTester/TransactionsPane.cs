@@ -17,6 +17,7 @@ namespace NodeTester
 
 			buttonKeyCreate.Clicked += ButtonKeyCreate_Clicked;
 			buttonTransactionSend.Clicked += ButtonTransactionSend_Clicked;
+			buttonMine.Clicked += ButtonMine_Clicked;
 		}
 
 		void ButtonTransactionSend_Clicked(object sender, EventArgs e)
@@ -43,7 +44,7 @@ namespace NodeTester
 
 		void ButtonKeyCreate_Clicked(object sender, EventArgs e)
 		{
-			Wallet.core.Wallet.Instance.AddKey(new Wallet.core.Data.Key() { IsChange = true });
+			Wallet.core.Wallet.Instance.AddKey(new Wallet.core.Data.Key() { Change = true });
 			Populate(treeviewKeysUnused, false, true);
 		}
 
@@ -74,20 +75,52 @@ namespace NodeTester
 			treeView.Model = store;
 			treeView.AppendColumn("Amount", new Gtk.CellRendererText(), "text", 0);
 
-		//	WalletManager.Instance.
+			//TODO: resourceOwner.OwnResource(
+			MessageProducer<WalletManager.IMessage>.Instance.AddMessageListener(new EventLoopMessageListener<WalletManager.IMessage>(Message =>
+			{
+				if (Message is WalletManager.TransactionAddToMempoolMessage)
+				{
+					WalletManager.TransactionAddToMempoolMessage transactionReceivedMessage = (WalletManager.TransactionAddToMempoolMessage) Message;
+
+					Gtk.Application.Invoke(delegate
+					{
+						foreach (var output in transactionReceivedMessage.Transaction.outputs)
+						{
+							store.AppendValues(output.spend.amount.ToString());
+						}
+					});
+				} else if (Message is WalletManager.TransactionAddToStoreMessage)
+				{
+					WalletManager.TransactionAddToStoreMessage transactionReceivedMessage = (WalletManager.TransactionAddToStoreMessage)Message;
+
+					Gtk.Application.Invoke(delegate
+					{
+						foreach (var output in transactionReceivedMessage.Transaction.outputs)
+						{
+							store.AppendValues("store: " + output.spend.amount.ToString());
+						}
+					});
+				}
+			}));
+			//);
 		}
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
 			Wallet.core.Wallet.Instance.GetKeys(used, isChange).ToList().ForEach(key =>
 			{
-				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.IsChange ? "Yes" : "No");
+				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
 			});
 		}
 
 		private String DisplayKey(byte[] key)
 		{
 			return key == null ? "" : key.ToString();
+		}
+
+		void ButtonMine_Clicked(object sender, EventArgs e)
+		{
+			
 		}
 	}
 }
