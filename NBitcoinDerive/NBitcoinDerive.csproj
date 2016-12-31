@@ -102,6 +102,7 @@
     <Compile Include="Protocol\Behaviors\ChainBehavior.cs" />
     <Compile Include="Protocol\Behaviors\MinerBehavior.cs" />
     <Compile Include="Protocol\Behaviors\xxx.cs" />
+    <Compile Include="Miner.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Protocol\" />

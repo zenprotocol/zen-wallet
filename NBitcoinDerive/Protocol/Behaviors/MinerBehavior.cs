@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NBitcoin;
 using System.Threading;
 using Consensus;
+using NBitcoinDerive;
 
 namespace NBitcoin.Protocol.Behaviors
 {
@@ -157,30 +158,19 @@ namespace NBitcoin.Protocol.Behaviors
 
 	public class MinerBehavior : NodeBehavior
 	{
-		private BlockChain.BlockChain _BlockChain;
-
 		ConcurrentDictionary<byte[], BlockBroadcast> _HashToBlock = new ConcurrentDictionary<byte[], BlockBroadcast>(new ByteArrayComparer());
 		ConcurrentDictionary<ulong, BlockBroadcast> _PingToBlock = new ConcurrentDictionary<ulong, BlockBroadcast>();
+		private Miner _Miner;
 
-		Timer _Timer;
-
-		private MinerBehavior() { 
-			_Timer = new Timer(o =>
-			{
-				CreateBlock();
-			}, null, 0, (int)TimeSpan.FromSeconds(10).TotalMilliseconds);
+		public MinerBehavior(Miner miner) : this(miner, new BlockBroadcastHub()) {
 		}
 
-		public MinerBehavior(BlockChain.BlockChain blockChain) : this()
+		private MinerBehavior(Miner miner, BlockBroadcastHub blockBroadcastHub) 
 		{
-			_BlockBroadcastHub = new BlockBroadcastHub();
-			_BlockChain = blockChain;
-		}
+			_BlockBroadcastHub = blockBroadcastHub;
+			_Miner = miner;
+			_Miner.BlockBroadcastHub = _BlockBroadcastHub;
 
-		public MinerBehavior(BlockChain.BlockChain blockChain, BlockBroadcastHub hub) : this()
-		{
-			_BlockChain = blockChain;
-			_BlockBroadcastHub = hub ?? new BlockBroadcastHub();
 			foreach (var tx in _BlockBroadcastHub.BroadcastedBlock)
 			{
 				_HashToBlock.TryAdd(tx.Key, new BlockBroadcast()
@@ -189,6 +179,10 @@ namespace NBitcoin.Protocol.Behaviors
 					Block = tx.Value
 				});
 			}
+
+//			Miner.MessageProducer.AddMessageListener (new Infrastructure.MessageListener<Miner.NewMinedBlockMessage> (Message => {
+//				_BlockBroadcastHub.BroadcastBlockAsync (Message.Block);
+//			}));
 		}
 
 		private readonly BlockBroadcastHub _BlockBroadcastHub;
@@ -244,24 +238,7 @@ namespace NBitcoin.Protocol.Behaviors
 				AnnounceAll();
 			}
 		}
-
-
-		private void CreateBlock()
-		{
-			if (_BlockChain == null) {
-				return;
-			}
-
-			var newBlock = _BlockChain.MineAllInMempool();
-
-			if (newBlock != null) {
-				Console.WriteLine (" ****** new block created *******");
-				_BlockBroadcastHub.BroadcastBlockAsync (newBlock);
-			} {
-				Console.WriteLine (" ****** no new block created !!! *******");
-			}
-		}
-
+			
 		private void AnnounceAll()
 		{
 			foreach (var broadcasted in _HashToBlock)
@@ -338,7 +315,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		public override object Clone()
 		{
-			return new MinerBehavior(_BlockChain, _BlockBroadcastHub);
+			return new MinerBehavior(_Miner, _BlockBroadcastHub);
 		}
 
 		public IEnumerable<BlockBroadcast> Broadcasts
