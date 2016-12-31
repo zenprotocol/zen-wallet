@@ -23,12 +23,12 @@ namespace Store
 			Put(transactionContext, new Keyed<T>[] { item });
 		}
 
-		public void Put(TransactionContext transactionContext, byte[] key, byte[] value)
+		private void Put(TransactionContext transactionContext, byte[] key, byte[] value)
 		{
 			Put(transactionContext, new Tuple<byte[],byte[]>[] { new Tuple<byte[], byte[]>(key, value) });
 		}
 
-		public void Put(TransactionContext transactionContext, Keyed<T>[] items)
+		private void Put(TransactionContext transactionContext, Keyed<T>[] items)
 		{
 			foreach (Keyed<T> item in items) {
 				Trace.Write(_TableName, item.Key);
@@ -56,6 +56,11 @@ namespace Store
 			Trace.Read(_TableName, key);
 			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
 			return row.Exists ? new Keyed<T>(key, Unpack(row.Value, row.Key)) : null;
+		}
+
+		public void Remove(TransactionContext transactionContext, byte[] key)
+		{
+			transactionContext.Transaction.RemoveKey<byte[]>(_TableName, key);
 		}
 
 		public IEnumerable<Keyed<T>> All(TransactionContext transactionContext)

@@ -12,8 +12,8 @@ namespace Wallet
 
 			label.ModifyFont (Fonts.DialogContentBold);
 
-			entry.ModifyFont (Fonts.DialogContent);
-			entry.ModifyBase(Gtk.StateType.Normal, Colors.Textbox.Gdk);
+	//		entry.ModifyFont (Fonts.DialogContent);
+	//		entry.ModifyBase(Gtk.StateType.Normal, Colors.Textbox.Gdk);
 		}
 
 		public bool IsEditable {
@@ -28,7 +28,7 @@ namespace Wallet
 				return entry.Text;
 			} 
 			set { 
-				entry.Text = Value;
+				entry.Text = value;
 			} 
 		}
 

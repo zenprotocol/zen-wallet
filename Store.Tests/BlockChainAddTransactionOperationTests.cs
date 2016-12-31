@@ -20,10 +20,10 @@ namespace BlockChain.Tests
 			p.Render();
 			var test1 = p.TakeOut("test1");
 
-			ScenarioAssertion(p, postAction: (mempool, txstore, context) =>
+			ScenarioAssertion(p, postAction: (mempool, txstore, utxoStore, context) =>
 			{
 				var result = new BlockChainAddTransactionOperation(
-					context, test1, mempool
+					context, test1, mempool, txstore, utxoStore
 				).Start();
 
 				Assert.AreEqual(BlockChainAddTransactionOperation.Result.Added, result);
@@ -54,7 +54,7 @@ namespace BlockChain.Tests
 		}
 
 		[Test()]
-		public void ShouldBeAddedAsOrphaned()
+		public void ShouldBeAddedAsOrphan()
 		{
 			var p = new TestTransactionBlockChainExpectationPool();
 
@@ -75,7 +75,7 @@ namespace BlockChain.Tests
 
 			p.Add("test1", 0, BlockChainAddTransactionOperation.Result.Rejected);
 
-			ScenarioAssertion(p, preAction: (mempool, txstore, context) => {
+			ScenarioAssertion(p, preAction: (mempool, txstore, utxoStore, context) => {
 				p.Render();
 				mempool.Add(p["test1"]);
 			});
@@ -88,7 +88,7 @@ namespace BlockChain.Tests
 
 			p.Add("test1", 0, BlockChainAddTransactionOperation.Result.Rejected);
 
-			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
+			ScenarioAssertion(p, preAction: (mempool, txstore, utxoStore, context) =>
 			{
 				p.Render();
 				txstore.Put(context, p["test1"]);
@@ -110,7 +110,7 @@ namespace BlockChain.Tests
 
 			var spend_in_mempool = p.TakeOut("spend_in_mempool");
 
-			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
+			ScenarioAssertion(p, preAction: (mempool, txstore, utxoStore, context) =>
 			{
 				mempool.Add(spend_in_mempool);
 			});
@@ -143,13 +143,26 @@ namespace BlockChain.Tests
 			var test1 = p.TakeOut("test1");
 			var test3 = p.TakeOut("test3");
 
-			ScenarioAssertion(p, preAction: (mempool, txstore, context) =>
+			ScenarioAssertion(p, preAction: (mempool, txstore, utxoStore, context) =>
 			{
 				txstore.Put(context, test1);
-			}, postAction: (mempool, txstore, context) =>
+
+				var index = 0;
+				var output = test1.Value.outputs[index];
+
+				var txHash = Consensus.Merkle.transactionHasher.Invoke(test1.Value);
+
+				//System.Buffer.BlockCopy(
+				//System.Array.Copy(
+				byte[] outputKey = new byte[txHash.Length + 1];
+				txHash.CopyTo(outputKey, 1);
+				outputKey[txHash.Length] = (byte)index;
+
+				utxoStore.Put(context, new Keyed<Consensus.Types.Output>(outputKey, output));
+			}, postAction: (mempool, txstore, utxoStore, context) =>
 			{
 				var result = new BlockChainAddTransactionOperation(
-					context, test3, mempool
+					context, test3, mempool, txstore, utxoStore
 				).Start();
 
 				Assert.AreEqual(BlockChainAddTransactionOperation.Result.Rejected, result, "test3");
@@ -158,20 +171,21 @@ namespace BlockChain.Tests
 
 		private void ScenarioAssertion(
 			TestTransactionBlockChainExpectationPool p, 
-			Action<TxMempool, TxStore, TransactionContext> preAction = null,
-			Action<TxMempool, TxStore, TransactionContext> postAction = null
+			Action<TxMempool, TxStore, UTXOStore, TransactionContext> preAction = null,
+			Action<TxMempool, TxStore, UTXOStore, TransactionContext> postAction = null
 		)
 		{
 			var mempool = new TxMempool();
 			var txStore = new TxStore();
+			var utxoStore = new UTXOStore();
 
-			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
+			using (TestDBContext dbContext = new TestDBContext())
 			{
 				using (TransactionContext transactionContext = dbContext.GetTransactionContext())
 				{
 					if (preAction != null)
 					{
-						preAction(mempool, txStore, transactionContext);
+						preAction(mempool, txStore, utxoStore, transactionContext);
 					}
 
 					p.Render();
@@ -181,7 +195,7 @@ namespace BlockChain.Tests
 						TestTransactionBlockChainExpectation t = p.GetItem(key);
 
 						BlockChainAddTransactionOperation.Result result = new BlockChainAddTransactionOperation(
-							transactionContext, t.Value, mempool
+							transactionContext, t.Value, mempool, txStore, utxoStore
 						).Start();
 
 						Assert.AreEqual(t.Result, result, "Assertion for tag: " + key);
@@ -189,7 +203,7 @@ namespace BlockChain.Tests
 
 					if (postAction != null)
 					{
-						postAction(mempool, txStore, transactionContext);
+						postAction(mempool, txStore, utxoStore, transactionContext);
 					}
 				}
 			}

@@ -25,7 +25,7 @@ namespace BlockChain.Tests
 
 	public class TestPool<T> where T : TestTransaction, new()
 	{
-		private Dictionary<String, T> _Map { get; set; }
+		private Dictionary<String, T> _Map { get; set; } //TODO: use OrderedDictionary
 
 		public TestPool()
 		{
@@ -40,7 +40,7 @@ namespace BlockChain.Tests
 			}
 		}
 
-		public T GetItem(String tag, bool remove = false)
+		public T GetItem(String tag/*, bool remove = false*/)
 		{
 			return _Map[tag];
 		}
@@ -92,6 +92,26 @@ namespace BlockChain.Tests
 			{
 				return _Map.Keys;
 			}
+		}
+
+		public Dictionary<String, T>.ValueCollection Values
+		{
+			get
+			{
+				return _Map.Values;
+			}
+		}
+
+		public List<T> ToList()
+		{
+			var list = new List<T>();
+
+			foreach (var item in _Map)
+			{
+				list.Add(item.Value);
+			}
+
+			return list;
 		}
 	}
 
@@ -145,7 +165,7 @@ namespace BlockChain.Tests
 			var hashes = new List<byte[]>();
 
 			//hack Concensus into giving a different hash per each tx created
-			var version = (uint)_Random.Next(1000);
+			var version = (uint)1; //_Random.Next(1000);
 
 			Types.Transaction transaction = new Types.Transaction(version,
 				ListModule.OfSeq(inputs),

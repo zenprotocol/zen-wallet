@@ -33,7 +33,6 @@ namespace Wallet
 
 			using (var consoleWriter = ConsoleMessage.Out)
 			{
-				
 				_MainWindow = new MainWindow();
 				Program.temp = _MainWindow; //TODO: remove
 				_MainWindow.Show();
@@ -73,7 +72,7 @@ namespace Wallet
 //				_Node = new LanNodeManager();
 //			}
 //#endif
-			await _Node.Start(_MainWindow, NodeCore.TestNetwork.Instance);
+	//		await _Node.Start(_MainWindow, NodeCore.TestNetwork.Instance);
 		}
 
 		public void Close()

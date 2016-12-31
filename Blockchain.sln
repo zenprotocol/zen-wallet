@@ -29,13 +29,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NBitcoinDerive.Tests", "NBi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.TestingGtk", "Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj", "{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet", "Wallet\Wallet.csproj", "{6B1189D4-2B5A-4764-A1D7-6E8258730303}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "Wallet\GUI.csproj", "{6B1189D4-2B5A-4764-A1D7-6E8258730303}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.core", "Wallet.core\Wallet.core.csproj", "{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Console", "Infrastructure.Console\Infrastructure.Console.csproj", "{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeConsole", "NodeConsole\NodeConsole.csproj", "{C5C0B292-9D72-4E82-95C9-E176C07D6DBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Testing.Blockchain", "Infrastructure.Testing.Blockchain\Infrastructure.Testing.Blockchain.csproj", "{75798183-9B5D-4CB3-80BD-644CAF13F317}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{BD19479A-6839-45E7-98CE-7D406CE52241}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,5 +119,13 @@ Global
 		{C5C0B292-9D72-4E82-95C9-E176C07D6DBF}.Debug|x86.Build.0 = Debug|Any CPU
 		{C5C0B292-9D72-4E82-95C9-E176C07D6DBF}.Release|x86.ActiveCfg = Release|Any CPU
 		{C5C0B292-9D72-4E82-95C9-E176C07D6DBF}.Release|x86.Build.0 = Release|Any CPU
+		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Debug|x86.ActiveCfg = Debug|x86
+		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Debug|x86.Build.0 = Debug|x86
+		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Release|x86.ActiveCfg = Release|x86
+		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Release|x86.Build.0 = Release|x86
+		{BD19479A-6839-45E7-98CE-7D406CE52241}.Debug|x86.ActiveCfg = Debug|x86
+		{BD19479A-6839-45E7-98CE-7D406CE52241}.Debug|x86.Build.0 = Debug|x86
+		{BD19479A-6839-45E7-98CE-7D406CE52241}.Release|x86.ActiveCfg = Release|x86
+		{BD19479A-6839-45E7-98CE-7D406CE52241}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 EndGlobal

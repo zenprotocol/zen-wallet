@@ -1,23 +1,17 @@
 using System;
 using Store;
 using Consensus;
+using MsgPack;
+using MsgPack.Serialization;
 
 namespace BlockChain.Store
 {
 	public class UTXOStore : ConsensusTypeStore<Types.Output>
 	{
-		public UTXOStore() : base("utxo") { }
+		public UTXOStore() : base("utxo")
+		{
+		}
 	}
-
-	//public enum UTXOState {
-	//	Confirmed,
-	//	Unconfirmed,
-	//}
-
-	//public class UTXO {
-	//	public Types.Output Output { get; set; }
-	//	public UTXOState UTXOState { get; set; }
-	//}
 
 	//public class UTXOMiroringCache
 	//{

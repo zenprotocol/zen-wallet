@@ -90,7 +90,7 @@ namespace NBitcoinDerive.Tests
 
 	public class TestTransaction
 	{
-		private Random _Random = new Random();
+//		private Random _Random = new Random();
 		public int Outputs { get; set; }
 		public List<Point> Inputs { get; set; }
 		public Keyed<Types.Transaction> Value { get; set; }
@@ -127,9 +127,9 @@ namespace NBitcoinDerive.Tests
 			var hashes = new List<byte[]>();
 
 			//hack Concensus into giving a different hash per each tx created
-			var version = (uint)_Random.Next(1000);
+			var version = 1; // _Random.Next(1000);
 
-			Types.Transaction transaction = new Types.Transaction(version,
+			Types.Transaction transaction = new Types.Transaction((uint)version,
 				ListModule.OfSeq(inputs),
 				ListModule.OfSeq(hashes),
 				ListModule.OfSeq(outputs),

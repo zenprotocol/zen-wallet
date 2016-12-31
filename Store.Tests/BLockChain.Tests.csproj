@@ -41,14 +41,17 @@
   <ItemGroup>
     <Compile Include="StoreTests.cs" />
     <Compile Include="TestBase.cs" />
-    <Compile Include="BlockChainTests.cs" />
+    <Compile Include="BlockChainTests_old.cs" />
     <Compile Include="BlockChainAddTransactionOperationTests.cs" />
     <Compile Include="TxMempoolTests.cs" />
     <Compile Include="BlockStoreTests.cs" />
     <Compile Include="Utils\TestTransaction.cs" />
     <Compile Include="Utils\Util.cs" />
     <Compile Include="TestTrace.cs" />
-    <Compile Include="TxStoreTests.cs" />
+    <Compile Include="Utils\TestBlocks.cs" />
+    <Compile Include="BlockChainAddBlockOperationTests.cs" />
+    <Compile Include="Utils\TestBlockChain.cs" />
+    <Compile Include="BlockChainTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

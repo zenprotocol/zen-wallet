@@ -41,6 +41,11 @@ namespace NBitcoinDerive.Serialization
 						_ConsensusExtSerializers[type] = Consensus.Serialization.context.GetSerializer<Consensus.Types.Transaction>();
 						_ConsensusExtTypes[mapping[item.Key]] = type;
 						break;
+					case "Block":
+						type = typeof(Consensus.Types.Block);
+						_ConsensusExtSerializers[type] = Consensus.Serialization.context.GetSerializer<Consensus.Types.Block>();
+						_ConsensusExtTypes[mapping[item.Key]] = type;
+						break;
 				}
 			}
 
@@ -53,9 +58,11 @@ namespace NBitcoinDerive.Serialization
 			_NetworkingPayloadTypes["reject"] = typeof(RejectPayload);
 			_NetworkingPayloadTypes["ver"] = typeof(VersionPayload);
 			_NetworkingPayloadTypes["verack"] = typeof(VerAckPayload);
+			_NetworkingPayloadTypes["gettip"] = typeof(GetTipPayload);
 
 			_EmptyNetworkingPayloadTypes.Add(typeof(VerAckPayload));
 			_EmptyNetworkingPayloadTypes.Add(typeof(GetAddrPayload));
+			_EmptyNetworkingPayloadTypes.Add(typeof(GetTipPayload));
 
 			foreach (var item in _NetworkingPayloadTypes)
 			{
@@ -106,6 +113,10 @@ namespace NBitcoinDerive.Serialization
 			packer.Pack(_Magic);
 			packer.Pack(GetChecksum(payloadObject));
 
+			if (!_NetworkingPayloadCodes.ContainsKey(payloadObject.GetType())) {
+				throw new Exception("Missing: " + payloadObject.GetType());
+			}
+			    
 			string payloadType = _NetworkingPayloadCodes[payloadObject.GetType()];
 			packer.Pack(payloadType);
 
@@ -146,11 +157,19 @@ namespace NBitcoinDerive.Serialization
 					Assert(mainItemsCount == 3);
 					returnValue = Activator.CreateInstance(payloadType);
 				}
-				else 
+				else
 				{
 					Assert(mainItemsCount == 4);
 					Assert(unpacker.Read());
-					returnValue = MessagePackSerializer.Get(payloadType).UnpackFrom(unpacker);
+
+					try
+					{
+						returnValue = MessagePackSerializer.Get(payloadType).UnpackFrom(unpacker);
+					}
+					catch (Exception e)
+					{
+						throw new Exception("Error deserializing type " + payloadType.ToString(), e);
+					}
 				}
 			}
 			else

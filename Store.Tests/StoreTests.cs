@@ -16,8 +16,10 @@ namespace BlockChain.Tests
 		[Test()]
 		public void CanStoreSingleTransaction()
 		{
-			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
+			using (TestDBContext dbContext = new TestDBContext())
 			{
+				var store = new ConsensusTypeStore<Types.Transaction>(dbContext.DbName);
+
 				for (int i = 0; i < 10; i++)
 				{
 					uint version = (uint)random.Next(0, 1000);
@@ -27,13 +29,13 @@ namespace BlockChain.Tests
 
 					using (var transaction = dbContext.GetTransactionContext())
 					{
-						dbContext.Store.Put(transaction, new Keyed<Types.Transaction>(key, putTransaction));
+						store.Put(transaction, new Keyed<Types.Transaction>(key, putTransaction));
 						transaction.Commit();
 					}
 
 					using (var transaction = dbContext.GetTransactionContext())
 					{
-						var getTransaction = dbContext.Store.Get(transaction, key);
+						var getTransaction = store.Get(transaction, key);
 
 						Assert.AreEqual(getTransaction.Value.version, putTransaction.version);
 						Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction.Value));
@@ -42,80 +44,84 @@ namespace BlockChain.Tests
 			}
 		}
 
-		[Test()]
-		public void CanStoreMultipleTransactions()
-		{
-			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
-			{
-				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
+		//[Test()]
+		//public void CanStoreMultipleTransactions()
+		//{
+		//	using (TestDBContext dbContext = new TestDBContext())
+		//	{
+		//		var store = new ConsensusTypeStore<Types.Transaction>(dbContext.DbName);
+		//		var putTransactions = new List<Tuple<byte[], Types.Transaction>>();
 
-				for (int i = 0; i < 10; i++)
-				{
-					uint version = (uint)random.Next(0, 1000);
+		//		for (int i = 0; i < 10; i++)
+		//		{
+		//			uint version = (uint)random.Next(0, 1000);
 
-					var putTransaction = Util.GetNewTransaction(version);
-					var key = Merkle.transactionHasher.Invoke(putTransaction);
+		//			var putTransaction = Util.GetNewTransaction(version);
+		//			var key = Merkle.transactionHasher.Invoke(putTransaction);
 
-					putTransactions.Add(new Tuple<byte[], Types.Transaction>(key, putTransaction));
-				}
+		//			putTransactions.Add(new Tuple<byte[], Types.Transaction>(key, putTransaction));
+		//		}
 
-				using (var transaction = dbContext.GetTransactionContext())
-				{
-					dbContext.Store.Put(transaction, putTransactions.Select(t => new Keyed<Types.Transaction>(t.Item1, t.Item2)).ToArray());
-					transaction.Commit();
-				}
+		//		using (var transaction = dbContext.GetTransactionContext())
+		//		{
+		//			store.Put(transaction, putTransactions.Select(t => new Keyed<Types.Transaction>(t.Item1, t.Item2)).ToArray());
+		//			transaction.Commit();
+		//		}
 
-				using (var transaction = dbContext.GetTransactionContext())
-				{
-					putTransactions.ForEach(t =>
-					{
-						var getTransaction = dbContext.Store.Get(transaction, t.Item1);
+		//		using (var transaction = dbContext.GetTransactionContext())
+		//		{
+		//			putTransactions.ForEach(t =>
+		//			{
+		//				var getTransaction = store.Get(transaction, t.Item1);
 
-						Assert.AreEqual(getTransaction.Value.version, t.Item2.version);
-						Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction.Value));
-					});
-				}
-			}
-		}
+		//				Assert.AreEqual(getTransaction.Value.version, t.Item2.version);
+		//				Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction.Value));
+		//			});
+		//		}
+		//	}
+		//}
 
-		[Test()]
-		public void CanStoreRawSingleRawTransaction()
-		{
-			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
-			{
-				for (int i = 0; i < 10; i++)
-				{
-					uint version = (uint)random.Next(0, 1000);
+		//[Test()]
+		//public void CanStoreRawSingleRawTransaction()
+		//{
+		//	using (TestDBContext dbContext = new TestDBContext())
+		//	{
+		//		var store = new ConsensusTypeStore<Types.Transaction>(dbContext.DbName);
 
-					var putTransaction = Util.GetNewTransaction(version);
-					var key = Merkle.transactionHasher.Invoke(putTransaction);
-					var value = Merkle.serialize<Types.Transaction>(putTransaction);
+		//		for (int i = 0; i < 10; i++)
+		//		{
+		//			uint version = (uint)random.Next(0, 1000);
 
-					Types.Transaction getTransaction;
+		//			var putTransaction = Util.GetNewTransaction(version);
+		//			var key = Merkle.transactionHasher.Invoke(putTransaction);
+		//			var value = Merkle.serialize<Types.Transaction>(putTransaction);
 
-					using (var transaction = dbContext.GetTransactionContext())
-					{
-						dbContext.Store.Put(transaction, key, value);
-						getTransaction = dbContext.Store.Get(transaction, key).Value;
-						transaction.Commit();
-					}
+		//			Types.Transaction getTransaction;
 
-					using (var transaction = dbContext.GetTransactionContext())
-					{
-						Assert.AreEqual(getTransaction.version, putTransaction.version);
-						Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
-					}
-				}
-			}
-		}
+		//			using (var transaction = dbContext.GetTransactionContext())
+		//			{
+		//				store.Put(transaction, key, value);
+		//				getTransaction = store.Get(transaction, key).Value;
+		//				transaction.Commit();
+		//			}
+
+		//			using (var transaction = dbContext.GetTransactionContext())
+		//			{
+		//				Assert.AreEqual(getTransaction.version, putTransaction.version);
+		//				Assert.AreEqual(key, Merkle.transactionHasher.Invoke(getTransaction));
+		//			}
+		//		}
+		//	}
+		//}
 
 		[Test()]
 		public void CanStoreMultipleRawTransactions()
 		{
-			using (TestDBContext<TxStore> dbContext = new TestDBContext<TxStore>())
+			using (TestDBContext dbContext = new TestDBContext())
 			{
-				List<Tuple<byte[], Types.Transaction>> putTransactions = new List<Tuple<byte[], Types.Transaction>>();
-				List<Tuple<byte[], byte[]>> putRawTransactions = new List<Tuple<byte[], byte[]>>();
+				var store = new ConsensusTypeStore<Types.Transaction>(dbContext.DbName);
+				var putTransactions = new List<Tuple<byte[], Types.Transaction>>();
+				var putRawTransactions = new List<Tuple<byte[], byte[]>>();
 
 				for (int i = 0; i < 10; i++)
 				{
@@ -131,7 +137,7 @@ namespace BlockChain.Tests
 
 				using (var transaction = dbContext.GetTransactionContext())
 				{
-					dbContext.Store.Put(transaction, putRawTransactions.ToArray());
+					store.Put(transaction, putRawTransactions.ToArray());
 					transaction.Commit();
 				}
 
@@ -139,7 +145,7 @@ namespace BlockChain.Tests
 				{
 					putTransactions.ForEach(t =>
 					{
-						var getTransaction = dbContext.Store.Get(transaction, t.Item1).Value;
+						var getTransaction = store.Get(transaction, t.Item1).Value;
 
 						Assert.AreEqual(getTransaction.version, t.Item2.version);
 						Assert.AreEqual(t.Item1, Merkle.transactionHasher.Invoke(getTransaction));

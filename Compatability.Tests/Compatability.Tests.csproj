@@ -43,6 +43,7 @@
     <Compile Include="TestFSharp.cs" />
     <Compile Include="DBTests.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="SerializationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BlockChain\BlockChain.csproj">
@@ -56,6 +57,10 @@
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
+      <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
+      <Name>NBitcoinDerive</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

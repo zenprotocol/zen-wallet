@@ -6,6 +6,6 @@ namespace Wallet.core.Data
 		public byte[] Public { get; set; }
 		public byte[] Private { get; set; }
 		public bool Used { get; set; }
-		public bool IsChange { get; set; }
+		public bool Change { get; set; }
 	}
 }

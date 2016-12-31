@@ -104,7 +104,10 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 			try
 			{
-				return Merkle.transactionHasher.Invoke(transaction);
+			//	if (transaction.Transaction != null)
+					return Merkle.transactionHasher.Invoke(transaction);
+			//	else
+			//		return Merkle.blockHasher.Invoke(transaction.Block);
 			}
 			catch (Exception e)
 			{
@@ -386,7 +389,10 @@ namespace NBitcoin.Protocol.Behaviors
 		//demo
 		private byte[] GetHash(Types.Transaction transaction)
 		{
-			return Merkle.transactionHasher.Invoke(transaction);
+		//	if (transaction.Transaction != null)
+				return Merkle.transactionHasher.Invoke(transaction);
+		//	else
+		//		return Merkle.blockHasher.Invoke(transaction.Block);
 		}
 	}
 }
