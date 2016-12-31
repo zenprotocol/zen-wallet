@@ -8,19 +8,20 @@ using NBitcoin.Protocol;
 using NBitcoin.Protocol.Behaviors;
 using NUnit.Framework;
 using System.Linq;
+using Infrastructure.Testing.Blockchain;
 
 namespace NBitcoinDerive.Tests
 {
 	public abstract class NetworkTestBase
 	{
-		protected void WithBlockChains(int blockChains, Action<BlockChain.BlockChain[]> action)
+		protected void WithBlockChains(int blockChains, byte[] genesisBlockHash, Action<BlockChain.BlockChain[]> action)
 		{
 			List<TestBlockChain> testBlockChains = new List<TestBlockChain>();
 
 			for (int i = 0; i < blockChains; i++)
 			{
 				String dbName = "test-" + new Random().Next(0, 1000);
-				testBlockChains.Add(new TestBlockChain(dbName));
+				testBlockChains.Add(new TestBlockChain(dbName, genesisBlockHash));
 			}
 
 			action(testBlockChains.Select(t => t.BlockChain).ToArray());
@@ -49,6 +50,11 @@ namespace NBitcoinDerive.Tests
 			//	throw e;
 			//}
 		}
+
+		//protected void WithChainMaintainingNodes(int count, Action<> action)
+		//{
+			
+		//}
 
 		protected Node Handshake(NodeServer originServer, NodeServer destServer)
 		{

@@ -180,7 +180,7 @@ namespace NBitcoin.Protocol
 									NodeServerTrace.Transfer(TraceCorrelation.Activity);
 									Trace.CorrelationManager.ActivityId = TraceCorrelation.Activity;
 								}
-								NodeServerTrace.Verbose("Sending " + payload + " to " + Node.RemoteSocketAddress + ":" + Node.RemoteSocketPort);
+								NodeServerTrace.Verbose("Sending " + payload + " from " + _Node.RemoteSocketAddress + ":" + _Node.RemoteSocketPort + " to " + Node.MyVersion.AddressFrom);
 							}
 
 							var bytes = WireSerialization.Instance.Pack(payload);

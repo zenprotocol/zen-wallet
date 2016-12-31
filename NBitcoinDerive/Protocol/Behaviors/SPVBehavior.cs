@@ -36,7 +36,7 @@ namespace NBitcoin.Protocol.Behaviors
 			}
 			//	_Builder.NewBlock += _Builder_NewBlock;
 			//	_Builder.NewTransaction += _Builder_NewTransaction;
-			_BlockChain.OnAddedToMempool += _BlockChain_OnAddedToMempool;
+		//	_BlockChain.OnAddedToMempool += _BlockChain_OnAddedToMempool;
 			AttachedNode.MessageReceived += AttachedNode_MessageReceived;
 		}
 
@@ -132,7 +132,15 @@ namespace NBitcoin.Protocol.Behaviors
 				//	}
 				//}
 
-				if (!_BlockChain.HandleNewTransaction(tx))
+				if (_BlockChain.HandleNewTransaction(tx))
+				{
+					foreach (var other in Nodes)
+					{
+						if (other != AttachedNode && other.State == NodeState.HandShaked)
+								other.SendMessageAsync(new InvPayload(tx));
+					}
+				}
+				else
 				{
 					node.SendMessageAsync(new RejectPayload()
 					{
@@ -161,7 +169,8 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 			foreach (var other in Nodes)
 			{
-				other.SendMessageAsync(new InvPayload(transaction));
+				if (other != AttachedNode && other.State == NodeState.HandShaked)
+					other.SendMessageAsync(new InvPayload(transaction));
 			}
 		}
 
@@ -187,7 +196,7 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 		//	_Builder.NewTransaction -= _Builder_NewTransaction;
 		//	_Builder.NewBlock -= _Builder_NewBlock;
-			_BlockChain.OnAddedToMempool -= _BlockChain_OnAddedToMempool;
+	//		_BlockChain.OnAddedToMempool -= _BlockChain_OnAddedToMempool;
 			AttachedNode.MessageReceived -= AttachedNode_MessageReceived;
 		}
 

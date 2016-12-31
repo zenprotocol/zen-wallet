@@ -40,7 +40,6 @@
     <Compile Include="SendStub.cs" />
     <Compile Include="Wallet.cs" />
     <Compile Include="Store\KeyStore.cs" />
-    <Compile Include="Store\MessagePacker.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Data\Key.cs" />
     <Compile Include="WalletManager.cs" />

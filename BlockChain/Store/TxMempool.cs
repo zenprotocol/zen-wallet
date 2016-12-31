@@ -22,6 +22,19 @@ namespace BlockChain.Store
 		//Relay transaction to peers
 		private static MessageProducer<AddedMessage> _Producer = MessageProducer<AddedMessage>.Instance;
 
+		//demo
+		public List<Keyed<Types.Transaction>> GetAll()
+		{
+			var result = new List<Keyed<Types.Transaction>>();
+
+			foreach (var item in _Transactions)
+			{
+				result.Add(item.Value);
+			}
+
+			return result;
+		}
+
 		public TxMempool()
 		{
 			_Transactions = new HashDictionary<Keyed<Types.Transaction>>();
@@ -34,6 +47,14 @@ namespace BlockChain.Store
 		public bool ContainsKey(byte[] key)
 		{
 			return _Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
+		}
+
+		public void Remove(byte[] key)
+		{
+			if (_Transactions.ContainsKey(key))
+				_Transactions.Remove(key);
+			else
+				_OrphanTransactions.Remove(key);
 		}
 
 		public Keyed<Types.Transaction> Get(byte[] key)
@@ -60,9 +81,9 @@ namespace BlockChain.Store
 				.Select(key => _OrphanTransactionsInputs[key]);
 		}
 
-		public void Add(Keyed<Types.Transaction> transaction, bool isOrphaned = false)
+		public void Add(Keyed<Types.Transaction> transaction, bool isOrphan = false)
 		{
-			if (isOrphaned)
+			if (isOrphan)
 			{
 				_OrphanTransactions.Add(transaction.Key, transaction);
 

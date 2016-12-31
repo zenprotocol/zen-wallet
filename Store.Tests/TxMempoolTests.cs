@@ -97,7 +97,7 @@ namespace BlockChain.Tests
 		}
 
 		[Test()]
-		public void CanGetOrphanedsOfTx()
+		public void CanGetOrphansOfTx()
 		{
 			var p = new TestTransactionPool();
 

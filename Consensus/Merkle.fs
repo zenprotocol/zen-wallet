@@ -75,7 +75,12 @@ let outputHasher = taggedHash Output
 let contractHasher = taggedHash Contract
 let extendedContractHasher = taggedHash ExtendedContract
 let blockHeaderHasher = taggedHash BlockHeader
-let blockHasher = taggedHash Block
+
+//let blockHasher block = blockHeaderHasher block.header
+let blockHasher =
+    fun block ->
+        blockHeaderHasher block.header
+
 let hashHasher = taggedHash Hash
 
 // Usage: partially apply to cTW and keep a reference as long as

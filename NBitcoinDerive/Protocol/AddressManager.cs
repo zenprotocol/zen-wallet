@@ -1088,6 +1088,7 @@ namespace NBitcoin.Protocol
 						if(parameters.ConnectCancellation.IsCancellationRequested)
 							throw;
 					}
+					Thread.Sleep(10);
 				}
 			}
 		}

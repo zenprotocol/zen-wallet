@@ -33,6 +33,12 @@ namespace Wallet
 				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(Program.temp); //TODO: fuck this.
 			});
 
+			ButtonPressEvent(eventboxReceive, () =>
+			{
+				new ReceiveDialog().ShowDialog(Program.temp); //TODO: fuck this.
+			});
+
+
 			HeightRequest = 130;
 		}
 
@@ -54,11 +60,6 @@ namespace Wallet
 				labelCurrency.Text = value.Caption;
 				image2.Pixbuf = Utils.ToPixbuf(Constants.Images.AssetLogo(value.Image));
 			}
-		}
-
-		protected void Send (object sender, EventArgs e)
-		{
-			WalletController.Send (400);
 		}
 	}
 }

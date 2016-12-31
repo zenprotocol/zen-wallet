@@ -8,12 +8,50 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Consensus;
 using Microsoft.FSharp.Collections;
+using Infrastructure.Testing.Blockchain;
+using System.Net;
 
 namespace NBitcoinDerive.Tests
 {
 	[TestFixture()]
 	public class NetworkTests : NetworkTestBase
 	{
+
+		//[Test()]
+		//public void CanRedeemOrphand()
+		//{
+		//	var p = new TestTransactionBlockChainExpectationPool();
+
+		//	p.Add("test1", 1, BlockChainAddTransactionOperation.Result.Added);
+		//	p.Add("test2", 0, BlockChainAddTransactionOperation.Result.AddedOrphan);
+		//	p.Spend("test2", "test1", 0);
+
+		//	p.Render();
+		//	var test1 = p.TakeOut("test1");
+
+		//	//using (var blockChain = new TestBlockChain("test"))
+		//	//{
+
+
+
+		//	//	blockChain.BlockChain.HandleNewTransaction(
+		//	//}
+
+		//	//lockChain bBlockChain = new BlockChain();
+
+
+		//	ScenarioAssertion(p, postAction: (mempool, txstore, utxostore, context) =>
+		//	{
+		//		var result = new BlockChainAddTransactionOperation(
+		//			context, test1, mempool, txstore, utxostore
+		//		).Start();
+
+		//		Assert.AreEqual(BlockChainAddTransactionOperation.Result.Added, result);
+		//	});
+		//}
+
+
+
 		[Test()]
 		public void CanBroadcastTransaction()
 		{
@@ -22,8 +60,8 @@ namespace NBitcoinDerive.Tests
 			p.Add("test1", 1);
 			p.Render();
 
-			AutoResetEvent waitForTransaction = new AutoResetEvent(false);
-			bool gotTransaction = false;
+			var waitForTransaction = new AutoResetEvent(false);
+			var gotTransaction = false;
 
 			BroadcastTransaction(
 				hub =>
@@ -32,14 +70,15 @@ namespace NBitcoinDerive.Tests
 					hub.BroadcastTransactionAsync(p["test1"].Value);
 				//	Thread.Sleep(1500);
 				//	hub.BroadcastTransactionAsync(p["test2"].Value);
-					Assert.True(waitForTransaction.WaitOne(15000));
-					Assert.True(gotTransaction);
 				}, () =>
 				{
 					gotTransaction = true;
 					waitForTransaction.Set();
 				}
 			);
+
+			Assert.True(waitForTransaction.WaitOne(20000));
+			Assert.True(gotTransaction);
 		}
 
 		[Test()]
@@ -55,7 +94,7 @@ namespace NBitcoinDerive.Tests
 
 			//ShouldRejectNewTx_DueToReferencedOutputDoesNotExist_DueToMissingOutputIndex
 
-			AutoResetEvent waitForTransaction = new AutoResetEvent(false);
+			var waitForTransaction = new AutoResetEvent(false);
 			bool gotTransaction = false;
 
 			BroadcastTransaction(
@@ -80,7 +119,7 @@ namespace NBitcoinDerive.Tests
 		{
 			WithServerSet(2, servers =>
 			{
-				WithBlockChains(2, blockChains =>
+				WithBlockChains(2, null, blockChains =>
 				{
 					AutoResetEvent waitForConnection = new AutoResetEvent(false);
 					bool connected = false;
@@ -97,7 +136,7 @@ namespace NBitcoinDerive.Tests
 					NodeConnectionParameters serverParameters = new NodeConnectionParameters();
 					serverParameters.TemplateBehaviors.Add(new AddressManagerBehavior(serverAddressManager));
 					serverParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
-					serverParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[0]));
+					serverParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[0], BroadcastHub.GetBroadcastHub(serverParameters.TemplateBehaviors)));
 
 					blockChains[0].OnAddedToMempool += transaction => {
 						Trace.Information("-- Transaction Received (node server)");
@@ -114,7 +153,7 @@ namespace NBitcoinDerive.Tests
 					nodesGroupParameters.AddressFrom = servers[1].ExternalEndpoint;
 					nodesGroupParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
 					nodesGroupParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
-					nodesGroupParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[1]));
+					nodesGroupParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[1], BroadcastHub.GetBroadcastHub(nodesGroupParameters.TemplateBehaviors)));
 
 					blockChains[1].OnAddedToMempool += transaction =>
 					{
@@ -143,6 +182,184 @@ namespace NBitcoinDerive.Tests
 				});
 			});
 		}
+
+		[Test()]
+		public void ShouldSyncBlockChain()
+		{
+			WithServerSet(2, servers =>
+			{
+				var p = new TestTransactionPool();
+
+				p.Add("t1", 1);
+				p.Add("t2", 0);
+				p.Spend("t2", "t1", 0);
+
+				p.Render();
+
+				var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
+				var block1 = new TestBlock(p.TakeOut("t2").Value);
+				block1.Parent = genesisBlock;
+
+				genesisBlock.Render();
+				block1.Render();
+
+				WithBlockChains(2, genesisBlock.Value.Key, blockChains =>
+				{
+					blockChains[0].HandleNewBlock(genesisBlock.Value.Value);
+					blockChains[0].HandleNewBlock(block1.Value.Value);
+
+
+					AutoResetEvent waitForConnection = new AutoResetEvent(false);
+					bool connected = false;
+
+					servers.SeedServerIndex = 0;
+
+					AddressManager serverAddressManager = new AddressManager();
+					serverAddressManager.Add(
+						new NetworkAddress(servers[0].ExternalEndpoint),
+						servers[0].ExternalEndpoint.Address
+					);
+					serverAddressManager.Connected(new NetworkAddress(servers[0].ExternalEndpoint));
+
+					NodeConnectionParameters serverParameters = new NodeConnectionParameters();
+					serverParameters.TemplateBehaviors.Add(new AddressManagerBehavior(serverAddressManager));
+					serverParameters.TemplateBehaviors.Add(new ChainBehavior(blockChains[0]));
+					serverParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
+					serverParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[0], BroadcastHub.GetBroadcastHub(serverParameters.TemplateBehaviors)));
+
+					blockChains[0].OnAddedToStore += transaction =>
+					{
+						Trace.Information("-- Transaction Received (node server)");
+					//	actionReceiver();
+					};
+
+					servers[0].InboundNodeConnectionParameters = serverParameters;
+
+					#region NodeGroup
+
+					AddressManager addressManager = new AddressManager();
+					addressManager.PeersToFind = 1;
+					NodeConnectionParameters nodesGroupParameters = new NodeConnectionParameters();
+					nodesGroupParameters.AddressFrom = servers[1].ExternalEndpoint;
+					nodesGroupParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+					nodesGroupParameters.TemplateBehaviors.Add(new ChainBehavior(blockChains[1]));
+					nodesGroupParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
+					nodesGroupParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[1], BroadcastHub.GetBroadcastHub(nodesGroupParameters.TemplateBehaviors)));
+
+					blockChains[1].OnAddedToStore += transaction =>
+					{
+						Trace.Information("-- Transaction Received (node group)");
+					};
+
+					NodesGroup nodesGroup = new NodesGroup(servers.Network, nodesGroupParameters);
+					nodesGroup.AllowSameGroup = true;
+					nodesGroup.MaximumNodeConnection = 1;
+					nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
+					{
+						Trace.Information("-- Node added to node group");
+						connected = true;
+						waitForConnection.Set();
+					};
+					nodesGroup.Connect();
+
+					#endregion
+
+					Assert.True(waitForConnection.WaitOne(10000)); //TODO: use reset events instead of sleep
+					Assert.True(connected);
+
+
+
+
+					//TODO
+					Thread.Sleep(30000);
+
+
+
+
+
+//					actionSender(BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters));
+
+					Trace.Information("-- Done");
+				});
+			});
+		}
+
+		[Test()]
+		public void ShouldSyncBlockChainAgainstLocal()
+		{
+			var network = new TestNetwork();
+
+			network.AddSeed(new NetworkAddress(new IPEndPoint(IPAddress.Parse("192.168.2.101"), 9999)));
+
+			var p = new TestTransactionPool();
+
+			p.Add("t1", 1);
+			p.Add("t2", 0);
+			p.Spend("t2", "t1", 0);
+
+			p.Render();
+
+			var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
+			var block1 = new TestBlock(p.TakeOut("t2").Value);
+			block1.Parent = genesisBlock;
+
+			genesisBlock.Render();
+			block1.Render();
+
+			WithBlockChains(1, genesisBlock.Value.Key, blockChains =>
+			{
+			//	blockChains[0].HandleNewBlock(genesisBlock.Value.Value);
+			//	blockChains[0].HandleNewBlock(block1.Value.Value);
+
+
+				AutoResetEvent waitForConnection = new AutoResetEvent(false);
+				bool connected = false;
+
+				blockChains[0].OnAddedToStore += transaction =>
+				{
+					Trace.Information("-- Transaction Received (node server)");
+					//	actionReceiver();
+				};
+
+				AddressManager addressManager = new AddressManager();
+				addressManager.PeersToFind = 1;
+				NodeConnectionParameters nodesGroupParameters = new NodeConnectionParameters();
+//				nodesGroupParameters.AddressFrom = servers[1].ExternalEndpoint;
+				nodesGroupParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+				nodesGroupParameters.TemplateBehaviors.Add(new ChainBehavior(blockChains[0]));
+				nodesGroupParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
+				nodesGroupParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[0], BroadcastHub.GetBroadcastHub(nodesGroupParameters.TemplateBehaviors)));
+
+				NodesGroup nodesGroup = new NodesGroup(network, nodesGroupParameters);
+				nodesGroup.AllowSameGroup = true;
+				nodesGroup.MaximumNodeConnection = 1;
+				nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
+				{
+					Trace.Information("-- Node added to node group");
+					connected = true;
+					waitForConnection.Set();
+				};
+				nodesGroup.Connect();
+
+
+				Assert.True(waitForConnection.WaitOne(10000)); //TODO: use reset events instead of sleep
+				Assert.True(connected);
+
+
+
+				//TODO
+				Thread.Sleep(40000);
+
+
+
+
+
+				//					actionSender(BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters));
+
+				Trace.Information("-- Done");
+			});
+		}
+
 
 		[Test()]
 		public void CanHandshakeWithAdvertize()

@@ -52,7 +52,6 @@ namespace NBitcoin.Protocol.Behaviors
 		}
 
 
-
 		#region ICloneable Members
 
 		public override object Clone()

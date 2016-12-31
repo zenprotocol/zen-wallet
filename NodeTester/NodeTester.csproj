@@ -143,5 +143,13 @@
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
       <Name>Wallet.core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing.Blockchain\Infrastructure.Testing.Blockchain.csproj">
+      <Project>{75798183-9B5D-4CB3-80BD-644CAF13F317}</Project>
+      <Name>Infrastructure.Testing.Blockchain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

@@ -6,23 +6,21 @@ namespace BlockChain.Tests
 {
 	public class TestBase
 	{
-		protected class TestDBContext<T> : IDisposable where T : new()
+		protected class TestDBContext : IDisposable
 		{
-			public T Store { get; private set; }
-			private readonly string _DbName;
+			public string DbName { get; private set; }
 			private readonly DBContext _DBContext;
 
 			public TestDBContext()
 			{
-				_DbName = "test-" + new Random().Next(0, 1000);
-				_DBContext = new DBContext(_DbName);
-				Store = new T();
+				DbName = "test-" + new Random().Next(0, 1000);
+				_DBContext = new DBContext(DbName);
 			}
 
 			public void Dispose()
 			{
 				_DBContext.Dispose();
-				Directory.Delete(_DbName, true);
+				Directory.Delete(DbName, true);
 			}
 
 			public TransactionContext GetTransactionContext()

@@ -29,17 +29,22 @@ namespace BlockChain
 			Rejected
 		}
 
-		public BlockChainAddTransactionOperation(TransactionContext transactionContext, Keyed<Types.Transaction> transaction, TxMempool txMempool)
+		public BlockChainAddTransactionOperation(
+			TransactionContext transactionContext, 
+			Keyed<Types.Transaction> transaction, 
+			TxMempool txMempool, 
+			TxStore txStore, 
+			UTXOStore utxoStore
+		)
 		{
 			_InputLocations = new Dictionary<Types.Outpoint, InputLocationEnum>();
 			_TransactionContext = transactionContext;
 			_NewTransaction = transaction;
 			_TxMempool = txMempool;
-			_TxStore = new TxStore();
-			_UTXOStore = new UTXOStore();
+			_TxStore = txStore;
+			_UTXOStore = utxoStore;
 		}
 
-		//Ref: https://gitlab.com/mazudaoyi/zen-wallet/wikis/new-transaction-message
 		public Result Start()
 		{
 			if (!IsValid() || IsInMempool() || IsInTxStore())
@@ -48,12 +53,11 @@ namespace BlockChain
 				return Result.Rejected;
 			}
 
-			// temp
-			//if (IsMempoolContainsSpendingInput())
-			//{
-			//	BlockChainTrace.Information("Mempool contains spending input");
-			//	return Result.Rejected;
-			//}
+			if (IsMempoolContainsSpendingInput())
+			{
+				BlockChainTrace.Information("Mempool contains spending input");
+				return Result.Rejected;
+			}
 
 			if (IsOrphan())
 			{
@@ -73,12 +77,19 @@ namespace BlockChain
 			//TODO: 7. Apply fee rules. If fails, reject
 			//TODO: 8. Validate each input. If fails, reject
 
+			BlockChainTrace.Information("Transaction added to mempool");
 			_TxMempool.Add(_NewTransaction);
 
 			foreach (var transaction in _TxMempool.GetOrphansOf(_NewTransaction)) 
 			{
 				BlockChainTrace.Information("Start with orphan");
-				new BlockChainAddTransactionOperation(_TransactionContext, transaction, _TxMempool).Start();
+				new BlockChainAddTransactionOperation(
+					_TransactionContext, 
+					transaction, 
+					_TxMempool,
+					_TxStore,
+					_UTXOStore
+				).Start();
 			}
 
 			return Result.Added;
@@ -109,7 +120,7 @@ namespace BlockChain
 
 		private bool IsMempoolContainsSpendingInput()
 		{
-			foreach (Types.Outpoint inputs in _NewTransaction.Value.inputs)
+			foreach (var inputs in _NewTransaction.Value.inputs)
 			{
 				if (_TxMempool.ContainsInputs(_NewTransaction))
 				{
@@ -122,7 +133,7 @@ namespace BlockChain
 
 		private bool IsOrphan()
 		{
-			foreach (Types.Outpoint input in _NewTransaction.Value.inputs)
+			foreach (var input in _NewTransaction.Value.inputs)
 			{
 				if (_TxMempool.ContainsKey(input.txHash))
 				{
@@ -142,7 +153,7 @@ namespace BlockChain
 
 		private bool IsValidInputs()
 		{
-			foreach (Types.Outpoint input in _NewTransaction.Value.inputs)
+			foreach (var input in _NewTransaction.Value.inputs)
 			{
 				if (!ParentOutputExists(input))
 				{
@@ -150,12 +161,11 @@ namespace BlockChain
 					return false;
 				}
 
-				//temp
-				//if (ParentOutputSpent(input))
-				//{
-				//	BlockChainTrace.Information("parent output spent");
-				//	return false;
-				//}
+				if (ParentOutputSpent(input))
+				{
+					BlockChainTrace.Information("parent output spent");
+					return false;
+				}
 			}
 
 			return true;
@@ -186,9 +196,11 @@ namespace BlockChain
 
 		private bool ParentOutputSpent(Types.Outpoint input)
 		{
-			byte[] inputKey = Merkle.outpointHasher.Invoke(input);
+			byte[] newArray = new byte[input.txHash.Length + 1];
+			input.txHash.CopyTo(newArray, 1);
+			newArray[input.txHash.Length] = (byte)input.index;
 
-			if (_InputLocations[input] == InputLocationEnum.TxStore && !_UTXOStore.ContainsKey(_TransactionContext, inputKey))
+			if (_InputLocations[input] == InputLocationEnum.TxStore && !_UTXOStore.ContainsKey(_TransactionContext, newArray))
 			{
 				BlockChainTrace.Information("Output has been spent");
 				return true;

@@ -1,189 +1,95 @@
-using NUnit.Framework;
-using System;
-using Consensus;
-using System.Collections.Generic;
-using System.IO;
+﻿using System;
 using BlockChain.Store;
+using NUnit.Framework;
 using Store;
-using System.Linq;
-using Microsoft.FSharp.Collections;
 
 namespace BlockChain.Tests
 {
 	[TestFixture()]
-	public class BlockChainTests
+	public class BlockChainTests : TestBase
 	{
-		//[Test()]
-		//public void CanUseGenesisTransaction()
-		//{
-		//	String dbName = "test-" + new Random().Next(0, 1000);
-
-		//	using (BlockChain blockChain = new BlockChain(dbName))
-		//	{
-		//		blockChain._TxStore.Put(GetGenesisTransaction()); 
-		//	}
-		//}
-
 		[Test()]
-		public void ShoudRejectDuplicateBlock()
+		public void CanFindOrphansByParent()
 		{
-			WithBlockChains(1, blockChain =>
+			var store = new OrphanBlockStore();
+
+			var p1 = new TestTransactionPool();
+			p1.Add("t1", 0);
+			p1.Add("t2", 0);
+			p1.Add("t3", 0);
+			p1.Render();
+
+
+			var block1 = new TestBlock(p1.TakeOut("t1").Value);
+			var block2 = new TestBlock(p1.TakeOut("t2").Value);
+			var block3 = new TestBlock(p1.TakeOut("t3").Value);
+
+			block2.Parent = block1;
+			block3.Parent = block1;
+
+			block1.Render();
+			block2.Render();
+			block3.Render();
+
+			using (TestDBContext dbContext = new TestDBContext())
 			{
-	//			Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.AddedOrpan));
-	//			Assert.That(blockChain[0].HandleNewBlock(Consensus.Tests.blk), Is.EqualTo(BlockChain.HandleNewBlockResult.Rejected));
-			});
-		}
-
-		[Test()]
-		public void CanStoreBlocks()
-		{
-			String dbName = "test-" + new Random().Next(0, 1000);
-
-			List<Types.Block> blocks = new List<Types.Block>();
-
-			for (int i = 0; i < 10; i++)
-			{
-				Types.Block newBlock = Util.GetBlock(null, new Random().Next(0, 1000));
-
-				using (BlockChain blockChain = new BlockChain(dbName))
+				using (TransactionContext transactionContext = dbContext.GetTransactionContext())
 				{
-					blockChain.HandleNewBlock(newBlock);
-				}
+					store.Put(transactionContext, block2.Value);
+					store.Put(transactionContext, block3.Value);
 
-				blocks.Add(newBlock);
-			}
+					var result = store.GetOrphansOf(transactionContext, block1.Value);
 
-
-			MainBlockStore blockStore = new MainBlockStore();
-
-			using (DBContext dbContext = new DBContext(dbName))
-			{
-				using (TransactionContext context = dbContext.GetTransactionContext())
-				{
-					foreach (Types.Block expected in blocks)
-					{
-						byte[] key = Merkle.blockHasher.Invoke(expected);
-
-						Assert.IsTrue(blockStore.ContainsKey(context, key));
-
-						Types.Block found = blockStore.Get(context, key).Value;
-
-						Assert.AreEqual(expected, found, "match expected/found block");
-					}
+//					CollectionAssert.Contains(result, block2.Value);
+//					CollectionAssert.Contains(result, block3.Value);
 				}
 			}
-
-			Directory.Delete(dbName, true);
 		}
 
 		[Test()]
-		public void CanStoreBlockDifficulty()
+		public void Test1()
 		{
-			String dbName = "test-" + new Random().Next(0, 1000);
+			var blockPool = new TestBlockBlockChainExpectationPool();
 
-			var random = new Random();
+			var p1 = new TestTransactionPool();
+			p1.Add("t1", 0);
+	//		p1.Add("t2", 0);
 
-			Double difficultyAgg = 0;
+			blockPool.Blocks["block1"] = new TestBlock(p1.TakeOut("t1").Value);
+			blockPool.Expectations["block1"] = BlockChainAddBlockOperation.Result.AddedOrphan;
 
-			var blocks = new List<Tuple<Types.Block, Double>>();
-
-			Types.Block lastBlock = null;
-
-			Console.WriteLine("Creating");
-
-			for (int i = 0; i < 10; i++)
-			{
-				Double difficultyNew = random.Next(0, 1000);
-				Types.Block newBlock = Util.GetBlock(lastBlock, difficultyNew);
-				lastBlock = newBlock;
-
-				using (BlockChain blockChain = new BlockChain(dbName))
-				{
-					Console.WriteLine("Handling block with difficulty: " + difficultyNew);
-
-					blockChain.HandleNewBlock(newBlock);
-				}
-
-				difficultyAgg += difficultyNew;
-
-				Console.WriteLine("Totoal difficulty: " + difficultyAgg);
-
-				blocks.Add(new Tuple<Types.Block, Double>(newBlock, difficultyAgg));
-			}
-
-			Console.WriteLine("Checking");
-
-			using (DBContext dbContext = new DBContext(dbName))
-			{
-				var BlockDifficultyTable = new BlockDifficultyTable();
-
-				using (TransactionContext context = dbContext.GetTransactionContext())
-				{
-					foreach (Tuple<Types.Block, Double> blockDifficultyPair in blocks)
-					{
-						byte[] key = Merkle.blockHasher.Invoke(blockDifficultyPair.Item1);
-						Double expected = blockDifficultyPair.Item2;
-						Double found = BlockDifficultyTable.Context(context)[key];
-
-						Assert.AreEqual(expected, found, "match expected/found block difficulty");
-						Console.WriteLine("check passed..");
-					}
-				}
-			}
-
-			Directory.Delete(dbName, true);
+			ScenarioAssertion(blockPool);
 		}
 
-		//[Test()]
-		//public void CanHandleNewValidBlock()
-		//{
-		//	Types.Block newBlock = GetBlock();
-
-		//	String dbName = "test-" + new Random().Next(0, 1000);
-
-		//	using (BlockChain blockChain = new BlockChain(dbName))
-		//	{
-		//		blockChain.HandleNewValueBlock(newBlock/*, 1*/);
-		//	}
-
-		//	Directory.Delete(dbName, true);
-		//}
-
-		//copied from elsewhere
-		private void WithBlockChains(int blockChains, Action<BlockChain[]> action)
-		{
-			var testBlockChains = new List<TestBlockChain>();
-
-			for (int i = 0; i < blockChains; i++)
+		private void ScenarioAssertion(
+			TestBlockBlockChainExpectationPool p,
+			Action<BlockChain> preAction = null,
+			Action<BlockChain> postAction = null
+		) {
+			using (var testBlockChain = new TestBlockChain())
 			{
-				String dbName = "test-" + new Random().Next(0, 1000);
-				testBlockChains.Add(new TestBlockChain(dbName));
-			}
+				if (preAction != null)
+				{
+					preAction(testBlockChain.BlockChain);
+				}
 
-			action(testBlockChains.Select(t => t.BlockChain).ToArray());
+				p.Render();
 
-			foreach (var testBlockChain in testBlockChains)
-			{
-				testBlockChain.Dispose();
-			}
-		}
+				foreach (var item in p.Blocks)
+				{
+					BlockChainAddBlockOperation.Result t = p.Expectations[item.Key];
 
-       //copied from elsewhere
-		private class TestBlockChain : IDisposable
-		{
-			private readonly String _DbName;
-			public BlockChain BlockChain { get; private set; }
+					BlockChainAddBlockOperation.Result result = testBlockChain.BlockChain.HandleNewBlock(
+						item.Value.Value.Value //yeah!
+					);
 
-			public TestBlockChain(String dbName)
-			{
-				_DbName = dbName;
-				BlockChain = new BlockChain(dbName);
-			}
+					Assert.AreEqual(t, result, "Assertion for tag: " + item.Key);
+				}
 
-			public void Dispose()
-			{
-				BlockChain.Dispose();
-				Directory.Delete(_DbName, true);
+				if (postAction != null)
+				{
+					postAction(testBlockChain.BlockChain);
+				}
 			}
 		}
 	}
