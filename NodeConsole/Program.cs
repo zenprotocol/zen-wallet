@@ -10,6 +10,7 @@ using NodeCore;
 using NBitcoin.Protocol.Behaviors;
 using NBitcoin.Protocol;
 using Infrastructure.Testing.Blockchain;
+using NBitcoinDerive;
 
 namespace NodeConsole
 {
@@ -55,6 +56,7 @@ namespace NodeConsole
 
 			OwnResource(blockChain);
 
+
 			blockChain.OnAddedToMempool += transaction =>
 			{
 				Console.WriteLine("\n** Got Transaction **\n");
@@ -74,9 +76,14 @@ namespace NodeConsole
 			addressManager.Connected (new NetworkAddress (ipEndpoint));
 				
 			var broadcastHubBehavior = new BroadcastHubBehavior();
+
+			Miner miner = new Miner(blockChain);
+			OwnResource(miner);
+
+
 			server.Behaviors.Add(broadcastHubBehavior);
 			server.Behaviors.Add(new SPVBehavior(blockChain, broadcastHubBehavior.BroadcastHub));
-			server.Behaviors.Add(new MinerBehavior(blockChain));
+			server.Behaviors.Add(new MinerBehavior(miner));
 			server.Behaviors.Add(new ChainBehavior(blockChain));
 
 			server.Start();
