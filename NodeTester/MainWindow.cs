@@ -5,7 +5,6 @@ using Open.Nat;
 using NodeTester;
 using System.Linq;
 using Infrastructure;
-using NodeCore;
 using Gtk;
 
 public partial class MainWindow : ResourceOwnerWindow
@@ -18,7 +17,7 @@ public partial class MainWindow : ResourceOwnerWindow
 	{
 		Build ();
 
-		OwnResource(Wallet.core.Wallet.Instance);
+//		OwnResource(Wallet.core.Wallet.Instance);
 		OwnResource(WalletManager.Instance);
 
 //		statusbar3.Push (1, "xx");
@@ -33,10 +32,11 @@ public partial class MainWindow : ResourceOwnerWindow
 
 		DeleteEvent += OnDeleteEvent;
 
-		OwnResource(MessageProducer<NodeTester.Settings>.Instance.AddMessageListener(new MessageListener<NodeTester.Settings>((Settings) =>
-		{
-			entryCheckPort_Port.Text = Settings.ServerPort.ToString();
-		})));
+		//TODO
+//		OwnResource(MessageProducer<NodeTester.Settings>.Instance.AddMessageListener(new MessageListener<NodeTester.Settings>((Settings) =>
+//		{
+//			entryCheckPort_Port.Text = Settings.ServerPort.ToString();
+//		})));
 
 		buttonServerTest.Clicked += Button_ServerTest;
 		buttonDiscover.Clicked += Button_Discover;
@@ -54,8 +54,9 @@ public partial class MainWindow : ResourceOwnerWindow
 
 		OpenConsole();
 
-		if (JsonLoader<NodeTester.Settings>.Instance.IsNew)
-			new SettingsWindow ().Show ();
+		//TODO:
+		//if (JsonLoader<NodeTester.Settings>.Instance.IsNew)
+		//	new SettingsWindow ().Show ();
 	}
 
 	private void InitSummaryPage() {
@@ -270,7 +271,7 @@ public partial class MainWindow : ResourceOwnerWindow
 	protected void Button_Discover (object sender, EventArgs e)
 	{
 		//DiscoveryManager.Instance.Start(this, new IPEndPoint(IPAddress.Parse("127.0.0.1"), JsonLoader<Settings>.Instance.Value.ServerPort));
-		NodeTester.DiscoveryManager.Instance.Start(this, NATManager.Instance.ExternalIPAddress);
+		//NodeTester.DiscoveryManager.Instance.Start(this, NATManager.Instance.ExternalIPAddress);
 	}
 		
 	protected void Menu_Console (object sender, EventArgs e)
@@ -314,7 +315,7 @@ public partial class MainWindow : ResourceOwnerWindow
 	protected void Button_StartServerInternal(object sender, EventArgs e)
 	{
 		IPAddress InternalIPAddress = null;
-		IPAddress[] PrivateIPs = NodeCore.Utils.GetAllLocalIPv4();
+		IPAddress[] PrivateIPs = NodeTester.Utils.GetAllLocalIPv4();
 
 		if (PrivateIPs.Count() == 0)
 		{
@@ -444,7 +445,7 @@ public partial class MainWindow : ResourceOwnerWindow
 	{
 		IPAddress InternalIPAddress;
 
-		IPAddress[] PrivateIPs = NodeCore.Utils.GetAllLocalIPv4();
+		IPAddress[] PrivateIPs = NodeTester.Utils.GetAllLocalIPv4();
 
 		if (PrivateIPs.Count() == 0)
 		{

@@ -6,7 +6,6 @@ using Infrastructure.Console;
 using System.IO;
 using Infrastructure.Testing;
 using System.Net;
-using NodeCore;
 using NBitcoin.Protocol.Behaviors;
 using NBitcoin.Protocol;
 using Infrastructure.Testing.Blockchain;
@@ -90,7 +89,7 @@ namespace NodeConsole
 		}
 	}
 
-	class MainClass : InteractiveConsole
+	public class MainClass : InteractiveConsole
 	{
 		public static void Main(string[] args)
 		{

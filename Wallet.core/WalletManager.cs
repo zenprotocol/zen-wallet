@@ -23,6 +23,8 @@ namespace Wallet.core
 			MessageProducer<IMessage>.Instance.PushMessage(message);
 		}
 
+		//public delegate Action<Types.Transaction> OnNewTransaction;
+
 		public WalletManager()
 		{
 			_BlockChain = new BlockChain.BlockChain("test", genesisBlockHash);

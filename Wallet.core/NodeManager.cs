@@ -1,58 +1,62 @@
-﻿using System;
-using Infrastructure;
-using System.Threading.Tasks;
-using NodeCore;
+﻿//using System;
+//using Infrastructure;
+//using System.Threading.Tasks;
+//using NBitcoinDerive;
 
-namespace Wallet.core
-{
-	public interface INodeManager
-	{
-		Task Start(IResourceOwner resourceOwner, NBitcoin.Network network);
-		void Stop();
-	}
+//namespace Wallet.core
+//{
+//	public interface INodeManager
+//	{
+//		Task Start(IResourceOwner resourceOwner, NBitcoin.Network network);
+//		void Stop();
+//	}
 
-	public class NodeManager : INodeManager
-	{
-		private Server _Server = null;
+//	public class NodeManager : INodeManager
+//	{
+//		private NATManager _NATManager;
+
+//		private Server _Server = null;
 		
-		public async Task Start(IResourceOwner resourceOwner, NBitcoin.Network network)
-		{
-			await NATManager.Instance.Init ().ContinueWith (t => {
-				var Settings = JsonLoader<Settings>.Instance.Value;
+//		public async Task Start(IResourceOwner resourceOwner, NBitcoin.Network network)
+//		{
+//			_NATManager = new NATManager(network.DefaultPort);
 
-				if (NATManager.Instance.DeviceFound &&
-				     NATManager.Instance.Mapped.Value &&
-				     NATManager.Instance.ExternalIPVerified.Value) {
+//			await _NATManager.Init ().ContinueWith (t => {
+//				var Settings = JsonLoader<Settings>.Instance.Value;
 
-					var ipEndpoint = new System.Net.IPEndPoint(NATManager.Instance.ExternalIPAddress, Settings.ServerPort);
+//				if (_NATManager.DeviceFound &&
+//				     _NATManager.Mapped.Value &&
+//				     _NATManager.ExternalIPVerified.Value) {
 
-					_Server = new Server(resourceOwner, ipEndpoint, network);
+//					var ipEndpoint = new System.Net.IPEndPoint(_NATManager.ExternalIPAddress, Settings.ServerPort);
 
-					if (_Server.Start())
-					{
-			//			Trace.Information($"Server started at {ipEndpoint}");
-					}
-					else
-					{
-				//		Trace.Information($"Could not start server at {ipEndpoint}");
-					}
-				}
+//					_Server = new Server(resourceOwner, ipEndpoint, network);
 
-				Settings.IPSeeds.Add("54.218.251.235:9999");
-				Settings.PeersToFind = 1;
-				Settings.MaximumNodeConnection = 1;
+//					if (_Server.Start())
+//					{
+//			//			Trace.Information($"Server started at {ipEndpoint}");
+//					}
+//					else
+//					{
+//				//		Trace.Information($"Could not start server at {ipEndpoint}");
+//					}
+//				}
+
+//				Settings.IPSeeds.Add("54.218.251.235:9999");
+//				Settings.PeersToFind = 1;
+//				Settings.MaximumNodeConnection = 1;
 				
-			//	if (Settings.IPSeeds.Count == 0) {
-			//		Trace.Information ("No seeds defined");
-			//	} else {
-					DiscoveryManager.Instance.Start (resourceOwner, NATManager.Instance.ExternalIPAddress);
-			//	}
-			});			
-		}
+//			//	if (Settings.IPSeeds.Count == 0) {
+//			//		Trace.Information ("No seeds defined");
+//			//	} else {
+//					DiscoveryManager.Instance.Start (resourceOwner, _NATManager.ExternalIPAddress);
+//			//	}
+//			});			
+//		}
 
-		public void Stop() {
-			_Server.Stop ();
-		//	DiscoveryManager.Instance.Stop ();
-		}
-	}
-}
+//		public void Stop() {
+//			_Server.Stop ();
+//		//	DiscoveryManager.Instance.Stop ();
+//		}
+//	}
+//}

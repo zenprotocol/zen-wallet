@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{6B1189D4-2B5A-4764-A1D7-6E8258730303}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Library</OutputType>
     <RootNamespace>Wallet</RootNamespace>
     <AssemblyName>Wallet</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
@@ -66,6 +66,9 @@
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core" />
+    <Reference Include="SimpleInjector">
+      <HintPath>..\packages\SimpleInjector.4.0.0-alpha2\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -200,17 +203,9 @@
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
       <Name>Wallet.core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NodeTester\NodeTester.csproj">
-      <Project>{7469FE62-A886-460D-8439-8048AF6514A1}</Project>
-      <Name>NodeTester</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NodeCore\NodeCore.csproj">
-      <Project>{125F2D2D-5FB6-447F-81D9-B97B1FB1DDB4}</Project>
-      <Name>NodeCore</Name>
     </ProjectReference>
     <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
@@ -223,6 +218,10 @@
     <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>NBitcoinDerive</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing.Blockchain\Infrastructure.Testing.Blockchain.csproj">
+      <Project>{75798183-9B5D-4CB3-80BD-644CAF13F317}</Project>
+      <Name>Infrastructure.Testing.Blockchain</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

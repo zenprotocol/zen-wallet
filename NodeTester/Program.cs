@@ -5,7 +5,7 @@ using Infrastructure.TestingGtk;
 
 namespace NodeTester
 {
-	class MainClass
+	public class MainClass
 	{
 		public static void Main (string[] args)
 		{

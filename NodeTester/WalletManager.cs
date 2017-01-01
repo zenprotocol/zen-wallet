@@ -8,7 +8,7 @@ using Infrastructure.Testing.Blockchain;
 
 namespace NodeTester
 {
-	public class WalletManager : Singleton<WalletManager>, IDisposable
+	public class WalletManager : Singleton<WalletManager>, ResourceOwner
 	{
 		private readonly BroadcastHubBehavior _BroadcastHubBehavior;
 		private readonly SPVBehavior _SPVBehavior;
@@ -49,6 +49,7 @@ namespace NodeTester
 
 
 			_BlockChain = new BlockChain.BlockChain("test", genesisBlockHash);
+			OwnResource (_BlockChain);
 
 			_BlockChain.OnAddedToMempool += transaction => {
 				LogMessageContext.Create ("TransactionReceived (mempool)");
@@ -73,7 +74,7 @@ namespace NodeTester
 			nodeBehaviorsCollection.Add(_BroadcastHubBehavior);
 			nodeBehaviorsCollection.Add(_SPVBehavior);
 			nodeBehaviorsCollection.Add(_ChainBehavior);
-}
+		}
 
 		Random _Random = new Random();
 
@@ -99,11 +100,6 @@ namespace NodeTester
 				null);
 
 			_BroadcastHub.BroadcastTransactionAsync(transaction);
-		}
-
-		public void Dispose()
-		{
-			_BlockChain.Dispose();
 		}
 	}
 }

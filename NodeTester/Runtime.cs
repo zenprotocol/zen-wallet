@@ -1,8 +1,6 @@
 ﻿using System;
-using NodeTester;
-using NBitcoin.Protocol;
 using Infrastructure;
-using NodeCore;
+using NBitcoinDerive;
 
 namespace NodeTester
 {

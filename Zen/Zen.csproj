@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{1F030257-FBB4-4538-BBD8-4B241FD73B13}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Zen</RootNamespace>
+    <AssemblyName>Zen</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+    <Commandlineparameters>-p test_home --lan -console</Commandlineparameters>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
+    <Reference Include="NDesk.Options">
+      <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector">
+      <HintPath>..\packages\SimpleInjector.4.0.0-alpha2\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TUI.cs" />
+    <Compile Include="App.cs" />
+    <Compile Include="Test.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wallet\GUI.csproj">
+      <Project>{6B1189D4-2B5A-4764-A1D7-6E8258730303}</Project>
+      <Name>GUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Console\Infrastructure.Console.csproj">
+      <Project>{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}</Project>
+      <Name>Infrastructure.Console</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Zen.CLRCLI\Zen.CLRCLI.csproj">
+      <Project>{29BB24E8-D6C7-403E-8B7C-DC65765E342B}</Project>
+      <Name>Zen.CLRCLI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
+      <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
+      <Name>NBitcoinDerive</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
+      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
+      <Name>Infrastructure.Testing</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

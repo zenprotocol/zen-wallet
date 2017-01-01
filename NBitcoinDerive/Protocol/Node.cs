@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NBitcoinDerive.Serialization;
+using NBitcoinDerive;
 
 namespace NBitcoin.Protocol
 {

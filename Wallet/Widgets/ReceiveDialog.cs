@@ -1,4 +1,5 @@
 ﻿using System;
+using Wallet.core;
 using Wallet.core.Data;
 
 namespace Wallet
@@ -16,7 +17,7 @@ namespace Wallet
 
 			dialogfieldAddress.Value = BitConverter.ToString(key.Public);
 
-			foreach (var key_ in core.Wallet.Instance.GetKeys())
+			foreach (var key_ in Infrastructure.Container.Instance.GetInstance<WalletManager2>().GetKeys())
 			{
 				Console.WriteLine(key_.Public);
 			}
@@ -33,7 +34,7 @@ namespace Wallet
 
 			key.Public = sendToBytes;
 
-			core.Wallet.Instance.AddKey(key);
+			Infrastructure.Container.Instance.GetInstance<WalletManager2>().AddKey(key);
 
 			return key;
 		}

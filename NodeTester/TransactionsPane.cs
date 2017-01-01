@@ -2,6 +2,7 @@
 using Gtk;
 using System.Linq;
 using Infrastructure;
+using Wallet.core;
 
 namespace NodeTester
 {
@@ -44,7 +45,7 @@ namespace NodeTester
 
 		void ButtonKeyCreate_Clicked(object sender, EventArgs e)
 		{
-			Wallet.core.Wallet.Instance.AddKey(new Wallet.core.Data.Key() { Change = true });
+			Infrastructure.Container.Instance.GetInstance<Wallet.core.WalletManager2>().AddKey(new Wallet.core.Data.Key() { Change = true });
 			Populate(treeviewKeysUnused, false, true);
 		}
 
@@ -107,7 +108,7 @@ namespace NodeTester
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
-			Wallet.core.Wallet.Instance.GetKeys(used, isChange).ToList().ForEach(key =>
+			Infrastructure.Container.Instance.GetInstance<Wallet.core.WalletManager2>().GetKeys(used, isChange).ToList().ForEach(key =>
 			{
 				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
 			});

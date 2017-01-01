@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Infrastructure;
-using NodeCore;
 using NBitcoin;
 
 namespace NodeTester

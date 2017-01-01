@@ -28,7 +28,6 @@
     <Reference Include="System" />
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-      <Package>nunit</Package>
     </Reference>
     <Reference Include="FSharp.Core" />
     <Reference Include="Consensus">
