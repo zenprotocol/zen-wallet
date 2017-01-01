@@ -10,6 +10,7 @@ using System.Threading;
 using NBitcoin.Protocol;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using System.Net.NetworkInformation;
 #if !NOSOCKET
 using System.Net.Sockets;
 #endif
@@ -693,6 +694,38 @@ namespace NBitcoin
 				}
 				return hash;
 			}
+		}
+
+		public static IPAddress[] GetAllLocalIPv4()
+		{
+			List<IPAddress> ipAddrList = new List<IPAddress>();
+
+			foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces())
+			{
+				if (item.OperationalStatus != OperationalStatus.Up)
+				{
+					continue;
+				}
+
+				//TODO: which ones..?
+				if (item.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
+					item.NetworkInterfaceType == NetworkInterfaceType.Ethernet ||
+					item.NetworkInterfaceType == NetworkInterfaceType.Ethernet3Megabit ||
+					item.NetworkInterfaceType == NetworkInterfaceType.FastEthernetFx ||
+					item.NetworkInterfaceType == NetworkInterfaceType.FastEthernetT ||
+					item.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet)
+				{
+					foreach (UnicastIPAddressInformation ip in item.GetIPProperties().UnicastAddresses)
+					{
+						if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+						{
+							ipAddrList.Add(ip.Address);
+						}
+					}
+				}
+			}
+
+			return ipAddrList.ToArray();
 		}
 	}
 }

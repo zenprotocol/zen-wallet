@@ -1,14 +1,12 @@
 using System;
 using Infrastructure;
-using NodeCore;
 
 namespace NodeTester
 {
 	public class App<T> where T : Gtk.Window, IResourceOwner, new()
 	{
 		static App() {
-			JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeTester.json";
-			JsonLoader<Settings>.Instance.FileName = "NodeTester.json";
+		//	JsonLoader<Settings>.Instance.FileName = "NodeTester.json";
 		}
 
 		public static App<T> Create()

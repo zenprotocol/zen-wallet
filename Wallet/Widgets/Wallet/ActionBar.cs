@@ -30,12 +30,12 @@ namespace Wallet
 			}, labelAmount, labelAmountConverted);
 
 			ButtonPressEvent (eventboxSend, () => {
-				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(Program.temp); //TODO: fuck this.
+//				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(Program.temp); //TODO: fuck this.
 			});
 
 			ButtonPressEvent(eventboxReceive, () =>
 			{
-				new ReceiveDialog().ShowDialog(Program.temp); //TODO: fuck this.
+//				new ReceiveDialog().ShowDialog(Program.temp); //TODO: fuck this.
 			});
 
 

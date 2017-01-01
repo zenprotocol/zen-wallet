@@ -1,4 +1,9 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/obj/Debug/.NETFramework,Version=v4.6.1.AssemblyAttribute.cs
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.Tests.dll.config
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.Tests.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.Tests.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/obj/Debug/NBitcoinDerive.Tests.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/obj/Debug/NBitcoinDerive.Tests.dll.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/nunit.framework.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Consensus.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.dll
@@ -15,10 +20,7 @@
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Infrastructure.Testing.Blockchain.exe.mdb
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/MsgPack.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/BouncyCastle.Crypto.dll
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Newtonsoft.Json.dll
 /home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/DBreeze.dll
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.Tests.dll.config
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.Tests.dll.mdb
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/NBitcoinDerive.Tests.dll
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/obj/Debug/NBitcoinDerive.Tests.dll
-/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/obj/Debug/NBitcoinDerive.Tests.dll.mdb
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Newtonsoft.Json.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/SimpleInjector.dll
+/home/user/projects/zen/wallet/branches/blockchain/zen-wallet/NBitcoinDerive.Tests/bin/Debug/Open.Nat.dll

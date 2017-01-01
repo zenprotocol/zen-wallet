@@ -5,6 +5,8 @@ using NBitcoin;
 using System.Net;
 using NBitcoin.Protocol.Behaviors;
 using System.Collections.Generic;
+using NBitcoinDerive;
+using Infrastructure;
 
 namespace NodeTester
 {
@@ -82,7 +84,7 @@ namespace NodeTester
 
 			private List<NodeServer> nodeServers = new List<NodeServer>();
 
-			public TestNetwork Network { get; private set; }
+	//		public TestNetwork Network { get; private set; }
 
 			//public int SeedServerIndex {
 			//	set {
@@ -92,14 +94,14 @@ namespace NodeTester
 
 			public TesterNodeServerSet(int count)
 			{
-				Network = new TestNetwork ();
+		//		Network = new TestNetwork ();
 
 				for (int i = 0; i < count; i++)
 				{
 					int port = 3380 + i;
 					int internalPort = port;
 
-					NodeServer Server = new NodeServer(Network, internalPort: internalPort);
+					NodeServer Server = new NodeServer(JsonLoader<Network>.Instance.Value, internalPort: internalPort);
 
 					Server.NodeAdded += (NodeServer sender, Node node) => {
 						LogMessageContext.Create("Node added to test server");

@@ -39,6 +39,9 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="Open.Nat">
+      <HintPath>..\packages\Open.NAT.2.1.0.0\lib\net45\Open.Nat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -103,6 +106,11 @@
     <Compile Include="Protocol\Behaviors\MinerBehavior.cs" />
     <Compile Include="Protocol\Behaviors\xxx.cs" />
     <Compile Include="Miner.cs" />
+    <Compile Include="NATManager.cs" />
+    <Compile Include="DiscoveryManager.cs" />
+    <Compile Include="NodeManager.cs" />
+    <Compile Include="Server.cs" />
+    <Compile Include="Config\Network.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Protocol\" />
@@ -110,6 +118,7 @@
     <Folder Include="DataEncoders\" />
     <Folder Include="Utils\" />
     <Folder Include="Protocol\Serialization\" />
+    <Folder Include="Config\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -127,6 +136,10 @@
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.Testing.Blockchain\Infrastructure.Testing.Blockchain.csproj">
+      <Project>{75798183-9B5D-4CB3-80BD-644CAF13F317}</Project>
+      <Name>Infrastructure.Testing.Blockchain</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -29,10 +29,13 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.9.0.2-beta1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System.Core" />
+    <Reference Include="SimpleInjector">
+      <HintPath>..\packages\SimpleInjector.4.0.0-alpha2\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -44,6 +47,7 @@
     <Compile Include="JsonLoader.cs" />
     <Compile Include="IResourceOwner.cs" />
     <Compile Include="ResourceOwner.cs" />
+    <Compile Include="Container.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

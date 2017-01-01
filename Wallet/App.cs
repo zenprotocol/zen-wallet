@@ -1,7 +1,6 @@
 using System;
 using Infrastructure;
 using Infrastructure.TestingGtk;
-using NodeTester;
 using Wallet.core;
 
 namespace Wallet
@@ -9,12 +8,14 @@ namespace Wallet
 	public class App : Singleton<App>
 	{
 		private ResourceOwnerWindow _MainWindow;
-		private INodeManager _Node;
+	//	private INodeManager _Node;
+
+		public WalletManager2 Wallet { get; set; }
 
 		public App()
 		{
-			JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeCore.Settings.json";
-			JsonLoader<NodeTester.Settings>.Instance.FileName = "NodeTester.Settings.json";
+			//JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeCore.Settings.json";
+			//JsonLoader<NodeTester.Settings>.Instance.FileName = "NodeTester.Settings.json";
 
 			GLib.ExceptionManager.UnhandledException += (GLib.UnhandledExceptionArgs e) =>
 			{
@@ -34,26 +35,26 @@ namespace Wallet
 			using (var consoleWriter = ConsoleMessage.Out)
 			{
 				_MainWindow = new MainWindow();
-				Program.temp = _MainWindow; //TODO: remove
+		//		Program.temp = _MainWindow; //TODO: remove
 				_MainWindow.Show();
 
-				_Node = new NodeManager();
+		//		_Node = new NodeManager();
 
-				var consoleWindow = new ConsoleWindow(_MainWindow);
+		//		var consoleWindow = new ConsoleWindow(_MainWindow);
 
-				consoleWindow.OnSettingsClicked += OpenSettings;
-				consoleWindow.Show();
+		//		consoleWindow.OnSettingsClicked += OpenSettings;
+		//		consoleWindow.Show();
 
-				JsonLoader<NodeTester.Settings>.Instance.OnSaved += StartNode;
+				//JsonLoader<NodeTester.Settings>.Instance.OnSaved += StartNode;
 
-				if (JsonLoader<NodeTester.Settings>.Instance.IsNew)
-				{
-					OpenSettings(); // temp
-				}
-				else
-				{
-					StartNode();
-				}
+				//if (JsonLoader<NodeTester.Settings>.Instance.IsNew)
+				//{
+				//	OpenSettings(); // temp
+				//}
+				//else
+				//{
+				//	StartNode();
+				//}
 			}
 
 			Gtk.Application.Run();
@@ -61,7 +62,7 @@ namespace Wallet
 
 		public void OpenSettings()
 		{
-			new SettingsWindow();
+	//		new SettingsWindow();
 		}
 
 		private async void StartNode()
@@ -78,6 +79,9 @@ namespace Wallet
 		public void Close()
 		{
 			_MainWindow.Dispose();
+			WalletController.GetInstance().Quit();
+			LogController.GetInstance().Quit();
+			Gtk.Application.Quit ();
 		}
 	}
 }
