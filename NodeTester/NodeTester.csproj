@@ -63,6 +63,9 @@
     <Reference Include="FSharp.Core">
       <Private>True</Private>
     </Reference>
+    <Reference Include="SimpleInjector">
+      <HintPath>..\packages\SimpleInjector.4.0.0-alpha2\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -122,10 +125,6 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NodeCore\NodeCore.csproj">
-      <Project>{125F2D2D-5FB6-447F-81D9-B97B1FB1DDB4}</Project>
-      <Name>NodeCore</Name>
     </ProjectReference>
     <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>

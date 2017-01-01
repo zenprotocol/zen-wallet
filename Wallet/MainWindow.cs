@@ -1,7 +1,5 @@
 ﻿using System;
 using Gtk;
-using Infrastructure;
-using NodeTester;
 
 namespace Wallet
 {
@@ -35,14 +33,14 @@ namespace Wallet
 
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 		{
-			Program.Close ();
+			App.Instance.Close ();
 			a.RetVal = true;
 		}
 
 		public Boolean SideMenuVisible { 
 			set {
-				Container c = (Container)Children [0];
-				c = (Container)c.Children [2];
+				Gtk.Container c = (Gtk.Container)Children [0];
+				c = (Gtk.Container)c.Children [2];
 
 				((VerticalMenu)c.Children [0]).Visible = value;
 			}

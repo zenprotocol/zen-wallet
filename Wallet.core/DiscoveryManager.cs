@@ -1,118 +1,118 @@
-using System;
-using NBitcoin.Protocol;
-using NBitcoin.Protocol.Behaviors;
-using NBitcoin;
-using System.Net;
-using System.Threading;
-using Infrastructure;
-using NodeCore;
+//using System;
+//using NBitcoin.Protocol;
+//using NBitcoin.Protocol.Behaviors;
+//using NBitcoin;
+//using System.Net;
+//using System.Threading;
+//using Infrastructure;
 
-namespace Wallet.core
-{
-	public class DiscoveryManager : Singleton<DiscoveryManager>, IDisposable
-	{
-		protected NodesGroup nodesGroup = null;
+//namespace Wallet.core
+//{
+//	public class DiscoveryManager : Singleton<DiscoveryManager>, IDisposable
+//	{
+//		protected NodesGroup nodesGroup = null;
 
-		public struct NodeInfo {
-			public String Address;
-			public String PeerAddress;
-		}
+//		public struct NodeInfo {
+//			public String Address;
+//			public String PeerAddress;
+//		}
 
-		public bool IsRunning { 
-			get {
-				return nodesGroup != null;
-			}
-		}
+//		public bool IsRunning { 
+//			get {
+//				return nodesGroup != null;
+//			}
+//		}
 
-		public interface IMessage {}
+//		public interface IMessage {}
 
-		public class StartedMessage : IMessage {}
-		public class StoppedMessage : IMessage {}
-		public class DoneMessage : IMessage {}
-		public class ErrorMessage : IMessage {}
-		public class PeerFoundMessage : IMessage { public NodeInfo NodeInfo { get; set; } }
+//		public class StartedMessage : IMessage {}
+//		public class StoppedMessage : IMessage {}
+//		public class DoneMessage : IMessage {}
+//		public class ErrorMessage : IMessage {}
+//		public class PeerFoundMessage : IMessage { public NodeInfo NodeInfo { get; set; } }
 					
-	//	LogMessageContext LogMessageContext = new LogMessageContext("Discovery");
+//	//	LogMessageContext LogMessageContext = new LogMessageContext("Discovery");
 
-		bool stopWatcherThread = false;
+//		bool stopWatcherThread = false;
 
-		private void PushMessage(IMessage Message) {
-			Infrastructure.MessageProducer<IMessage>.Instance.PushMessage (Message);
-		}
+//		private void PushMessage(IMessage Message) {
+//			Infrastructure.MessageProducer<IMessage>.Instance.PushMessage (Message);
+//		}
 
-		public void Stop()
-		{
-			if (nodesGroup != null) {
-				nodesGroup.Dispose ();
-		//		Trace.Information ("Discovery stopped");
-				PushMessage (new StoppedMessage ()); 
-			}
-		}
+//		public void Stop()
+//		{
+//			if (nodesGroup != null) {
+//				nodesGroup.Dispose ();
+//		//		Trace.Information ("Discovery stopped");
+//				PushMessage (new StoppedMessage ()); 
+//			}
+//		}
 
-		public void Dispose () {
-			stopWatcherThread = true;
-		}
+//		public void Dispose () {
+//			stopWatcherThread = true;
+//		}
 
-		public void Start (IResourceOwner resourceOwner, IPAddress ExternalIPAddress) {
-			if (IsRunning) {
-				Stop ();
-			}
+//		public void Start (IResourceOwner resourceOwner, IPAddress ExternalIPAddress) {
+//			if (IsRunning) {
+//				Stop ();
+//			}
 
-			PushMessage (new StartedMessage ()); 
-		//	LogMessageContext.Create ("Started");
+//			PushMessage (new StartedMessage ()); 
+//		//	LogMessageContext.Create ("Started");
 
-			Settings Settings = JsonLoader<Settings>.Instance.Value;
+//			Settings Settings = JsonLoader<Settings>.Instance.Value;
 
-			var network = new TestNetwork ();
+//			var network = new TestNetwork ();
 
-			NBitcoin.Protocol.AddressManager addressManager = new NBitcoin.Protocol.AddressManager ();
-			addressManager.PeersToFind = Settings.PeersToFind;
+//			NBitcoin.Protocol.AddressManager addressManager = new NBitcoin.Protocol.AddressManager ();
+//			addressManager.PeersToFind = Settings.PeersToFind;
 
-			NodeConnectionParameters parameters = new NodeConnectionParameters();
-			var addressManagerBehavior = new AddressManagerBehavior (addressManager);
-			parameters.TemplateBehaviors.Add(addressManagerBehavior);
+//			NodeConnectionParameters parameters = new NodeConnectionParameters();
+//			var addressManagerBehavior = new AddressManagerBehavior (addressManager);
+//			parameters.TemplateBehaviors.Add(addressManagerBehavior);
 
-			WalletManager.Instance.Setup(parameters.TemplateBehaviors);
+//			//Infrastructure.Container.Instance.getRefe
+//			WalletManager.Instance.Setup(parameters.TemplateBehaviors);
 
-			if (ExternalIPAddress != null) {
-				//		parameters.Advertize = true;
-				addressManagerBehavior.Mode = AddressManagerBehaviorMode.AdvertizeDiscover;
-				parameters.AddressFrom = new IPEndPoint (ExternalIPAddress, JsonLoader<Settings>.Instance.Value.ServerPort);
-			} else {
-				addressManagerBehavior.Mode = AddressManagerBehaviorMode.Discover;
-			}
+//			if (ExternalIPAddress != null) {
+//				//		parameters.Advertize = true;
+//				addressManagerBehavior.Mode = AddressManagerBehaviorMode.AdvertizeDiscover;
+//				parameters.AddressFrom = new IPEndPoint (ExternalIPAddress, JsonLoader<Settings>.Instance.Value.ServerPort);
+//			} else {
+//				addressManagerBehavior.Mode = AddressManagerBehaviorMode.Discover;
+//			}
 
-			nodesGroup = new NodesGroup(network, parameters);
-			resourceOwner.OwnResource (nodesGroup);
+//			nodesGroup = new NodesGroup(network, parameters);
+//			resourceOwner.OwnResource (nodesGroup);
 
-			nodesGroup.AllowSameGroup = true; //TODO
-			nodesGroup.MaximumNodeConnection = Settings.MaximumNodeConnection;
+//			nodesGroup.AllowSameGroup = true; //TODO
+//			nodesGroup.MaximumNodeConnection = Settings.MaximumNodeConnection;
 
-			nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) => {
-				PushMessage(new PeerFoundMessage() { 
-					NodeInfo = new NodeInfo() { Address = e.Node.Peer.Endpoint.ToString() }
-				});
-		//		LogMessageContext.Create("Peer found: " + e.Node.RemoteSocketAddress + ":" + e.Node.RemoteSocketPort);
+//			nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) => {
+//				PushMessage(new PeerFoundMessage() { 
+//					NodeInfo = new NodeInfo() { Address = e.Node.Peer.Endpoint.ToString() }
+//				});
+//		//		LogMessageContext.Create("Peer found: " + e.Node.RemoteSocketAddress + ":" + e.Node.RemoteSocketPort);
 
-				//Infrastructure.MessageProducer<ITesterMessage>.Instance.PushMessage(new App.PeersSummaryMessage() { Count = nodesGroup.ConnectedNodes.Count });
-			};
+//				//Infrastructure.MessageProducer<ITesterMessage>.Instance.PushMessage(new App.PeersSummaryMessage() { Count = nodesGroup.ConnectedNodes.Count });
+//			};
 				
-			nodesGroup.Connect ();
+//			nodesGroup.Connect ();
 
-			stopWatcherThread = false;
-			//new Thread (() => {
-			//	while (!stopWatcherThread) {
-			//		if (nodesGroup.ConnectedNodes.Count == JsonLoader<Settings>.Instance.Value.PeersToFind) {
-			//			PushMessage (new DoneMessage ());
-			//			LogMessageContext.Create ("Done");
-			//			return;
-			//		}
+//			stopWatcherThread = false;
+//			//new Thread (() => {
+//			//	while (!stopWatcherThread) {
+//			//		if (nodesGroup.ConnectedNodes.Count == JsonLoader<Settings>.Instance.Value.PeersToFind) {
+//			//			PushMessage (new DoneMessage ());
+//			//			LogMessageContext.Create ("Done");
+//			//			return;
+//			//		}
 
-			//		Thread.Sleep (100);
-			//	}
-			//}).Start ();
-			resourceOwner.OwnResource (this); //only to stop the thread
-		}
-	}
-}
+//			//		Thread.Sleep (100);
+//			//	}
+//			//}).Start ();
+//			resourceOwner.OwnResource (this); //only to stop the thread
+//		}
+//	}
+//}
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Infrastructure;
 using System.Threading.Tasks;
+using NBitcoinDerive;
 
 namespace NodeCore
 {
@@ -13,17 +14,21 @@ namespace NodeCore
 	public class NodeManager : INodeManager
 	{
 		private Server _Server = null;
-		
+
+		private NATManager _NATManager;
+
 		public async Task Start(IResourceOwner resourceOwner, NBitcoin.Network network)
 		{
-			await NATManager.Instance.Init ().ContinueWith (t => {
+			_NATManager = new NATManager(network.DefaultPort);
+
+			await _NATManager.Init ().ContinueWith (t => {
 				var Settings = JsonLoader<Settings>.Instance.Value;
 
-				if (NATManager.Instance.DeviceFound &&
-				     NATManager.Instance.Mapped.Value &&
-				     NATManager.Instance.ExternalIPVerified.Value) {
+				if (_NATManager.DeviceFound &&
+				     _NATManager.Mapped.Value &&
+				     _NATManager.ExternalIPVerified.Value) {
 
-					var ipEndpoint = new System.Net.IPEndPoint(NATManager.Instance.ExternalIPAddress, Settings.ServerPort);
+					var ipEndpoint = new System.Net.IPEndPoint(_NATManager.ExternalIPAddress, Settings.ServerPort);
 
 					_Server = new Server(resourceOwner, ipEndpoint, network);
 

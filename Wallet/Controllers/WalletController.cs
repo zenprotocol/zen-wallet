@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 using Wallet.Domain;
-using Wallet.core;
 using Infrastructure;
 using System.Linq;
+using Wallet.core;
 
 namespace Wallet
 {
@@ -66,7 +66,7 @@ namespace Wallet
 						{
 							var tx = ((WalletManager.TransactionReceivedMessage)message).Transaction;
 
-							foreach (var key_ in core.Wallet.Instance.GetKeys())
+							foreach (var key_ in Infrastructure.Container.Instance.GetInstance<WalletManager2>().GetKeys())
 							{
 								if (key_.Public.SequenceEqual(((Consensus.Types.OutputLock.PKLock) tx.outputs[0].@lock).pkHash))
 								{

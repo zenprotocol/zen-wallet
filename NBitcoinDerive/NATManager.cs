@@ -7,16 +7,24 @@ using System.Linq;
 using System.Collections.Generic;
 using Infrastructure;
 using NBitcoin;
+using NBitcoin.Protocol;
 
-namespace NodeCore
+namespace NBitcoinDerive
 {
-	public class NATManager : Singleton<NATManager>
+	public class NATManager
 	{
 		private const int TIMEOUT = 5000;
-		private const string MAPPING_DESC = "Node Tester Lease (auto)";
+		private const string MAPPING_DESC = "Node Lease (auto)";
 
 		public IPAddress ExternalIPAddress { get; private set; }
-		public IPAddress InternalIPAddress { get; private set; }
+
+		#if DEBUG
+		public 
+		#else
+		private
+		#endif
+		IPAddress InternalIPAddress { get; private set; }
+
 		public bool DeviceFound { get; private set; }
 		public bool HasError { get; private set; }
 		public bool? Mapped { get; private set; }
@@ -24,14 +32,17 @@ namespace NodeCore
 
 		private NatDevice _NatDevice;
 		private SemaphoreSlim _SemaphoreSlim = new SemaphoreSlim(1);
+		private int _ServerPort;
 
-		public NATManager() //TODO: check internet connection is active
+		public NATManager(int serverPort) //TODO: check internet connection is active
 		{
-			IPAddress[] PrivateIPs = Utils.GetAllLocalIPv4();
+			IPAddress[] PrivateIPs = NBitcoin.Utils.GetAllLocalIPv4();
+
+			_ServerPort = serverPort;
 
 			if (PrivateIPs.Count() == 0)
 			{
-				Trace.Information("Warning, local addresses not found");
+				NodeServerTrace.Information("Warning, local addresses not found");
 				InternalIPAddress = null;
 			}
 			else {
@@ -39,7 +50,7 @@ namespace NodeCore
 
 				if (PrivateIPs.Count() > 1)
 				{
-					Trace.Information("Warning, found " + PrivateIPs.Count() + " internal addresses");
+					NodeServerTrace.Information("Warning, found " + PrivateIPs.Count() + " internal addresses");
 				}
 			}
 		}
@@ -73,7 +84,7 @@ namespace NodeCore
 			}
 
 			await _SemaphoreSlim.WaitAsync();
-			Trace.Information("NAT Device discovery started");
+			NodeServerTrace.Information("NAT Device discovery started");
 
 			return await nat.DiscoverDeviceAsync(PortMapper.Upnp, cts).ContinueWith(t =>
 			{
@@ -82,13 +93,13 @@ namespace NodeCore
 
 				if (!DeviceFound)
 				{
-					Trace.Information("NAT Device not found");
+					NodeServerTrace.Information("NAT Device not found");
 
 					HasError = !(t.Exception.InnerException is NatDeviceNotFoundException);
 
 					if (HasError)
 					{
-						Trace.Error("NAT Device discovery", t.Exception);
+						NodeServerTrace.Error("NAT Device discovery", t.Exception);
 					}
 					return null;
 				}
@@ -103,15 +114,15 @@ namespace NodeCore
 
 		public async Task<bool> VerifyExternalIP()
 		{
-			Trace.Information("VerifyExternalIP");
+			NodeServerTrace.Information("VerifyExternalIP");
 
-			var device = await NATManager.Instance.GetNatDeviceAsync();
+			var device = await GetNatDeviceAsync();
 
 			return device == null ? false : await device.GetExternalIPAsync().ContinueWith(t =>
 			{
 				if (t.IsFaulted)
 				{
-					Trace.Error("GetExternalIP", t.Exception);
+					NodeServerTrace.Error("GetExternalIP", t.Exception);
 					return false;
 				}
 
@@ -142,15 +153,15 @@ namespace NodeCore
 		}
 
 		public async Task<bool> EnsureMapping() {
-			Trace.Information("EnsureMapping");
+			NodeServerTrace.Information("EnsureMapping");
 
-			var device = await NATManager.Instance.GetNatDeviceAsync();
+			var device = await GetNatDeviceAsync();
 
-			return device == null ? false : await device.GetSpecificMappingAsync(Protocol.Tcp, JsonLoader<Settings>.Instance.Value.ServerPort).ContinueWith(t =>
+			return device == null ? false : await device.GetSpecificMappingAsync(Protocol.Tcp, _ServerPort).ContinueWith(t =>
 			{
 				if (t.IsFaulted)
 				{
-					Trace.Error("GetExternalIP", t.Exception);
+					NodeServerTrace.Error("GetExternalIP", t.Exception);
 					return false;
 				}
 
@@ -160,7 +171,7 @@ namespace NodeCore
 				{
 					if (mapping != null && !mapping.PrivateIP.Equals(InternalIPAddress))
 					{
-						Trace.Information($"existing mapping mismatch. got: {mapping.PrivateIP}, need: {InternalIPAddress}");
+						NodeServerTrace.Information($"existing mapping mismatch. got: {mapping.PrivateIP}, need: {InternalIPAddress}");
 
 						_NatDevice.DeletePortMapAsync(mapping).Wait();
 						mapping = null;
@@ -168,14 +179,14 @@ namespace NodeCore
 
 					if (mapping == null)
 					{
-						Trace.Information($"creaing mapping with IP: {InternalIPAddress}");
+						NodeServerTrace.Information($"creaing mapping with IP: {InternalIPAddress}");
 
 						_NatDevice.CreatePortMapAsync(
 							new Mapping(
 								Protocol.Tcp,
 								InternalIPAddress,
-								JsonLoader<Settings>.Instance.Value.ServerPort,
-								JsonLoader<Settings>.Instance.Value.ServerPort,
+								_ServerPort,
+								_ServerPort,
 								0, //TODO: session lifetime?
 								MAPPING_DESC
 							)
@@ -184,11 +195,11 @@ namespace NodeCore
 
 					IEnumerable<Mapping> exisintMappings = _NatDevice.GetAllMappingsAsync().Result;
 
-					return exisintMappings.Count(exisintMapping => exisintMapping.PublicPort == JsonLoader<Settings>.Instance.Value.ServerPort) == 1;
+					return exisintMappings.Count(exisintMapping => exisintMapping.PublicPort == _ServerPort) == 1;
 				}
 				catch (Exception e)
 				{
-					Trace.Error("Mapping", e);
+					NodeServerTrace.Error("Mapping", e);
 					return false;
 				}
 			});

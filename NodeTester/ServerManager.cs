@@ -4,7 +4,7 @@ using NBitcoin.Protocol.Behaviors;
 using System.Net;
 using NBitcoin.Protocol.Filters;
 using Infrastructure;
-using NodeCore;
+using NBitcoinDerive;
 
 namespace NodeTester
 {
@@ -129,9 +129,9 @@ namespace NodeTester
 				Stop ();
 			}
 
-			NBitcoin.Network network = TestNetwork.Instance;
+		//	NBitcoin.Network network = TestNetwork.Instance;
 
-			_Server = new Server(resourceOwner, externalEndpoint, network);
+			_Server = new Server(resourceOwner, externalEndpoint, JsonLoader<Network>.Instance.Value);
 			WalletManager.Instance.Setup(_Server.Behaviors);
 
 

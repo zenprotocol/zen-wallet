@@ -5,7 +5,6 @@ using Infrastructure.Testing.Blockchain;
 using NBitcoin.Protocol;
 using System.Threading;
 using NBitcoin.Protocol.Behaviors;
-using NBitcoinDerive.Tests;
 using System.Collections.Generic;
 using DBreeze;
 using BlockChain.Store;

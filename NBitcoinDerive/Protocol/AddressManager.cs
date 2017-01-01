@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NBitcoinDerive;
 
 namespace NBitcoin.Protocol
 {
@@ -276,7 +277,7 @@ namespace NBitcoin.Protocol
 
 
 #if !NOFILEIO
-		public static AddressManager LoadPeerFile(string filePath, Network expectedNetwork = null)
+		public static AddressManager LoadPeerFile(string filePath)
 		{
 			var addrman = new AddressManager();
 			byte[] data, hash;
@@ -303,10 +304,10 @@ namespace NBitcoin.Protocol
 			//addrman.ReadWrite(stream);
 			return addrman;
 		}
-		public void SavePeerFile(string filePath, Network network)
+		public void SavePeerFile(string filePath)
 		{
-			if(network == null)
-				throw new ArgumentNullException("network");
+		//	if(network == null)
+		//		throw new ArgumentNullException("network");
 			if(filePath == null)
 				throw new ArgumentNullException("filePath");
 
@@ -1028,7 +1029,7 @@ namespace NBitcoin.Protocol
 
 					if(peers.Count == 0)
 					{
-						PopulateTableWithDNSNodes(network, peers);
+					//	PopulateTableWithDNSNodes(network, peers);
 						PopulateTableWithHardNodes(network, peers);
 						peers = new List<NetworkAddress>(peers.OrderBy(a => RandomUtils.GetInt32()));
 					}
@@ -1093,27 +1094,27 @@ namespace NBitcoin.Protocol
 			}
 		}
 
-		private static void PopulateTableWithDNSNodes(Network network, List<NetworkAddress> peers)
-		{
-			peers.AddRange(network.DNSSeeds
-				.SelectMany(d =>
-				{
-					try
-					{
-						return d.GetAddressNodes();
-					}
-					catch(Exception)
-					{
-						return new IPAddress[0];
-					}
-				})
-				.Select(d => new NetworkAddress(d, network.DefaultPort))
-				.ToArray());
-		}
+		//private static void PopulateTableWithDNSNodes(Network network, List<NetworkAddress> peers)
+		//{
+		//	peers.AddRange(network.DNSSeeds
+		//		.SelectMany(d =>
+		//		{
+		//			try
+		//			{
+		//				return d.GetAddressNodes();
+		//			}
+		//			catch(Exception)
+		//			{
+		//				return new IPAddress[0];
+		//			}
+		//		})
+		//		.Select(d => new NetworkAddress(d, network.DefaultPort))
+		//		.ToArray());
+		//}
 
 		private static void PopulateTableWithHardNodes(Network network, List<NetworkAddress> peers)
 		{
-			peers.AddRange(network.SeedNodes);
+			peers.AddRange(network.Seeds.Select(v => new NetworkAddress(IPAddress.Parse(v), network.DefaultPort)));
 		}
 	}
 }
