@@ -52,7 +52,12 @@ namespace Zen
 				return;
 			}
 
-			JsonLoader<NBitcoinDerive.Network>.Instance.FileName = (profile ?? "default") + ".xml"; 
+			var file = profile ?? "default";
+			if (!file.EndsWith (".xml")) {
+				file += ".xml";
+			}
+
+			JsonLoader<NBitcoinDerive.Network>.Instance.FileName = file; 
 
 			if (seeds.Count > 0) {
 				foreach (String seed in seeds) {
