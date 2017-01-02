@@ -1,6 +1,7 @@
 using System;
 using Gtk;
 using Infrastructure;
+using NBitcoinDerive;
 
 namespace NodeTester
 {
@@ -15,12 +16,12 @@ namespace NodeTester
 
 			InitSeedsTreeView (treeviewSeeds);
 
-			entryPeersToFind.Text = "" + JsonLoader<Settings>.Instance.Value.PeersToFind;
-			entryMaximumNodeConnection.Text = "" + JsonLoader<Settings>.Instance.Value.MaximumNodeConnection;
-			entryServerPort.Text = "" + JsonLoader<Settings>.Instance.Value.ServerPort;
+			entryPeersToFind.Text = "" + JsonLoader<Network>.Instance.Value.PeersToFind;
+			entryMaximumNodeConnection.Text = "" + JsonLoader<Network>.Instance.Value.MaximumNodeConnection;
+		//	entryServerPort.Text = "" + JsonLoader<Network>.Instance.Value.ServerPort;
 		//	entryExternalEndpoint.Text = JsonLoader<Settings>.Instance.Value.ExternalEndpoint;
-			checkbuttonAutoConfigure.Active = JsonLoader<Settings>.Instance.Value.AutoConfigure;
-			checkbuttonDowngradeToLAN.Active = JsonLoader<Settings>.Instance.Value.DowngradeToLAN;
+		//	checkbuttonAutoConfigure.Active = JsonLoader<Network>.Instance.Value.AutoConfigure;
+		//	checkbuttonDowngradeToLAN.Active = JsonLoader<Network>.Instance.Value.DowngradeToLAN;
 		}
 			
 		private void InitSeedsTreeView(TreeView treeView) {
@@ -35,7 +36,7 @@ namespace NodeTester
 		private void PopulateList() {
 			listStore.Clear();
 
-			foreach (String address in JsonLoader<Settings>.Instance.Value.IPSeeds) {
+			foreach (String address in JsonLoader<Network>.Instance.Value.Seeds) {
 				listStore.AppendValues (address, "IP");
 			}
 		}
@@ -43,7 +44,7 @@ namespace NodeTester
 		protected void Button_Save (object sender, EventArgs e)
 		{
 			try {
-				JsonLoader<Settings>.Instance.Value.PeersToFind = int.Parse(entryPeersToFind.Text);
+				JsonLoader<Network>.Instance.Value.PeersToFind = int.Parse(entryPeersToFind.Text);
 			} catch
 			{
 				MessageDialog md = new MessageDialog(this, 
@@ -56,7 +57,7 @@ namespace NodeTester
 			}
 
 			try {
-				JsonLoader<Settings>.Instance.Value.MaximumNodeConnection = int.Parse(entryMaximumNodeConnection.Text);
+				JsonLoader<Network>.Instance.Value.MaximumNodeConnection = int.Parse(entryMaximumNodeConnection.Text);
 			} catch
 			{
 				MessageDialog md = new MessageDialog(this, 
@@ -69,7 +70,7 @@ namespace NodeTester
 			}
 
 			try {
-				JsonLoader<Settings>.Instance.Value.ServerPort = int.Parse(entryServerPort.Text);
+				JsonLoader<Network>.Instance.Value.DefaultPort = int.Parse(entryServerPort.Text);
 			} catch
 			{
 				MessageDialog md = new MessageDialog(this, 
@@ -81,10 +82,10 @@ namespace NodeTester
 				return;
 			}
 
-			JsonLoader<Settings>.Instance.Value.AutoConfigure = checkbuttonAutoConfigure.Active;
-			JsonLoader<Settings>.Instance.Value.DowngradeToLAN = checkbuttonDowngradeToLAN.Active;
+	//		JsonLoader<Network>.Instance.Value.AutoConfigure = checkbuttonAutoConfigure.Active;
+	//		JsonLoader<Network>.Instance.Value.DowngradeToLAN = checkbuttonDowngradeToLAN.Active;
 
-			JsonLoader<Settings>.Instance.Save ();
+			JsonLoader<Network>.Instance.Save ();
 			Destroy ();
 		}
 
@@ -96,7 +97,7 @@ namespace NodeTester
 		protected void Button_AddSeed (object sender, EventArgs e)
 		{
 			new AddressManagerEditorAddWindow ((IPEndPoint) => {
-				JsonLoader<Settings>.Instance.Value.IPSeeds.Add(IPEndPoint.ToString());
+				JsonLoader<Network>.Instance.Value.Seeds.Add(IPEndPoint.ToString());
 				PopulateList();
 			}).Show ();
 		}
@@ -109,7 +110,7 @@ namespace NodeTester
 
 			String seed = (String) treeviewSeeds.Model.GetValue (iter, 0);
 
-			JsonLoader<Settings>.Instance.Value.IPSeeds.Remove (seed);
+			JsonLoader<Network>.Instance.Value.Seeds.Remove (seed);
 
 			PopulateList ();
 		}

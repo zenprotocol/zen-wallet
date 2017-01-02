@@ -33,8 +33,8 @@ namespace NBitcoinDerive
 				Console.WriteLine (" ****** new block created ******* by " + GetHashCode());
 	//			MessageProducer.PushMessage(new NewMinedBlockMessage() { Block = newBlock });
 				BlockBroadcastHub.BroadcastBlockAsync (newBlock);
-			} {
-				Console.WriteLine (" ****** no new block created !!! ******* by " + GetHashCode());
+		//	} {
+		//		Console.WriteLine (" ****** no new block created !!! ******* by " + GetHashCode());
 			}
 		}
 	}

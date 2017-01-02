@@ -120,7 +120,7 @@ namespace NodeTester
 
 		public void Start(IResourceOwner resourceOwner, IPAddress ExternalAddress)
 		{
-			Start(resourceOwner, new IPEndPoint(ExternalAddress, JsonLoader<Settings>.Instance.Value.ServerPort));
+			Start(resourceOwner, new IPEndPoint(ExternalAddress, JsonLoader<Network>.Instance.Value.DefaultPort));
 		}
 
 		public void Start (IResourceOwner resourceOwner, IPEndPoint externalEndpoint)
@@ -131,8 +131,9 @@ namespace NodeTester
 
 		//	NBitcoin.Network network = TestNetwork.Instance;
 
-			_Server = new Server(resourceOwner, externalEndpoint, JsonLoader<Network>.Instance.Value);
-			WalletManager.Instance.Setup(_Server.Behaviors);
+//			_Server = new Server(externalEndpoint, JsonLoader<Network>.Instance.Value);
+//			resourceOwner.OwnResource (_Server);
+//			WalletManager.Instance.Setup(_Server.Behaviors);
 
 
 			InitHandlers();

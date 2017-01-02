@@ -5,59 +5,58 @@ namespace Wallet
 	public partial class ReceiveDialog
 	{
 		private global::Gtk.VBox vbox1;
-
+		
 		private global::Wallet.DialogField dialogfieldAddress;
-
+		
 		private global::Gtk.HBox hbox2;
-
+		
 		private global::Gtk.Button buttonClose;
 
-		protected virtual void Build()
+		protected virtual void Build ()
 		{
-			global::Stetic.Gui.Initialize(this);
+			global::Stetic.Gui.Initialize (this);
 			// Widget Wallet.ReceiveDialog
-			global::Stetic.BinContainer.Attach(this);
+			global::Stetic.BinContainer.Attach (this);
 			this.Name = "Wallet.ReceiveDialog";
 			// Container child Wallet.ReceiveDialog.Gtk.Container+ContainerChild
-			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1 = new global::Gtk.VBox ();
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.dialogfieldAddress = new global::Wallet.DialogField();
+			this.dialogfieldAddress = new global::Wallet.DialogField ();
 			this.dialogfieldAddress.Events = ((global::Gdk.EventMask)(256));
 			this.dialogfieldAddress.Name = "dialogfieldAddress";
-			this.vbox1.Add(this.dialogfieldAddress);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.dialogfieldAddress]));
+			this.vbox1.Add (this.dialogfieldAddress);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.dialogfieldAddress]));
 			w1.Position = 0;
 			w1.Expand = false;
 			w1.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.hbox2 = new global::Gtk.HBox();
+			this.hbox2 = new global::Gtk.HBox ();
 			this.hbox2.Name = "hbox2";
 			this.hbox2.Homogeneous = true;
 			this.hbox2.Spacing = 6;
 			// Container child hbox2.Gtk.Box+BoxChild
-			this.buttonClose = new global::Gtk.Button();
+			this.buttonClose = new global::Gtk.Button ();
 			this.buttonClose.CanFocus = true;
 			this.buttonClose.Name = "buttonClose";
 			this.buttonClose.UseUnderline = true;
-			this.buttonClose.Label = global::Mono.Unix.Catalog.GetString("Close");
-			this.hbox2.Add(this.buttonClose);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonClose]));
+			this.buttonClose.Label = global::Mono.Unix.Catalog.GetString ("Close");
+			this.hbox2.Add (this.buttonClose);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.buttonClose]));
 			w2.Position = 1;
 			w2.Expand = false;
 			w2.Fill = false;
-			this.vbox1.Add(this.hbox2);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox2]));
+			this.vbox1.Add (this.hbox2);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.hbox2]));
 			w3.Position = 1;
 			w3.Expand = false;
 			w3.Fill = false;
-			this.Add(this.vbox1);
-			if ((this.Child != null))
-			{
-				this.Child.ShowAll();
+			this.Add (this.vbox1);
+			if ((this.Child != null)) {
+				this.Child.ShowAll ();
 			}
-			this.Hide();
+			this.Hide ();
 		}
 	}
 }

@@ -1,8 +1,8 @@
-﻿using System;
-
-namespace Infrastructure
-{
-	public class Container : Singleton<SimpleInjector.Container>
-	{
-	}
-}
+﻿//using System;
+//
+//namespace Infrastructure
+//{
+//	public class Container : Singleton<SimpleInjector.Container>
+//	{
+//	}
+//}
