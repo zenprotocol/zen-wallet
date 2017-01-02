@@ -3,6 +3,7 @@ using Gtk;
 using System.Linq;
 using Infrastructure;
 using Wallet.core;
+using NBitcoinDerive;
 
 namespace NodeTester
 {
@@ -35,7 +36,7 @@ namespace NodeTester
 					sendToBytes[i] = Convert.ToByte(arr[i], 16);
 				}
 
-				WalletManager.Instance.SendTransaction(sendToBytes, amount);
+				App.NodeManager.SendTransaction(sendToBytes, amount);
 			}
 			catch (Exception ex)
 			{
@@ -45,7 +46,7 @@ namespace NodeTester
 
 		void ButtonKeyCreate_Clicked(object sender, EventArgs e)
 		{
-			Infrastructure.Container.Instance.GetInstance<Wallet.core.WalletManager2>().AddKey(new Wallet.core.Data.Key() { Change = true });
+			App.WalletManager.AddKey(new Wallet.core.Data.Key() { Change = true });
 			Populate(treeviewKeysUnused, false, true);
 		}
 
@@ -77,11 +78,11 @@ namespace NodeTester
 			treeView.AppendColumn("Amount", new Gtk.CellRendererText(), "text", 0);
 
 			//TODO: resourceOwner.OwnResource(
-			MessageProducer<WalletManager.IMessage>.Instance.AddMessageListener(new EventLoopMessageListener<WalletManager.IMessage>(Message =>
+			MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(new EventLoopMessageListener<NodeManager.IMessage>(Message =>
 			{
-				if (Message is WalletManager.TransactionAddToMempoolMessage)
+				if (Message is NodeManager.TransactionAddToMempoolMessage)
 				{
-					WalletManager.TransactionAddToMempoolMessage transactionReceivedMessage = (WalletManager.TransactionAddToMempoolMessage) Message;
+					NodeManager.TransactionAddToMempoolMessage transactionReceivedMessage = (NodeManager.TransactionAddToMempoolMessage) Message;
 
 					Gtk.Application.Invoke(delegate
 					{
@@ -90,9 +91,9 @@ namespace NodeTester
 							store.AppendValues(output.spend.amount.ToString());
 						}
 					});
-				} else if (Message is WalletManager.TransactionAddToStoreMessage)
+				} else if (Message is NodeManager.TransactionAddToStoreMessage)
 				{
-					WalletManager.TransactionAddToStoreMessage transactionReceivedMessage = (WalletManager.TransactionAddToStoreMessage)Message;
+					NodeManager.TransactionAddToStoreMessage transactionReceivedMessage = (NodeManager.TransactionAddToStoreMessage)Message;
 
 					Gtk.Application.Invoke(delegate
 					{
@@ -108,7 +109,7 @@ namespace NodeTester
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
-			Infrastructure.Container.Instance.GetInstance<Wallet.core.WalletManager2>().GetKeys(used, isChange).ToList().ForEach(key =>
+			App.WalletManager.GetKeys(used, isChange).ToList().ForEach(key =>
 			{
 				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
 			});

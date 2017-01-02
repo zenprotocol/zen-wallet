@@ -1,14 +1,13 @@
 ﻿using System;
 using NBitcoin;
 using Infrastructure;
-using Wallet.core;
-using Wallet.core;
 using NBitcoinDerive;
 using System.Threading;
+using Wallet.core;
 
 namespace Zen
 {
-	public enum ModeEnum {
+	public enum AppModeEnum {
 		Tester,
 		GUI,
 		Console,
@@ -18,9 +17,10 @@ namespace Zen
 	{
 		private static App _Instance;
 
-		public ModeEnum? Mode { get; set; }
+		public AppModeEnum? Mode { get; set; }
 		#if DEBUG
 		public Boolean LanMode { get; set; }
+		public Boolean DisableInboundMode { get; set; }
 		#endif
 
 		private static readonly object _lock = new object();
@@ -39,8 +39,9 @@ namespace Zen
 		{
 			Mode = null;
 
-			Container.Instance.Register<WalletManager2>(() => { return new WalletManager2(); });
-			Container.Instance.Register<WalletManager>(() => { return new WalletManager(); });
+
+	////		Container.Instance.Register<WalletManager2>(() => { return new WalletManager2(); });
+	//		Container.Instance.Register<WalletManager>(() => { return new WalletManager(); });
 
 	//		Container.Instance.Register<ITest, Test>();
 			// 2. Configure the container (register)
@@ -59,7 +60,7 @@ namespace Zen
 	
 		//public event Action<NBitcoinDerive.Network> OnNetworkChanged;
 
-		public void Start() {
+		public void Start(bool clearConsole = true) {
 			
 //			if (OnNetworkChanged != null) 
 //			{
@@ -68,43 +69,42 @@ namespace Zen
 
 			if (!Mode.HasValue)
 				return;
-		
+
+			if (clearConsole)
+				Console.Clear ();
+			
+			var walletManager = new WalletManager ();
+			var nodeManager = new NodeManager ();
+			#if DEBUG
+			nodeManager.Start (LanMode, DisableInboundMode);
+			#else
+			nodeManager.Start();
+			#endif
 
 			if (Mode != null) {
 				switch (Mode.Value) {
-				case ModeEnum.Console:
-					Console.Clear ();
-					NodeManager nodeManager = new NodeManager ();
-
-					#if DEBUG
-					nodeManager.Start (LanMode);
-					#else
-					nodeManager.Start();
-					#endif
-
+				case AppModeEnum.Console:
 					Console.WriteLine("Press ENTER to stop");
 					Console.ReadLine();
 					nodeManager.Dispose();
-
-			//		NodeConsole.MainClass.Main(null);
 					break;
-				case ModeEnum.GUI:
-					Wallet.App.Instance.Start();
+				case AppModeEnum.GUI:
+					Wallet.App.Instance.Start(nodeManager, walletManager);
 					break;
-				case ModeEnum.Tester:
-			//		NodeTester.MainClass.Main(null);
+				case AppModeEnum.Tester:
+					NodeTester.MainClass.Main(nodeManager, walletManager);
 					break;
 				}
 			}
 //			_Container.Verify();
 		}
 
-		public Network Network { 
-			set 
-			{
-				Container.Instance.Register<Network>(() => { return value; });
-			} 
-		}
+//		public Network Network { 
+//			set 
+//			{
+//				Container.Instance.Register<Network>(() => { return value; });
+//			} 
+//		}
 	}
 }
 

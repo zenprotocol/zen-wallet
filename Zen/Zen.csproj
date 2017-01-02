@@ -19,7 +19,7 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
-    <Commandlineparameters>-p test_work --lan -console</Commandlineparameters>
+    <Commandlineparameters>-p work -i -t -d</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -82,6 +82,10 @@
     <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
       <Name>Infrastructure.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NodeTester\NodeTester.csproj">
+      <Project>{7469FE62-A886-460D-8439-8048AF6514A1}</Project>
+      <Name>NodeTester</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

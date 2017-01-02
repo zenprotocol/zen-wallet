@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace NBitcoinDerive
 {
@@ -13,6 +14,13 @@ namespace NBitcoinDerive
 
 		public Network() {
 			Seeds = new List<string> ();
+		}
+
+		public override string ToString ()
+		{
+			String msg = $"[ \tSeeds={Seeds}, \tDefaultPort={DefaultPort}, \tMagic={Magic}, \tPeersToFind={PeersToFind}, \tMaximumNodeConnection={MaximumNodeConnection} ]";
+
+			return msg.Replace(" ", "\n");
 		}
 	}
 }

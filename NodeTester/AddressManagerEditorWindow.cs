@@ -30,9 +30,9 @@ namespace NodeTester
 		private void PopulateList() {
 			listStore.Clear();
 
-			foreach (IPEndPoint IPEndPoint in NodeCore.AddressManager.Instance.GetNetworkAddresses()) {
-				listStore.AppendValues (IPEndPoint.ToString (), "xx", "xx");// networkAddress.Time.ToString(), networkAddress.Ago.ToString());
-			}
+//			foreach (IPEndPoint IPEndPoint in NodeCore.AddressManager.Instance.GetNetworkAddresses()) {
+//				listStore.AppendValues (IPEndPoint.ToString (), "xx", "xx");// networkAddress.Time.ToString(), networkAddress.Ago.ToString());
+//			}
 		}
 			
 		protected void Menu_Add (object sender, EventArgs e)
@@ -40,15 +40,15 @@ namespace NodeTester
 			new AddressManagerEditorAddWindow (IPEndPoint => {
 				new LogMessageContext ("Address Add Window").Create("Created " + IPEndPoint.ToString ());
 
-				bool added = NodeCore.AddressManager.Instance.Add (IPEndPoint);
-
-				if (!added) {
-					MessageDialog md = new MessageDialog(this, 
-						DialogFlags.DestroyWithParent, MessageType.Error, 
-						ButtonsType.Close, "Addresss exists");
-					md.Run();
-					md.Destroy();
-				}
+//				bool added = NodeCore.AddressManager.Instance.Add (IPEndPoint);
+//
+//				if (!added) {
+//					MessageDialog md = new MessageDialog(this, 
+//						DialogFlags.DestroyWithParent, MessageType.Error, 
+//						ButtonsType.Close, "Addresss exists");
+//					md.Run();
+//					md.Destroy();
+//				}
 
 				PopulateList();
 			});
@@ -57,7 +57,7 @@ namespace NodeTester
 
 		protected void Menu_Save (object sender, EventArgs e)
 		{
-			NodeCore.AddressManager.Instance.Save ();
+//			NodeCore.AddressManager.Instance.Save ();
 		}
 	}
 }
