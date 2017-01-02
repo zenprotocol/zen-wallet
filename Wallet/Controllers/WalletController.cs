@@ -4,6 +4,7 @@ using Wallet.Domain;
 using Infrastructure;
 using System.Linq;
 using Wallet.core;
+using NBitcoinDerive;
 
 namespace Wallet
 {
@@ -57,16 +58,16 @@ namespace Wallet
 
 		public WalletController()
 		{
-			messageListener = MessageProducer<WalletManager.IMessage>.Instance.AddMessageListener(
-				new EventLoopMessageListener<WalletManager.IMessage>(message =>
+			messageListener = MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(
+				new EventLoopMessageListener<NodeManager.IMessage>(message =>
 				{
 					Gtk.Application.Invoke(delegate
 					{
-						if (message is WalletManager.TransactionReceivedMessage)
+						if (message is NodeManager.TransactionAddToStoreMessage)
 						{
-							var tx = ((WalletManager.TransactionReceivedMessage)message).Transaction;
+							var tx = ((NodeManager.TransactionAddToStoreMessage)message).Transaction;
 
-							foreach (var key_ in Infrastructure.Container.Instance.GetInstance<WalletManager2>().GetKeys())
+							foreach (var key_ in App.Instance.Wallet.GetKeys())
 							{
 								if (key_.Public.SequenceEqual(((Consensus.Types.OutputLock.PKLock) tx.outputs[0].@lock).pkHash))
 								{
@@ -90,7 +91,7 @@ namespace Wallet
 		}
 
 		public void Quit() {
-			WalletManager.Instance.Dispose();
+			App.Instance.Wallet.Dispose ();
 			messageListener.Dispose();
 			stopping = true;
 			//tempThread.Join ();

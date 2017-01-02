@@ -42,13 +42,13 @@ namespace Zen
 			list.ItemSelectedEvent += (object sender, ListBox.ItemSelectedArgs e) => {
 				switch (e.Idx) {
 				case 0:
-					App.Instance.Mode = ModeEnum.GUI;
+					App.Instance.Mode = AppModeEnum.GUI;
 					break;
 				case 1:
-					App.Instance.Mode = ModeEnum.Tester;
+					App.Instance.Mode = AppModeEnum.Tester;
 					break;
 				case 2:
-					App.Instance.Mode = ModeEnum.Console;
+					App.Instance.Mode = AppModeEnum.Console;
 					break;
 				case 3:
 					//Infrastructure.JsonLoader<NodeTester.Settings>.Instance.FileName = "xx";
@@ -57,8 +57,10 @@ namespace Zen
 				}
 
 				App.Instance.Start();
-			};
 
+				root.Detach();
+				root.Run();
+			};
 
 			//App.Instance.OnNetworkChanged += network => {
 			Network network = JsonLoader<NBitcoinDerive.Network>.Instance.Value;

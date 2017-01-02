@@ -10,7 +10,7 @@ using Consensus;
 namespace Wallet.core
 {
 //	public class Wallet : Singleton<Wallet>, IDisposable
-	public class WalletManager2 : IDisposable
+	public class WalletManager : IDisposable
 	{
 		private const string DB_NAME = "wallet";
 		private KeyStore _KeyStore;
@@ -21,7 +21,7 @@ namespace Wallet.core
 //		public delegate Action<Types.Trasaction> OnNewBlock();
 	
 
-		public WalletManager2()
+		public WalletManager()
 		{
 			_DBContext = new DBContext(DB_NAME);
 			_KeyStore = new KeyStore();

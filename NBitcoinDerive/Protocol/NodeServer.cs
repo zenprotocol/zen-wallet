@@ -46,8 +46,7 @@ namespace NBitcoin.Protocol
 			set;
 		}
 
-		public NodeServer(Network network, ProtocolVersion version = ProtocolVersion.PROTOCOL_VERSION,
-			int internalPort = -1)
+		public NodeServer(Network network, ProtocolVersion version = ProtocolVersion.PROTOCOL_VERSION, int internalPort = -1)
 		{
 			AllowLocalPeers = true;
 			InboundNodeConnectionParameters = new NodeConnectionParameters();

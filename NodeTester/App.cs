@@ -1,28 +1,31 @@
 using System;
 using Infrastructure;
+using NBitcoinDerive;
+using Wallet.core;
 
 namespace NodeTester
 {
-	public class App<T> where T : Gtk.Window, IResourceOwner, new()
+	public class App
 	{
-		static App() {
-		//	JsonLoader<Settings>.Instance.FileName = "NodeTester.json";
-		}
+		public static NodeManager NodeManager { get ; set; }
+		public static WalletManager WalletManager { get ; set; }
 
-		public static App<T> Create()
+		public static App Create(NodeManager nodeManager, WalletManager walletManager)
 		{
-			return new App<T>();
+			NodeManager = nodeManager;
+			WalletManager = walletManager;
+			return new App();
 		}
 
 		private App()
 		{
-			T t = null;
-			TryCatch(() => { t = new T(); t.Show(); }, e => ExceptionHandler(e));
+			MainWindow mainWindow = null;
+			TryCatch(() => { mainWindow = new MainWindow(); mainWindow.Show(); }, e => ExceptionHandler(e));
 
-			if (JsonLoader<Settings>.Instance.Value.AutoConfigure)
-			{
-				TryCatch(t, w => Runtime.Instance.Configure(w), (e, w) => ExceptionHandler(e, w));
-			}
+		//	if (JsonLoader<Settings>.Instance.Value.AutoConfigure)
+		//	{
+		//	TryCatch(mainWindow, w => Runtime.Instance.Configure(w), (e, w) => ExceptionHandler(e, w));
+		//	}
 		}
 
 		private void TryCatch(Action TryAction, Action<Exception> CatchAction)
@@ -37,16 +40,16 @@ namespace NodeTester
 			}
 		}
 
-		private void TryCatch(T t, Action<T> TryAction, Action<Exception, T> CatchAction)
+		private void TryCatch(MainWindow mainWindow, Action<MainWindow> TryAction, Action<Exception, MainWindow> CatchAction)
 		{
 			try {
-				TryAction(t);
+				TryAction(mainWindow);
 			} catch (Exception e) {
-				CatchAction(e, t);
+				CatchAction(e, mainWindow);
 			}
 		}
 
-		private void ExceptionHandler (Exception e, T resourceOwnerWindow = null)
+		private void ExceptionHandler (Exception e, MainWindow mainWindow = null)
 		{
 			Console.WriteLine(e);
 
@@ -59,11 +62,11 @@ namespace NodeTester
 				Console.WriteLine(traceExeption);
 			}
 
-			if (resourceOwnerWindow != null)
+			if (mainWindow != null)
 			{
 				try
 				{
-					resourceOwnerWindow.ShowMessage($"App excption: {e.Message}");
+					mainWindow.ShowMessage($"App excption: {e.Message}");
 				}
 				catch (Exception showException)
 				{

@@ -6,6 +6,7 @@ using NodeTester;
 using System.Linq;
 using Infrastructure;
 using Gtk;
+using NBitcoinDerive;
 
 public partial class MainWindow : ResourceOwnerWindow
 {
@@ -18,7 +19,7 @@ public partial class MainWindow : ResourceOwnerWindow
 		Build ();
 
 //		OwnResource(Wallet.core.Wallet.Instance);
-		OwnResource(WalletManager.Instance);
+//		OwnResource(WalletManager.Instance);
 
 //		statusbar3.Push (1, "xx");
 //		statusbar3.Push (1, "yy");
@@ -60,19 +61,19 @@ public partial class MainWindow : ResourceOwnerWindow
 	}
 
 	private void InitSummaryPage() {
-		OwnResource(MessageProducer<Runtime.IRuntimeMessage>.Instance.AddMessageListener(new MessageListener<Runtime.IRuntimeMessage>(Message => {
-			Gtk.Application.Invoke(delegate
-			{
-				if (Message is Runtime.PeersSummaryMessage) 
-				{
-					labelSummaryPeers.Text = ((Runtime.PeersSummaryMessage)Message).Count.ToString();
-				}
-				else if (Message is Runtime.ServerSummaryMessage)
-				{
-					labelSummaryServer.Text = ((Runtime.ServerSummaryMessage)Message).IsRunning ? "Ok" : " Not configurable";
-				}
-			});
-		})));
+//		OwnResource(MessageProducer<Runtime.IRuntimeMessage>.Instance.AddMessageListener(new MessageListener<Runtime.IRuntimeMessage>(Message => {
+//			Gtk.Application.Invoke(delegate
+//			{
+//				if (Message is Runtime.PeersSummaryMessage) 
+//				{
+//					labelSummaryPeers.Text = ((Runtime.PeersSummaryMessage)Message).Count.ToString();
+//				}
+//				else if (Message is Runtime.ServerSummaryMessage)
+//				{
+//					labelSummaryServer.Text = ((Runtime.ServerSummaryMessage)Message).IsRunning ? "Ok" : " Not configurable";
+//				}
+//			});
+//		})));
 	}
 
 	private void InitPnPPane()
@@ -186,45 +187,45 @@ public partial class MainWindow : ResourceOwnerWindow
 		labelDiscovery.Text = "";
 		labelPeers.Text = "Peers";
 
-		OwnResource(MessageProducer<NodeTester.DiscoveryManager.IMessage>.Instance.AddMessageListener (new MessageListener<NodeTester.DiscoveryManager.IMessage> (Message => {
-			Gtk.Application.Invoke(delegate {
-				bool clear = false;
-
-				if (Message is NodeTester.DiscoveryManager.StartedMessage) {
-					buttonDiscover.Sensitive = false;
-					buttonDiscoverStop.Sensitive = true;
-					labelDiscovery.Text = "Discovering...";
-					labelPeers.Text = "Peers (discovering)";
-					clear = true;
-				} else if (Message is NodeTester.DiscoveryManager.StoppedMessage) {
-					buttonDiscover.Sensitive = true;
-					buttonDiscoverStop.Sensitive = false;
-					labelDiscovery.Text = "Discovering Stopped";
-					clear = true;
-				} else if (Message is NodeTester.DiscoveryManager.DoneMessage) {
-					buttonDiscover.Sensitive = true;
-					buttonDiscoverStop.Sensitive = false;
-					labelDiscovery.Text = "Discovering Done";
-				} else if (Message is NodeTester.DiscoveryManager.ErrorMessage) {
-					buttonStartServer.Sensitive = true;
-					buttonStopServer.Sensitive = true;
-					labelPeers.Text = "Peers (error)";
-					labelDiscovery.Text = "Discovering Error";
-					clear = true;
-				} else if (Message is NodeTester.DiscoveryManager.PeerFoundMessage) {
-					NodeTester.DiscoveryManager.NodeInfo NodeInfo = ((NodeTester.DiscoveryManager.PeerFoundMessage)Message).NodeInfo;
-
-					listStorePeers.AppendValues (NodeInfo.Address);
-					peersCount++;
-					labelPeers.Text = "Peers (" + peersCount + ")";
-				}
-
-				if (clear) {
-					listStorePeers.Clear();
-					peersCount = 0;
-				}
-			});
-		})));
+//		OwnResource(MessageProducer<DiscoveryManager.IMessage>.Instance.AddMessageListener (new MessageListener<NodeTester.DiscoveryManager.IMessage> (Message => {
+//			Gtk.Application.Invoke(delegate {
+//				bool clear = false;
+//
+//				if (Message is NodeTester.DiscoveryManager.StartedMessage) {
+//					buttonDiscover.Sensitive = false;
+//					buttonDiscoverStop.Sensitive = true;
+//					labelDiscovery.Text = "Discovering...";
+//					labelPeers.Text = "Peers (discovering)";
+//					clear = true;
+//				} else if (Message is NodeTester.DiscoveryManager.StoppedMessage) {
+//					buttonDiscover.Sensitive = true;
+//					buttonDiscoverStop.Sensitive = false;
+//					labelDiscovery.Text = "Discovering Stopped";
+//					clear = true;
+//				} else if (Message is NodeTester.DiscoveryManager.DoneMessage) {
+//					buttonDiscover.Sensitive = true;
+//					buttonDiscoverStop.Sensitive = false;
+//					labelDiscovery.Text = "Discovering Done";
+//				} else if (Message is NodeTester.DiscoveryManager.ErrorMessage) {
+//					buttonStartServer.Sensitive = true;
+//					buttonStopServer.Sensitive = true;
+//					labelPeers.Text = "Peers (error)";
+//					labelDiscovery.Text = "Discovering Error";
+//					clear = true;
+//				} else if (Message is NodeTester.DiscoveryManager.PeerFoundMessage) {
+//					NodeTester.DiscoveryManager.NodeInfo NodeInfo = ((NodeTester.DiscoveryManager.PeerFoundMessage)Message).NodeInfo;
+//
+//					listStorePeers.AppendValues (NodeInfo.Address);
+//					peersCount++;
+//					labelPeers.Text = "Peers (" + peersCount + ")";
+//				}
+//
+//				if (clear) {
+//					listStorePeers.Clear();
+//					peersCount = 0;
+//				}
+//			});
+//		})));
 
 
 		treeviewPeers.Model = listStorePeers;
@@ -270,6 +271,8 @@ public partial class MainWindow : ResourceOwnerWindow
 
 	protected void Button_Discover (object sender, EventArgs e)
 	{
+		App.NodeManager.StartDiscovery ();
+
 		//DiscoveryManager.Instance.Start(this, new IPEndPoint(IPAddress.Parse("127.0.0.1"), JsonLoader<Settings>.Instance.Value.ServerPort));
 		//NodeTester.DiscoveryManager.Instance.Start(this, NATManager.Instance.ExternalIPAddress);
 	}
@@ -296,7 +299,7 @@ public partial class MainWindow : ResourceOwnerWindow
 
 	protected void Button_DiscoverStop (object sender, EventArgs e)
 	{
-		NodeTester.DiscoveryManager.Instance.Stop ();
+		App.NodeManager._NodesGroup.Dispose ();
 	}
 
 	protected void Button_StopServer (object sender, EventArgs e)
@@ -331,7 +334,7 @@ public partial class MainWindow : ResourceOwnerWindow
 			}
 		}
 
-		ServerManager.Instance.Start(this, new IPEndPoint(InternalIPAddress, JsonLoader<NodeTester.Settings>.Instance.Value.ServerPort));
+		ServerManager.Instance.Start(this, new IPEndPoint(InternalIPAddress, JsonLoader<Network>.Instance.Value.DefaultPort));
 	}
 
 
@@ -475,6 +478,6 @@ public partial class MainWindow : ResourceOwnerWindow
 
 	protected void Menu_Configure (object sender, EventArgs e)
 	{
-		Runtime.Instance.Configure (this);
+		//Runtime.Instance.Configure (this);
 	}
 }

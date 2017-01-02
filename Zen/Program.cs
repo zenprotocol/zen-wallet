@@ -19,16 +19,17 @@ namespace Zen
 			string port = null;
 
 			var p = new OptionSet () {
-				{ "c|console", "launch the console", v => App.Instance.Mode = ModeEnum.Console },
-				{ "g|gui", "launch the wallet gui", v => App.Instance.Mode = ModeEnum.GUI },
-				{ "t|tester", "launch the tester gui", v => App.Instance.Mode = ModeEnum.Tester },
+				{ "c|console", "launch the console", v => App.Instance.Mode = AppModeEnum.Console },
+				{ "g|gui", "launch the wallet gui", v => App.Instance.Mode = AppModeEnum.GUI },
+				{ "t|tester", "launch the tester gui", v => App.Instance.Mode = AppModeEnum.Tester },
 				{ "p|profile=", "use settings profile", (v) => profile = v },
 				{ "save", "save settings profile", (v) => save = v != null },
 				{ "s|seed=", "use seed ip address", (v) => seeds.Add(v) },
 				{ "peers=", "number peers to find", (v) => peers = v },
 				{ "connections=", "number of node connections", (v) => connections = v },
 				{ "port=", "default network port", (v) => port = v },
-				{ "l|lan", "lan mode", (v) => App.Instance.LanMode = v != null },
+				{ "i|internal", "use internal ip", (v) => App.Instance.LanMode = v != null },
+				{ "d|disallow", "allow inbound connections", (v) => App.Instance.DisableInboundMode = v != null },
 //				{ "n|name=", "the {NAME} of someone to greet.",
 //					v => names.Add (v) },
 //				{ "r|repeat=", 
@@ -80,6 +81,9 @@ namespace Zen
 				JsonLoader<NBitcoinDerive.Network>.Instance.Save ();
 			}
 
+			Console.WriteLine ("Current profile settings:");
+			Console.WriteLine (JsonLoader<NBitcoinDerive.Network>.Instance.Value);
+
 			if (show_help) {
 				ShowHelp (p);
 				return;
@@ -91,7 +95,7 @@ namespace Zen
 //			}
 
 			if (App.Instance.Mode != null) {
-				App.Instance.Start ();
+				App.Instance.Start (false);
 			} else {
 				TUI.Start (null);
 			}

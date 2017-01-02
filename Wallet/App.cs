@@ -2,21 +2,18 @@ using System;
 using Infrastructure;
 using Infrastructure.TestingGtk;
 using Wallet.core;
+using NBitcoinDerive;
 
 namespace Wallet
 {
 	public class App : Singleton<App>
 	{
 		private ResourceOwnerWindow _MainWindow;
-	//	private INodeManager _Node;
-
-		public WalletManager2 Wallet { get; set; }
+		public NodeManager NodeManager { get; private set; }
+		public WalletManager Wallet { get; private set; }
 
 		public App()
 		{
-			//JsonLoader<NodeCore.Settings>.Instance.FileName = "NodeCore.Settings.json";
-			//JsonLoader<NodeTester.Settings>.Instance.FileName = "NodeTester.Settings.json";
-
 			GLib.ExceptionManager.UnhandledException += (GLib.UnhandledExceptionArgs e) =>
 			{
 				Console.WriteLine(e.ExceptionObject as Exception);
@@ -28,8 +25,11 @@ namespace Wallet
 			};
 		}
 
-		public void Start()
+		public void Start(NodeManager nodeManager, WalletManager walletManager)
 		{
+			NodeManager = nodeManager;
+			Wallet = walletManager;
+
 			Gtk.Application.Init();
 
 			using (var consoleWriter = ConsoleMessage.Out)
@@ -81,6 +81,7 @@ namespace Wallet
 			_MainWindow.Dispose();
 			WalletController.GetInstance().Quit();
 			LogController.GetInstance().Quit();
+			NodeManager.Dispose ();
 			Gtk.Application.Quit ();
 		}
 	}

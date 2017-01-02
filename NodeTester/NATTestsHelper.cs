@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using Infrastructure;
 using NBitcoin;
+using NBitcoinDerive;
 
 namespace NodeTester
 {
@@ -19,7 +20,7 @@ namespace NodeTester
 		{
 			logMessageContext.Create ("Getting IP");
 
-			var device = await NATManager.Instance.GetNatDeviceAsync();
+			var device = await App.NodeManager._NATManager.GetNatDeviceAsync();
 
 			if (device == null) {
 				logMessageContext.Create ("device not found");
@@ -46,7 +47,7 @@ namespace NodeTester
 		{
 			logMessageContext.Create ("Getting mapping");
 
-			var device = await NATManager.Instance.GetNatDeviceAsync();
+			var device = await App.NodeManager._NATManager.GetNatDeviceAsync();
 
 			if (device == null) {
 				logMessageContext.Create ("device not found");
@@ -103,13 +104,13 @@ namespace NodeTester
 		{
 			logMessageContext.Create ("Adding mapping");
 
-			var device = await NATManager.Instance.GetNatDeviceAsync();
+			var device = await App.NodeManager._NATManager.GetNatDeviceAsync();
 
 			if (device == null) {
 				logMessageContext.Create ("device not found");
 			}
 
-			Settings Settings = JsonLoader<Settings>.Instance.Value;
+			Network network = JsonLoader<Network>.Instance.Value;
 
 			string desc = "Node Tester Lease (manual)";
 
@@ -117,8 +118,8 @@ namespace NodeTester
 				new Mapping(
 					Protocol.Tcp,
 					PrivateIP, 
-					Settings.ServerPort, 
-					Settings.ServerPort, 
+					network.DefaultPort, 
+					network.DefaultPort, 
 					0, 
 					desc
 				)
@@ -146,7 +147,7 @@ namespace NodeTester
 		{
 			logMessageContext.Create ("Removing mapping");
 
-			var device = await NATManager.Instance.GetNatDeviceAsync();
+			var device = await App.NodeManager._NATManager.GetNatDeviceAsync();
 
 			if (device == null) {
 				logMessageContext.Create ("device not found");

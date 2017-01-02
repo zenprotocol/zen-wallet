@@ -56,7 +56,7 @@ namespace Wallet
 				//Byte[] sendToBytes = new Byte[32];
 				//new Random().NextBytes(sendToBytes);
 
-				core.WalletManager.Instance.SendTransaction(sendToBytes, (ulong)senddialogstep1.Amount);
+				App.Instance.NodeManager.SendTransaction(sendToBytes, (ulong)senddialogstep1.Amount);
 				CloseDialog();
 			}
 			catch (Exception ex)

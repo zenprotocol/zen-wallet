@@ -38,7 +38,7 @@ namespace NodeTester
 
 			//	Servers.SeedServerIndex = 2; //TODO
 
-				NodesGroup nodesGroup = new NodesGroup(Servers.Network, parameters);
+				NodesGroup nodesGroup = new NodesGroup(JsonLoader<Network>.Instance.Value, parameters);
 				nodesGroup.AllowSameGroup = true; //TODO
 				nodesGroup.MaximumNodeConnection = 2; //TODO
 
