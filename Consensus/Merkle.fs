@@ -34,7 +34,7 @@ let tag : Hashable -> byte[] =
     | Output _ -> "output"B
     | Contract _ -> "contract"B
     | ExtendedContract _ -> "contract"B
-    | BlockHeader _ -> "bheader"B
+    | BlockHeader _ -> "block"B
     | Block _ -> "block"B
     | Hash _ -> "hash"B
 
@@ -75,7 +75,8 @@ let outputHasher = taggedHash Outpoint
 let contractHasher = taggedHash Contract
 let extendedContractHasher = taggedHash ExtendedContract
 let blockHeaderHasher = taggedHash BlockHeader
-let blockHasher = taggedHash Block
+let blockHasher block =
+    blockHeaderHasher block.header
 let hashHasher = taggedHash Hash
 
 // Usage: partially apply to cTW and keep a reference as long as
