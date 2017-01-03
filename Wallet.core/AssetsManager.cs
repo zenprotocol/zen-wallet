@@ -27,15 +27,15 @@ namespace Wallet.core
 			var spendList = new List<Types.Output> ();
 			ulong total = 0;
 
-			foreach (var outputs in assets.Values) {
-				foreach (var output in outputs) {
+			foreach (var output in assets) {
+			//	foreach (var output in outputs) {
 					spendList.Add (output);
 					total += output.spend.amount;
 
 					if (total >= amount) {
 						break;
 					}
-				}
+		//		}
 			}
 
 			return spendList;

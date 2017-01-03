@@ -35,16 +35,23 @@ namespace Test
 				var keys = walletManager.KeyStore.List ();
 
 
+				Console.WriteLine(walletManager.KeyStore);
+
 				var outputs = new List<Types.Output>();
 				var inputs = new List<Types.Outpoint>();
 
-				var lock_ = Types.OutputLock.NewPKLock(keys[0].Public);
 				var asset = new byte[32];
 				new Random().NextBytes(asset);
-				var amount = (ulong)10;
-				var spend = new Types.Spend(asset, amount);
 
-				outputs.Add(new Types.Output(lock_, spend));
+				Action<ulong> addOutput = amount => {
+					var lock_ = Types.OutputLock.NewPKLock(keys[0].Public);
+					var spend = new Types.Spend(asset, amount);
+					outputs.Add(new Types.Output(lock_, spend));
+				};
+
+				addOutput(10);
+				addOutput(5);
+				addOutput(20);
 
 				var hashes = new List<byte[]>();
 
@@ -57,9 +64,6 @@ namespace Test
 					null);
 
 				blockChains[0].HandleNewTransaction(transaction);
-
-
-
 
 				string date = "2000-02-02";
 				var blockHeader = new Types.BlockHeader(
@@ -78,6 +82,12 @@ namespace Test
 				transactions.Add (transaction);
 				var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
 				blockChains[0].HandleNewBlock(block);
+
+				var spendOutputs = walletManager._AssetsManager.Spend(asset, 11);
+
+				foreach(var x in spendOutputs) {
+					Console.WriteLine("---->" + x.spend.amount);
+				}
 
 				Console.ReadLine();
 			});
