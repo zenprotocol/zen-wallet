@@ -46,7 +46,7 @@ namespace NodeTester
 
 		void ButtonKeyCreate_Clicked(object sender, EventArgs e)
 		{
-			App.WalletManager.AddKey(new Wallet.core.Data.Key() { Change = true });
+		//	App.WalletManager.KeyStore.Add(new Wallet.core.Data.Key() { Change = true });
 			Populate(treeviewKeysUnused, false, true);
 		}
 
@@ -109,7 +109,7 @@ namespace NodeTester
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
-			App.WalletManager.GetKeys(used, isChange).ToList().ForEach(key =>
+			App.WalletManager.KeyStore.List(used, isChange).ToList().ForEach(key =>
 			{
 				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
 			});
@@ -117,7 +117,7 @@ namespace NodeTester
 
 		private String DisplayKey(byte[] key)
 		{
-			return key == null ? "" : key.ToString();
+			return key == null ? "" : BitConverter.ToString(key);
 		}
 
 		void ButtonMine_Clicked(object sender, EventArgs e)

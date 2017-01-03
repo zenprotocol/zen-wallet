@@ -31,11 +31,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Consensus">
-      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
-    </Reference>
     <Reference Include="DBreeze">
       <HintPath>..\packages\DBreeze.1.80.0\lib\net45\DBreeze.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core" />
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -64,13 +65,13 @@
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>NBitcoinDerive</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NBitcoinDerive.Tests\NBitcoinDerive.Tests.csproj">
-      <Project>{86E32AC1-F7B6-40FE-A6D3-F53F931A0363}</Project>
-      <Name>NBitcoinDerive.Tests</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
       <Name>Infrastructure.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

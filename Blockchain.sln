@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
 EndProject
-Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "TestMsgPack", "TestMsgPack\TestMsgPack.fsproj", "{7E5229B8-51EF-4044-B779-ABED183CE8E2}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestMsgPack", "TestMsgPack\TestMsgPack.fsproj", "{7E5229B8-51EF-4044-B779-ABED183CE8E2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatibility", "Compatibility\Compatibility.csproj", "{7745B74E-F9A4-4E4B-AC06-FCB2CA83904B}"
 EndProject
