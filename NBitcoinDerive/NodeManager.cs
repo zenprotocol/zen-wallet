@@ -20,6 +20,7 @@ namespace NBitcoinDerive
 	public class NodeManager : ResourceOwner, INodeManager
 	{
 		private Server _Server = null;
+		private BlockChain.BlockChain _BlockChain = null;
 		private Network _Network;
 		private NodeConnectionParameters _NodeConnectionParameters;
 		private BroadcastHub _TransactionBroadcastHub;
@@ -47,8 +48,9 @@ namespace NBitcoinDerive
 			Infrastructure.MessageProducer<IMessage>.Instance.PushMessage(message);
 		}
 
-		public NodeManager()
+		public NodeManager(BlockChain.BlockChain blockChain)
 		{
+			_BlockChain = blockChain;
 			_Network = JsonLoader<NBitcoinDerive.Network>.Instance.Value;
 
 			AddressManager addressManager = new AddressManager();
@@ -92,7 +94,14 @@ namespace NBitcoinDerive
 		{
 			var address = ipAddress == null ? null : new System.Net.IPEndPoint (ipAddress, _Network.DefaultPort);
 
-			InitBlockchain();
+			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior();
+			_TransactionBroadcastHub = broadcastHubBehavior.BroadcastHub;
+
+			Miner miner = new Miner(_BlockChain);
+
+			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(miner));
+			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _TransactionBroadcastHub));
+			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
 			if (!disableInboundMode) {
 				_Server = new Server (address, _Network, _NodeConnectionParameters);
@@ -107,39 +116,7 @@ namespace NBitcoinDerive
 
 			StartDiscovery();
 		}
-			
-		private void InitBlockchain()
-		{
-			var p = new TestTransactionPool();
-
-			p.Add("t1", 1);
-			p.Render();
-
-			var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
-			genesisBlock.Render();
-
-			var blockChain = new BlockChain.BlockChain("db", genesisBlock.Value.Key);
-			OwnResource (blockChain);
-
-			blockChain.OnAddedToMempool += transaction => {
-				PushMessage (new TransactionAddToMempoolMessage () { Transaction = transaction });
-			};
-
-			blockChain.OnAddedToStore += transaction =>
-			{
-				PushMessage(new TransactionAddToStoreMessage() { Transaction = transaction });
-			};
-
-			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior();
-			_TransactionBroadcastHub = broadcastHubBehavior.BroadcastHub;
-
-			Miner miner = new Miner(blockChain);
-
-			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(miner));
-			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(blockChain, _TransactionBroadcastHub));
-			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(blockChain));
-		}
-						
+									
 		#if DEBUG
 		public
 		#else 

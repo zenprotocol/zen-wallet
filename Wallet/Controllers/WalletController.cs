@@ -67,7 +67,7 @@ namespace Wallet
 						{
 							var tx = ((NodeManager.TransactionAddToStoreMessage)message).Transaction;
 
-							foreach (var key_ in App.Instance.Wallet.GetKeys())
+							foreach (var key_ in App.Instance.Wallet.KeyStore.List())
 							{
 								if (key_.Public.SequenceEqual(((Consensus.Types.OutputLock.PKLock) tx.outputs[0].@lock).pkHash))
 								{

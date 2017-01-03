@@ -10,6 +10,9 @@ using DBreeze;
 using BlockChain.Store;
 using Store;
 using System.IO;
+using Wallet.core;
+using Consensus;
+using Microsoft.FSharp.Collections;
 
 namespace Test
 {
@@ -17,34 +20,99 @@ namespace Test
 	{
 		public static void Main(string[] args)
 		{
-			var p = new Infrastructure.Testing.Blockchain.TestTransactionPool();
 
-			p.Add("t1", 1);
-			p.Add("t2", 1);
-			p.Add("t3", 0);
-			p.Spend("t2", "t1", 0);
-			p.Spend("t3", "t2", 0);
+			WithBlockChains (1, blockChains => {
+				blockChains[0].HandleNewBlock(blockChains[0].GetGenesisBlock().Value);
+//				blockChains[0].HandleNewBlock(block1.Value.Value);
+//
+//				blockChains[0].HandleNewTransaction(p.TakeOut("t3").Value);
 
-			p.Render();
+//				var x = blockChains[0].MineAllInMempool();
 
-			var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
-			genesisBlock.Render ();
-			var block1 = new TestBlock(p.TakeOut("t2").Value);
-			block1.Parent = genesisBlock;
-			block1.Render ();
+//				Console.WriteLine(x);
+
+				var walletManager = new WalletManager (blockChains[0]);
+				var keys = walletManager.KeyStore.List ();
 
 
-			WithBlockChains (1, genesisBlock.Value.Key, blockChains => {
-				blockChains[0].HandleNewBlock(genesisBlock.Value.Value);
-				blockChains[0].HandleNewBlock(block1.Value.Value);
+				var outputs = new List<Types.Output>();
+				var inputs = new List<Types.Outpoint>();
 
-				blockChains[0].HandleNewTransaction(p.TakeOut("t3").Value);
+				var lock_ = Types.OutputLock.NewPKLock(keys[0].Public);
+				var asset = new byte[32];
+				new Random().NextBytes(asset);
+				var amount = (ulong)10;
+				var spend = new Types.Spend(asset, amount);
 
-				var x = blockChains[0].MineAllInMempool();
+				outputs.Add(new Types.Output(lock_, spend));
 
-				Console.WriteLine(x);
+				var hashes = new List<byte[]>();
+
+				var version = (uint)1;
+
+				Types.Transaction transaction = new Types.Transaction(version,
+					ListModule.OfSeq(inputs),
+					ListModule.OfSeq(hashes),
+					ListModule.OfSeq(outputs),
+					null);
+
+				blockChains[0].HandleNewTransaction(transaction);
+
+
+
+
+				string date = "2000-02-02";
+				var blockHeader = new Types.BlockHeader(
+					version,
+					blockChains[0].GetGenesisBlock().Key,
+					new byte[] { },
+					new byte[] { },
+					new byte[] { },
+					ListModule.OfSeq<byte[]>(new List<byte[]>()),
+					DateTime.Parse(date).ToBinary(),
+					1,
+					new byte[] { }
+				);
+
+				var transactions = new List<Types.Transaction> ();
+				transactions.Add (transaction);
+				var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
+				blockChains[0].HandleNewBlock(block);
+
+				Console.ReadLine();
 			});
 		}
+	
+//		public static void ____Main(string[] args)
+//		{
+//			var p = new Infrastructure.Testing.Blockchain.TestTransactionPool();
+//
+//			p.Add("t1", 1);
+//			p.Add("t2", 1);
+//			p.Add("t3", 0);
+//			p.Spend("t2", "t1", 0);
+//			p.Spend("t3", "t2", 0);
+//
+//			p.Render();
+//
+//			var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
+//			genesisBlock.Render ();
+//			var block1 = new TestBlock(p.TakeOut("t2").Value);
+//			block1.Parent = genesisBlock;
+//			block1.Render ();
+//
+//
+//			WithBlockChains (1, blockChains => {
+//				blockChains[0].HandleNewBlock(genesisBlock.Value.Value);
+//				blockChains[0].HandleNewBlock(block1.Value.Value);
+//
+//				blockChains[0].HandleNewTransaction(p.TakeOut("t3").Value);
+//
+//				var x = blockChains[0].MineAllInMempool();
+//
+//				Console.WriteLine(x);
+//			});
+//		}
 
 		public static void ___Main(string[] args)
 		{
@@ -109,89 +177,89 @@ namespace Test
 			}
 		}
 
-		public static void _Main(string[] args)
-		{
-			var network = new TestNetwork();
+//		public static void _Main(string[] args)
+//		{
+//			var network = new TestNetwork();
+//
+//			network.AddSeed(new NetworkAddress(new IPEndPoint(IPAddress.Parse("192.168.2.101"), 9999)));
+//
+//			var p = new Infrastructure.Testing.Blockchain.TestTransactionPool();
+//
+//			p.Add("t1", 1);
+//			p.Add("t2", 0);
+//			p.Spend("t2", "t1", 0);
+//
+//			p.Render();
+//
+//			var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
+//			var block1 = new TestBlock(p.TakeOut("t2").Value);
+//			block1.Parent = genesisBlock;
+//
+//			genesisBlock.Render();
+//			block1.Render();
+//
+//			WithBlockChains(1, genesisBlock.Value.Key, blockChains =>
+//			{
+//				//	blockChains[0].HandleNewBlock(genesisBlock.Value.Value);
+//				//	blockChains[0].HandleNewBlock(block1.Value.Value);
+//
+//
+//				AutoResetEvent waitForConnection = new AutoResetEvent(false);
+//				bool connected = false;
+//
+//				blockChains[0].OnAddedToStore += transaction =>
+//				{
+//					Console.WriteLine("-- Transaction Received (node server)");
+//					//	actionReceiver();
+//				};
+//
+//				NBitcoin.Protocol.AddressManager addressManager = new AddressManager();
+//				addressManager.PeersToFind = 1;
+//				NodeConnectionParameters nodesGroupParameters = new NodeConnectionParameters();
+//				//				nodesGroupParameters.AddressFrom = servers[1].ExternalEndpoint;
+//				nodesGroupParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
+//				nodesGroupParameters.TemplateBehaviors.Add(new ChainBehavior(blockChains[0]));
+//				nodesGroupParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
+//				nodesGroupParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[0], BroadcastHub.GetBroadcastHub(nodesGroupParameters.TemplateBehaviors)));
+//
+//				NodesGroup nodesGroup = new NodesGroup(network, nodesGroupParameters);
+//				nodesGroup.AllowSameGroup = true;
+//				nodesGroup.MaximumNodeConnection = 1;
+//				nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
+//				{
+//					Console.WriteLine("-- Node added to node group");
+//					connected = true;
+//					waitForConnection.Set();
+//				};
+//				nodesGroup.Connect();
+//
+//
+//			//	Assert.True(waitForConnection.WaitOne(10000)); //TODO: use reset events instead of sleep
+//			//	Assert.True(connected);
+//
+//
+//
+//				//TODO
+//				Thread.Sleep(40000);
+//
+//
+//
+//
+//
+//				//					actionSender(BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters));
+//
+//			//	Trace.Information("-- Done");
+//			});
+//		}
 
-			network.AddSeed(new NetworkAddress(new IPEndPoint(IPAddress.Parse("192.168.2.101"), 9999)));
-
-			var p = new Infrastructure.Testing.Blockchain.TestTransactionPool();
-
-			p.Add("t1", 1);
-			p.Add("t2", 0);
-			p.Spend("t2", "t1", 0);
-
-			p.Render();
-
-			var genesisBlock = new TestBlock(p.TakeOut("t1").Value);
-			var block1 = new TestBlock(p.TakeOut("t2").Value);
-			block1.Parent = genesisBlock;
-
-			genesisBlock.Render();
-			block1.Render();
-
-			WithBlockChains(1, genesisBlock.Value.Key, blockChains =>
-			{
-				//	blockChains[0].HandleNewBlock(genesisBlock.Value.Value);
-				//	blockChains[0].HandleNewBlock(block1.Value.Value);
-
-
-				AutoResetEvent waitForConnection = new AutoResetEvent(false);
-				bool connected = false;
-
-				blockChains[0].OnAddedToStore += transaction =>
-				{
-					Console.WriteLine("-- Transaction Received (node server)");
-					//	actionReceiver();
-				};
-
-				NBitcoin.Protocol.AddressManager addressManager = new AddressManager();
-				addressManager.PeersToFind = 1;
-				NodeConnectionParameters nodesGroupParameters = new NodeConnectionParameters();
-				//				nodesGroupParameters.AddressFrom = servers[1].ExternalEndpoint;
-				nodesGroupParameters.TemplateBehaviors.Add(new AddressManagerBehavior(addressManager));
-				nodesGroupParameters.TemplateBehaviors.Add(new ChainBehavior(blockChains[0]));
-				nodesGroupParameters.TemplateBehaviors.Add(new BroadcastHubBehavior());
-				nodesGroupParameters.TemplateBehaviors.Add(new SPVBehavior(blockChains[0], BroadcastHub.GetBroadcastHub(nodesGroupParameters.TemplateBehaviors)));
-
-				NodesGroup nodesGroup = new NodesGroup(network, nodesGroupParameters);
-				nodesGroup.AllowSameGroup = true;
-				nodesGroup.MaximumNodeConnection = 1;
-				nodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
-				{
-					Console.WriteLine("-- Node added to node group");
-					connected = true;
-					waitForConnection.Set();
-				};
-				nodesGroup.Connect();
-
-
-			//	Assert.True(waitForConnection.WaitOne(10000)); //TODO: use reset events instead of sleep
-			//	Assert.True(connected);
-
-
-
-				//TODO
-				Thread.Sleep(40000);
-
-
-
-
-
-				//					actionSender(BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters));
-
-			//	Trace.Information("-- Done");
-			});
-		}
-
-		private static void WithBlockChains(int blockChains, byte[] genesisBlockHash, Action<BlockChain.BlockChain[]> action)
+		private static void WithBlockChains(int blockChains, Action<BlockChain.BlockChain[]> action)
 		{
 			List<TestBlockChain> testBlockChains = new List<TestBlockChain>();
 
 			for (int i = 0; i < blockChains; i++)
 			{
 				String dbName = "test-" + new Random().Next(0, 1000);
-				testBlockChains.Add(new TestBlockChain(dbName, genesisBlockHash));
+				testBlockChains.Add(new TestBlockChain(dbName));
 			}
 
 			action(testBlockChains.Select(t => t.BlockChain).ToArray());
