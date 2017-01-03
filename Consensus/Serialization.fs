@@ -354,7 +354,7 @@ context.Serializers.RegisterOverride<Output>(new OutputSerializer(context))
 context.Serializers.RegisterOverride<Outpoint>(new OutpointSerializer(context))
 context.Serializers.RegisterOverride<Contract>(new ContractSerializer(context))
 context.Serializers.RegisterOverride<ExtendedContract>(new ExtendedContractSerializer(context))
-mecontext.Serializers.RegisterOverride<Transaction>(new TransactionSerializer(context))
+context.Serializers.RegisterOverride<Transaction>(new TransactionSerializer(context))
 context.Serializers.RegisterOverride<BlockHeader>(new BlockHeaderSerializer(context))
 context.Serializers.RegisterOverride<Block>(new BlockSerializer(context))
 
