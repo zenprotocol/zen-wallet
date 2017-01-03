@@ -4,6 +4,8 @@ using Store;
 using Wallet.core.Data;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Wallet.core.Store
 {
@@ -65,6 +67,13 @@ namespace Wallet.core.Store
 				Public = publicBytes,
 				Private = privateBytes
 			};
+		}
+
+		public override string ToString ()
+		{
+			return this.GetType() + "\n" + JsonConvert.SerializeObject(
+				List(), Formatting.Indented,
+				new JsonConverter[] {new StringEnumConverter()});
 		}
 	}
 }
