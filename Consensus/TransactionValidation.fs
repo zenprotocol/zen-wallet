@@ -1,6 +1,6 @@
 ﻿module Consensus.TransactionValidation
 
-
+open System
 open MsgPack
 open MsgPack.Serialization
 
@@ -138,13 +138,25 @@ type SigHashOutputType =
     | SigHashAll
     | SigHashNone
     | SigHashSingle
+    with
+    member this.Byte =
+        match this with
+        | SigHashAll -> 0x00uy
+        | SigHashNone -> 0x02uy
+        | SigHashSingle -> 0x01uy
 
 type SigHashInputType =
     | SigHashOneCanPay
     | SigHashAnyoneCanPay
+    with
+    member this.Byte =
+        match this with
+        | SigHashOneCanPay ->0x00uy
+        | SigHashAnyoneCanPay -> 0x08uy
 
 type SigHashType =
-    SigHashType of inputType:SigHashInputType * outputType:SigHashOutputType with
+    SigHashType of inputType:SigHashInputType * outputType:SigHashOutputType
+    with
     static member Make (hbyte) =
         let itype =
             if hbyte &&& 0x80uy <> 0uy then SigHashAnyoneCanPay else SigHashOneCanPay
@@ -153,7 +165,12 @@ type SigHashType =
             | true, _ -> SigHashNone
             | _, true -> SigHashSingle
             | _ -> SigHashAll
-        SigHashType (itype, otype)
+        SigHashType (itype, otype)    
+
+    member this.Byte =
+        match this with
+        | SigHashType (inputType=inputType;outputType=outputType) ->
+             inputType.Byte ||| outputType.Byte
 
 type PKWitness =
     PKWitness of publicKey:byte[] * edSignature:byte[] * hashtype:SigHashType
@@ -162,6 +179,10 @@ type PKWitness =
         if wit.Length <> 65 then None
         else
             Some <| PKWitness (wit.[0..31], wit.[32..63], SigHashType.Make wit.[64])
+    member this.toWitness : Witness =
+        match this with
+        | PKWitness (publicKey=publicKey;edSignature=edSignature;hashtype=hashtype) ->
+            Array.concat [publicKey; edSignature; [|hashtype.Byte|]]
 
 let reducedTx tx index (SigHashType (itype, otype)) =
     let inputs =
@@ -188,6 +209,13 @@ let validatePKLockAtIndex ptx index pkHash =
          else
              Sodium.PublicKeyAuth.VerifyDetached (edSignature, txDigest (unpoint ptx) index hashtype, publicKey)
 
+// Tx signing is included here for convenience
+let signatureAtIndex tx index hashtype privkey =
+    Sodium.PublicKeyAuth.SignDetached (txDigest tx index hashtype, privkey)
+
+let pkWitnessAtIndex tx index hashtype privkey =
+    PKWitness (publicKey=Sodium.PublicKeyAuth.ExtractEd25519PublicKeyFromEd25519SecretKey privkey, edSignature = signatureAtIndex tx index hashtype privkey, hashtype=hashtype)
+
 let validateAtIndex ptx index =
     let olock =
         match ptx.pInputs.[index] with
@@ -201,4 +229,18 @@ let validateAtIndex ptx index =
         validatePKLockAtIndex ptx index pkHash
     | ContractLock _ ->
         false
+
+
+// Usage: pass in a transaction and a list of private keys.
+// Returns the transaction with signatures for each index
+// for which the key is not an empty byte array.
+let signTx (tx:Transaction) outputkeys =
+    let hashtype = SigHashType (SigHashOneCanPay, SigHashAll)
+    let witnesses =
+        List.mapi <|
+        (fun i privkey ->
+            if Array.isEmpty privkey then tx.witnesses.[i]
+            else (pkWitnessAtIndex tx i hashtype privkey).toWitness) <|
+        outputkeys
+    {tx with witnesses=witnesses}
 

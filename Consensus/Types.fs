@@ -5,6 +5,7 @@ type Hash = byte[]
 type LockCore = {version: uint32; lockData: byte[] list}
 
 type OutputLock =
+    public
     | CoinbaseLock of LockCore
     | FeeLock of LockCore
     | ContractSacrificeLock of LockCore
@@ -85,4 +86,3 @@ type Block = {
     header: BlockHeader;
     transactions: Transaction list
     }
-
