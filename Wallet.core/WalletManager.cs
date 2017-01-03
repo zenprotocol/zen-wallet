@@ -16,7 +16,9 @@ namespace Wallet.core
 		private DBContext _DBContext;
 		private BlockChain.BlockChain _BlockChain;
 		private TxHistoryStore _TxHistoryStore;
-		private AssetsManager _AssetsManager;
+
+		//dev
+		public AssetsManager _AssetsManager;
 
 		public WalletManager(BlockChain.BlockChain blockChain)
 		{
@@ -36,7 +38,7 @@ namespace Wallet.core
 				if (IsMine(t)) {
 					_TxHistoryStore.Put(t);
 				}
-				_AssetsManager.AddTransactionOutputs(t);
+			//	_AssetsManager.AddTransactionOutputs(t);
 			};
 		}
 
