@@ -8,14 +8,14 @@ namespace Infrastructure.Testing.Blockchain
 		private readonly String _DbName;
 		public BlockChain.BlockChain BlockChain { get; private set; }
 
-		public TestBlockChain(byte[] genesisBlockHash) : this("test_blockchain-" + new Random().Next(0, 1000), genesisBlockHash)
+		public TestBlockChain() : this("test_blockchain-" + new Random().Next(0, 1000))
 		{
 		}
 
-		public TestBlockChain(String dbName, byte[] genesisBlockHash)
+		public TestBlockChain(String dbName)
 		{
 			_DbName = dbName;
-			BlockChain = new BlockChain.BlockChain(dbName, genesisBlockHash);
+			BlockChain = new BlockChain.BlockChain(dbName);
 		}
 
 		public void Dispose()

@@ -60,8 +60,41 @@ namespace BlockChain
 			}
 		}
 
-		public BlockChain(string dbName, byte[] genesisBlockHash)
-		{
+		public Keyed<Types.Block> GetGenesisBlock() {
+			var outputs = new List<Types.Output>();
+			var inputs = new List<Types.Outpoint>();
+			var hashes = new List<byte[]>();
+			var version = (uint)1;
+			var date = "2000-02-02";
+
+			Types.Transaction transaction = new Types.Transaction(version,
+				ListModule.OfSeq(inputs),
+				ListModule.OfSeq(hashes),
+				ListModule.OfSeq(outputs),
+				null);
+
+			var transactions = new List<Types.Transaction> ();
+			transactions.Add (transaction);
+
+			var blockHeader = new Types.BlockHeader(
+				version,
+				new byte[] { },
+				new byte[] { },
+				new byte[] { },
+				new byte[] { },
+				ListModule.OfSeq<byte[]>(new List<byte[]>()),
+				DateTime.Parse(date).ToBinary(),
+				1,
+				new byte[] { }
+			);
+
+			var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
+			var key = Merkle.blockHeaderHasher.Invoke (blockHeader);
+		
+			return new Keyed<Types.Block> (key, block);
+		}
+
+		public BlockChain(string dbName) {
 			_DBContext = new DBContext(dbName);
 			_TxMempool = new TxMempool();
 			_TxStore = new TxStore();
@@ -69,10 +102,9 @@ namespace BlockChain
 			_MainBlockStore = new MainBlockStore();
 			_BranchBlockStore = new BranchBlockStore();
 			_OrphanBlockStore = new OrphanBlockStore();
-		//	_GenesisBlockStore = new GenesisBlockStore();
 			_BlockDifficultyTable = new BlockDifficultyTable();
 			_ChainTip = new ChainTip();
-			_GenesisBlockHash = genesisBlockHash;
+			_GenesisBlockHash = GetGenesisBlock().Key;
 
 			OwnResource(_DBContext);
 			OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
@@ -104,7 +136,7 @@ namespace BlockChain
 					itr = GetBlock(itr.header.parent);
 				}
 
-				BlockChainTrace.Information("Genesis is:\n" + BitConverter.ToString(genesisBlockHash));
+				BlockChainTrace.Information("Genesis is:\n" + BitConverter.ToString(_GenesisBlockHash));
 
 				var sb = new StringBuilder();
 				sb.AppendLine("Current chain:");
@@ -116,11 +148,6 @@ namespace BlockChain
 				}
 
 				BlockChainTrace.Information(sb.ToString());
-				//}
-				//else
-				//{
-				//	BlockChainTrace.Information("Current chain is empty.");
-				//}
 			}
 		}
 

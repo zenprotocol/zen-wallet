@@ -72,9 +72,10 @@ namespace Zen
 
 			if (clearConsole)
 				Console.Clear ();
-			
-			var walletManager = new WalletManager ();
-			var nodeManager = new NodeManager ();
+
+			var blockchain = new BlockChain.BlockChain ("blockchain_db");
+			var walletManager = new WalletManager (blockchain);
+			var nodeManager = new NodeManager (blockchain);
 			#if DEBUG
 			nodeManager.Start (LanMode, DisableInboundMode);
 			#else

@@ -87,5 +87,9 @@
       <Project>{7469FE62-A886-460D-8439-8048AF6514A1}</Project>
       <Name>NodeTester</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
