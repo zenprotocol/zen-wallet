@@ -186,6 +186,7 @@
     <Compile Include="Widgets\ReceiveDialog.cs" />
     <Compile Include="gtk-gui\Wallet.ReceiveDialog.cs" />
     <Compile Include="Widgets\KeysDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.KeysDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

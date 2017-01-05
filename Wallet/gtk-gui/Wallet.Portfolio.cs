@@ -5,33 +5,32 @@ namespace Wallet
 	public partial class Portfolio
 	{
 		private global::Gtk.VBox vbox1;
-
+		
 		private global::Gtk.VBox vboxOthers;
 
-		protected virtual void Build()
+		protected virtual void Build ()
 		{
-			global::Stetic.Gui.Initialize(this);
+			global::Stetic.Gui.Initialize (this);
 			// Widget Wallet.Portfolio
-			global::Stetic.BinContainer.Attach(this);
+			global::Stetic.BinContainer.Attach (this);
 			this.Name = "Wallet.Portfolio";
 			// Container child Wallet.Portfolio.Gtk.Container+ContainerChild
-			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1 = new global::Gtk.VBox ();
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			this.vbox1.BorderWidth = ((uint)(10));
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.vboxOthers = new global::Gtk.VBox();
+			this.vboxOthers = new global::Gtk.VBox ();
 			this.vboxOthers.Name = "vboxOthers";
 			this.vboxOthers.Spacing = 6;
-			this.vbox1.Add(this.vboxOthers);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.vboxOthers]));
+			this.vbox1.Add (this.vboxOthers);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.vboxOthers]));
 			w1.Position = 0;
-			this.Add(this.vbox1);
-			if ((this.Child != null))
-			{
-				this.Child.ShowAll();
+			this.Add (this.vbox1);
+			if ((this.Child != null)) {
+				this.Child.ShowAll ();
 			}
-			this.Hide();
+			this.Hide ();
 		}
 	}
 }

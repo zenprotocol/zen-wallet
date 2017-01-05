@@ -5,160 +5,159 @@ namespace Wallet
 	public partial class SendDialogStep2
 	{
 		private global::Gtk.VBox vbox1;
-
+		
 		private global::Wallet.SendDialogWaiting senddialogwaiting;
-
+		
 		private global::Wallet.DialogField dialogfieldTo;
-
+		
 		private global::Wallet.DialogField dialogfieldAmount;
-
+		
 		private global::Gtk.Expander expander;
-
+		
 		private global::Gtk.VBox vbox2;
-
+		
 		private global::Wallet.DialogField dialogfield3;
-
+		
 		private global::Wallet.DialogField dialogfield4;
-
+		
 		private global::Wallet.DialogField dialogfield5;
-
+		
 		private global::Gtk.Label GtkLabel;
-
+		
 		private global::Gtk.HBox hbox12;
-
+		
 		private global::Gtk.EventBox eventboxBack;
-
+		
 		private global::Gtk.Image image1;
-
+		
 		private global::Gtk.EventBox eventbox9;
-
+		
 		private global::Gtk.Image imageNext;
 
-		protected virtual void Build()
+		protected virtual void Build ()
 		{
-			global::Stetic.Gui.Initialize(this);
+			global::Stetic.Gui.Initialize (this);
 			// Widget Wallet.SendDialogStep2
-			global::Stetic.BinContainer.Attach(this);
+			global::Stetic.BinContainer.Attach (this);
 			this.Name = "Wallet.SendDialogStep2";
 			// Container child Wallet.SendDialogStep2.Gtk.Container+ContainerChild
-			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1 = new global::Gtk.VBox ();
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.senddialogwaiting = new global::Wallet.SendDialogWaiting();
+			this.senddialogwaiting = new global::Wallet.SendDialogWaiting ();
 			this.senddialogwaiting.Events = ((global::Gdk.EventMask)(256));
 			this.senddialogwaiting.Name = "senddialogwaiting";
-			this.vbox1.Add(this.senddialogwaiting);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.senddialogwaiting]));
+			this.vbox1.Add (this.senddialogwaiting);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.senddialogwaiting]));
 			w1.Position = 0;
 			w1.Expand = false;
 			w1.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.dialogfieldTo = new global::Wallet.DialogField();
+			this.dialogfieldTo = new global::Wallet.DialogField ();
 			this.dialogfieldTo.Events = ((global::Gdk.EventMask)(256));
 			this.dialogfieldTo.Name = "dialogfieldTo";
-			this.vbox1.Add(this.dialogfieldTo);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.dialogfieldTo]));
+			this.vbox1.Add (this.dialogfieldTo);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.dialogfieldTo]));
 			w2.Position = 1;
 			w2.Expand = false;
 			w2.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.dialogfieldAmount = new global::Wallet.DialogField();
+			this.dialogfieldAmount = new global::Wallet.DialogField ();
 			this.dialogfieldAmount.Events = ((global::Gdk.EventMask)(256));
 			this.dialogfieldAmount.Name = "dialogfieldAmount";
-			this.vbox1.Add(this.dialogfieldAmount);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.dialogfieldAmount]));
+			this.vbox1.Add (this.dialogfieldAmount);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.dialogfieldAmount]));
 			w3.Position = 2;
 			w3.Expand = false;
 			w3.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.expander = new global::Gtk.Expander(null);
+			this.expander = new global::Gtk.Expander (null);
 			this.expander.CanFocus = true;
 			this.expander.Name = "expander";
 			this.expander.Expanded = true;
 			// Container child expander.Gtk.Container+ContainerChild
-			this.vbox2 = new global::Gtk.VBox();
+			this.vbox2 = new global::Gtk.VBox ();
 			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.dialogfield3 = new global::Wallet.DialogField();
+			this.dialogfield3 = new global::Wallet.DialogField ();
 			this.dialogfield3.Events = ((global::Gdk.EventMask)(256));
 			this.dialogfield3.Name = "dialogfield3";
-			this.vbox2.Add(this.dialogfield3);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.dialogfield3]));
+			this.vbox2.Add (this.dialogfield3);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.dialogfield3]));
 			w4.Position = 0;
 			w4.Expand = false;
 			w4.Fill = false;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.dialogfield4 = new global::Wallet.DialogField();
+			this.dialogfield4 = new global::Wallet.DialogField ();
 			this.dialogfield4.Events = ((global::Gdk.EventMask)(256));
 			this.dialogfield4.Name = "dialogfield4";
-			this.vbox2.Add(this.dialogfield4);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.dialogfield4]));
+			this.vbox2.Add (this.dialogfield4);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.dialogfield4]));
 			w5.Position = 1;
 			w5.Expand = false;
 			w5.Fill = false;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.dialogfield5 = new global::Wallet.DialogField();
+			this.dialogfield5 = new global::Wallet.DialogField ();
 			this.dialogfield5.Events = ((global::Gdk.EventMask)(256));
 			this.dialogfield5.Name = "dialogfield5";
-			this.vbox2.Add(this.dialogfield5);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.dialogfield5]));
+			this.vbox2.Add (this.dialogfield5);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.dialogfield5]));
 			w6.Position = 2;
 			w6.Expand = false;
 			w6.Fill = false;
-			this.expander.Add(this.vbox2);
-			this.GtkLabel = new global::Gtk.Label();
+			this.expander.Add (this.vbox2);
+			this.GtkLabel = new global::Gtk.Label ();
 			this.GtkLabel.Name = "GtkLabel";
-			this.GtkLabel.LabelProp = global::Mono.Unix.Catalog.GetString("More");
+			this.GtkLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("More");
 			this.GtkLabel.UseUnderline = true;
 			this.expander.LabelWidget = this.GtkLabel;
-			this.vbox1.Add(this.expander);
-			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.expander]));
+			this.vbox1.Add (this.expander);
+			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.expander]));
 			w8.Position = 3;
 			w8.Expand = false;
 			w8.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.hbox12 = new global::Gtk.HBox();
+			this.hbox12 = new global::Gtk.HBox ();
 			this.hbox12.Name = "hbox12";
 			this.hbox12.Homogeneous = true;
 			// Container child hbox12.Gtk.Box+BoxChild
-			this.eventboxBack = new global::Gtk.EventBox();
+			this.eventboxBack = new global::Gtk.EventBox ();
 			this.eventboxBack.Name = "eventboxBack";
 			// Container child eventboxBack.Gtk.Container+ContainerChild
-			this.image1 = new global::Gtk.Image();
+			this.image1 = new global::Gtk.Image ();
 			this.image1.Name = "image1";
-			this.image1.Pixbuf = global::Stetic.IconLoader.LoadIcon(this, "gtk-copy", global::Gtk.IconSize.Menu);
-			this.eventboxBack.Add(this.image1);
-			this.hbox12.Add(this.eventboxBack);
-			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox12[this.eventboxBack]));
+			this.image1.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-copy", global::Gtk.IconSize.Menu);
+			this.eventboxBack.Add (this.image1);
+			this.hbox12.Add (this.eventboxBack);
+			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox12 [this.eventboxBack]));
 			w10.Position = 0;
 			w10.Expand = false;
 			w10.Fill = false;
 			// Container child hbox12.Gtk.Box+BoxChild
-			this.eventbox9 = new global::Gtk.EventBox();
+			this.eventbox9 = new global::Gtk.EventBox ();
 			this.eventbox9.Name = "eventbox9";
 			// Container child eventbox9.Gtk.Container+ContainerChild
-			this.imageNext = new global::Gtk.Image();
+			this.imageNext = new global::Gtk.Image ();
 			this.imageNext.Name = "imageNext";
-			this.imageNext.Pixbuf = global::Stetic.IconLoader.LoadIcon(this, "gtk-dnd-multiple", global::Gtk.IconSize.Menu);
-			this.eventbox9.Add(this.imageNext);
-			this.hbox12.Add(this.eventbox9);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox12[this.eventbox9]));
+			this.imageNext.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-dnd-multiple", global::Gtk.IconSize.Menu);
+			this.eventbox9.Add (this.imageNext);
+			this.hbox12.Add (this.eventbox9);
+			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox12 [this.eventbox9]));
 			w12.Position = 1;
 			w12.Expand = false;
 			w12.Fill = false;
-			this.vbox1.Add(this.hbox12);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox12]));
+			this.vbox1.Add (this.hbox12);
+			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.hbox12]));
 			w13.Position = 4;
 			w13.Expand = false;
 			w13.Fill = false;
-			this.Add(this.vbox1);
-			if ((this.Child != null))
-			{
-				this.Child.ShowAll();
+			this.Add (this.vbox1);
+			if ((this.Child != null)) {
+				this.Child.ShowAll ();
 			}
-			this.Hide();
+			this.Hide ();
 		}
 	}
 }

@@ -12,7 +12,7 @@ namespace Wallet
 				dialog.Resize(1, 1); // A hah
 			}
 		}
-
+	
 		public void ShowDialog(Window parent) {
 			dialog = new Dialog (null, parent, DialogFlags.Modal | DialogFlags.DestroyWithParent);
 			dialog.Decorated = false;
