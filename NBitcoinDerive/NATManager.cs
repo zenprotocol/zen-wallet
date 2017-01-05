@@ -18,12 +18,12 @@ namespace NBitcoinDerive
 
 		public IPAddress ExternalIPAddress { get; private set; }
 
-		#if DEBUG
-		public 
-		#else
-		private
-		#endif
-		IPAddress InternalIPAddress { get; private set; }
+//		#if DEBUG
+		public IPAddress InternalIPAddress { get; private set; }
+//		#else
+//		private IPAddress InternalIPAddress { get; private set; }
+//		#endif
+
 
 		public bool DeviceFound { get; private set; }
 		public bool HasError { get; private set; }
@@ -54,6 +54,12 @@ namespace NBitcoinDerive
 				}
 			}
 		}
+
+//		public bool HasConnectivity {
+//			get {
+//				return InternalIPAddress != null; // TODO: add conectivity check
+//			}
+//		}
 
 		public async Task Init()
 		{

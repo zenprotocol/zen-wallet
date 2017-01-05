@@ -42,11 +42,13 @@ namespace Test
 
 				var asset = new byte[32];
 				new Random().NextBytes(asset);
+				var privateKeys = new List<byte[]>();
 
 				Action<ulong> addOutput = amount => {
 					var lock_ = Types.OutputLock.NewPKLock(keys[0].Public);
 					var spend = new Types.Spend(asset, amount);
 					outputs.Add(new Types.Output(lock_, spend));
+					privateKeys.Add(keys[0].Private);
 				};
 
 				addOutput(10);
@@ -57,13 +59,15 @@ namespace Test
 
 				var version = (uint)1;
 
-				Types.Transaction transaction = new Types.Transaction(version,
+				var transaction = new Types.Transaction(version,
 					ListModule.OfSeq(inputs),
 					ListModule.OfSeq(hashes),
 					ListModule.OfSeq(outputs),
 					null);
 
-				blockChains[0].HandleNewTransaction(transaction);
+				var signedTransaction = Consensus.TransactionValidation.signTx(transaction, ListModule.OfSeq(privateKeys));
+
+				blockChains[0].HandleNewTransaction(signedTransaction);
 
 				string date = "2000-02-02";
 				var blockHeader = new Types.BlockHeader(
@@ -252,11 +256,7 @@ namespace Test
 //				//TODO
 //				Thread.Sleep(40000);
 //
-//
-//
-//
-//
-//				//					actionSender(BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters));
+//				actionSender(BroadcastHub.GetBroadcastHub(nodesGroup.NodeConnectionParameters));
 //
 //			//	Trace.Information("-- Done");
 //			});
@@ -302,6 +302,5 @@ namespace Test
 				return _DBContext.GetTransactionContext();
 			}
 		}
-
 	}
 }

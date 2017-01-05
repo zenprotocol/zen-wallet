@@ -85,6 +85,7 @@ namespace BlockChain
 				return Result.Rejected;
 			}
 
+
 			//TODO:
 			/*
 			3. Transaction list must be non - empty

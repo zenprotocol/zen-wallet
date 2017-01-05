@@ -29,15 +29,14 @@ namespace Wallet
 				label.ModifyFont (Constants.Fonts.ActionBarBig);
 			}, labelAmount, labelAmountConverted);
 
-			ButtonPressEvent (eventboxSend, () => {
-//				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(Program.temp); //TODO: fuck this.
+			ButtonPressEvent (eventboxSend, () => {				
+				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(MainAreaController.GetInstance().MainView as Window);
 			});
 
 			ButtonPressEvent(eventboxReceive, () =>
 			{
-//				new ReceiveDialog().ShowDialog(Program.temp); //TODO: fuck this.
+				new ReceiveDialog().ShowDialog(MainAreaController.GetInstance().MainView as Window);
 			});
-
 
 			HeightRequest = 130;
 		}

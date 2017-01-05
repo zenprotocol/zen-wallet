@@ -8,7 +8,7 @@ using NBitcoinDerive;
 
 namespace Wallet
 {
-	public class WalletController
+	public class WalletController : ResourceOwner
 	{
 		private static WalletController instance = null;
 
@@ -54,11 +54,9 @@ namespace Wallet
 			}
 		}
 
-		IDisposable messageListener;
-
 		public WalletController()
 		{
-			messageListener = MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(
+			OwnResource(MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(
 				new EventLoopMessageListener<NodeManager.IMessage>(message =>
 				{
 					Gtk.Application.Invoke(delegate
@@ -83,7 +81,7 @@ namespace Wallet
 						}
 					});
 				})
-			);
+			));
 		}
 	
 
@@ -92,7 +90,6 @@ namespace Wallet
 
 		public void Quit() {
 			App.Instance.Wallet.Dispose ();
-			messageListener.Dispose();
 			stopping = true;
 			//tempThread.Join ();
 		}

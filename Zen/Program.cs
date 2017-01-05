@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NDesk.Options;
 using Infrastructure;
+using NBitcoinDerive;
 
 namespace Zen
 {
@@ -10,32 +11,37 @@ namespace Zen
 
 		public static void Main (string[] args)
 		{
-			string profile = null;
+			App app = new App();
 			bool show_help = false;
-			bool save = false;
-			List<string> seeds = new List<string> ();
-			string peers = null;
-			string connections = null;
-			string port = null;
-
+		
 			var p = new OptionSet () {
-				{ "c|console", "launch the console", v => App.Instance.Mode = AppModeEnum.Console },
-				{ "g|gui", "launch the wallet gui", v => App.Instance.Mode = AppModeEnum.GUI },
-				{ "t|tester", "launch the tester gui", v => App.Instance.Mode = AppModeEnum.Tester },
-				{ "p|profile=", "use settings profile", v => profile = v },
-				{ "save", "save settings profile", v => save = v != null },
-				{ "s|seed=", "use seed ip address", v => seeds.Add(v) },
-				{ "peers=", "number peers to find", v => peers = v },
-				{ "connections=", "number of node connections", v => connections = v },
-				{ "port=", "default network port", v => port = v },
-				{ "i|internal", "use internal ip", v => App.Instance.LanMode = v != null },
-				{ "d|disallow", "allow inbound connections", v => App.Instance.DisableInboundMode = v != null },
-//				{ "n|name=", "the {NAME} of someone to greet.",
-//					v => names.Add (v) },
-//				{ "r|repeat=", 
-//					"the number of {TIMES} to repeat the greeting.\n" + 
-//					"this must be an integer.",
-//					(int v) => repeat = v },
+				{ "console", "launch the console", 
+					v => app.Mode = AppModeEnum.Console },
+				{ "gui", "launch the wallet gui", 
+					v => app.Mode = AppModeEnum.GUI },
+				{ "tester", "launch the tester gui", 
+					v => app.Mode = AppModeEnum.Tester },
+				{ "p|profile=", "use settings profile", 
+					v =>  app.Profile = v },
+				{ "save", "save settings profile (to be used with p option)", 
+					v => app.SaveProfile = v != null },
+				{ "seed=", "use seed ip address", 
+					v => app.Seeds.Add(v) },
+				{ "peers=", "number peers to find", 
+					v => app.PeersToFind = int.Parse(v) },
+				{ "connections=", "number of node connections", 
+					v => app.Connections = int.Parse(v) },
+				{ "port=", "default network port", 
+					v => app.Port = int.Parse(v) },
+				{ "ip=", "use ip address. use blank for none", 
+					v => app.SpecifyIp(v) },
+				{ "internal", "use internal ip", 
+					v => app.EndpointOptions.EndpointOption = 
+						EndpointOptions.EndpointOptionsEnum.UseInternalIP },
+				{ "bcdb=", "DB name of BlockChain", 
+					v => app.BlockChainDB = v },
+				{ "genesis", "DB name of BlockChain", 
+					v => app.InitGenesisBlock = v != null },
 				{ "v", "increase debug message verbosity",
 					v => { if (v != null) ++verbosity; } },
 				{ "h|help",  "show this message and exit", 
@@ -53,73 +59,23 @@ namespace Zen
 				return;
 			}
 
-			var file = profile ?? "default";
-			if (!file.EndsWith (".xml")) {
-				file += ".xml";
-			}
-
-			JsonLoader<NBitcoinDerive.Network>.Instance.FileName = file; 
-
-			if (seeds.Count > 0) {
-				foreach (String seed in seeds) {
-					if (!JsonLoader<NBitcoinDerive.Network>.Instance.Value.Seeds.Contains (seed)) {
-						JsonLoader<NBitcoinDerive.Network>.Instance.Value.Seeds.Add (seed); 
-					}
-				}
-			}
-
-			if (peers != null)
-				JsonLoader<NBitcoinDerive.Network>.Instance.Value.PeersToFind = int.Parse(peers);
-
-			if (connections != null)
-				JsonLoader<NBitcoinDerive.Network>.Instance.Value.MaximumNodeConnection = int.Parse(connections);
-
-			if (port != null)
-				JsonLoader<NBitcoinDerive.Network>.Instance.Value.DefaultPort = int.Parse(port);
-
-			if (save) {
-				JsonLoader<NBitcoinDerive.Network>.Instance.Save ();
-			}
-
-			Console.WriteLine ("Current profile settings:");
-			Console.WriteLine (JsonLoader<NBitcoinDerive.Network>.Instance.Value);
-
 			if (show_help) {
 				ShowHelp (p);
 				return;
 			}
 
-//			if (extra.Count == 0) {
-//				TUI.Start(null);
-//				return;
-//			}
-
-			if (App.Instance.Mode != null) {
-				App.Instance.Start (false);
-			} else {
-				TUI.Start (null);
+			if (app.Mode.HasValue) {
+				app.Start (false);
+				return;
 			}
 
-
-//			string message;
-//			if (extra.Count > 0) {
-//				message = string.Join (" ", extra.ToArray ());
-//				Debug ("Using new message: {0}", message);
-//			}
-//			else {
-//				message = "Hello {0}!";
-//				Debug ("Using default message: {0}", message);
-//			}
-//
-//			foreach (string name in names) {
-//				for (int i = 0; i < repeat; ++i)
-//					Console.WriteLine (message, name);
-//			}
+//			if (extra.Count == 0) {
+			TUI.Start (app);
 		}
 
 		static void ShowHelp (OptionSet p)
 		{
-			Console.WriteLine ("Usage: Zen [OPTIONS]+ message");
+			Console.WriteLine ("Usage: Zen [OPTIONS]");
 			Console.WriteLine ("Description");
 			Console.WriteLine ();
 			Console.WriteLine ("Options:");

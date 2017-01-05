@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Sodium;
 
 namespace Wallet.core.Store
 {
@@ -55,17 +56,13 @@ namespace Wallet.core.Store
 		}
 
 		private Key Create() {
-			Random random = new Random ();
-
-			byte[] privateBytes = new byte[32];
-			random.NextBytes (privateBytes);
-
-			byte[] publicBytes = Consensus.Merkle.hashHasher.Invoke (privateBytes);
-			byte[] addressBytes = Consensus.Merkle.hashHasher.Invoke (publicBytes);
+			var keyPair = PublicKeyAuth.GenerateKeyPair();
+			var addressBytes = Consensus.Merkle.hashHasher.Invoke(keyPair.PublicKey);
+			//PublicKeyAuth.ExtractEd25519PublicKeyFromEd25519SecretKey
 
 			return new Key () {
-				Public = publicBytes,
-				Private = privateBytes
+				Public = addressBytes,
+				Private = keyPair.PrivateKey
 			};
 		}
 
