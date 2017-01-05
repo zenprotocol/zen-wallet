@@ -11,8 +11,7 @@ namespace Wallet.core
 {
 	public class WalletManager : ResourceOwner
 	{
-		private const string DB_NAME = "wallet";
-		public  KeyStore KeyStore { get; private set; }
+		public KeyStore KeyStore { get; private set; }
 		private DBContext _DBContext;
 		private BlockChain.BlockChain _BlockChain;
 		private TxHistoryStore _TxHistoryStore;
@@ -20,11 +19,13 @@ namespace Wallet.core
 		//dev
 		public AssetsManager _AssetsManager;
 
-		public WalletManager(BlockChain.BlockChain blockChain)
+		public WalletManager(BlockChain.BlockChain blockChain, string dbName)
 		{
 			_BlockChain = blockChain;
+			OwnResource (_BlockChain);
+
 			_AssetsManager = new AssetsManager ();
-			_DBContext = new DBContext(DB_NAME);
+			_DBContext = new DBContext(dbName);
 			OwnResource (_DBContext);
 
 			KeyStore = new KeyStore(_DBContext);

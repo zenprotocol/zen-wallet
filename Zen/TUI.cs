@@ -9,13 +9,12 @@ namespace Zen
 {
 	class TUI
 	{
-		public static void Start (App app)
+		public static void Start (App app, String args)
 		{
 			var root = new RootWindow();
 
-			var dialog = new Dialog(root) { Text = "Zen", Width = 60, Height = 17, Top = 3, Left = 4, Border = BorderStyle.Thick };
-			new Label(dialog) {Text = "Profile: " + app.Profile, Top = 15, Left = 8, Foreground = ConsoleColor.Black };
-			new Label(dialog) {Text = "Blockchain DB: " + app.BlockChainDB, Top = 15, Left = 25, Foreground = ConsoleColor.Black };
+			var dialog = new Dialog(root) { Text = "Zen", Width = 60, Height = 18, Top = 3, Left = 4, Border = BorderStyle.Thick };
+
 			var buttonClose = new Button(dialog) { Text = "Close", Top = 2, Left = 6 };
 			var checkboxGenesis = new Checkbox(dialog) { Text = "Genesis", Foreground = ConsoleColor.Black, Top = 2, Left = 18 };
 			var buttonMenu = new Button(dialog) { Text = "Menu", Top = 2, Left = 30 };
@@ -25,6 +24,10 @@ namespace Zen
 			var peersList = new ListBox(dialog) { Top = 7, Left = 40, Width = 16, Height = 6, Border = BorderStyle.Thin };
 //			var line = new VerticalLine(dialog) { Top = 4, Left = 40, Width = 1, Height = 6, Border = BorderStyle.Thick };
 
+			new Label(dialog) {Text = "Command line args: " + args, Top = 14, Left = 8, Foreground = ConsoleColor.Black };
+			new Label(dialog) {Text = "Profile: " + app.Profile, Top = 15, Left = 8, Foreground = ConsoleColor.Black };
+			new Label(dialog) {Text = "Blockchain DB: " + app.BlockChainDB, Top = 15, Left = 25, Foreground = ConsoleColor.Black };
+			new Label(dialog) {Text = "Port: " + app.Port + " Connections: " + app.Connections + " Peers: " + app.PeersToFind, Top = 16, Left = 8, Foreground = ConsoleColor.Black };
 
 			var dialogMenu = new Dialog(root) { Text = "Menu", Width = 50, Height = 10, Top = 6, Left = 6, Border = BorderStyle.Thick, Visible = false };
 			var buttonBack = new Button(dialogMenu) { Text = "Back", Width = 8, Height = 3, Top = 1, Left = 30 };
@@ -33,7 +36,6 @@ namespace Zen
 			list.Items.Add ("Wallet");
 			list.Items.Add ("Tester");
 			list.Items.Add ("Console");
-			list.Items.Add ("Test");
 
 			menuList.Items.Add ("Wipe BlockChain DB");
 
@@ -50,8 +52,8 @@ namespace Zen
 				}
 			};
 				
-			list.ItemSelectedEvent += (object sender, ListBox.ItemSelectedArgs e) => {
-				switch (e.Idx) {
+			list.Clicked += (object sender, EventArgs e) => {
+				switch (((ListBox)sender).SelectedIndex) {
 				case 0:
 					app.Mode = AppModeEnum.GUI;
 					break;
@@ -61,32 +63,24 @@ namespace Zen
 				case 2:
 					app.Mode = AppModeEnum.Console;
 					break;
-				case 3:
-					//Infrastructure.JsonLoader<NodeTester.Settings>.Instance.FileName = "xx";
-					//app.Network = TestNetwork.Instance;
-					break;
 				}
 
 				app.Start();
 
-			//	root.Detach();
-			//	root.Run();
+				peersList.Items.Clear ();
+				root.Detach();
+				Console.Clear();
+				root.Run();
 			};
 
 			menuList.Clicked += (object sender, EventArgs e) => {
-				Console.Write("x");
-			};
-			menuList.ItemSelectedEvent += (object sender, ListBox.ItemSelectedArgs e) => {
-				switch (e.Idx) {
+				switch (((ListBox)sender).SelectedIndex) {
 				case 0:
 					if (Directory.Exists(app.BlockChainDB)) {
 						Directory.Delete(app.BlockChainDB, true);
 					}
 					break;
 				}
-
-		//		dialogMenu.Hide ();
-			//	dialog.Show ();
 			};
 				
 			buttonClose.Clicked += (s, e) => {

@@ -84,9 +84,6 @@ namespace Zen
 			if (Mode != null) {
 				switch (Mode.Value) {
 				case AppModeEnum.Console:
-					Console.WriteLine("Press ENTER to stop");
-					Console.ReadLine();
-					nodeManager.Dispose();
 					break;
 				case AppModeEnum.GUI:
 					Wallet.App.Instance.Start(nodeManager, walletManager);
@@ -96,6 +93,13 @@ namespace Zen
 					break;
 				}
 			}
+
+			Console.WriteLine ("Press ENTER to stop");
+			Console.ReadLine ();
+
+			nodeManager.Dispose ();
+			walletManager.Dispose ();
+			//blockchain.Dispose ();
 		}
 
 		private void InitProfile() {
@@ -118,19 +122,19 @@ namespace Zen
 			}
 
 			if (Connections.HasValue) {
-				JsonLoader<Network>.Instance.Value.PeersToFind = Connections.Value;
+				JsonLoader<Network>.Instance.Value.MaximumNodeConnection = Connections.Value;
 			}
 
 			if (Port.HasValue) {
-				JsonLoader<Network>.Instance.Value.PeersToFind = Port.Value;
+				JsonLoader<Network>.Instance.Value.DefaultPort = Port.Value;
 			}
 
 			if (SaveProfile) {
 				JsonLoader<Network>.Instance.Save ();
 			}
 
-			Console.WriteLine ("Current profile settings:");
-			Console.WriteLine (JsonLoader<Network>.Instance.Value);
+//			Console.WriteLine ("Current profile settings:");
+//			Console.WriteLine (JsonLoader<Network>.Instance.Value);
 
 			if (OnInitProfile != null) {
 				OnInitProfile (JsonLoader<Network>.Instance.Value);
@@ -138,8 +142,12 @@ namespace Zen
 		}
 
 		public void SpecifyIp(String ip) {
-			EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseSpecified; 
-			EndpointOptions.SpecifiedAddress = IPAddress.Parse (ip);
+			if (String.IsNullOrEmpty(ip)) {
+				EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseNone; 
+			} else {
+				EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseSpecified; 
+				EndpointOptions.SpecifiedAddress = IPAddress.Parse (ip);
+			}
 		}
 	}
 }

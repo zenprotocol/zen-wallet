@@ -6,23 +6,22 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 
-		protected virtual void Build()
+		protected virtual void Build ()
 		{
-			global::Stetic.Gui.Initialize(this);
+			global::Stetic.Gui.Initialize (this);
 			// Widget Wallet.Transactions
-			global::Stetic.BinContainer.Attach(this);
+			global::Stetic.BinContainer.Attach (this);
 			this.Name = "Wallet.Transactions";
 			// Container child Wallet.Transactions.Gtk.Container+ContainerChild
-			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1 = new global::Gtk.VBox ();
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			this.vbox1.BorderWidth = ((uint)(10));
-			this.Add(this.vbox1);
-			if ((this.Child != null))
-			{
-				this.Child.ShowAll();
+			this.Add (this.vbox1);
+			if ((this.Child != null)) {
+				this.Child.ShowAll ();
 			}
-			this.Hide();
+			this.Hide ();
 		}
 	}
 }

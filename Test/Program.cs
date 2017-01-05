@@ -18,42 +18,100 @@ namespace Test
 {
 	class MainClass
 	{
+//		private Types.Transaction GetTransaction(List<Types.Output> outputs = null) {
+//			outputs = outputs ?? new List<Types.Output>();
+//			var inputs = new List<Types.Outpoint>();
+//			var hashes = new List<byte[]>();
+//
+//			return new Types.Transaction(version,
+//				ListModule.OfSeq(inputs),
+//				ListModule.OfSeq(hashes),
+//				ListModule.OfSeq(outputs),
+//				null);
+//		}
+//
+//		public Keyed<Types.Block> GetGenesisBlock(List<Types.Transaction> transactions = null) {
+//			var version = (uint)1;
+//			var date = "2000-02-02";
+//
+//			Types.Transaction transaction = new Types.Transaction(version,
+//				ListModule.OfSeq(inputs),
+//				ListModule.OfSeq(hashes),
+//				ListModule.OfSeq(outputs),
+//				null);
+//
+//			var blockHeader = new Types.BlockHeader(
+//				version,
+//				new byte[] { },
+//				new byte[] { },
+//				new byte[] { },
+//				new byte[] { },
+//				ListModule.OfSeq<byte[]>(new List<byte[]>()),
+//				DateTime.Parse(date).ToBinary(),
+//				1,
+//				new byte[] { }
+//			);
+//
+//			var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
+//			var key = Merkle.blockHeaderHasher.Invoke (blockHeader);
+//			block.tran
+//			return new Keyed<Types.Block> (key, block);
+//		}
+
 		public static void Main(string[] args)
 		{
+			var random = new Random ();
 
-			WithBlockChains (1, blockChains => {
-				blockChains[0].HandleNewBlock(blockChains[0].GetGenesisBlock().Value);
-//				blockChains[0].HandleNewBlock(block1.Value.Value);
-//
-//				blockChains[0].HandleNewTransaction(p.TakeOut("t3").Value);
+			var wallet1_db = "wallet1_" + random.Next (100).ToString ();
+			var wallet2_db = "wallet1_" + random.Next (100).ToString ();
 
-//				var x = blockChains[0].MineAllInMempool();
+			WithBlockChains (2, blockChains => {
+				var walletManager0 = new WalletManager (blockChains[0], wallet1_db);
+				var walletManager1 = new WalletManager (blockChains[1], wallet2_db);
 
-//				Console.WriteLine(x);
+				var keyOf0 = walletManager0.KeyStore.GetKey (false);
+				var keyOf1 = walletManager1.KeyStore.GetKey (false);
 
-				var walletManager = new WalletManager (blockChains[0]);
-				var keys = walletManager.KeyStore.List ();
-
-
-				Console.WriteLine(walletManager.KeyStore);
-
-				var outputs = new List<Types.Output>();
-				var inputs = new List<Types.Outpoint>();
+				///////////////////////////////
 
 				var asset = new byte[32];
 				new Random().NextBytes(asset);
+
+				var genesisOutputs = new List<Types.Output>();
+
+				var genesisOutputLock = Types.OutputLock.NewPKLock(keyOf0.Public); // use recipient's public key
+				var genesisOutputSpend = new Types.Spend(asset, (ulong)100);
+				genesisOutputs.Add(new Types.Output(genesisOutputLock, genesisOutputSpend));
+
+				var genesis = blockChains[0].GetGenesisBlock(genesisOutputs);
+
+				blockChains[0].HandleNewBlock(genesis.Value);
+				blockChains[1].HandleNewBlock(genesis.Value);
+
+
+
+				// send from 0 to 1:
+				var outputs = new List<Types.Output>();
+				var inputs = new List<Types.Outpoint>();
+
 				var privateKeys = new List<byte[]>();
 
-				Action<ulong> addOutput = amount => {
-					var lock_ = Types.OutputLock.NewPKLock(keys[0].Public);
+				var genesisTransaction = genesis.Value.transactions.Head;
+				var txHash = Consensus.Merkle.transactionHasher.Invoke(genesisTransaction);
+				inputs.Add(new Consensus.Types.Outpoint(txHash, 0));
+
+				Action<ulong, Wallet.core.Data.Key, Wallet.core.Data.Key> addOutput = (amount, senderKey, recipientKey) => {
+					var address = Consensus.Merkle.hashHasher.Invoke(recipientKey.Public);
+					var lock_ = Types.OutputLock.NewPKLock(address);
 					var spend = new Types.Spend(asset, amount);
 					outputs.Add(new Types.Output(lock_, spend));
-					privateKeys.Add(keys[0].Private);
+					privateKeys.Add(senderKey.Private); // use sender's private key
 				};
 
-				addOutput(10);
-				addOutput(5);
-				addOutput(20);
+				addOutput(10, keyOf0, keyOf1);
+				addOutput(91, keyOf0, keyOf0);
+				//addOutput(5);
+				//addOutput(20);
 
 				var hashes = new List<byte[]>();
 
@@ -67,7 +125,10 @@ namespace Test
 
 				var signedTransaction = Consensus.TransactionValidation.signTx(transaction, ListModule.OfSeq(privateKeys));
 
+				//mark them (privateKeys) as used here.
+
 				blockChains[0].HandleNewTransaction(signedTransaction);
+				blockChains[1].HandleNewTransaction(signedTransaction);
 
 				string date = "2000-02-02";
 				var blockHeader = new Types.BlockHeader(
@@ -85,13 +146,20 @@ namespace Test
 				var transactions = new List<Types.Transaction> ();
 				transactions.Add (transaction);
 				var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
-				blockChains[0].HandleNewBlock(block);
 
-				var spendOutputs = walletManager._AssetsManager.Spend(asset, 11);
+				blockChains[1].OnAddedToStore += t => {
+					foreach (var x in t.outputs) {
+						
+					}
+				};
 
-				foreach(var x in spendOutputs) {
-					Console.WriteLine("---->" + x.spend.amount);
-				}
+				blockChains[1].HandleNewBlock(block);
+//
+//				var spendOutputs = walletManager._AssetsManager.Spend(asset, 11);
+//
+//				foreach(var x in spendOutputs) {
+//					Console.WriteLine("---->" + x.spend.amount);
+//				}
 
 				Console.ReadLine();
 			});

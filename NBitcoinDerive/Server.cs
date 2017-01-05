@@ -33,7 +33,7 @@ namespace NBitcoinDerive
 			}
 
 			_Server.InboundNodeConnectionParameters = nodeConnectionParameters;
-			_Server.AllowLocalPeers = true; //TODO
+			_Server.AllowLocalPeers = false; //TODO
 
 			NodeServerTrace.Information($"Server setup at {externalAddress}");
 		}

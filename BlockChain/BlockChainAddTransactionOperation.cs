@@ -74,6 +74,12 @@ namespace BlockChain
 				return Result.Rejected;
 			}
 
+			if (!IsValidPointedInputs())
+			{
+				BlockChainTrace.Information("invalid pointed inputs");
+				return Result.Rejected;
+			}
+
 			//TODO: 7. Apply fee rules. If fails, reject
 			//TODO: 8. Validate each input. If fails, reject
 
@@ -167,6 +173,19 @@ namespace BlockChain
 					return false;
 				}
 			}
+
+			return true;
+		}
+
+		private bool IsValidPointedInputs()
+		{
+//			var pointedTransaction = Consensus.TransactionValidation.toPointedTransaction (_NewTransaction, _NewTransaction.Value.inputs);
+//
+//			for (int i=0; i<_NewTransaction.Value.inputs.Length; i++)
+//			{
+//				if (!Consensus.TransactionValidation.validateAtIndex (pointedTransaction, i))
+//					return false;
+//			}
 
 			return true;
 		}

@@ -17,10 +17,31 @@ namespace Wallet.core.Store
 		public KeyStore(DBContext dbContext) : base("key")
 		{
 			_DBContext = dbContext;
-			EnsureSingleKey ();
 		}
 
-		public IList<Key> List(bool? used = null, bool? isChange = null)
+		public Key GetKey(bool isChange = false) {
+			var list = List (false, isChange);
+
+			if (list.Count == 0) {
+				Key key = null;
+
+				using (var transaction = _DBContext.GetTransactionContext())
+				{
+					if (All (transaction).Count() == 0) {
+						key = Create (isChange);
+						Put(transaction, new Keyed<Key>(key.Public, key));
+					}
+
+					transaction.Commit();
+				}
+
+				return key;
+			} else {
+				return list [0];
+			}
+		}
+
+		public List<Key> List(bool? used = null, bool? isChange = null)
 		{
 			return All (_DBContext.GetTransactionContext ())
 				.Where (v => (!used.HasValue || v.Value.Used == used.Value) && (!isChange.HasValue || v.Value.Change == isChange.Value))
@@ -42,27 +63,15 @@ namespace Wallet.core.Store
 			return false;
 		}
 			
-		private void EnsureSingleKey()
-		{
-			using (var transaction = _DBContext.GetTransactionContext())
-			{
-				if (All (transaction).Count() == 0) {
-					Key key = Create ();
-					Put(transaction, new Keyed<Key>(key.Public, key));
-				}
-
-				transaction.Commit();
-			}
-		}
-
-		private Key Create() {
+		private Key Create(bool isChange) {
 			var keyPair = PublicKeyAuth.GenerateKeyPair();
 			var addressBytes = Consensus.Merkle.hashHasher.Invoke(keyPair.PublicKey);
-			//PublicKeyAuth.ExtractEd25519PublicKeyFromEd25519SecretKey
 
 			return new Key () {
 				Public = addressBytes,
-				Private = keyPair.PrivateKey
+				Private = keyPair.PrivateKey,
+				Used = false,
+				Change = isChange
 			};
 		}
 
