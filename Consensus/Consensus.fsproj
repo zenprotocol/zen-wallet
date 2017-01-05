@@ -59,7 +59,7 @@
       <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization.Primitives">
-      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0-preview1-24530-04\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
+      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -67,12 +67,14 @@
     <None Include="packages.config" />
     <Compile Include="Types.fs" />
     <Compile Include="Serialization.fs" />
-    <Compile Include="Script.fsx" />
     <Compile Include="Tree.fs" />
     <Compile Include="Merkle.fs" />
+    <Compile Include="SparseMerkleTree.fs" />
+    <Compile Include="ChainParameters.fs" />
+    <Compile Include="TransactionValidation.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="MerkleTests.fs" />
-    <Compile Include="SparseMerkleTree.fs" />
+    <Compile Include="SparseMerkleTreeTests.fs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(FSharpTargetsPath)" />

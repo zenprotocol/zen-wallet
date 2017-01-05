@@ -34,7 +34,7 @@ let tag : Hashable -> byte[] =
     | Output _ -> "output"B
     | Contract _ -> "contract"B
     | ExtendedContract _ -> "contract"B
-    | BlockHeader _ -> "bheader"B
+    | BlockHeader _ -> "block"B
     | Block _ -> "block"B
     | Hash _ -> "hash"B
 
@@ -71,16 +71,12 @@ let transactionHasher = taggedHash Transaction
 let outputLockHasher = taggedHash OutputLock
 let spendHasher = taggedHash Spend
 let outpointHasher = taggedHash Outpoint
-let outputHasher = taggedHash Output
+let outputHasher = taggedHash Outpoint
 let contractHasher = taggedHash Contract
 let extendedContractHasher = taggedHash ExtendedContract
 let blockHeaderHasher = taggedHash BlockHeader
-
-//let blockHasher block = blockHeaderHasher block.header
-let blockHasher =
-    fun block ->
-        blockHeaderHasher block.header
-
+let blockHasher block =
+    blockHeaderHasher block.header
 let hashHasher = taggedHash Hash
 
 // Usage: partially apply to cTW and keep a reference as long as
@@ -105,17 +101,16 @@ let inline toBytes (n: ^T) =
     [|low; mLow; mHigh; high|]
 
 let bitsToBytes (bs:bool[]) =
-    seq {
-        let b = ref 0uy
-        for i=0 to bs.Length-1 do
-            let rem = i % 8
-            if rem = 0 && i <> 0 then
-                yield !b
-                b := 0uy
-            if bs.[i] then
-                b := !b + byte (1 <<< rem)
-        yield !b
-    } |> Array.ofSeq
+    let ba = System.Collections.BitArray(bs)
+    let ret : byte[] = Array.zeroCreate(bs.Length / 8)
+    ba.CopyTo(ret,0)
+    ret
+
+let bytesToBits (bs:byte[]) = 
+    let ba = System.Collections.BitArray(bs)
+    let ret : bool[] = Array.zeroCreate(bs.Length*8)
+    ba.CopyTo(ret,0)
+    ret
 
 
 type Digest = {digest: byte[]; isDefault: bool}
@@ -141,5 +136,3 @@ let branchHash defaultHashes = fun branchData dL dR ->
 let merkleRoot cTW wrapper =
     let defaultHashes = defaultHash cTW
     cata (leafHash cTW wrapper defaultHashes) (branchHash defaultHashes)                                                 
-
-

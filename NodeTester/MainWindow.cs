@@ -271,7 +271,7 @@ public partial class MainWindow : ResourceOwnerWindow
 
 	protected void Button_Discover (object sender, EventArgs e)
 	{
-		App.NodeManager.StartDiscovery ();
+		//App.NodeManager.StartDiscovery ();
 
 		//DiscoveryManager.Instance.Start(this, new IPEndPoint(IPAddress.Parse("127.0.0.1"), JsonLoader<Settings>.Instance.Value.ServerPort));
 		//NodeTester.DiscoveryManager.Instance.Start(this, NATManager.Instance.ExternalIPAddress);

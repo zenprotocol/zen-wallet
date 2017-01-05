@@ -11,18 +11,24 @@ namespace Wallet
 		{
 			this.Build();
 
-			dialogfieldAddress.Caption = "Public Key:";
+			//dialogfieldAddress.Caption = "Public Key:";
 
 			var key = Create();
 
-			dialogfieldAddress.Value = BitConverter.ToString(key.Public);
+		//	dialogfieldAddress.Value = BitConverter.ToString(key.Public);
 
 			foreach (var key_ in App.Instance.Wallet.KeyStore.List())
 			{
 				Console.WriteLine(key_.Public);
 			}
 
-			buttonClose.Clicked += (sender, e) => { CloseDialog(); };
+			buttonClose.Clicked += delegate { 
+				CloseDialog(); 
+			};
+
+			buttonKeys.Clicked += delegate { 
+				new KeysDialog().ShowDialog(MainAreaController.GetInstance().MainView as Gtk.Window);
+			};
 		}
 
 		public Key Create()
