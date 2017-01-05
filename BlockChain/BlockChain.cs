@@ -60,8 +60,8 @@ namespace BlockChain
 			}
 		}
 
-		public Keyed<Types.Block> GetGenesisBlock() {
-			var outputs = new List<Types.Output>();
+		public Keyed<Types.Block> GetGenesisBlock(List<Types.Output> outputs = null) {
+			outputs = outputs ?? new List<Types.Output>();
 			var inputs = new List<Types.Outpoint>();
 			var hashes = new List<byte[]>();
 			var version = (uint)1;

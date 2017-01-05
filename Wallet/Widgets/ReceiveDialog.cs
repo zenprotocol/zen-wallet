@@ -11,11 +11,9 @@ namespace Wallet
 		{
 			this.Build();
 
-			//dialogfieldAddress.Caption = "Public Key:";
+			dialogfieldAddress.Caption = "Public Key:";
 
-			var key = Create();
-
-		//	dialogfieldAddress.Value = BitConverter.ToString(key.Public);
+			SelectedKey = App.Instance.Wallet.KeyStore.GetKey (false);
 
 			foreach (var key_ in App.Instance.Wallet.KeyStore.List())
 			{
@@ -27,22 +25,21 @@ namespace Wallet
 			};
 
 			buttonKeys.Clicked += delegate { 
-				new KeysDialog().ShowDialog(MainAreaController.GetInstance().MainView as Gtk.Window);
+				new KeysDialog(key => {
+					SelectedKey = key;
+				}).ShowDialog(MainAreaController.GetInstance().MainView as Gtk.Window);
 			};
 		}
 
-		public Key Create()
-		{
-			Byte[] sendToBytes = new Byte[32];
-			new Random().NextBytes(sendToBytes);
-
-			var key = new core.Data.Key();
-
-			key.Public = sendToBytes;
-
-		//	App.Instance.Wallet.AddKey(key);
-
-			return key;
+		private Key _selectedKey;
+		private Key SelectedKey {
+			get { 
+				return _selectedKey;
+			}
+			set { 
+				_selectedKey = value;
+				dialogfieldAddress.Value = value == null ? null : BitConverter.ToString(value.Public).Substring(0, 15);
+			}
 		}
 	}
 }

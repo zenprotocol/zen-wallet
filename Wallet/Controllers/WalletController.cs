@@ -91,6 +91,7 @@ namespace Wallet
 		public void Quit() {
 			App.Instance.Wallet.Dispose ();
 			stopping = true;
+			Dispose ();
 			//tempThread.Join ();
 		}
 

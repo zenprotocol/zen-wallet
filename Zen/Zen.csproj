@@ -19,7 +19,7 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
-    <Commandlineparameters>-p work -bc_db test -internal</Commandlineparameters>
+    <Commandlineparameters>-p remote -ip= -gui</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -40,6 +40,9 @@
     </Reference>
     <Reference Include="SimpleInjector">
       <HintPath>..\packages\SimpleInjector.4.0.0-alpha2\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
+    <Reference Include="CLRCLI">
+      <HintPath>..\packages\CLRCLI.1.0.0.5\lib\net45\CLRCLI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -66,10 +69,6 @@
     <ProjectReference Include="..\Infrastructure.Console\Infrastructure.Console.csproj">
       <Project>{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}</Project>
       <Name>Infrastructure.Console</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Zen.CLRCLI\Zen.CLRCLI.csproj">
-      <Project>{29BB24E8-D6C7-403E-8B7C-DC65765E342B}</Project>
-      <Name>Zen.CLRCLI</Name>
     </ProjectReference>
     <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>

@@ -40,7 +40,7 @@ namespace Zen
 						EndpointOptions.EndpointOptionsEnum.UseInternalIP },
 				{ "bcdb=", "DB name of BlockChain", 
 					v => app.BlockChainDB = v },
-				{ "genesis", "DB name of BlockChain", 
+				{ "genesis", "init genesis block", 
 					v => app.InitGenesisBlock = v != null },
 				{ "v", "increase debug message verbosity",
 					v => { if (v != null) ++verbosity; } },
@@ -69,8 +69,7 @@ namespace Zen
 				return;
 			}
 
-//			if (extra.Count == 0) {
-			TUI.Start (app);
+			TUI.Start (app, String.Join(" ", args));
 		}
 
 		static void ShowHelp (OptionSet p)
@@ -80,6 +79,12 @@ namespace Zen
 			Console.WriteLine ();
 			Console.WriteLine ("Options:");
 			p.WriteOptionDescriptions (Console.Out);
+			Console.WriteLine ();
+			Console.WriteLine ("Examples:");
+			Console.WriteLine (" Run using internal IP but don't act as server (to be used for testing purposes, when several nodes on a single machine)");
+			Console.WriteLine ();
+			Console.WriteLine ("mono --debug Zen.exe --internal --ip=");
+			Console.WriteLine ();
 		}
 
 		static void Debug (string format, params object[] args)
