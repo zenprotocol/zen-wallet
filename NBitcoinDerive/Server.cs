@@ -18,23 +18,24 @@ namespace NBitcoinDerive
 			}
 		}
 
-		public Server(IPEndPoint externalEndpoint, Network network, NodeConnectionParameters nodeConnectionParameters)
+		public Server(IPAddress externalAddress, Network network, NodeConnectionParameters nodeConnectionParameters)
 		{
-			if (externalEndpoint != null) 
-			{
-				AddressManager addressManager = AddressManagerBehavior.GetAddrman (nodeConnectionParameters);
-				addressManager.Add (new NetworkAddress(externalEndpoint));
-				addressManager.Connected (new NetworkAddress(externalEndpoint));
-			}
-
 			_Server = new NodeServer(network, internalPort: network.DefaultPort);
 			OwnResource(_Server);
 
+			if (externalAddress != null) 
+			{
+				var externalEndpoint = new IPEndPoint (externalAddress, network.DefaultPort);
+				AddressManager addressManager = AddressManagerBehavior.GetAddrman (nodeConnectionParameters);
+				addressManager.Add (new NetworkAddress(externalEndpoint));
+				addressManager.Connected (new NetworkAddress(externalEndpoint));
+				_Server.ExternalEndpoint = externalEndpoint;
+			}
+
 			_Server.InboundNodeConnectionParameters = nodeConnectionParameters;
 			_Server.AllowLocalPeers = true; //TODO
-			_Server.ExternalEndpoint = externalEndpoint;
 
-			NodeServerTrace.Information($"Server setup at {externalEndpoint}");
+			NodeServerTrace.Information($"Server setup at {externalAddress}");
 		}
 
 		public bool Start()

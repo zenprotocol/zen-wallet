@@ -13,6 +13,20 @@ using Microsoft.FSharp.Collections;
 
 namespace NBitcoinDerive
 {
+	public class EndpointOptions {
+		public enum EndpointOptionsEnum {
+			#if DEBUG
+			UseInternalIP,
+			UseNone,
+			#endif
+			UseUPnP,
+			UseSpecified
+		}
+
+		public EndpointOptionsEnum EndpointOption { get; set; }
+		public IPAddress SpecifiedAddress { get; set; }
+	}
+
 	public interface INodeManager {
 		void SendTransaction (byte[] address, UInt64 amount);
 	}
@@ -23,7 +37,6 @@ namespace NBitcoinDerive
 		private BlockChain.BlockChain _BlockChain = null;
 		private Network _Network;
 		private NodeConnectionParameters _NodeConnectionParameters;
-		private BroadcastHub _TransactionBroadcastHub;
 
 		#if DEBUG
 		public 
@@ -48,7 +61,7 @@ namespace NBitcoinDerive
 			Infrastructure.MessageProducer<IMessage>.Instance.PushMessage(message);
 		}
 
-		public NodeManager(BlockChain.BlockChain blockChain)
+		public NodeManager(BlockChain.BlockChain blockChain, EndpointOptions endpointOptions)
 		{
 			_BlockChain = blockChain;
 			_Network = JsonLoader<NBitcoinDerive.Network>.Instance.Value;
@@ -58,63 +71,65 @@ namespace NBitcoinDerive
 			_NodeConnectionParameters = new NodeConnectionParameters();
 			var addressManagerBehavior = new AddressManagerBehavior (addressManager);
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
-		}
 
-		#if DEBUG
-		public async Task Start(bool lanMode = false, bool disableInboundMode = false)
-		#else
-		public async Task Start()
-		#endif
-		{
 			_NATManager = new NATManager(_Network.DefaultPort);
 
-			#if DEBUG
-			if (lanMode)
+			switch (endpointOptions.EndpointOption) 
 			{
-				StartNode(_NATManager.InternalIPAddress, disableInboundMode);
-				return;
-			}
-			#endif
+			case EndpointOptions.EndpointOptionsEnum.UseInternalIP:
+				StartNode(_NATManager.InternalIPAddress);
+				break;
+			case EndpointOptions.EndpointOptionsEnum.UseNone:
+				StartNode();
+				break;
+			case EndpointOptions.EndpointOptionsEnum.UseSpecified:
+				StartNode (endpointOptions.SpecifiedAddress);
+				break;
+			case EndpointOptions.EndpointOptionsEnum.UseUPnP:
+				_NATManager.Init ().ContinueWith (t => {
+					if (_NATManager.DeviceFound &&
+						_NATManager.Mapped.Value &&
+						_NATManager.ExternalIPVerified.Value)
+					{
+						StartNode(_NATManager.ExternalIPAddress);
+					}
+					else 
+					{
+						StartNode();
+					}
+				});	
 
-			await _NATManager.Init ().ContinueWith (t => {
-				if (_NATManager.DeviceFound &&
-					 _NATManager.Mapped.Value &&
-					 _NATManager.ExternalIPVerified.Value)
-				{
-					StartNode(_NATManager.ExternalIPAddress, _NATManager.ExternalIPVerified.Value);
-				}
-				else 
-				{
-					StartNode(null, true);
-				}
-			});	
+				break;
+			}
 		}
 			
-		public async Task StartNode(IPAddress ipAddress, bool disableInboundMode)
+		public async Task StartNode(IPAddress externalAddress = null)
 		{
-			var address = ipAddress == null ? null : new System.Net.IPEndPoint (ipAddress, _Network.DefaultPort);
-
 			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior();
-			_TransactionBroadcastHub = broadcastHubBehavior.BroadcastHub;
 
 			Miner miner = new Miner(_BlockChain);
 
+			_NodeConnectionParameters.TemplateBehaviors.Add(broadcastHubBehavior);
 			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(miner));
-			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _TransactionBroadcastHub));
+			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, broadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
-			if (!disableInboundMode) {
-				_Server = new Server (address, _Network, _NodeConnectionParameters);
+			_BlockChain.OnAddedToMempool += t => {
+				broadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(t);
+			};
+
+			if (externalAddress != null) {
+				_Server = new Server (externalAddress, _Network, _NodeConnectionParameters);
 				OwnResource (_Server);
 
 				if (_Server.Start ()) {
-					NodeServerTrace.Information ($"Server started at {ipAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information ($"Server started at {externalAddress}:{_Network.DefaultPort}");
 				} else {
-					NodeServerTrace.Information ($"Could not start server at {ipAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information ($"Could not start server at {externalAddress}:{_Network.DefaultPort}");
 				}
 			}
 
-			StartDiscovery();
+			StartDiscovery ();
 		}
 									
 		#if DEBUG
@@ -181,11 +196,9 @@ namespace NBitcoinDerive
 					ListModule.OfSeq(outputs),
 					null);
 
-
 				Consensus.Merkle.transactionHasher.Invoke(transaction);
 
-
-				_TransactionBroadcastHub.BroadcastTransactionAsync(transaction);
+				_BlockChain.HandleNewTransaction(transaction);
 			
 			}
 			catch (Exception e)

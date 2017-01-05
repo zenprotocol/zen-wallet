@@ -68,6 +68,7 @@ let ``FeeLock minlockcore has version 0u``() =
 
 let zspend = {asset=zhash;amount=1234UL}
 
+[<Test>]
 let ``zspend has type spend``() =
     Assert.That(zspend, Is.InstanceOf<Spend>())
 

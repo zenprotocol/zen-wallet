@@ -55,30 +55,30 @@ namespace BlockChain.Tests
 			Directory.Delete(dbName, true);
 		}
 
-		[Test()]
-		public void CanStoreUTXO()
-		{
-			using (TestDBContext dbContext = new TestDBContext())
-			{
-				using (var transactionContext = dbContext.GetTransactionContext())
-				{
-					var output = Consensus.Tests.pkoutput;
-					var key = Consensus.Merkle.outputHasher.Invoke(output);
-
-					var keyedUTXO = new Keyed<Consensus.Types.Output>(key, output);
-
-					var utxoStore = new UTXOStore();
-					utxoStore.Put(transactionContext, keyedUTXO);
-
-					Assert.IsTrue(utxoStore.ContainsKey(transactionContext, key));
-
-					var fromDb = utxoStore.Get(transactionContext, key);
-
-					Assert.That(fromDb.Key, Is.SameAs(key));
-					Assert.That(fromDb.Value, Is.EqualTo(output));
-				}
-			}
-		}
+//		[Test()]
+//		public void CanStoreUTXO()
+//		{
+//			using (TestDBContext dbContext = new TestDBContext())
+//			{
+//				using (var transactionContext = dbContext.GetTransactionContext())
+//				{
+//					var output = Consensus.Tests.pkoutput;
+//					var key = Consensus.Merkle.outputHasher.Invoke(output);
+//
+//					var keyedUTXO = new Keyed<Consensus.Types.Output>(key, output);
+//
+//					var utxoStore = new UTXOStore();
+//					utxoStore.Put(transactionContext, keyedUTXO);
+//
+//					Assert.IsTrue(utxoStore.ContainsKey(transactionContext, key));
+//
+//					var fromDb = utxoStore.Get(transactionContext, key);
+//
+//					Assert.That(fromDb.Key, Is.SameAs(key));
+//					Assert.That(fromDb.Value, Is.EqualTo(output));
+//				}
+//			}
+//		}
 
 		//[Test()]
 		//public void CanStoreTx()

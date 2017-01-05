@@ -4,6 +4,7 @@ using Infrastructure;
 using NBitcoin;
 using NBitcoin.Protocol;
 using NodeCore;
+using NBitcoinDerive;
 
 namespace NodeCore
 {

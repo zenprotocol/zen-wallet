@@ -185,6 +185,7 @@
     <Compile Include="App.cs" />
     <Compile Include="Widgets\ReceiveDialog.cs" />
     <Compile Include="gtk-gui\Wallet.ReceiveDialog.cs" />
+    <Compile Include="Widgets\KeysDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -199,10 +200,6 @@
     <Folder Include="Widgets\SendDialog\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
-      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
-      <Name>Wallet.core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
@@ -226,6 +223,10 @@
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

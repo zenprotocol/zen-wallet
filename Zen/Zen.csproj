@@ -19,7 +19,7 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
-    <Commandlineparameters>-p work -i -t -d</Commandlineparameters>
+    <Commandlineparameters>-p work -bc_db test -internal</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -75,10 +75,6 @@
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>NBitcoinDerive</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
-      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
-      <Name>Wallet.core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
       <Name>Infrastructure.Testing</Name>
@@ -90,6 +86,14 @@
     <ProjectReference Include="..\BlockChain\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
