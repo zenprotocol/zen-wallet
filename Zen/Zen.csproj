@@ -19,7 +19,6 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
-    <Commandlineparameters>-p remote -ip= -gui</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -38,12 +37,10 @@
     <Reference Include="NDesk.Options">
       <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleInjector">
-      <HintPath>..\packages\SimpleInjector.4.0.0-alpha2\lib\net45\SimpleInjector.dll</HintPath>
-    </Reference>
     <Reference Include="CLRCLI">
       <HintPath>..\packages\CLRCLI.1.0.0.5\lib\net45\CLRCLI.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -51,6 +48,9 @@
     <Compile Include="App.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Config\Outputs.cs" />
+    <Compile Include="Config\Settings.cs" />
+    <Compile Include="Config\Keys.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -94,5 +94,8 @@
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
       <Name>Wallet.core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Config\" />
   </ItemGroup>
 </Project>

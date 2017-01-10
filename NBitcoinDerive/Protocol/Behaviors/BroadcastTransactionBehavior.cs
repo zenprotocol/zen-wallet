@@ -47,6 +47,14 @@ namespace NBitcoin.Protocol.Behaviors
 
 	public class BroadcastHub
 	{
+		public BroadcastHub(BlockChain.BlockChain blockChain)
+		{
+			blockChain.TxStore.OnAdded += t =>
+			{
+				BroadcastTransactionAsync(t);
+			};
+		}
+
 		public static BroadcastHub GetBroadcastHub(Node node)
 		{
 			return GetBroadcastHub(node.Behaviors);
@@ -121,7 +129,7 @@ namespace NBitcoin.Protocol.Behaviors
 		/// </summary>
 		/// <param name="transaction">The transaction to broadcast</param>
 		/// <returns>The cause of the rejection or null</returns>
-		public Task<RejectPayload> BroadcastTransactionAsync(Types.Transaction transaction)
+		public Task<RejectPayload> BroadcastTransactionAsync(Types.Transaction transaction) //todo: make private
 		{
 			if (transaction == null)
 				throw new ArgumentNullException("transaction");
@@ -157,10 +165,10 @@ namespace NBitcoin.Protocol.Behaviors
 			return completion.Task;
 		}
 
-		public BroadcastHubBehavior CreateBehavior()
-		{
-			return new BroadcastHubBehavior(this);
-		}
+		//public BroadcastHubBehavior CreateBehavior()
+		//{
+		//	return new BroadcastHubBehavior(this);
+		//}
 	}
 
 	public class BroadcastHubBehavior : NodeBehavior
@@ -170,15 +178,14 @@ namespace NBitcoin.Protocol.Behaviors
 		ConcurrentDictionary<byte[], TransactionBroadcast> _HashToTransaction = new ConcurrentDictionary<byte[], TransactionBroadcast>(new ByteArrayComparer());
 		ConcurrentDictionary<ulong, TransactionBroadcast> _PingToTransaction = new ConcurrentDictionary<ulong, TransactionBroadcast>();
 
-		public BroadcastHubBehavior(/*BlockChain.BlockChain blockChain*/)
+		public BroadcastHubBehavior(BlockChain.BlockChain blockChain) : this(new BroadcastHub(blockChain))
 		{
-			_BroadcastHub = new BroadcastHub();
-			//_BlockChain = blockChain;
 		}
 
-		public BroadcastHubBehavior(BroadcastHub hub/*, BlockChain.BlockChain blockChain*/)
+		private BroadcastHubBehavior(BroadcastHub broadcastHub)
 		{
-			_BroadcastHub = hub ?? new BroadcastHub();
+			_BroadcastHub = broadcastHub;
+
 			foreach (var tx in _BroadcastHub.BroadcastedTransaction)
 			{
 				_HashToTransaction.TryAdd(tx.Key, new TransactionBroadcast()
@@ -216,6 +223,7 @@ namespace NBitcoin.Protocol.Behaviors
 			}
 			return result;
 		}
+
 		TransactionBroadcast GetTransaction(ulong pingValue, bool remove)
 		{
 			TransactionBroadcast result;
@@ -234,6 +242,7 @@ namespace NBitcoin.Protocol.Behaviors
 			}
 			return result;
 		}
+
 		void AttachedNode_StateChanged(Node node, NodeState oldState)
 		{
 			if (node.State == NodeState.HandShaked)
@@ -242,8 +251,6 @@ namespace NBitcoin.Protocol.Behaviors
 				AnnounceAll();
 			}
 		}
-
-
 
 		private void AnnounceAll()
 		{
@@ -254,7 +261,6 @@ namespace NBitcoin.Protocol.Behaviors
 					Announce(broadcasted.Value, broadcasted.Key);
 			}
 		}
-
 
 		internal void BroadcastTransactionCore(Types.Transaction transaction)
 		{

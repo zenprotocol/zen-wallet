@@ -54,7 +54,7 @@ namespace Wallet
 		{
 			foreach (var key in App.Instance.Wallet.KeyStore.List(used, isChange))
 			{
-				_Store.AppendValues(key, DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
+				_Store.AppendValues(key, DisplayKey(key.Address), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
 			};
 		}
 

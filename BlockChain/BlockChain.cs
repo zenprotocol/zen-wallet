@@ -13,8 +13,8 @@ namespace BlockChain
 	public class BlockChain : ResourceOwner
 	{
 		private readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
-		private readonly TxMempool _TxMempool;
-		private readonly TxStore _TxStore;
+		public TxMempool TxMempool { get; private set; }
+		public TxStore TxStore { get; private set; }
 		private readonly UTXOStore _UTXOStore;
 		private readonly MainBlockStore _MainBlockStore;
 		private readonly BranchBlockStore _BranchBlockStore;
@@ -25,8 +25,8 @@ namespace BlockChain
 		private readonly ChainTip _ChainTip;
 		private readonly byte[] _GenesisBlockHash;
 
-		public event Action<Types.Transaction> OnAddedToMempool;
-		public event Action<Types.Transaction> OnAddedToStore;
+//		public event Action<Types.Transaction> OnAddedToMempool;
+//		public event Action<Types.Transaction> OnAddedToStore;
 
 		public bool IsTipOld //TODO: consider caching
 		{
@@ -60,67 +60,33 @@ namespace BlockChain
 			}
 		}
 
-		public Keyed<Types.Block> GetGenesisBlock(List<Types.Output> outputs = null) {
-			outputs = outputs ?? new List<Types.Output>();
-			var inputs = new List<Types.Outpoint>();
-			var hashes = new List<byte[]>();
-			var version = (uint)1;
-			var date = "2000-02-02";
-
-			Types.Transaction transaction = new Types.Transaction(version,
-				ListModule.OfSeq(inputs),
-				ListModule.OfSeq(hashes),
-				ListModule.OfSeq(outputs),
-				null);
-
-			var transactions = new List<Types.Transaction> ();
-			transactions.Add (transaction);
-
-			var blockHeader = new Types.BlockHeader(
-				version,
-				new byte[] { },
-				new byte[] { },
-				new byte[] { },
-				new byte[] { },
-				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Parse(date).ToBinary(),
-				1,
-				new byte[] { }
-			);
-
-			var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
-			var key = Merkle.blockHeaderHasher.Invoke (blockHeader);
-		
-			return new Keyed<Types.Block> (key, block);
-		}
-
-		public BlockChain(string dbName) {
+		public BlockChain(string dbName, byte[] genesisBlockHash) {
 			_DBContext = new DBContext(dbName);
-			_TxMempool = new TxMempool();
-			_TxStore = new TxStore();
+			TxMempool = new TxMempool();
+			TxStore = new TxStore();
 			_UTXOStore = new UTXOStore();
 			_MainBlockStore = new MainBlockStore();
 			_BranchBlockStore = new BranchBlockStore();
 			_OrphanBlockStore = new OrphanBlockStore();
 			_BlockDifficultyTable = new BlockDifficultyTable();
 			_ChainTip = new ChainTip();
-			_GenesisBlockHash = GetGenesisBlock().Key;
+			_GenesisBlockHash = genesisBlockHash;// GetGenesisBlock().Key;
 
 			OwnResource(_DBContext);
-			OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
-				new EventLoopMessageListener<TxMempool.AddedMessage>(m =>
-				{
-					if (OnAddedToMempool != null)
-						OnAddedToMempool(m.Transaction.Value);
-				})
-			));
-			OwnResource(MessageProducer<TxStore.AddedMessage>.Instance.AddMessageListener(
-				new EventLoopMessageListener<TxStore.AddedMessage>(m =>
-				{
-					if (OnAddedToStore != null)
-						OnAddedToStore(m.Transaction.Value);
-				})
-			));
+			//OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
+			//	new EventLoopMessageListener<TxMempool.AddedMessage>(m =>
+			//	{
+			//		if (OnAddedToMempool != null)
+			//			OnAddedToMempool(m.Transaction.Value);
+			//	})
+			//));
+			//OwnResource(MessageProducer<TxStore.AddedMessage>.Instance.AddMessageListener(
+			//	new EventLoopMessageListener<TxStore.AddedMessage>(m =>
+			//	{
+			//		if (OnAddedToStore != null)
+			//			OnAddedToStore(m.Transaction.Value);
+			//	})
+			//));
 
 			Tip = GetTip();
 
@@ -165,8 +131,8 @@ namespace BlockChain
 					_BranchBlockStore,
 					_OrphanBlockStore,
 				//	_GenesisBlockStore,
-					_TxMempool,
-					_TxStore,
+					TxMempool,
+					TxStore,
 					_UTXOStore,
 					_ChainTip,
 					_GenesisBlockHash
@@ -190,8 +156,8 @@ namespace BlockChain
 				var result = new BlockChainAddTransactionOperation(
 					context,
 					new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction),
-					_TxMempool,
-					_TxStore,
+					TxMempool,
+					TxStore,
 					_UTXOStore
 				).Start();
 
@@ -212,9 +178,9 @@ namespace BlockChain
 
 		public Types.Transaction GetTransaction(byte[] key) //TODO: make concurrent
 		{
-			if (_TxMempool.ContainsKey(key))
+			if (TxMempool.ContainsKey(key))
 			{
-				return _TxMempool.Get(key).Value;
+				return TxMempool.Get(key).Value;
 			}
 			else {
 				return null;
@@ -234,7 +200,7 @@ namespace BlockChain
 		//demo
 		public Types.Block MineAllInMempool()
 		{
-			var transactions = _TxMempool.GetAll();
+			var transactions = TxMempool.GetAll();
 
 			if (transactions.Count == 0)
 			{

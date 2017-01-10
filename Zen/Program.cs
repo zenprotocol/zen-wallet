@@ -15,42 +15,52 @@ namespace Zen
 			bool show_help = false;
 		
 			var p = new OptionSet () {
-				{ "console", "launch the console", 
-					v => app.Mode = AppModeEnum.Console },
-				{ "gui", "launch the wallet gui", 
-					v => app.Mode = AppModeEnum.GUI },
+				{ "c|console", "launch the console", 
+					v => app.Settings.Mode = Settings.AppModeEnum.Console },
+				{ "g|gui", "launch the wallet gui", 
+					v => app.Settings.Mode = Settings.AppModeEnum.GUI },
 				{ "tester", "launch the tester gui", 
-					v => app.Mode = AppModeEnum.Tester },
-				{ "p|profile=", "use settings profile", 
-					v =>  app.Profile = v },
-				{ "save", "save settings profile (to be used with p option)", 
-					v => app.SaveProfile = v != null },
+					v => app.Settings.Mode = Settings.AppModeEnum.Tester },
+				{ "p|profile=", "use settings profile",
+					v =>  app.Settings.NetworkProfile = v },
+				{ "settings=", "use settings profile",
+					v =>  app.Settings.SettingsProfile = v },
+				{ "k|key=", "add private key",
+					v => app.Settings.Keys.Add(v) },
+				{ "s|save", "save network settings profile (to be used with p option)", 
+					v => app.Settings.SaveNetworkProfile = v != null },
+				{ "save_settings", "save general settings profile (to be used with settings option)",
+					v => app.Settings.SaveSettings = v != null },
 				{ "seed=", "use seed ip address", 
-					v => app.Seeds.Add(v) },
+					v => app.Settings.Seeds.Add(v) },
 				{ "peers=", "number peers to find", 
-					v => app.PeersToFind = int.Parse(v) },
+					v => app.Settings.PeersToFind = int.Parse(v) },
 				{ "connections=", "number of node connections", 
-					v => app.Connections = int.Parse(v) },
+					v => app.Settings.Connections = int.Parse(v) },
 				{ "port=", "default network port", 
-					v => app.Port = int.Parse(v) },
+					v => app.Settings.Port = int.Parse(v) },
 				{ "ip=", "use ip address. use blank for none", 
-					v => app.SpecifyIp(v) },
-				{ "internal", "use internal ip", 
-					v => app.EndpointOptions.EndpointOption = 
-						EndpointOptions.EndpointOptionsEnum.UseInternalIP },
-				{ "bcdb=", "DB name of BlockChain", 
-					v => app.BlockChainDB = v },
-				{ "genesis", "init genesis block", 
-					v => app.InitGenesisBlock = v != null },
+					v => app.Settings.SpecifyIp(v) },
+				{ "i|internal", "use internal ip", 
+					v => app.Settings.EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseInternalIP },
+				{ "blockchaindb=", "BlockChain's DB name of", 
+					v => app.Settings.BlockChainDB = v },
+				{ "walletdb=", "Wallet's DB name",
+					v => app.Settings.BlockChainDB = v },
+				{ "o|output=", "add a genesis block transaction output (address, amount)",
+					v => app.Settings.AddOutput(v) },
+				{ "ge|genesis", "init the genesis block",
+					v => app.Settings.InitGenesisBlock = v != null },
 				{ "v", "increase debug message verbosity",
 					v => { if (v != null) ++verbosity; } },
 				{ "h|help",  "show this message and exit", 
 					v => show_help = v != null },
 			};
 
-			List<string> extra;
+			//List<string> extra;
 			try {
-				extra = p.Parse (args);
+				//extra = 
+				p.Parse (args);
 			}
 			catch (OptionException e) {
 				Console.Write ("greet: ");
@@ -64,12 +74,22 @@ namespace Zen
 				return;
 			}
 
-			if (app.Mode.HasValue) {
-				app.Start (false);
-				return;
-			}
+			try
+			{
+				app.Init();
 
-			TUI.Start (app, String.Join(" ", args));
+				if (app.Settings.Mode.HasValue)
+				{
+					app.Start(false);
+					return;
+				}
+
+				TUI.Start(app, String.Join(" ", args));
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
+			}
 		}
 
 		static void ShowHelp (OptionSet p)

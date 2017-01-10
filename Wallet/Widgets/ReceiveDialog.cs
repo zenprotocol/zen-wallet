@@ -17,7 +17,7 @@ namespace Wallet
 
 			foreach (var key_ in App.Instance.Wallet.KeyStore.List())
 			{
-				Console.WriteLine(key_.Public);
+				Console.WriteLine(key_.Address);
 			}
 
 			buttonClose.Clicked += delegate { 
@@ -38,7 +38,7 @@ namespace Wallet
 			}
 			set { 
 				_selectedKey = value;
-				dialogfieldAddress.Value = value == null ? null : BitConverter.ToString(value.Public).Substring(0, 15);
+				dialogfieldAddress.Value = value == null ? null : BitConverter.ToString(value.Address).Substring(0, 15);
 			}
 		}
 	}

@@ -33,7 +33,7 @@ namespace Wallet
 
 		private AssetType asset = AssetsManager.Assets["zen"];
 
-		private Thread tempThread;
+	//	private Thread tempThread;
 		private bool stopping = false;
 
 		public static WalletController GetInstance() {
@@ -56,32 +56,50 @@ namespace Wallet
 
 		public WalletController()
 		{
-			OwnResource(MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(
-				new EventLoopMessageListener<NodeManager.IMessage>(message =>
+			App.Instance.Wallet.OnMyOutputAdded += (tx, outputs) => {
+				foreach (var output in outputs)
 				{
 					Gtk.Application.Invoke(delegate
 					{
-						if (message is NodeManager.TransactionAddToStoreMessage)
-						{
-							var tx = ((NodeManager.TransactionAddToStoreMessage)message).Transaction;
+						DirectionEnum direcion = DirectionEnum.Recieved;
 
-							foreach (var key_ in App.Instance.Wallet.KeyStore.List())
-							{
-								if (key_.Public.SequenceEqual(((Consensus.Types.OutputLock.PKLock) tx.outputs[0].@lock).pkHash))
-								{
-									DirectionEnum direcion = DirectionEnum.Recieved;
+						Decimal amount = output.spend.amount;
+						Decimal fee = 0;
+						DateTime date = DateTime.Now;
 
-									Decimal amount = tx.outputs[0].spend.amount;
-									Decimal fee = 0;
-									DateTime date = DateTime.Now;
-
-									TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
-								}
-							}
-						}
+						TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
 					});
-				})
-			));
+				}
+			};
+
+			App.Instance.Wallet.SyncHistory();
+
+			//OwnResource(MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(
+			//	new EventLoopMessageListener<NodeManager.IMessage>(message =>
+			//	{
+			//		Gtk.Application.Invoke(delegate
+			//		{
+			//			if (message is NodeManager.TransactionAddToStoreMessage)
+			//			{
+			//				var tx = ((NodeManager.TransactionAddToStoreMessage)message).Transaction;
+
+			//				foreach (var key_ in App.Instance.Wallet.KeyStore.List())
+			//				{
+			//					if (key_.Address.SequenceEqual(((Consensus.Types.OutputLock.PKLock) tx.outputs[0].@lock).pkHash))
+			//					{
+			//						DirectionEnum direcion = DirectionEnum.Recieved;
+
+			//						Decimal amount = tx.outputs[0].spend.amount;
+			//						Decimal fee = 0;
+			//						DateTime date = DateTime.Now;
+
+			//						TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
+			//					}
+			//				}
+			//			}
+			//		});
+			//	})
+			//));
 		}
 	
 
@@ -95,19 +113,19 @@ namespace Wallet
 			//tempThread.Join ();
 		}
 
-		private void Reset() {
-			int i = 0;
+		//private void Reset() {
+		//	int i = 0;
 
-			while (!stopping) {
-				UpdateUI ();
+		//	while (!stopping) {
+		//		UpdateUI ();
 
-				if (i++ > 10) {
-					break;
-				}
+		//		if (i++ > 10) {
+		//			break;
+		//		}
 
-				Thread.Sleep(100);
-			}
-		}
+		//		Thread.Sleep(100);
+		//	}
+		//}
 
 		Random random = new Random();
 

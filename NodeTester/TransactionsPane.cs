@@ -77,41 +77,46 @@ namespace NodeTester
 			treeView.Model = store;
 			treeView.AppendColumn("Amount", new Gtk.CellRendererText(), "text", 0);
 
-			//TODO: resourceOwner.OwnResource(
-			MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(new EventLoopMessageListener<NodeManager.IMessage>(Message =>
-			{
-				if (Message is NodeManager.TransactionAddToMempoolMessage)
-				{
-					NodeManager.TransactionAddToMempoolMessage transactionReceivedMessage = (NodeManager.TransactionAddToMempoolMessage) Message;
+			////TODO: resourceOwner.OwnResource(
+			//MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(new EventLoopMessageListener<NodeManager.IMessage>(Message =>
+			//{
+			//	if (Message is NodeManager.TransactionAddToMempoolMessage)
+			//	{
+			//		NodeManager.TransactionAddToMempoolMessage transactionReceivedMessage = (NodeManager.TransactionAddToMempoolMessage) Message;
 
-					Gtk.Application.Invoke(delegate
-					{
-						foreach (var output in transactionReceivedMessage.Transaction.outputs)
-						{
-							store.AppendValues(output.spend.amount.ToString());
-						}
-					});
-				} else if (Message is NodeManager.TransactionAddToStoreMessage)
-				{
-					NodeManager.TransactionAddToStoreMessage transactionReceivedMessage = (NodeManager.TransactionAddToStoreMessage)Message;
+			//		Gtk.Application.Invoke(delegate
+			//		{
+			//			foreach (var output in transactionReceivedMessage.Transaction.outputs)
+			//			{
+			//				store.AppendValues(output.spend.amount.ToString());
+			//			}
+			//		});
+			//	} else if (Message is NodeManager.TransactionAddToStoreMessage)
+			//	{
+			//		NodeManager.TransactionAddToStoreMessage transactionReceivedMessage = (NodeManager.TransactionAddToStoreMessage)Message;
 
-					Gtk.Application.Invoke(delegate
-					{
-						foreach (var output in transactionReceivedMessage.Transaction.outputs)
-						{
-							store.AppendValues("store: " + output.spend.amount.ToString());
-						}
-					});
-				}
-			}));
-			//);
+			//		Gtk.Application.Invoke(delegate
+			//		{
+			//			foreach (var output in transactionReceivedMessage.Transaction.outputs)
+			//			{
+			//				store.AppendValues("store: " + output.spend.amount.ToString());
+			//			}
+			//		});
+			//	}
+			//}));
+			////);
 		}
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
 			App.WalletManager.KeyStore.List(used, isChange).ToList().ForEach(key =>
 			{
-				((ListStore) treeView.Model).AppendValues(DisplayKey(key.Public), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
+				((ListStore) treeView.Model).AppendValues(
+					DisplayKey(key.Address), 
+					DisplayKey(key.Private), 
+					key.Used ? "Yes" : "No", 
+					key.Change ? "Yes" : "No"
+				);
 			});
 		}
 

@@ -52,14 +52,14 @@ namespace NBitcoinDerive
 		#endif
 		NodesGroup _NodesGroup;
 
-		public interface IMessage { }
-		public class TransactionAddToMempoolMessage : IMessage { public Types.Transaction Transaction { get; set; } }
-		public class TransactionAddToStoreMessage : IMessage { public Types.Transaction Transaction { get; set; } }
+		//public interface IMessage { }
+		//public class TransactionAddToMempoolMessage : IMessage { public Types.Transaction Transaction { get; set; } }
+		//public class TransactionAddToStoreMessage : IMessage { public Types.Transaction Transaction { get; set; } }
 
-		private void PushMessage(IMessage message)
-		{
-			Infrastructure.MessageProducer<IMessage>.Instance.PushMessage(message);
-		}
+		//private void PushMessage(IMessage message)
+		//{
+		//	Infrastructure.MessageProducer<IMessage>.Instance.PushMessage(message);
+		//}
 
 		public NodeManager(BlockChain.BlockChain blockChain, EndpointOptions endpointOptions)
 		{
@@ -106,7 +106,7 @@ namespace NBitcoinDerive
 			
 		public async Task StartNode(IPAddress externalAddress = null)
 		{
-			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior();
+			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior(_BlockChain);
 
 			Miner miner = new Miner(_BlockChain);
 
@@ -115,9 +115,9 @@ namespace NBitcoinDerive
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, broadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
-			_BlockChain.OnAddedToMempool += t => {
-				broadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(t);
-			};
+			//_BlockChain.OnAddedToMempool += t => {
+			//	broadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(t);
+			//};
 
 			if (externalAddress != null) {
 				_Server = new Server (externalAddress, _Network, _NodeConnectionParameters);

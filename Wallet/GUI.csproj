@@ -66,9 +66,6 @@
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core" />
-    <Reference Include="SimpleInjector">
-      <HintPath>..\packages\SimpleInjector.4.0.0-alpha2\lib\net45\SimpleInjector.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
