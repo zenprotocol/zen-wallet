@@ -37,6 +37,9 @@ namespace Infrastructure
 				Ensure ();
 				return _Value; 
 			} 
+			set {
+				_Value = value;
+			}
 		}
 
 		private void Ensure ()

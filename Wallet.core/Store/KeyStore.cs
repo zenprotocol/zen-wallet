@@ -1,12 +1,10 @@
-﻿using System;
-using Consensus;
+﻿using Consensus;
 using Store;
 using Wallet.core.Data;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Sodium;
+using System.Linq;
 
 namespace Wallet.core.Store
 {
@@ -19,6 +17,24 @@ namespace Wallet.core.Store
 			_DBContext = dbContext;
 		}
 
+		public bool AddKey(string base64EncodedPrivateKey)
+		{
+			using (var transaction = _DBContext.GetTransactionContext())
+			{
+				var key = Key.Create(base64EncodedPrivateKey);
+
+				if (ContainsKey(transaction, key.Private))
+				{
+					return false;
+				}
+
+				Put(transaction, new Keyed<Key>(key.Private, key));
+				transaction.Commit();
+
+				return true;
+			}
+		}
+
 		public Key GetKey(bool isChange = false) {
 			var list = List (false, isChange);
 
@@ -28,8 +44,8 @@ namespace Wallet.core.Store
 				using (var transaction = _DBContext.GetTransactionContext())
 				{
 					if (All (transaction).Count() == 0) {
-						key = Create (isChange);
-						Put(transaction, new Keyed<Key>(key.Public, key));
+						key = new Key();
+						Put(transaction, new Keyed<Key>(key.Private, key));
 					}
 
 					transaction.Commit();
@@ -51,30 +67,15 @@ namespace Wallet.core.Store
 
 		public bool IsMatch(Types.Output output) {
 			foreach (var key in List()) {
-				if (output.@lock is Types.OutputLock.PKLock) {
-					Types.OutputLock.PKLock pkLock = output.@lock as Types.OutputLock.PKLock;
-
-					if (key.Public.SequenceEqual(pkLock.pkHash)) {
-						return true;
-					}
+				if (key.IsMatch(output.@lock))
+				{
+					return true;
 				}
 			}
 
 			return false;
 		}
 			
-		private Key Create(bool isChange) {
-			var keyPair = PublicKeyAuth.GenerateKeyPair();
-			var addressBytes = Consensus.Merkle.hashHasher.Invoke(keyPair.PublicKey);
-
-			return new Key () {
-				Public = addressBytes,
-				Private = keyPair.PrivateKey,
-				Used = false,
-				Change = isChange
-			};
-		}
-
 		public override string ToString ()
 		{
 			return this.GetType() + "\n" + JsonConvert.SerializeObject(

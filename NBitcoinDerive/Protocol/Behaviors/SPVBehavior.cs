@@ -21,7 +21,7 @@ namespace NBitcoin.Protocol.Behaviors
 			return Merkle.transactionHasher.Invoke(transaction);
 		}
 
-		public SPVBehavior(/*Action<Types.Transaction> newTransactionHandler*/ BlockChain.BlockChain blockChain, BroadcastHub broadcastHub)
+		public 	SPVBehavior(/*Action<Types.Transaction> newTransactionHandler*/ BlockChain.BlockChain blockChain, BroadcastHub broadcastHub)
 		{
 			//this._NewTransactionHandler = newTransactionHandler;
 			_BlockChain = blockChain;
