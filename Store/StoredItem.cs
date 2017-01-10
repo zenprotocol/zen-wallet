@@ -4,8 +4,12 @@ namespace Store
 {
 	public class Keyed<T>
 	{
-		public T Value { get; private set; }
-		public byte[] Key { get; private set; }
+		public T Value { get; protected set; }
+		public byte[] Key { get; protected set; }
+
+		public Keyed()
+		{ 
+		}
 
 		public Keyed(byte[] key, T value)
 		{

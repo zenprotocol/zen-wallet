@@ -25,13 +25,14 @@ namespace Zen
 //			var line = new VerticalLine(dialog) { Top = 4, Left = 40, Width = 1, Height = 6, Border = BorderStyle.Thick };
 
 			new Label(dialog) {Text = "Command line args: " + args, Top = 14, Left = 8, Foreground = ConsoleColor.Black };
-			new Label(dialog) {Text = "Profile: " + app.Profile, Top = 15, Left = 8, Foreground = ConsoleColor.Black };
-			new Label(dialog) {Text = "Blockchain DB: " + app.BlockChainDB, Top = 15, Left = 25, Foreground = ConsoleColor.Black };
-			new Label(dialog) {Text = "Port: " + app.Port + " Connections: " + app.Connections + " Peers: " + app.PeersToFind, Top = 16, Left = 8, Foreground = ConsoleColor.Black };
+			new Label(dialog) {Text = "Profile: " + app.Settings.NetworkProfile, Top = 15, Left = 8, Foreground = ConsoleColor.Black };
+			new Label(dialog) {Text = "Blockchain DB: " + app.Settings.BlockChainDB, Top = 15, Left = 25, Foreground = ConsoleColor.Black };
+			new Label(dialog) { Text = "Port: " + app.Settings.Port + " Connections: " + app.Settings.Connections + " Peers: " + app.Settings.PeersToFind, Top = 16, Left = 8, Foreground = ConsoleColor.Black };
 
 			var dialogMenu = new Dialog(root) { Text = "Menu", Width = 50, Height = 10, Top = 6, Left = 6, Border = BorderStyle.Thick, Visible = false };
 			var buttonBack = new Button(dialogMenu) { Text = "Back", Width = 8, Height = 3, Top = 1, Left = 30 };
-			var menuList = new ListBox(dialogMenu) { Top = 7, Left = 10, Width = 16, Height = 6, Border = BorderStyle.Thin };
+			var menuList = new ListBox(dialogMenu) { Top = 7, Left = 5, Width = 16, Height = 6, Border = BorderStyle.Thin };
+			var outputsList = new ListBox(dialogMenu) { Top = 7, Left = 35, Width = 16, Height = 6, Border = BorderStyle.Thin };
 
 			list.Items.Add ("Wallet");
 			list.Items.Add ("Tester");
@@ -39,9 +40,9 @@ namespace Zen
 
 			menuList.Items.Add ("Wipe BlockChain DB");
 
-			checkboxGenesis.Checked = app.InitGenesisBlock;
+			checkboxGenesis.Checked = app.Settings.InitGenesisBlock;
 			checkboxGenesis.Clicked += (sender, e) => {
-				app.InitGenesisBlock = checkboxGenesis.Checked;
+				app.Settings.InitGenesisBlock = checkboxGenesis.Checked;
 			};
 
 			app.OnInitProfile += network => {
@@ -55,13 +56,13 @@ namespace Zen
 			list.Clicked += (object sender, EventArgs e) => {
 				switch (((ListBox)sender).SelectedIndex) {
 				case 0:
-					app.Mode = AppModeEnum.GUI;
+					app.Settings.Mode = Settings.AppModeEnum.GUI;
 					break;
 				case 1:
-					app.Mode = AppModeEnum.Tester;
+					app.Settings.Mode = Settings.AppModeEnum.Tester;
 					break;
 				case 2:
-					app.Mode = AppModeEnum.Console;
+					app.Settings.Mode = Settings.AppModeEnum.Console;
 					break;
 				}
 
@@ -76,8 +77,8 @@ namespace Zen
 			menuList.Clicked += (object sender, EventArgs e) => {
 				switch (((ListBox)sender).SelectedIndex) {
 				case 0:
-					if (Directory.Exists(app.BlockChainDB)) {
-						Directory.Delete(app.BlockChainDB, true);
+					if (Directory.Exists(app.Settings.BlockChainDB)) {
+						Directory.Delete(app.Settings.BlockChainDB, true);
 					}
 					break;
 				}
