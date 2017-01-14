@@ -26,15 +26,19 @@ namespace NBitcoinDerive
 			if (_BlockChain == null) {
 				return;
 			}
+			try
+			{
+				var newBlock = _BlockChain.MineAllInMempool();
 
-			var newBlock = _BlockChain.MineAllInMempool();
-
-			if (newBlock != null) {
-				Console.WriteLine (" ****** new block created ******* by " + GetHashCode());
-	//			MessageProducer.PushMessage(new NewMinedBlockMessage() { Block = newBlock });
-				BlockBroadcastHub.BroadcastBlockAsync (newBlock);
-		//	} {
-		//		Console.WriteLine (" ****** no new block created !!! ******* by " + GetHashCode());
+				if (newBlock != null)
+				{
+					Console.WriteLine(" ****** new block created ******* by " + GetHashCode());
+					BlockBroadcastHub.BroadcastBlockAsync(newBlock);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("error trying to create block: " + e);
 			}
 		}
 	}

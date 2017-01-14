@@ -184,6 +184,10 @@
     <Compile Include="gtk-gui\Wallet.ReceiveDialog.cs" />
     <Compile Include="Widgets\KeysDialog.cs" />
     <Compile Include="gtk-gui\Wallet.KeysDialog.cs" />
+    <Compile Include="Widgets\AddKeyDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.AddKeyDialog.cs" />
+    <Compile Include="Widgets\MessageBox.cs" />
+    <Compile Include="gtk-gui\Wallet.MessageBox.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -225,6 +229,10 @@
     <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
       <Name>Wallet.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

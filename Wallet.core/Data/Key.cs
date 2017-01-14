@@ -13,10 +13,26 @@ namespace Wallet.core.Data
 		public bool Used { get; set; }
 		public bool Change { get; set; }
 
-		public override string ToString()
+		//public override string ToString()
+		//{
+		//	//var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+		//	return System.Convert.ToBase64String(Private);
+		//}
+
+		public string PrivateAsString
 		{
-			//var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-			return System.Convert.ToBase64String(Private);
+			get 
+			{
+				return System.Convert.ToBase64String(Private);
+			}
+		}
+
+		public string AddressAsString 
+		{
+			get
+			{
+				return System.Convert.ToBase64String(Address);
+			}
 		}
 
 		public Key()
@@ -25,29 +41,30 @@ namespace Wallet.core.Data
 
 		public static Key Create(string base64EncodedPrivateKey = null)
 		{
-			var key = new Key();
+			byte[] privateKey;
 			byte[] publicKey;
 
-			if (base64EncodedPrivateKey == null)
+			if (string.IsNullOrEmpty(base64EncodedPrivateKey))
 			{
 				var keyPair = PublicKeyAuth.GenerateKeyPair();
 
-				key.Private = keyPair.PrivateKey;
+				privateKey = keyPair.PrivateKey;
 				publicKey = keyPair.PublicKey;
 			}
 			else
 			{
-				key.Private = Convert.FromBase64String(base64EncodedPrivateKey);
-				publicKey = PublicKeyAuth.ExtractEd25519PublicKeyFromEd25519SecretKey(key.Private);
+				privateKey = FromBase64String(base64EncodedPrivateKey);
+				publicKey = PublicKeyAuth.ExtractEd25519PublicKeyFromEd25519SecretKey(privateKey);
 				//return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 			}
 
-			key.Address = Merkle.hashHasher.Invoke(publicKey);
-
-			key.Change = false;
-			key.Used = false;
-
-			return key;
+			return new Key()
+			{
+				Private = privateKey,
+				Address = Merkle.hashHasher.Invoke(publicKey),
+				Change = false,
+				Used = false
+			};
 		}
 
 		public bool IsMatch(Types.OutputLock outputLock)
@@ -55,6 +72,11 @@ namespace Wallet.core.Data
 			var pkLock = outputLock as Types.OutputLock.PKLock;
 
 			return pkLock != null && Address.SequenceEqual(pkLock.pkHash);
+		}
+
+		public static byte[] FromBase64String(string base64Encoded)
+		{
+			return Convert.FromBase64String(base64Encoded);
 		}
 	}
 }

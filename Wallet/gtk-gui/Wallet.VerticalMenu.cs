@@ -6,21 +6,22 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vboxContainer;
 
-		protected virtual void Build ()
+		protected virtual void Build()
 		{
-			global::Stetic.Gui.Initialize (this);
+			global::Stetic.Gui.Initialize(this);
 			// Widget Wallet.VerticalMenu
-			global::Stetic.BinContainer.Attach (this);
+			global::Stetic.BinContainer.Attach(this);
 			this.Name = "Wallet.VerticalMenu";
 			// Container child Wallet.VerticalMenu.Gtk.Container+ContainerChild
-			this.vboxContainer = new global::Gtk.VBox ();
+			this.vboxContainer = new global::Gtk.VBox();
 			this.vboxContainer.Name = "vboxContainer";
 			this.vboxContainer.Homogeneous = true;
-			this.Add (this.vboxContainer);
-			if ((this.Child != null)) {
-				this.Child.ShowAll ();
+			this.Add(this.vboxContainer);
+			if ((this.Child != null))
+			{
+				this.Child.ShowAll();
 			}
-			this.Hide ();
+			this.Hide();
 		}
 	}
 }

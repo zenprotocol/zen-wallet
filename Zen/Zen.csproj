@@ -14,7 +14,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG; TRACE;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
@@ -37,9 +37,6 @@
     <Reference Include="NDesk.Options">
       <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
-    <Reference Include="CLRCLI">
-      <HintPath>..\packages\CLRCLI.1.0.0.5\lib\net45\CLRCLI.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +48,7 @@
     <Compile Include="Config\Outputs.cs" />
     <Compile Include="Config\Settings.cs" />
     <Compile Include="Config\Keys.cs" />
+    <Compile Include="AppTraceListener.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -93,6 +91,14 @@
     <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
       <Name>Wallet.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
+      <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
+      <Name>Infrastructure.TestingGtk</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Zen.CLRCLI\Zen.CLRCLI.csproj">
+      <Project>{29BB24E8-D6C7-403E-8B7C-DC65765E342B}</Project>
+      <Name>Zen.CLRCLI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

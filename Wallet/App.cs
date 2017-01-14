@@ -8,8 +8,7 @@ namespace Wallet
 {
 	public class App : Singleton<App>
 	{
-		private ResourceOwnerWindow _MainWindow;
-		public NodeManager NodeManager { get; private set; }
+		private Gtk.Window _MainWindow;
 		public WalletManager Wallet { get; private set; }
 
 		public App()
@@ -25,63 +24,25 @@ namespace Wallet
 			};
 		}
 
-		public void Start(NodeManager nodeManager, WalletManager walletManager)
+		public void Start(WalletManager walletManager)
 		{
-			NodeManager = nodeManager;
 			Wallet = walletManager;
 
 			Gtk.Application.Init();
 
-			using (var consoleWriter = ConsoleMessage.Out)
-			{
+			//using (var consoleWriter = ConsoleMessage.Out)
+			//{
 				_MainWindow = new MainWindow();
-		//		Program.temp = _MainWindow; //TODO: remove
+				DialogBase.parent = _MainWindow;
 				_MainWindow.Show();
-
-		//		_Node = new NodeManager();
-
-		//		var consoleWindow = new ConsoleWindow(_MainWindow);
-
-		//		consoleWindow.OnSettingsClicked += OpenSettings;
-		//		consoleWindow.Show();
-
-				//JsonLoader<NodeTester.Settings>.Instance.OnSaved += StartNode;
-
-				//if (JsonLoader<NodeTester.Settings>.Instance.IsNew)
-				//{
-				//	OpenSettings(); // temp
-				//}
-				//else
-				//{
-				//	StartNode();
-				//}
-			}
+			//}
 
 			Gtk.Application.Run();
 		}
 
-		public void OpenSettings()
-		{
-	//		new SettingsWindow();
-		}
-
-		private async void StartNode()
-		{
-//#if DEBUG
-//			if (JsonLoader<NodeTester.Settings>.Instance.Value.DowngradeToLAN)
-//			{
-//				_Node = new LanNodeManager();
-//			}
-//#endif
-	//		await _Node.Start(_MainWindow, NodeCore.TestNetwork.Instance);
-		}
-
 		public void Close()
 		{
-			_MainWindow.Dispose();
-			WalletController.GetInstance().Quit();
-			LogController.GetInstance().Quit();
-			NodeManager.Dispose ();
+		//	_MainWindow.Hide();
 			Gtk.Application.Quit ();
 		}
 	}

@@ -8,14 +8,55 @@ using Store;
 using Consensus;
 using Microsoft.FSharp.Collections;
 using Wallet.core.Data;
+using System.Threading;
+using Infrastructure.TestingGtk;
+using System.IO;
 
 namespace Zen
 {
 	public class App
 	{
+		//public static TextWriter Out = new ConsoleWriter(
+		//	v => {
+		//		if (Environment.StackTrace.Contains("CLI"))
+		//			return;
+
+		//		TUI.WriteColor(v, ConsoleColor.Gray);
+		//	},
+		//	v => {
+		//		if (Environment.StackTrace.Contains("CLI"))
+		//			return;
+
+		//		TUI.WriteColor(v, ConsoleColor.Gray);
+		//	}
+		//);
+
+
 		public Settings Settings { get; set; }
+
 		private BlockChain.BlockChain _BlockChain;
 		private WalletManager _WalletManager;
+		private NodeManager _NodeManager;
+
+		public void ResetWallet()
+		{
+			_WalletManager.Reset();
+		}
+
+		internal void AddGenesisBlock()
+		{
+			_BlockChain.HandleNewBlock(GenesisBlock.Value);
+		}
+
+		internal void AddKey(string key)
+		{
+			_WalletManager.AddKey(key);
+		}
+
+		internal void Sync()
+		{
+			_WalletManager.Sync();
+		}
 
 		public App()
 		{
@@ -32,130 +73,152 @@ namespace Zen
 
 		public event Action<Network> OnInitProfile;
 		public event Action<Settings> OnInitSettings;
+		private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
 
-		public void Init()
+		public void Stop() {
+			stopEvent.Set();
+		}
+
+		internal void Init()
 		{
 			InitNetworkProfile();
-			InitSettingsProfile();
-
-			var genesisBlock = GetGenesisBlock();
-			_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, genesisBlock.Key);
-
-			if (Settings.InitGenesisBlock)
-			{
-				_BlockChain.HandleNewBlock(genesisBlock.Value);
-			}
-
-			_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
-
-			bool added = false;
-			foreach (var key in Settings.Keys)
-			{
-				added = added || _WalletManager.KeyStore.AddKey(key);
-			}
-
-			if (added)
-			{
-				_WalletManager.SyncHistory();
-			}
-		}
-
-		public void Start(bool clearConsole = true) {
-			if (clearConsole) {
-				Console.Clear ();
-			}
-
-			if (Settings.Mode != null) {
-				var nodeManager = new NodeManager(_BlockChain, Settings.EndpointOptions);
-
-				switch (Settings.Mode.Value) {
-					case Settings.AppModeEnum.Console:
-						Console.WriteLine("Press ENTER to stop");
-						Console.ReadLine();
-						break;
-					case Settings.AppModeEnum.GUI:
-						Wallet.App.Instance.Start(nodeManager, _WalletManager);
-						break;
-					case Settings.AppModeEnum.Tester:
-						NodeTester.MainClass.Main(nodeManager, _WalletManager);
-						break;
-				}
-
-				nodeManager.Dispose();
-				_WalletManager.Dispose();
-			}
-		}
-
-		private Keyed<Types.Block> GetGenesisBlock()
-		{
-			var outputs = new List<Types.Output>();
-			var inputs = new List<Types.Outpoint>();
-			var hashes = new List<byte[]>();
-			var version = (uint)1;
-			var date = "2000-02-02";
 
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
 
-			if (JsonLoader<Outputs>.Instance.IsNew)
+			InitSettingsProfile();
+
+			_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
+			_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
+			_NodeManager = new NodeManager(_BlockChain, Settings.EndpointOptions);
+		}
+
+		public void Start() {
+
+			new Thread(() =>
 			{
-				foreach (Tuple<string, string> genesisOutputs in Settings.GenesisOutputs)
+				//_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
+
+				//if (Settings.InitGenesisBlock)
+				//{
+				//	if (_BlockChain.Tip == null)
+				//	{
+				//		_BlockChain.HandleNewBlock(GenesisBlock.Value);
+				//	}
+				//	else
+				//	{
+				//		Console.WriteLine(".......");//tip already exists. skipping adding genesis block");
+				//	}
+				//}
+
+				//_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
+
+				//bool added = false;
+				//foreach (var key in Settings.Keys)
+				//{
+				//	added = added || _WalletManager.AddKey(key);
+				//}
+
+				//if (added)
+				//{
+				//	_WalletManager.Sync();
+				//}
+
+				switch (Settings.Mode.Value)
 				{
-					try
-					{
-						var key = Key.Create(genesisOutputs.Item1);
-						var amount = ulong.Parse(genesisOutputs.Item2);
-
-						JsonLoader<Outputs>.Instance.Value.Values.Add(new Output() { Key = key.ToString(), Amount = amount });
-
-						var pklock = Types.OutputLock.NewPKLock(key.Address);
-						outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
-					}
-					catch
-					{
-						Console.WriteLine("error initializing genesis outputs with: " + genesisOutputs.Item1 + "," + genesisOutputs.Item2);
-						throw;
-					}
+					case Settings.AppModeEnum.GUI:
+						Wallet.App.Instance.Start(_WalletManager);
+						break;
+					//case Settings.AppModeEnum.Tester:
+					//	NodeTester.MainClass.Main(nodeManager, _WalletManager);
+					//	break;
 				}
 
-				JsonLoader<Outputs>.Instance.Save();
-			}
-			else
+				stopEvent.Wait();
+
+				_NodeManager.Dispose();
+				_WalletManager.Dispose();
+
+			}).Start();
+		}
+
+		private Keyed<Types.Block> _GenesisBlock = null;
+
+		public Keyed<Types.Block> GenesisBlock
+		{
+			get
 			{
-				foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
+				if (_GenesisBlock == null)
 				{
-					var key = Key.Create(output.Key);
-					var amount = output.Amount;
+					var outputs = new List<Types.Output>();
+					var inputs = new List<Types.Outpoint>();
+					var hashes = new List<byte[]>();
+					var version = (uint)1;
+					var date = "2000-02-02";
 
-					var pklock = Types.OutputLock.NewPKLock(key.Address);
-					outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
+					if (JsonLoader<Outputs>.Instance.IsNew)
+					{
+						foreach (Tuple<string, string> genesisOutputs in Settings.GenesisOutputs)
+						{
+							try
+							{
+								var key = Key.Create(genesisOutputs.Item1);
+								var amount = ulong.Parse(genesisOutputs.Item2);
+
+								JsonLoader<Outputs>.Instance.Value.Values.Add(new Output() { Key = key.ToString(), Amount = amount });
+
+								var pklock = Types.OutputLock.NewPKLock(key.Address);
+								outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
+							}
+							catch
+							{
+								Console.WriteLine("error initializing genesis outputs with: " + genesisOutputs.Item1 + "," + genesisOutputs.Item2);
+								throw;
+							}
+						}
+
+						JsonLoader<Outputs>.Instance.Save();
+					}
+					else
+					{
+						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
+						{
+							var key = Key.Create(output.Key);
+							var amount = output.Amount;
+
+							var pklock = Types.OutputLock.NewPKLock(key.Address);
+							outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
+						}
+					}
+
+					var transaction = new Types.Transaction(version,
+						ListModule.OfSeq(inputs),
+						ListModule.OfSeq(hashes),
+						ListModule.OfSeq(outputs),
+						null);
+
+					var transactions = new List<Types.Transaction>();
+					transactions.Add(transaction);
+
+					var blockHeader = new Types.BlockHeader(
+						version,
+						new byte[] { },
+						new byte[] { },
+						new byte[] { },
+						new byte[] { },
+						ListModule.OfSeq<byte[]>(new List<byte[]>()),
+						DateTime.Parse(date).ToBinary(),
+						1,
+						new byte[] { }
+					);
+
+					var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
+					var blockHash = Merkle.blockHeaderHasher.Invoke(blockHeader);
+
+					_GenesisBlock = new Keyed<Types.Block>(blockHash, block);
 				}
+
+				return _GenesisBlock;
 			}
-
-			var transaction = new Types.Transaction(version,
-				ListModule.OfSeq(inputs),
-				ListModule.OfSeq(hashes),
-				ListModule.OfSeq(outputs),
-				null);
-
-			var transactions = new List<Types.Transaction>();
-			transactions.Add(transaction);
-
-			var blockHeader = new Types.BlockHeader(
-				version,
-				new byte[] { },
-				new byte[] { },
-				new byte[] { },
-				new byte[] { },
-				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Parse(date).ToBinary(),
-				1,
-				new byte[] { }
-			);
-
-			var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions));
-			var blockHash = Merkle.blockHeaderHasher.Invoke(blockHeader);
-
-			return new Keyed<Types.Block>(blockHash, block);
 		}
 
 		private void InitNetworkProfile() {

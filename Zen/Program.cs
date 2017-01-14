@@ -39,14 +39,14 @@ namespace Zen
 					v => app.Settings.Connections = int.Parse(v) },
 				{ "port=", "default network port", 
 					v => app.Settings.Port = int.Parse(v) },
-				{ "ip=", "use ip address. use blank for none", 
+				{ "ip=", "use ip address. use blank for none (to disable inbound mode)", 
 					v => app.Settings.SpecifyIp(v) },
 				{ "i|internal", "use internal ip", 
 					v => app.Settings.EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseInternalIP },
 				{ "blockchaindb=", "BlockChain's DB name of", 
 					v => app.Settings.BlockChainDB = v },
 				{ "walletdb=", "Wallet's DB name",
-					v => app.Settings.BlockChainDB = v },
+					v => app.Settings.WalletDB = v },
 				{ "o|output=", "add a genesis block transaction output (address, amount)",
 					v => app.Settings.AddOutput(v) },
 				{ "ge|genesis", "init the genesis block",
@@ -76,11 +76,10 @@ namespace Zen
 
 			try
 			{
-				app.Init();
-
 				if (app.Settings.Mode.HasValue)
 				{
-					app.Start(false);
+					app.Init();
+					app.Start();
 					return;
 				}
 
