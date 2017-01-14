@@ -22,6 +22,15 @@ namespace Wallet
 				CloseDialog(); 
 				keySelected(Selection);
 			};
+
+			buttonAdd.Clicked += delegate
+			{
+				new AddKeyDialog(delegate {
+					App.Instance.Wallet.Sync();
+					LogController.GetInstance().Sync();
+					WalletController.GetInstance().Sync();
+				}).ShowDialog();
+			};
 		}
 
 		private Key Selection { 
@@ -52,7 +61,7 @@ namespace Wallet
 
 		private void Populate(Gtk.TreeView treeView, bool? used = null, bool? isChange = null)
 		{
-			foreach (var key in App.Instance.Wallet.KeyStore.List(used, isChange))
+			foreach (var key in App.Instance.Wallet.ListKeys(used, isChange))
 			{
 				_Store.AppendValues(key, DisplayKey(key.Address), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
 			};

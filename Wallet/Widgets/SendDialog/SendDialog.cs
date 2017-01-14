@@ -35,28 +35,12 @@ namespace Wallet
 		}
 
 		public void Next() {
-			//senddialogstep2.Waiting = true;
-			//SetContent(senddialogstep2);
-
-			//WalletController.GetInstance().SendStub.RequestSend("1",1,"1",1).ContinueWith(Action => {
-			//	Gtk.Application.Invoke(delegate {
-			//		senddialogstep2.Waiting = false;
-			//	});
-			//});
-
 			try
 			{
-				String[] arr = senddialogstep1.To.Split('-');
-				byte[] sendToBytes = new byte[arr.Length];
-				for (int i = 0; i < arr.Length; i++)
+				if (!App.Instance.Wallet.Spend(senddialogstep1.To, AssetsManager.AssetCodes["zen"], (ulong)senddialogstep1.Amount))
 				{
-					sendToBytes[i] = Convert.ToByte(arr[i], 16);
+					new MessageBox("error during send").ShowDialog();
 				}
-
-				//Byte[] sendToBytes = new Byte[32];
-				//new Random().NextBytes(sendToBytes);
-
-				App.Instance.NodeManager.SendTransaction(sendToBytes, (ulong)senddialogstep1.Amount);
 				CloseDialog();
 			}
 			catch (Exception ex)

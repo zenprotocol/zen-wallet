@@ -7,7 +7,7 @@ namespace Wallet
 		Boolean SideMenuVisible { set; }
 	}
 
-	public partial class MainWindow : ResourceOwnerWindow, MainView
+	public partial class MainWindow : Gtk.Window, MainView
 	{
 		public MainWindow () :
 			base (Gtk.WindowType.Toplevel)
@@ -35,6 +35,7 @@ namespace Wallet
 		{
 			App.Instance.Close ();
 			a.RetVal = true;
+			Hide();
 		}
 
 		public Boolean SideMenuVisible { 

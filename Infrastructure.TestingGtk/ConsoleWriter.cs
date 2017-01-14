@@ -52,6 +52,8 @@ namespace Infrastructure.TestingGtk
 			Console = System.Console.Out;
 			System.Console.SetOut(this);
 		}
+
+		//todo: on dispose - remove event hooks
 			
 		void consoleWriter_WriteLineEvent(object sender, ConsoleWriterEventArgs e)
 		{

@@ -5,28 +5,29 @@ namespace Wallet
 	public partial class SendDialogWaiting
 	{
 		private global::Gtk.Alignment alignment1;
-		
+
 		private global::Gtk.Image image2;
 
-		protected virtual void Build ()
+		protected virtual void Build()
 		{
-			global::Stetic.Gui.Initialize (this);
+			global::Stetic.Gui.Initialize(this);
 			// Widget Wallet.SendDialogWaiting
-			global::Stetic.BinContainer.Attach (this);
+			global::Stetic.BinContainer.Attach(this);
 			this.Name = "Wallet.SendDialogWaiting";
 			// Container child Wallet.SendDialogWaiting.Gtk.Container+ContainerChild
-			this.alignment1 = new global::Gtk.Alignment (0.5F, 0.5F, 1F, 1F);
+			this.alignment1 = new global::Gtk.Alignment(0.5F, 0.5F, 1F, 1F);
 			this.alignment1.Name = "alignment1";
 			// Container child alignment1.Gtk.Container+ContainerChild
-			this.image2 = new global::Gtk.Image ();
+			this.image2 = new global::Gtk.Image();
 			this.image2.Name = "image2";
-			this.image2.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-about", global::Gtk.IconSize.Menu);
-			this.alignment1.Add (this.image2);
-			this.Add (this.alignment1);
-			if ((this.Child != null)) {
-				this.Child.ShowAll ();
+			this.image2.Pixbuf = global::Stetic.IconLoader.LoadIcon(this, "gtk-about", global::Gtk.IconSize.Menu);
+			this.alignment1.Add(this.image2);
+			this.Add(this.alignment1);
+			if ((this.Child != null))
+			{
+				this.Child.ShowAll();
 			}
-			this.Hide ();
+			this.Hide();
 		}
 	}
 }

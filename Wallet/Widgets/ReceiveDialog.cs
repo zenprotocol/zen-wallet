@@ -13,9 +13,9 @@ namespace Wallet
 
 			dialogfieldAddress.Caption = "Public Key:";
 
-			SelectedKey = App.Instance.Wallet.KeyStore.GetKey (false);
+			SelectedKey = App.Instance.Wallet.GetUnsendKey ();
 
-			foreach (var key_ in App.Instance.Wallet.KeyStore.List())
+			foreach (var key_ in App.Instance.Wallet.ListKeys())
 			{
 				Console.WriteLine(key_.Address);
 			}
@@ -27,7 +27,7 @@ namespace Wallet
 			buttonKeys.Clicked += delegate { 
 				new KeysDialog(key => {
 					SelectedKey = key;
-				}).ShowDialog(MainAreaController.GetInstance().MainView as Gtk.Window);
+				}).ShowDialog();
 			};
 		}
 
@@ -38,7 +38,7 @@ namespace Wallet
 			}
 			set { 
 				_selectedKey = value;
-				dialogfieldAddress.Value = value == null ? null : BitConverter.ToString(value.Address).Substring(0, 15);
+				dialogfieldAddress.Value = value == null ? null : value.AddressAsString;
 			}
 		}
 	}

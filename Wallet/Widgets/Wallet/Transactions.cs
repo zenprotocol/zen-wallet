@@ -8,6 +8,7 @@ namespace Wallet
 	public interface TransactionsView {
 		List<TransactionItem> TransactionsList { set; }
 		void AddTransactionItem (TransactionItem transaction);
+		void Clear();
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -108,6 +109,11 @@ namespace Wallet
 					AddTransactionItem(transactionItem);
 				}
 			}
+		}
+
+		public void Clear()
+		{
+			listStore.Clear();
 		}
 
 		public void AddTransactionItem(TransactionItem transactionItem)

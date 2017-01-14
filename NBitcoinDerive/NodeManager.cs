@@ -27,11 +27,11 @@ namespace NBitcoinDerive
 		public IPAddress SpecifiedAddress { get; set; }
 	}
 
-	public interface INodeManager {
-		void SendTransaction (byte[] address, UInt64 amount);
-	}
+	//public interface INodeManager {
+	//	void SendTransaction (byte[] address, UInt64 amount);
+	//}
 
-	public class NodeManager : ResourceOwner, INodeManager
+	public class NodeManager : ResourceOwner//, INodeManager
 	{
 		private Server _Server = null;
 		private BlockChain.BlockChain _BlockChain = null;
@@ -51,15 +51,6 @@ namespace NBitcoinDerive
 		private
 		#endif
 		NodesGroup _NodesGroup;
-
-		//public interface IMessage { }
-		//public class TransactionAddToMempoolMessage : IMessage { public Types.Transaction Transaction { get; set; } }
-		//public class TransactionAddToStoreMessage : IMessage { public Types.Transaction Transaction { get; set; } }
-
-		//private void PushMessage(IMessage message)
-		//{
-		//	Infrastructure.MessageProducer<IMessage>.Instance.PushMessage(message);
-		//}
 
 		public NodeManager(BlockChain.BlockChain blockChain, EndpointOptions endpointOptions)
 		{
@@ -169,43 +160,6 @@ namespace NBitcoinDerive
 			};
 
 			_NodesGroup.Connect();
-		}
-
-		private Random _Random = new Random();
-
-		public void SendTransaction(byte[] address, UInt64 amount)
-		{
-			try
-			{
-				var outputs = new List<Types.Output>();
-
-				var pklock = Types.OutputLock.NewPKLock(address);
-				outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
-
-				var inputs = new List<Types.Outpoint>();
-
-				//	inputs.Add(new Types.Outpoint(address, 0));
-
-				var hashes = new List<byte[]>();
-
-				//hack Concensus into giving a different hash per each tx created
-				var version = (uint)_Random.Next(1000);
-
-				Types.Transaction transaction = new Types.Transaction(version,
-					ListModule.OfSeq(inputs),
-					ListModule.OfSeq(hashes),
-					ListModule.OfSeq(outputs),
-					null);
-
-				Consensus.Merkle.transactionHasher.Invoke(transaction);
-
-				_BlockChain.HandleNewTransaction(transaction);
-			
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e);
-			}
 		}
 	}
 }

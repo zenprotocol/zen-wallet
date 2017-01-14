@@ -7,13 +7,15 @@ namespace Wallet
 	{
 		private Dialog dialog;
 
+		public static Window parent;
+
 		public void Resize() {
 			if (dialog != null) {
 				dialog.Resize(1, 1); // A hah
 			}
 		}
 	
-		public void ShowDialog(Window parent) {
+		public void ShowDialog(/*Window parent*/) {
 			dialog = new Dialog (null, parent, DialogFlags.Modal | DialogFlags.DestroyWithParent);
 			dialog.Decorated = false;
 			dialog.Modal = true;

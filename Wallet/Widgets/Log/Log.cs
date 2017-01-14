@@ -9,6 +9,7 @@ namespace Wallet
 	public interface ILogView {
 		List<LogEntryItem> LogEntryList { set; }
 		void AddLogEntryItem (LogEntryItem logEntryItem);
+		void Clear();
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -131,6 +132,10 @@ namespace Wallet
 				}
 			}
 		}
+
+		public void Clear() { 
+			logEntryStore.Clear();
+		} 
 
 		public void AddLogEntryItem (LogEntryItem logEntryItem) {			
 			logEntryStore.AppendValues(new LogEntryRow(logEntryItem));

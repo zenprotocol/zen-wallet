@@ -5,61 +5,62 @@ namespace Wallet
 	public partial class MainMenu
 	{
 		private global::Gtk.HBox hboxContainer;
-		
+
 		private global::Wallet.MenuButton Portfolio;
-		
+
 		private global::Wallet.MenuButton Wallet;
-		
+
 		private global::Wallet.MenuButton Contract;
-		
+
 		private global::Wallet.MenuButton Balance;
 
-		protected virtual void Build ()
+		protected virtual void Build()
 		{
-			global::Stetic.Gui.Initialize (this);
+			global::Stetic.Gui.Initialize(this);
 			// Widget Wallet.MainMenu
-			global::Stetic.BinContainer.Attach (this);
+			global::Stetic.BinContainer.Attach(this);
 			this.Name = "Wallet.MainMenu";
 			// Container child Wallet.MainMenu.Gtk.Container+ContainerChild
-			this.hboxContainer = new global::Gtk.HBox ();
+			this.hboxContainer = new global::Gtk.HBox();
 			this.hboxContainer.Name = "hboxContainer";
 			this.hboxContainer.Homogeneous = true;
 			// Container child hboxContainer.Gtk.Box+BoxChild
-			this.Portfolio = new global::Wallet.MenuButton ();
+			this.Portfolio = new global::Wallet.MenuButton();
 			this.Portfolio.HeightRequest = 10;
 			this.Portfolio.Events = ((global::Gdk.EventMask)(256));
 			this.Portfolio.Name = "Portfolio";
-			this.hboxContainer.Add (this.Portfolio);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hboxContainer [this.Portfolio]));
+			this.hboxContainer.Add(this.Portfolio);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Portfolio]));
 			w1.Position = 0;
 			// Container child hboxContainer.Gtk.Box+BoxChild
-			this.Wallet = new global::Wallet.MenuButton ();
+			this.Wallet = new global::Wallet.MenuButton();
 			this.Wallet.HeightRequest = 10;
 			this.Wallet.Events = ((global::Gdk.EventMask)(256));
 			this.Wallet.Name = "Wallet";
-			this.hboxContainer.Add (this.Wallet);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hboxContainer [this.Wallet]));
+			this.hboxContainer.Add(this.Wallet);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Wallet]));
 			w2.Position = 2;
 			// Container child hboxContainer.Gtk.Box+BoxChild
-			this.Contract = new global::Wallet.MenuButton ();
+			this.Contract = new global::Wallet.MenuButton();
 			this.Contract.HeightRequest = 10;
 			this.Contract.Events = ((global::Gdk.EventMask)(256));
 			this.Contract.Name = "Contract";
-			this.hboxContainer.Add (this.Contract);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxContainer [this.Contract]));
+			this.hboxContainer.Add(this.Contract);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Contract]));
 			w3.Position = 3;
 			// Container child hboxContainer.Gtk.Box+BoxChild
-			this.Balance = new global::Wallet.MenuButton ();
+			this.Balance = new global::Wallet.MenuButton();
 			this.Balance.Events = ((global::Gdk.EventMask)(256));
 			this.Balance.Name = "Balance";
-			this.hboxContainer.Add (this.Balance);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hboxContainer [this.Balance]));
+			this.hboxContainer.Add(this.Balance);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Balance]));
 			w4.Position = 4;
-			this.Add (this.hboxContainer);
-			if ((this.Child != null)) {
-				this.Child.ShowAll ();
+			this.Add(this.hboxContainer);
+			if ((this.Child != null))
+			{
+				this.Child.ShowAll();
 			}
-			this.Hide ();
+			this.Hide();
 		}
 	}
 }

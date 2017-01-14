@@ -7,5 +7,9 @@ namespace Wallet
 	public class AssetTypes : Dictionary<String, AssetType>
 	{
 	}
+
+	public class AssetCodes : Dictionary<String, byte[]>
+	{
+	}
 }
 
