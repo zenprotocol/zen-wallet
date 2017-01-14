@@ -10,46 +10,30 @@ namespace Wallet.core.Store
 {
 	public class KeyStore : MsgPackStore<Key>
 	{
-		private DBContext _DBContext;
-
-		public KeyStore(DBContext dbContext) : base("key")
+		public KeyStore() : base("key")
 		{
-			_DBContext = dbContext;
 		}
 
-		public bool AddKey(string base64EncodedPrivateKey)
+		public bool AddKey(TransactionContext context, string base64EncodedPrivateKey)
 		{
-			using (var transaction = _DBContext.GetTransactionContext())
+			var key = Key.Create(base64EncodedPrivateKey);
+
+			if (ContainsKey(context, key.Private))
 			{
-				var key = Key.Create(base64EncodedPrivateKey);
-
-				if (ContainsKey(transaction, key.Private))
-				{
-					return false;
-				}
-
-				Put(transaction, new Keyed<Key>(key.Private, key));
-				transaction.Commit();
-
-				return true;
+				return false;
 			}
+
+			Put(context, new Keyed<Key>(key.Private, key));
+
+			return true;
 		}
 
-		public Key GetKey(bool isChange = false) {
-			var list = List (false, isChange);
+		public Key GetUnsendKey(TransactionContext context) {
+			var list = List (context, false, false);
 
 			if (list.Count == 0) {
-				Key key = null;
-
-				using (var transaction = _DBContext.GetTransactionContext())
-				{
-					if (All (transaction).Count() == 0) {
-						key = new Key();
-						Put(transaction, new Keyed<Key>(key.Private, key));
-					}
-
-					transaction.Commit();
-				}
+				var key = Key.Create();
+				Put(context, new Keyed<Key>(key.Private, key));
 
 				return key;
 			} else {
@@ -57,30 +41,29 @@ namespace Wallet.core.Store
 			}
 		}
 
-		public List<Key> List(bool? used = null, bool? isChange = null)
+		public List<Key> List(TransactionContext context, bool? used = null, bool? isChange = null)
 		{
-			return All (_DBContext.GetTransactionContext ())
+			return All (context)
 				.Where (v => (!used.HasValue || v.Value.Used == used.Value) && (!isChange.HasValue || v.Value.Change == isChange.Value))
 				.Select (t => t.Value)
 				.ToList ();
 		}
 
-		public bool IsMatch(Types.Output output) {
-			foreach (var key in List()) {
+		public Key Find(TransactionContext context, Types.Output output) {
+			foreach (var key in List(context)) {
 				if (key.IsMatch(output.@lock))
 				{
-					return true;
+					return key;
 				}
 			}
 
-			return false;
+			return null;
 		}
-			
-		public override string ToString ()
+
+		public void Used(TransactionContext context, Key key)
 		{
-			return this.GetType() + "\n" + JsonConvert.SerializeObject(
-				List(), Formatting.Indented,
-				new JsonConverter[] {new StringEnumConverter()});
+			key.Used = true;
+			Put(context, new Keyed<Key>(key.Private, key));
 		}
 	}
 }

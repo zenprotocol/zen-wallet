@@ -5,10 +5,11 @@ using Infrastructure;
 using System.Linq;
 using Wallet.core;
 using NBitcoinDerive;
+using Consensus;
 
 namespace Wallet
 {
-	public class WalletController : ResourceOwner
+	public class WalletController
 	{
 		private static WalletController instance = null;
 
@@ -31,10 +32,7 @@ namespace Wallet
 		//public CurrencyEnum currency;
 		//public String currencyStr;
 
-		private AssetType asset = AssetsManager.Assets["zen"];
-
-	//	private Thread tempThread;
-		private bool stopping = false;
+		private AssetType asset = AssetsManager.AssetTypes["zen"];
 
 		public static WalletController GetInstance() {
 			if (instance == null) {
@@ -56,95 +54,51 @@ namespace Wallet
 
 		public WalletController()
 		{
-			App.Instance.Wallet.OnMyOutputAdded += (tx, outputs) => {
-				foreach (var output in outputs)
+			foreach (var transactionSpendData in App.Instance.Wallet.MyTransactions)
+			{
+				HandleNewTransaction(transactionSpendData);
+			}
+
+			App.Instance.Wallet.OnNewTransaction += HandleNewTransaction;
+		}
+
+		public void Sync()
+		{
+			TransactionsView.Clear();
+
+			foreach (var transactionSpendData in App.Instance.Wallet.MyTransactions)
+			{
+				HandleNewTransaction(transactionSpendData);
+			}
+		}
+
+		public void HandleNewTransaction(TransactionSpendData transactionSpendData)
+		{
+			//if (ActionBarView != null)
+			//{
+			//	//Alternative: Runtime.DispatchService.GuiDispatch (new StatefulMessageHandler (UpdateGui), n);
+			//	ActionBarView.Total = (decimal)10000;
+			//	ActionBarView.Rate = (decimal)10000;
+			//}
+			Gtk.Application.Invoke(delegate
+			{
+				if (TransactionsView != null)
 				{
-					Gtk.Application.Invoke(delegate
+					foreach (var item in transactionSpendData.Balances)
 					{
-						DirectionEnum direcion = DirectionEnum.Recieved;
+						var asset = item.Key;
+						var amount = item.Value;
 
-						Decimal amount = output.spend.amount;
-						Decimal fee = 0;
-						DateTime date = DateTime.Now;
-
-						TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
-					});
-				}
-			};
-
-			App.Instance.Wallet.SyncHistory();
-
-			//OwnResource(MessageProducer<NodeManager.IMessage>.Instance.AddMessageListener(
-			//	new EventLoopMessageListener<NodeManager.IMessage>(message =>
-			//	{
-			//		Gtk.Application.Invoke(delegate
-			//		{
-			//			if (message is NodeManager.TransactionAddToStoreMessage)
-			//			{
-			//				var tx = ((NodeManager.TransactionAddToStoreMessage)message).Transaction;
-
-			//				foreach (var key_ in App.Instance.Wallet.KeyStore.List())
-			//				{
-			//					if (key_.Address.SequenceEqual(((Consensus.Types.OutputLock.PKLock) tx.outputs[0].@lock).pkHash))
-			//					{
-			//						DirectionEnum direcion = DirectionEnum.Recieved;
-
-			//						Decimal amount = tx.outputs[0].spend.amount;
-			//						Decimal fee = 0;
-			//						DateTime date = DateTime.Now;
-
-			//						TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
-			//					}
-			//				}
-			//			}
-			//		});
-			//	})
-			//));
-		}
-	
-
-		public void Send(Decimal amount) {
-		}
-
-		public void Quit() {
-			App.Instance.Wallet.Dispose ();
-			stopping = true;
-			Dispose ();
-			//tempThread.Join ();
-		}
-
-		//private void Reset() {
-		//	int i = 0;
-
-		//	while (!stopping) {
-		//		UpdateUI ();
-
-		//		if (i++ > 10) {
-		//			break;
-		//		}
-
-		//		Thread.Sleep(100);
-		//	}
-		//}
-
-		Random random = new Random();
-
-		public void UpdateUI() {
-			Gtk.Application.Invoke(delegate {
-				if (ActionBarView != null) {
-					//Alternative: Runtime.DispatchService.GuiDispatch (new StatefulMessageHandler (UpdateGui), n);
-					ActionBarView.Total = (decimal)random.Next(1, 1000) / 10000;
-					ActionBarView.Rate = (decimal)random.Next(1, 1000) / 10000;
-				}
-
-				if (TransactionsView != null) {
-
-					DirectionEnum direcion = random.Next(0, 10) > 5 ? DirectionEnum.Sent : DirectionEnum.Recieved;
-					Decimal amount = (Decimal)random.Next(1, 100000) / 1000000;
-					Decimal fee = (Decimal)random.Next(1, 100) / 1000000;
-					DateTime date = DateTime.Now.AddDays(-1 * random.Next(0, 100));
-
-					TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
+						TransactionsView.AddTransactionItem(new TransactionItem(
+							amount < 0 ? -1 * amount : amount,
+							amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+							AssetsManager.Find(asset),
+							DateTime.Now,
+							Guid.NewGuid().ToString("N"),
+							Guid.NewGuid().ToString("N"),
+							amount
+						));
+					}
 				}
 			});
 		}

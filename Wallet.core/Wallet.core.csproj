@@ -14,7 +14,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG; TRACE;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -49,7 +49,9 @@
     <Compile Include="Store\TxHistoryStore.cs" />
     <Compile Include="AssetsManager.cs" />
     <Compile Include="WalletManager.cs" />
-    <Compile Include="Data\AssetsDictionary.cs" />
+    <Compile Include="Data\Assets.cs" />
+    <Compile Include="TransactionSpendData.cs" />
+    <Compile Include="WalletTrace.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">

@@ -15,8 +15,8 @@ namespace Wallet
 		{
 			this.Build ();
 
-			foreach (String key in AssetsManager.Assets.Keys) {
-				AddButton(key, AssetsManager.Assets[key]);
+			foreach (String key in AssetsManager.AssetTypes.Keys) {
+				AddButton(key, AssetsManager.AssetTypes[key]);
 			}
 
 			MainAreaController.GetInstance().VerticalMenuView = this;
@@ -26,7 +26,7 @@ namespace Wallet
 			
 		public override MenuButton Selection { 
 			set {
-				WalletController.GetInstance().Asset = AssetsManager.Assets[value.Name];
+				WalletController.GetInstance().Asset = AssetsManager.AssetTypes[value.Name];
 			}
 		}
 

@@ -36,7 +36,7 @@ namespace NodeTester
 					sendToBytes[i] = Convert.ToByte(arr[i], 16);
 				}
 
-				App.NodeManager.SendTransaction(sendToBytes, amount);
+		//		App.NodeManager.SendTransaction(sendToBytes, amount);
 			}
 			catch (Exception ex)
 			{
@@ -109,7 +109,7 @@ namespace NodeTester
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
-			App.WalletManager.KeyStore.List(used, isChange).ToList().ForEach(key =>
+			App.WalletManager.ListKeys(used, isChange).ToList().ForEach(key =>
 			{
 				((ListStore) treeView.Model).AppendValues(
 					DisplayKey(key.Address), 

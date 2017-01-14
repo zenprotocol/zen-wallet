@@ -14,6 +14,8 @@ namespace Wallet
 
 		private global::Gtk.Button buttonClose;
 
+		private global::Gtk.Button buttonAdd;
+
 		private global::Gtk.Button buttonSelect;
 
 		protected virtual void Build()
@@ -55,21 +57,32 @@ namespace Wallet
 			w3.Expand = false;
 			w3.Fill = false;
 			// Container child hbox1.Gtk.Box+BoxChild
+			this.buttonAdd = new global::Gtk.Button();
+			this.buttonAdd.CanFocus = true;
+			this.buttonAdd.Name = "buttonAdd";
+			this.buttonAdd.UseUnderline = true;
+			this.buttonAdd.Label = global::Mono.Unix.Catalog.GetString("Add");
+			this.hbox1.Add(this.buttonAdd);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.buttonAdd]));
+			w4.Position = 2;
+			w4.Expand = false;
+			w4.Fill = false;
+			// Container child hbox1.Gtk.Box+BoxChild
 			this.buttonSelect = new global::Gtk.Button();
 			this.buttonSelect.CanFocus = true;
 			this.buttonSelect.Name = "buttonSelect";
 			this.buttonSelect.UseUnderline = true;
 			this.buttonSelect.Label = global::Mono.Unix.Catalog.GetString("Select");
 			this.hbox1.Add(this.buttonSelect);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.buttonSelect]));
-			w4.Position = 2;
-			w4.Expand = false;
-			w4.Fill = false;
-			this.vbox1.Add(this.hbox1);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox1]));
-			w5.Position = 1;
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.buttonSelect]));
+			w5.Position = 3;
 			w5.Expand = false;
 			w5.Fill = false;
+			this.vbox1.Add(this.hbox1);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox1]));
+			w6.Position = 1;
+			w6.Expand = false;
+			w6.Fill = false;
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{

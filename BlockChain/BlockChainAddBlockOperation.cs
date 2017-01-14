@@ -91,10 +91,10 @@ namespace BlockChain
 			3. Transaction list must be non - empty
 			4. Block hash must satisfy claimed nBits proof of work
 			5. Block timestamp must not be more than two hours in the future
-			6. First transaction must be coinbase(i.e.only 1 input, with hash = 0, n = -1), the rest must not be
+			6. First transaction must be coinbase, the rest must not be
 			7. For each transaction, apply "tx" checks 2 - 4
-			8. For the coinbase(first) transaction, scriptSig length must be 2 - 100
-			9. Reject if sum of transaction sig opcounts > MAX_BLOCK_SIGOPS
+			8. (omitted)
+			9. (omitted)
 			10. Verify Merkle hash
 			*/
 
@@ -323,13 +323,13 @@ namespace BlockChain
 			}
 		}
 
-		private byte[] GetOutputKey(Types.Transaction transaction, int index)
+		private byte[] GetOutputKey(Types.Transaction transaction, int index) //TODO: convert to outpoint
 		{
 			var output = transaction.outputs[index];
 			var txHash = Merkle.transactionHasher.Invoke(transaction);
 
 			byte[] outputKey = new byte[txHash.Length + 1];
-			txHash.CopyTo(outputKey, 1);
+			txHash.CopyTo(outputKey, 0);
 			outputKey[txHash.Length] = (byte)index;
 
 			return outputKey;
