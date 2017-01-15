@@ -16,22 +16,6 @@ namespace Zen
 {
 	public class App
 	{
-		//public static TextWriter Out = new ConsoleWriter(
-		//	v => {
-		//		if (Environment.StackTrace.Contains("CLI"))
-		//			return;
-
-		//		TUI.WriteColor(v, ConsoleColor.Gray);
-		//	},
-		//	v => {
-		//		if (Environment.StackTrace.Contains("CLI"))
-		//			return;
-
-		//		TUI.WriteColor(v, ConsoleColor.Gray);
-		//	}
-		//);
-
-
 		public Settings Settings { get; set; }
 
 		private BlockChain.BlockChain _BlockChain;
@@ -78,7 +62,16 @@ namespace Zen
 
 		public void Stop() {
 			stopEvent.Set();
-			stoppedEvent.Wait();
+
+			if (_NodeManager != null)
+			{
+				_NodeManager.Dispose();
+			}
+
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+			}
 		}
 
 		internal void Init()
@@ -94,36 +87,8 @@ namespace Zen
 		}
 
 		public void Start() {
-
 			new Thread(() =>
 			{
-				//_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
-
-				//if (Settings.InitGenesisBlock)
-				//{
-				//	if (_BlockChain.Tip == null)
-				//	{
-				//		_BlockChain.HandleNewBlock(GenesisBlock.Value);
-				//	}
-				//	else
-				//	{
-				//		Console.WriteLine(".......");//tip already exists. skipping adding genesis block");
-				//	}
-				//}
-
-				//_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
-
-				//bool added = false;
-				//foreach (var key in Settings.Keys)
-				//{
-				//	added = added || _WalletManager.AddKey(key);
-				//}
-
-				//if (added)
-				//{
-				//	_WalletManager.Sync();
-				//}
-
 				_NodeManager = new NodeManager(_BlockChain, Settings.EndpointOptions);
 
 				switch (Settings.Mode.Value)
@@ -131,17 +96,9 @@ namespace Zen
 					case Settings.AppModeEnum.GUI:
 						Wallet.App.Instance.Start(_WalletManager);
 						break;
-					//case Settings.AppModeEnum.Tester:
-					//	NodeTester.MainClass.Main(nodeManager, _WalletManager);
-					//	break;
 				}
 
 				stopEvent.Wait();
-
-				_NodeManager.Dispose();
-				_WalletManager.Dispose();
-
-				stoppedEvent.Set();
 			}).Start();
 		}
 
@@ -255,9 +212,6 @@ namespace Zen
 			if (Settings.SaveNetworkProfile) {
 				JsonLoader<Network>.Instance.Save ();
 			}
-
-//			Console.WriteLine ("Current profile settings:");
-//			Console.WriteLine (JsonLoader<Network>.Instance.Value);
 
 			if (OnInitProfile != null) {
 				OnInitProfile (JsonLoader<Network>.Instance.Value);
