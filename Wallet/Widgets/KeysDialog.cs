@@ -69,7 +69,7 @@ namespace Wallet
 
 		private String DisplayKey(byte[] key)
 		{
-			return key == null ? "" : BitConverter.ToString (key).Substring (0, 15);
+			return key == null ? "" : System.Convert.ToBase64String(key);//.Substring (0, 15);
 		}
 	}
 }

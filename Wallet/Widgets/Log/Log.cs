@@ -39,6 +39,8 @@ namespace Wallet
 			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listTransactions, logEntryStore);
 
+			LogController.GetInstance().Sync();
+
 			ExposeEvent += (object o, ExposeEventArgs args) => {
 				listSummaryHeader.Hide ();
 			};

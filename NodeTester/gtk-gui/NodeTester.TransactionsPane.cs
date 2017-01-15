@@ -137,7 +137,7 @@ namespace NodeTester
 			// Notebook tab
 			this.label4 = new global::Gtk.Label();
 			this.label4.Name = "label4";
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString("Unsed");
+			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString("Unused");
 			this.notebook3.SetTabLabel(this.vbox1, this.label4);
 			this.label4.ShowAll();
 			// Container child notebook3.Gtk.Notebook+NotebookChild

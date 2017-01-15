@@ -28,7 +28,7 @@ namespace Wallet.core.Store
 			return true;
 		}
 
-		public Key GetUnsendKey(TransactionContext context) {
+		public Key GetUnsendKey(TransactionContext context, bool isChange = false) {
 			var list = List (context, false, false);
 
 			if (list.Count == 0) {

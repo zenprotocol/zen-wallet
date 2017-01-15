@@ -100,28 +100,33 @@ namespace BlockChain
 
 			if (Tip != null)
 			{
-				var currentBlockChain = new Stack<Types.Block>();
+				//var currentBlockChain = new Stack<Types.Block>();
 
 				var itr = Tip == null ? null : Tip.Value;
 
+				int blocks = 0;
+
 				while (itr != null)
 				{
-					currentBlockChain.Push(itr);
+				//	currentBlockChain.Push(itr);
 					itr = GetBlock(itr.header.parent);
+					blocks++;
 				}
 
-				BlockChainTrace.Information("Genesis is:\n" + BitConverter.ToString(_GenesisBlockHash));
+				BlockChainTrace.Information("blocks: " + blocks);
 
-				var sb = new StringBuilder();
-				sb.AppendLine("Current chain:");
+				//BlockChainTrace.Information("Genesis is:\n" + System.Convert.ToBase64String(_GenesisBlockHash));
 
-				while (currentBlockChain.Count != 0)
-				{
-					itr = currentBlockChain.Pop();
-					sb.AppendLine(BitConverter.ToString(Merkle.blockHeaderHasher.Invoke(itr.header)));
-				}
+				//var sb = new StringBuilder();
+				//sb.AppendLine("Current chain:");
 
-				BlockChainTrace.Information(sb.ToString());
+				//while (currentBlockChain.Count != 0)
+				//{
+				//	itr = currentBlockChain.Pop();
+				//	sb.AppendLine(System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(itr.header)));
+				//}
+
+				//BlockChainTrace.Information(sb.ToString());
 			}
 		}
 
@@ -151,7 +156,7 @@ namespace BlockChain
 				//TODO: only do that if tip has changed
 				Tip = GetTip();
 
-				BlockChainTrace.Information("Block " + BitConverter.ToString(Merkle.blockHeaderHasher.Invoke(block.header)) + " is " + result);
+				BlockChainTrace.Information("Block " + System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(block.header)) + " is " + result);
 
 				return result;
 			}

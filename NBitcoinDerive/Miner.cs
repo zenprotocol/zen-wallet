@@ -3,6 +3,7 @@ using System.Threading;
 using NBitcoin.Protocol.Behaviors;
 using Infrastructure;
 using Consensus;
+using NBitcoin.Protocol;
 
 namespace NBitcoinDerive
 {
@@ -32,13 +33,13 @@ namespace NBitcoinDerive
 
 				if (newBlock != null)
 				{
-					Console.WriteLine(" ****** new block created ******* by " + GetHashCode());
+					NodeServerTrace.Information(" ****** new block created ******* threadid=" + GetHashCode());
 					BlockBroadcastHub.BroadcastBlockAsync(newBlock);
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("error trying to create block: " + e);
+				NodeServerTrace.Information("error trying to create block: " + e);
 			}
 		}
 	}

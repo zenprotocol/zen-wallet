@@ -3,7 +3,7 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
     <StartProgram></StartProgram>
-    <StartArguments>-ge -i -peers=1 -connections=0 -port=9999 -i -ge -seed=192.168.2.105 -ip= -blockchaindb=bc_1 -walletdb=wa_1</StartArguments>
+    <StartArguments>-i -peers=1 -connections=1 -port=9999 -i -ge -seed=192.168.2.101 -ip= -blockchaindb=bc_1 -walletdb=wa_1</StartArguments>
     <ExternalConsole>true</ExternalConsole>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>

@@ -38,7 +38,7 @@ namespace Infrastructure.Testing
 				}
 
 				var eventTypeString = Enum.GetName(typeof(TraceEventType), eventType);
-				var message = source + " - " + eventTypeString + " > " + (args != null && args.Length > 0 ? string.Format(format, args) : format);
+				var message = source + "(" + eventTypeString.Substring(0,1) + ") " + (args != null && args.Length > 0 ? string.Format(format, args) : format);
 
 				WriteColor(message + Environment.NewLine, color);
 			}

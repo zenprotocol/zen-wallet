@@ -1,6 +1,7 @@
 ﻿using System;
 using Gtk;
 using System.Collections.Generic;
+using Wallet.core;
 
 namespace Wallet
 {
@@ -15,8 +16,8 @@ namespace Wallet
 		{
 			this.Build ();
 
-			foreach (String key in AssetsManager.AssetTypes.Keys) {
-				AddButton(key, AssetsManager.AssetTypes[key]);
+			foreach (String key in AssetsHelper.AssetTypes.Keys) {
+				AddButton(key, AssetsHelper.AssetTypes[key]);
 			}
 
 			MainAreaController.GetInstance().VerticalMenuView = this;
@@ -26,7 +27,7 @@ namespace Wallet
 			
 		public override MenuButton Selection { 
 			set {
-				WalletController.GetInstance().Asset = AssetsManager.AssetTypes[value.Name];
+				WalletController.GetInstance().Asset = AssetsHelper.AssetTypes[value.Name];
 			}
 		}
 
