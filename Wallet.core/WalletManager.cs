@@ -8,6 +8,7 @@ using Wallet.core.Data;
 using Consensus;
 using Microsoft.FSharp.Collections;
 using BlockChain.Data;
+using BlockChain.Store;
 
 namespace Wallet.core
 {
@@ -33,22 +34,7 @@ namespace Wallet.core
 
 		public WalletManager(BlockChain.BlockChain blockChain, string dbName)
 		{
-			WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
-			//WalletTrace.Information("Initializing");
+		//	WalletTrace.Information("Initializing");
 
 			_BlockChain = blockChain;
 			OwnResource(_BlockChain);
@@ -61,64 +47,60 @@ namespace Wallet.core
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
-				WalletTrace.Information($"Keystore contains {_KeyStore.List(context, false).Count} unsed, {_KeyStore.List(context, true).Count} used");
+				WalletTrace.Information($"Keystore contains {_KeyStore.List(context, false).Count} unused, {_KeyStore.List(context, true).Count} used");
 			}
 
-			_TxHistoryStore = new TxHistoryStore();
 
-			using (var context = _DBContext.GetTransactionContext())
-			{
-				foreach (var item in _BlockChain.GetUTXOSet())
+			OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
+				new EventLoopMessageListener<TxMempool.AddedMessage>(m =>
 				{
-					var key = _KeyStore.Find(context, item.Item2);
+					HandleTransaction(m.Transaction.Value);
+				})
+			));
 
-					if (key != null)
-					{
-						_AssetsManager.Add(item);
-					}
-				}
-			}
+			OwnResource(MessageProducer<TxStore.AddedMessage>.Instance.AddMessageListener(
+				new EventLoopMessageListener<TxStore.AddedMessage>(m =>
+				{
+					TransactionConfirmet(m.Transaction.Value);
+				})
+			));
 
-			_BlockChain.TxMempool.OnAdded += t =>
-			{
-				HandleTransaction(t);
-			};
-
-			_BlockChain.TxStore.OnAdded += t =>
-			{
-				HandleTransaction(t, true);
-			};
 
 			Init();
 		}
 
-		private void AddToMemory(TransactionSpendDataEx transactionSpendData)
+		private void UpdateAssets(TransactionSpendDataEx transactionSpendData, bool skipInputs = false, bool skipOutputs = false)
 		{
-			MyTransactions.Add(transactionSpendData);
-
-			foreach (var output in transactionSpendData.Outputs)
+			if (!skipOutputs)
 			{
-				var txHash = Merkle.transactionHasher.Invoke(transactionSpendData.Transaction);
-				var outpoint = new Types.Outpoint(txHash, (uint)output);
-				_AssetsManager.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, transactionSpendData.Transaction.outputs[output]));
+				foreach (var output in transactionSpendData.Outputs)
+				{
+					var txHash = Merkle.transactionHasher.Invoke(transactionSpendData.Transaction);
+					var outpoint = new Types.Outpoint(txHash, (uint)output);
+					_AssetsManager.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, transactionSpendData.Transaction.outputs[output]));
+				}
 			}
 
-			foreach (var input in transactionSpendData.Inputs)
+			if (!skipInputs)
 			{
-				_AssetsManager.Remove(transactionSpendData.PointedTransaction.pInputs[input]);
+				foreach (var input in transactionSpendData.Inputs)
+				{
+					_AssetsManager.Remove(transactionSpendData.PointedTransaction.pInputs[input]);
+				}
 			}
 		}
 
 		public void Sync()
 		{
-			var xx = _BlockChain.GetTransactions();
+		//	var transactions = _BlockChain.GetTransactions();
+
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
 				#if TRACE
 				int skippedTraceCount = 0;
 				#endif
 
-				foreach (Types.Transaction transaction in xx)
+				foreach (Types.Transaction transaction in _BlockChain.GetTransactions())
 				{
 					var transactionSpendData = GetTransactionSpendData(context, transaction);
 
@@ -127,7 +109,8 @@ namespace Wallet.core
 						WalletTrace.Information($"Found tx. {transactionSpendData.Inputs.Count} inputs, {transactionSpendData.Outputs.Count} outputs");
 						_TxHistoryStore.Put(context, new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction));
 						InvalidateKeys(context, transactionSpendData.Keys);
-						AddToMemory(transactionSpendData);
+						MyTransactions.Add(transactionSpendData);
+						UpdateAssets(transactionSpendData);
 					}
 					#if TRACE
 					else
@@ -136,6 +119,8 @@ namespace Wallet.core
 					}
 					#endif
 				}
+
+				context.Commit();
 
 				#if TRACE
 				WalletTrace.Information("Skipped: " + skippedTraceCount);
@@ -186,7 +171,11 @@ namespace Wallet.core
 			}
 		}
 
-		private void HandleTransaction(Types.Transaction transaction, bool isConfirmed = false)
+		private void TransactionConfirmet(Types.Transaction transaction)
+		{ 
+		}
+
+		private void HandleTransaction(Types.Transaction transaction)
 		{
 			TransactionSpendDataEx transactionSpendData = null;
 
@@ -204,7 +193,8 @@ namespace Wallet.core
 				context.Commit();
 			}
 
-			AddToMemory(transactionSpendData);
+			MyTransactions.Add(transactionSpendData);
+			UpdateAssets(transactionSpendData);
 
 			try //todo: get a grip of events vs. messages with respect to exception handling, blockage etc.
 			{
@@ -223,18 +213,45 @@ namespace Wallet.core
 		{
 			MyTransactions = new List<TransactionSpendData>();
 
-			//using (TransactionContext context = _DBContext.GetTransactionContext())
-			//{
-			//	foreach (var transaction in _TxHistoryStore.All(context))
-			//	{
-			//		var transactionSpendData = GetTransactionSpendData(context, transaction.Value);
+			_TxHistoryStore = new TxHistoryStore();
 
-			//		if (transactionSpendData != null)
-			//		{
-			//			AddToMemory(transactionSpendData);
-			//		}
-			//	}
-			//}
+			using (var context = _DBContext.GetTransactionContext())
+			{
+				//foreach (var item in _BlockChain.GetUTXOSet())
+				//{
+				//	var key = _KeyStore.Find(context, item.Item2);
+
+				//	if (key != null)
+				//	{
+				//		_AssetsManager.Add(item);
+				//	}
+				//}
+
+	//			var x = _TxHistoryStore.All(context).Count();
+				WalletTrace.Information("tx count: " + _TxHistoryStore.All(context).Count());
+
+				foreach (var transaction in _TxHistoryStore.All(context))
+				{
+					var transactionSpendData = GetTransactionSpendData(context, transaction.Value);
+
+					//if (transactionSpendData != null)
+					//{
+					MyTransactions.Add(transactionSpendData);
+					UpdateAssets(transactionSpendData, skipInputs: true);
+					//}
+				}
+
+				foreach (var transaction in _TxHistoryStore.All(context))
+				{
+					var transactionSpendData = GetTransactionSpendData(context, transaction.Value);
+
+					//if (transactionSpendData != null)
+					//{
+					UpdateAssets(transactionSpendData, skipOutputs: true);
+					//}
+				}
+
+			}
 		}
 
 		private TransactionSpendDataEx GetTransactionSpendData(TransactionContext context, Types.Transaction transaction)
@@ -296,11 +313,17 @@ namespace Wallet.core
 				var outputs = new List<Types.Output>();
 
 				outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(Key.FromBase64String(address)), new Types.Spend(Tests.zhash, amount)));
+
+				if (inputs.Item2 > 0)
+				{
+					outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(GetUnsendKey(true).Address), new Types.Spend(Tests.zhash, inputs.Item2)));
+				}
+
 				var hashes = new List<byte[]>();
 				var version = (uint)1;
 
 				Types.Transaction transaction = new Types.Transaction(version,
-					ListModule.OfSeq(inputs),
+					ListModule.OfSeq(inputs.Item1),
 					ListModule.OfSeq(hashes),
 					ListModule.OfSeq(outputs),
 					null);
@@ -328,13 +351,13 @@ namespace Wallet.core
 			return result;
 		}
 
-		public Key GetUnsendKey()
+		public Key GetUnsendKey(bool isChange = false)
 		{
 			Key result;
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
-				result = _KeyStore.GetUnsendKey(context);
+				result = _KeyStore.GetUnsendKey(context, isChange);
 				context.Commit();
 			}
 

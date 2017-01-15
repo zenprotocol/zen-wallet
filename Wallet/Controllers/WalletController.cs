@@ -32,7 +32,7 @@ namespace Wallet
 		//public CurrencyEnum currency;
 		//public String currencyStr;
 
-		private AssetType asset = AssetsManager.AssetTypes["zen"];
+		private AssetType asset = AssetsHelper.AssetTypes["zen"];
 
 		public static WalletController GetInstance() {
 			if (instance == null) {
@@ -54,11 +54,6 @@ namespace Wallet
 
 		public WalletController()
 		{
-			foreach (var transactionSpendData in App.Instance.Wallet.MyTransactions)
-			{
-				HandleNewTransaction(transactionSpendData);
-			}
-
 			App.Instance.Wallet.OnNewTransaction += HandleNewTransaction;
 		}
 
@@ -92,7 +87,7 @@ namespace Wallet
 						TransactionsView.AddTransactionItem(new TransactionItem(
 							amount < 0 ? -1 * amount : amount,
 							amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-							AssetsManager.Find(asset),
+							AssetsHelper.Find(asset),
 							DateTime.Now,
 							Guid.NewGuid().ToString("N"),
 							Guid.NewGuid().ToString("N"),

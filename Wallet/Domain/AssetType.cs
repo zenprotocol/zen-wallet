@@ -1,21 +1,21 @@
-﻿using System;
+﻿//using System;
 
-namespace Wallet
-{
-	public class AssetType
-	{
-		public String Caption { get; set; }
-		public String Image { get; set; }
+//namespace Wallet
+//{
+//	public class AssetType
+//	{
+//		public String Caption { get; set; }
+//		public String Image { get; set; }
 
-		public AssetType(String caption, String image) {
-			Caption = caption;
-			Image = image;
-		}
-	}
+//		public AssetType(String caption, String image) {
+//			Caption = caption;
+//			Image = image;
+//		}
+//	}
 
-	public class AssetTypeAll : AssetType
-	{
-		public AssetTypeAll() : base("All", "All") {}
-	}
-}
+//	public class AssetTypeAll : AssetType
+//	{
+//		public AssetTypeAll() : base("All", "All") {}
+//	}
+//}
 

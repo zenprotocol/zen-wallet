@@ -10,9 +10,9 @@ namespace BlockChain.Store
 {
 	public class TxMempool
 	{
-		//public class AddedMessage { public Keyed<Types.Transaction> Transaction { get; set; }}
+		public class AddedMessage { public Keyed<Types.Transaction> Transaction { get; set; }}
 
-		public event Action<Types.Transaction> OnAdded;
+		//public event Action<Types.Transaction> OnAdded;
 
 		private readonly HashDictionary<Keyed<Types.Transaction>> _Transactions;
 		private readonly List<Types.Outpoint> _TransactionsInputs;
@@ -22,7 +22,7 @@ namespace BlockChain.Store
 
 		//TODO: If the transaction is "ours", i.e. involves one of our addresses or contracts, tell the wallet.
 		//Relay transaction to peers
-		//private static MessageProducer<AddedMessage> _Producer = MessageProducer<AddedMessage>.Instance;
+		private static MessageProducer<AddedMessage> _Producer = MessageProducer<AddedMessage>.Instance;
 
 		//demo
 		public List<Keyed<Types.Transaction>> GetAll()
@@ -107,11 +107,11 @@ namespace BlockChain.Store
 				_Transactions.Add(transaction.Key, transaction);
 				_TransactionsInputs.AddRange(transaction.Value.inputs);
 
-				//_Producer.PushMessage(new AddedMessage() { Transaction = transaction });
-				if (OnAdded != null)
-				{
-					OnAdded(transaction.Value);
-				}
+				_Producer.PushMessage(new AddedMessage() { Transaction = transaction });
+				//if (OnAdded != null)
+				//{
+				//	OnAdded(transaction.Value);
+				//}
 			}
 		}
 	}

@@ -74,9 +74,11 @@ namespace Zen
 		public event Action<Network> OnInitProfile;
 		public event Action<Settings> OnInitSettings;
 		private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
+		private ManualResetEventSlim stoppedEvent = new ManualResetEventSlim();
 
 		public void Stop() {
 			stopEvent.Set();
+			stoppedEvent.Wait();
 		}
 
 		internal void Init()
@@ -89,7 +91,6 @@ namespace Zen
 
 			_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
 			_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
-			_NodeManager = new NodeManager(_BlockChain, Settings.EndpointOptions);
 		}
 
 		public void Start() {
@@ -123,6 +124,8 @@ namespace Zen
 				//	_WalletManager.Sync();
 				//}
 
+				_NodeManager = new NodeManager(_BlockChain, Settings.EndpointOptions);
+
 				switch (Settings.Mode.Value)
 				{
 					case Settings.AppModeEnum.GUI:
@@ -138,6 +141,7 @@ namespace Zen
 				_NodeManager.Dispose();
 				_WalletManager.Dispose();
 
+				stoppedEvent.Set();
 			}).Start();
 		}
 

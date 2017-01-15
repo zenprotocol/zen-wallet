@@ -109,6 +109,7 @@ namespace Wallet
 			w5.Padding = ((uint)(10));
 			// Container child hboxCurrencySub.Gtk.Box+BoxChild
 			this.hbox3 = new global::Gtk.HBox();
+			this.hbox3.Name = "hbox3";
 			this.hbox3.Spacing = 6;
 			// Container child hbox3.Gtk.Box+BoxChild
 			this.labelAmountConverted = new global::Gtk.Label();

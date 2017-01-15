@@ -309,6 +309,7 @@ namespace BlockChain
 			{
 				var txHash = Merkle.transactionHasher.Invoke(transaction);
 
+				BlockChainTrace.Information("new txstore item");
 				_TxStore.Put(_TransactionContext, new Keyed<Types.Transaction>(txHash, transaction));
 
 				if (_TxMempool.ContainsKey(txHash)) // fucntion adresses orphans also.
@@ -318,6 +319,7 @@ namespace BlockChain
 
 				for (int i = 0; i < transaction.outputs.Length; i++)
 				{
+					BlockChainTrace.Information($"new utxo item: {transaction.outputs[i].spend.amount}");
 					_UTXOStore.Put(_TransactionContext, new Keyed<Types.Output>(GetOutputKey(transaction, i), transaction.outputs[i]));
 				}
 			}

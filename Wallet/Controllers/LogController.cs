@@ -20,11 +20,6 @@ namespace Wallet
 			
 		public LogController ()
 		{
-			foreach (var transactionSpendData in App.Instance.Wallet.MyTransactions)
-			{
-				HandleNewTransaction(transactionSpendData);
-			}
-
 			App.Instance.Wallet.OnNewTransaction += HandleNewTransaction;
 		}
 
@@ -49,7 +44,7 @@ namespace Wallet
 						LogView.AddLogEntryItem(new LogEntryItem(
 							amount,
 							amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-							AssetsManager.Find(asset),
+							AssetsHelper.Find(asset),
 							DateTime.Now,
 							Guid.NewGuid().ToString("N"),
 							Guid.NewGuid().ToString("N"),
