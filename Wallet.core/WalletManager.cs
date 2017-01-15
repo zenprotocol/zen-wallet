@@ -61,7 +61,7 @@ namespace Wallet.core
 			OwnResource(MessageProducer<TxStore.AddedMessage>.Instance.AddMessageListener(
 				new EventLoopMessageListener<TxStore.AddedMessage>(m =>
 				{
-					TransactionConfirmet(m.Transaction.Value);
+					TransactionConfirmed(m.Transaction.Value);
 				})
 			));
 
@@ -171,8 +171,13 @@ namespace Wallet.core
 			}
 		}
 
-		private void TransactionConfirmet(Types.Transaction transaction)
-		{ 
+		private void TransactionConfirmed(Types.Transaction transaction)
+		{
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				_TxHistoryStore.Put(context, new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction));
+				context.Commit();
+			}
 		}
 
 		private void HandleTransaction(Types.Transaction transaction)
@@ -189,7 +194,7 @@ namespace Wallet.core
 				}
 
 				InvalidateKeys(context, transactionSpendData.Keys);
-				_TxHistoryStore.Put(context, new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction));
+				//_TxHistoryStore.Put(context, new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction));
 				context.Commit();
 			}
 
