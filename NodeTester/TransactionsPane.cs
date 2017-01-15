@@ -122,7 +122,7 @@ namespace NodeTester
 
 		private String DisplayKey(byte[] key)
 		{
-			return key == null ? "" : BitConverter.ToString(key);
+			return key == null ? "" : System.Convert.ToBase64String(key);
 		}
 
 		void ButtonMine_Clicked(object sender, EventArgs e)

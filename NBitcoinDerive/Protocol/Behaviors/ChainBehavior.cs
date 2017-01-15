@@ -71,7 +71,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 				if (tip != null)
 				{
-					NodeServerTrace.Information("Sending tip: " + BitConverter.ToString(Merkle.blockHeaderHasher.Invoke(tip.Value.header)));
+					NodeServerTrace.Information("Sending tip: " + System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(tip.Value.header)));
 					node.SendMessageAsync(tip.Value);
 				}
 				else 
@@ -88,7 +88,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 					if (bk != null)
 					{
-						NodeServerTrace.Information("Sending block: " + BitConverter.ToString(Merkle.blockHeaderHasher.Invoke(bk.header)));
+						NodeServerTrace.Information("Sending block: " + System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(bk.header)));
 						node.SendMessageAsync(bk);
 					}
 				}

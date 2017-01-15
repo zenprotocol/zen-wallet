@@ -1,4 +1,5 @@
 ﻿using System;
+using Wallet.core;
 
 namespace Wallet.Domain
 {

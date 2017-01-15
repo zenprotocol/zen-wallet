@@ -2,6 +2,7 @@
 using Gtk;
 using Cairo;
 using Wallet.Constants;
+using Wallet.core;
 
 namespace Wallet
 {
@@ -37,7 +38,7 @@ namespace Wallet
 		public void Next() {
 			try
 			{
-				if (!App.Instance.Wallet.Spend(senddialogstep1.To, AssetsManager.AssetCodes["zen"], (ulong)senddialogstep1.Amount))
+				if (!App.Instance.Wallet.Spend(senddialogstep1.To, AssetsHelper.AssetCodes["zen"], (ulong)senddialogstep1.Amount))
 				{
 					new MessageBox("error during send").ShowDialog();
 				}

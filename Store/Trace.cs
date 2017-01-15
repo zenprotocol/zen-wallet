@@ -49,7 +49,7 @@ namespace Store
 			String val;
 
 			if (key is byte[])
-				val = BitConverter.ToString(key as byte[]);
+				val = System.Convert.ToBase64String(key as byte[]);
 			else 
 				val = key.ToString();
 

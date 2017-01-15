@@ -1,5 +1,6 @@
 ﻿using System;
 using Gtk;
+using Wallet.core;
 
 namespace Wallet
 {

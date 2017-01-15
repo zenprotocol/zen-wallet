@@ -25,15 +25,13 @@ namespace Wallet
 			typeof (bool), 
 			typeof(TransactionItem)
 		);
-		
-		private WalletController WalletController = WalletController.GetInstance ();
 
 		TreeView list;
 		public Transactions ()
 		{
 			this.Build ();
 
-			WalletController.TransactionsView = this;
+			WalletController.GetInstance().TransactionsView = this;
 
 			ScrolledWindow sw = new ScrolledWindow();
 
@@ -41,6 +39,8 @@ namespace Wallet
 			FindChild<Gtk.VBox>().PackStart(sw, true, true, 0);
 
 			CreateList();
+
+			WalletController.GetInstance().Sync();
 
 			sw.Add(list);
 		}

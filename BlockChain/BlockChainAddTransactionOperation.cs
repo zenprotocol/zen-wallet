@@ -216,7 +216,7 @@ namespace BlockChain
 		private bool ParentOutputSpent(Types.Outpoint input)
 		{
 			byte[] newArray = new byte[input.txHash.Length + 1];
-			input.txHash.CopyTo(newArray, 1);
+			input.txHash.CopyTo(newArray, 0);
 			newArray[input.txHash.Length] = (byte)input.index;
 
 			if (_InputLocations[input] == InputLocationEnum.TxStore && !_UTXOStore.ContainsKey(_TransactionContext, newArray))
