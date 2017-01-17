@@ -26,7 +26,7 @@ namespace Wallet.core
 		private HashDictionary<bool> _HandledTransactions;
 		private BalanceStore _BalanceStore;
 
-		public event Action<HashDictionary<List<long>>> OnNewBalance;
+		public event Action<HashDictionary<long>> OnNewBalance;
 
 //#if DEBUG
 //		public void Reset()
@@ -83,20 +83,6 @@ namespace Wallet.core
 			}
 
 			return balances;
-
-			//	return JsonLoader<Balances>.Instance.Value;
-
-			//var balances = new HashDictionary<List<long>>();
-
-			//using (var context = _DBContext.GetTransactionContext())
-			//{
-			//	foreach (var output in _UTXOStore.All(context).Select(t => t.Value))
-			//	{
-			//		AddBalance(balances, output);
-			//	}
-			//}
-
-			//return balances;
 		}
 
 		public void Sync()
@@ -129,6 +115,7 @@ namespace Wallet.core
 			{
 				//_OutpointAssetsStore.RemoveAll(context);
 				_UTXOStore.RemoveAll(context);
+				_BalanceStore.RemoveAll(context);
 
 				foreach (var item in utxoSet)
 				{
@@ -161,8 +148,11 @@ namespace Wallet.core
 				balances[output.spend.asset] = new List<long>();
 			}
 
-			WalletTrace.Information($"adding {output.spend.amount} {AssetsHelper.Find(output.spend.asset)}`");
-
+			if (isNegative)
+				WalletTrace.Information($"removing {output.spend.amount} {AssetsHelper.Find(output.spend.asset)}");
+			else
+				WalletTrace.Information($"adding {output.spend.amount} {AssetsHelper.Find(output.spend.asset)}");
+			
 			balances[output.spend.asset].Add((long)output.spend.amount * (isNegative ? -1 : 1));
 		}
 
@@ -191,11 +181,42 @@ namespace Wallet.core
 		{
 			var handled = _HandledTransactions.ContainsKey(transaction.Key);
 			var balances = new HashDictionary<List<long>>();
+			var balances_ = new HashDictionary<long>();
 
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
 				byte i = 0;
 				bool shouldCommit = false;
+
+				foreach (var input in transaction.Value.inputs)
+				{
+					byte[] key = new byte[input.txHash.Length + 1];
+					input.txHash.CopyTo(key, 0);
+					key[input.txHash.Length] = (byte)input.index;
+
+					Types.Output output = null;
+
+					if (_UTXOMem.ContainsKey(key))
+					{
+						output = _UTXOMem[key];
+						_UTXOMem.Remove(key);
+					}
+					else if (_UTXOStore.ContainsKey(context, key))
+					{
+						output = _UTXOStore.Get(context, key).Value;
+
+						if (confirmed)
+						{
+							_UTXOStore.Remove(context, key);
+							shouldCommit = true;
+						}
+					}
+
+					if (!handled)
+					{
+						AddBalance(balances, output, true);
+					}
+				}
 
 				foreach (var output in transaction.Value.outputs)
 				{
@@ -230,32 +251,15 @@ namespace Wallet.core
 					i++;
 				}
 
-				foreach (var input in transaction.Value.inputs)
+				foreach (var item in balances)
 				{
-					byte[] key = new byte[input.txHash.Length + 1];
-					input.txHash.CopyTo(key, 0);
-					key[input.txHash.Length] = (byte)input.index;
-
-					Types.Output output = null;
-
-					if (confirmed)
+					foreach (var item_ in item.Value)
 					{
-						if (_UTXOMem.ContainsKey(key))
+						if (!balances_.ContainsKey(item.Key))
 						{
-							output = _UTXOMem[key];
-							_UTXOMem.Remove(key);
+							balances_[item.Key] = 0;
 						}
-						else if (_UTXOStore.ContainsKey(context, key))
-						{
-							output = _UTXOStore.Get(context, key).Value;
-							_UTXOStore.Remove(context, key);
-							shouldCommit = true;
-						}
-					}
-					else if (_UTXOMem.ContainsKey(key))
-					{
-						output = _UTXOMem[key];
-						_UTXOMem.Remove(key);
+						balances_[item.Key] += item_;
 					}
 				}
 
@@ -263,14 +267,10 @@ namespace Wallet.core
 				{
 					foreach (var item in balances)
 					{
-						var values = _BalanceStore.ContainsKey(context, item.Key) ? _BalanceStore.Get(context, item.Key).Value : new List<long>();
+						var values_ = _BalanceStore.ContainsKey(context, item.Key) ? _BalanceStore.Get(context, item.Key).Value : new List<long>();
+						values_.Add(balances_[item.Key]);
 
-						foreach (var _value in item.Value)
-						{
-							values.Add(_value);
-						}
-
-						_BalanceStore.Put(context, new Keyed<List<long>>(item.Key, values));
+						_BalanceStore.Put(context, new Keyed<List<long>>(item.Key, values_));
 					}
 					context.Commit();
 				}
@@ -279,11 +279,12 @@ namespace Wallet.core
 			if (!handled)
 			{
 				_HandledTransactions[transaction.Key] = true;
+
 				try
 				{
 					if (OnNewBalance != null)
 					{
-						OnNewBalance(balances);
+						OnNewBalance(balances_);
 					}
 				}
 				catch (Exception e)

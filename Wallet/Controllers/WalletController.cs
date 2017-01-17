@@ -54,10 +54,10 @@ namespace Wallet
 		public void Load()
 		{
 			TransactionsView.Clear();
-			OnNewBalance(App.Instance.Wallet.Load());
+			AddNewBalances(App.Instance.Wallet.Load());
 		}
 
-		public void OnNewBalance(HashDictionary<List<long>> balances)
+		public void AddNewBalances(HashDictionary<List<long>> balances)
 		{
 			//if (ActionBarView != null)
 			//{
@@ -91,6 +91,40 @@ namespace Wallet
 				}
 			});
 		}
+
+
+		public void OnNewBalance(HashDictionary<long> balance)
+		{
+			//if (ActionBarView != null)
+			//{
+			//	//Alternative: Runtime.DispatchService.GuiDispatch (new StatefulMessageHandler (UpdateGui), n);
+			//	ActionBarView.Total = (decimal)10000;
+			//	ActionBarView.Rate = (decimal)10000;
+			//}
+			Gtk.Application.Invoke(delegate
+			{
+				if (TransactionsView != null)
+				{
+					foreach (var item in balance)
+					{
+						var asset = item.Key;
+
+						var amount = item.Value;
+
+						TransactionsView.AddTransactionItem(new TransactionItem(
+							(ulong)Math.Abs(item.Value),
+							item.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+							AssetsHelper.Find(asset),
+							DateTime.Now,
+							Guid.NewGuid().ToString("N"),
+							Guid.NewGuid().ToString("N"),
+							0
+						));
+					}
+				}
+			});
+		}
+
 	}
 }
 
