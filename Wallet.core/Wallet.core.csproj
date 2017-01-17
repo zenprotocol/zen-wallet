@@ -56,7 +56,7 @@
     <Compile Include="Data\AssetTypes.cs" />
     <Compile Include="Store\UTXOStore.cs" />
     <Compile Include="Data\UTXOMem.cs" />
-    <Compile Include="Store\TxStore.cs" />
+    <Compile Include="Store\BalanceStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
