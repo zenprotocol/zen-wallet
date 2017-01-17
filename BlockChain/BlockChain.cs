@@ -60,13 +60,13 @@ namespace BlockChain
 			}
 		}
 
-		public List<Types.Transaction> GetTransactions()
-		{
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				return TxStore.All(context).Select(t=>t.Value).ToList();
-			}
-		}
+		//public IEnumerable<Keyed<Types.Transaction>> GetTransactions()
+		//{
+		//	using (TransactionContext context = _DBContext.GetTransactionContext())
+		//	{
+		//		return TxStore.All(context);//.ToList();
+		//	}
+		//}
 
 		public BlockChain(string dbName, byte[] genesisBlockHash) {
 			_DBContext = new DBContext(dbName);
@@ -219,27 +219,35 @@ namespace BlockChain
 			}
 		}
 
-		public List<Tuple<Types.Outpoint,Types.Output>> GetUTXOSet()
+		public List<Keyed<Types.Output>> GetUTXOSet()
 		{
-			var values = new List<Tuple<Types.Outpoint, Types.Output>>();
-
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				foreach (var item in _UTXOStore.All(context))
-				{
-					byte[] txHash = new byte[item.Key.Length - 1];
-					Array.Copy(item.Key, txHash, txHash.Length);
-
-					uint index = item.Key[item.Key.Length - 1];
-
-					var outpoint = new Types.Outpoint(txHash, index);
-
-					values.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, item.Value));
-				}
+				return _UTXOStore.All(context).ToList();
 			}
-
-			return values;
 		}
+
+		//public List<Tuple<Types.Outpoint,Types.Output>> GetUTXOSet()
+		//{
+		//	var values = new List<Tuple<Types.Outpoint, Types.Output>>();
+
+		//	using (TransactionContext context = _DBContext.GetTransactionContext())
+		//	{
+		//		foreach (var item in _UTXOStore.All(context))
+		//		{
+		//			byte[] txHash = new byte[item.Key.Length - 1];
+		//			Array.Copy(item.Key, txHash, txHash.Length);
+
+		//			uint index = item.Key[item.Key.Length - 1];
+
+		//			var outpoint = new Types.Outpoint(txHash, index);
+
+		//			values.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, item.Value));
+		//		}
+		//	}
+
+		//	return values;
+		//}
 
 		//demo
 		public Types.Block MineAllInMempool()
