@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Threading;
 using Wallet.Domain;
-using Infrastructure;
-using System.Linq;
 using Wallet.core;
-using NBitcoinDerive;
-using Consensus;
+using BlockChain.Data;
+using System.Collections.Generic;
 
 namespace Wallet
 {
@@ -29,9 +26,6 @@ namespace Wallet
 		public TransactionsView TransactionsView { get; set; }
 		public IWalletView WalletView { get; set; }
 
-		//public CurrencyEnum currency;
-		//public String currencyStr;
-
 		private AssetType asset = AssetsHelper.AssetTypes["zen"];
 
 		public static WalletController GetInstance() {
@@ -54,20 +48,16 @@ namespace Wallet
 
 		public WalletController()
 		{
-			App.Instance.Wallet.OnNewTransaction += HandleNewTransaction;
+			App.Instance.Wallet.OnNewBalance += OnNewBalance;
 		}
 
-		public void Sync()
+		public void Load()
 		{
 			TransactionsView.Clear();
-
-			foreach (var transactionSpendData in App.Instance.Wallet.MyTransactions)
-			{
-				HandleNewTransaction(transactionSpendData);
-			}
+			OnNewBalance(App.Instance.Wallet.Load());
 		}
 
-		public void HandleNewTransaction(TransactionSpendData transactionSpendData)
+		public void OnNewBalance(HashDictionary<List<long>> balances)
 		{
 			//if (ActionBarView != null)
 			//{
@@ -79,20 +69,24 @@ namespace Wallet
 			{
 				if (TransactionsView != null)
 				{
-					foreach (var item in transactionSpendData.Balances)
+					foreach (var item in balances)
 					{
 						var asset = item.Key;
-						var amount = item.Value;
 
-						TransactionsView.AddTransactionItem(new TransactionItem(
-							amount < 0 ? -1 * amount : amount,
-							amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-							AssetsHelper.Find(asset),
-							DateTime.Now,
-							Guid.NewGuid().ToString("N"),
-							Guid.NewGuid().ToString("N"),
-							amount
-						));
+						foreach (var item_ in item.Value)
+						{
+							var amount = item.Value;
+
+							TransactionsView.AddTransactionItem(new TransactionItem(
+								(ulong)Math.Abs(item_),
+								item_ < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+								AssetsHelper.Find(asset),
+								DateTime.Now,
+								Guid.NewGuid().ToString("N"),
+								Guid.NewGuid().ToString("N"),
+								0
+							));
+						}
 					}
 				}
 			});

@@ -49,21 +49,26 @@ namespace Wallet.core.Store
 				.ToList ();
 		}
 
-		public Key Find(TransactionContext context, Types.Output output) {
+		public bool Find(TransactionContext context, Types.Output output, bool markAsUsed) {
 			foreach (var key in List(context)) {
 				if (key.IsMatch(output.@lock))
 				{
-					return key;
+					if (!key.Used && markAsUsed)
+					{
+						key.Used = true;
+						Put(context, new Keyed<Key>(key.Private, key));
+					}
+					return true;
 				}
 			}
 
-			return null;
+			return false;
 		}
 
-		public void Used(TransactionContext context, Key key)
-		{
-			key.Used = true;
-			Put(context, new Keyed<Key>(key.Private, key));
-		}
+		//public void Used(TransactionContext context, Key key)
+		//{
+		//	key.Used = true;
+		//	Put(context, new Keyed<Key>(key.Private, key));
+		//}
 	}
 }

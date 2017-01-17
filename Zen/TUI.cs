@@ -29,7 +29,7 @@ namespace Zen
 			options["main"].Add("Exit");
 
 			options["wallet"] = new List<string>();
-			options["wallet"].Add("Reset");
+		//	options["wallet"].Add("Reset");
 			options["wallet"].Add("Sync");
 			options["wallet"].Add("Add Key");
 			options["wallet"].Add("Back");
@@ -44,6 +44,7 @@ namespace Zen
 			{
 				currentMenu = s;
 				listMenu.Items.Clear();
+				listMenu.SelectedIndex = 0;
 				options[currentMenu].ForEach(t => listMenu.Items.Add(t));
 			};
 
@@ -123,9 +124,9 @@ namespace Zen
 						}
 						listMenu.Items.Add("Back");
 						break;
-					case "Reset":
-						app.ResetWallet();
-						break;
+					//case "Reset":
+					//	app.ResetWallet();
+					//	break;
 					case "Sync":
 						app.Sync();
 						break;

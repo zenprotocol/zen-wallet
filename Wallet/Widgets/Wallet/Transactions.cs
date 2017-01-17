@@ -40,7 +40,7 @@ namespace Wallet
 
 			CreateList();
 
-			WalletController.GetInstance().Sync();
+			WalletController.GetInstance().Load();
 
 			sw.Add(list);
 		}
