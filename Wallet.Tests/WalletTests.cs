@@ -65,15 +65,26 @@ namespace Wallet.Tests
 		{
 			TestAction(genesisBlock, (walletManager, blockChain) =>
 			{
+				var addedEvent = new ManualResetEventSlim();
+
+				walletManager.OnNewBalance += t =>
+				{
+					Assert.That(Utils.GetBalance(walletManager, outputs[0].Asset), Is.EqualTo(outputs[0].Amount));
+					addedEvent.Set();
+				};
+
 				blockChain.HandleNewBlock(genesisBlock.Value);
 				walletManager.AddKey(outputs[0].Key.PrivateAsString);
 				walletManager.Sync();
+
 				Assert.That(Utils.GetBalance(walletManager, outputs[0].Asset), Is.EqualTo(outputs[0].Amount));
 
 
-				var result = walletManager.Spend(Key.Create().AddressAsString, outputs[0].Asset, outputs[0].Amount);
+				var result = walletManager.Spend(Key.Create().AddressAsString, outputs[0].Asset, outputs[0].Amount - 2);
 
 				Assert.That(result, Is.EqualTo(true));
+
+				addedEvent.Wait();
 			});
 		}
 

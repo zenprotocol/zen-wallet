@@ -28,10 +28,10 @@ namespace Wallet
 		public void Sync()
 		{
 			LogView.Clear();
-			OnNewBalance(App.Instance.Wallet.Load());
+			AddNewBalances(App.Instance.Wallet.Load());
 		}
 
-		public void OnNewBalance(HashDictionary<List<long>> balances)
+		public void AddNewBalances(HashDictionary<List<long>> balances)
 		{
 			if (LogView != null)
 			{
@@ -56,6 +56,30 @@ namespace Wallet
 				}
 			}
 		}
+
+		public void OnNewBalance(HashDictionary<long> balance)
+		{
+			if (LogView != null)
+			{
+				foreach (var item in balance)
+				{
+					var asset = item.Key;
+
+					var amount = item.Value;
+
+					LogView.AddLogEntryItem(new LogEntryItem(
+						(ulong)Math.Abs(amount),
+						amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+						AssetsHelper.Find(asset),
+						DateTime.Now,
+						Guid.NewGuid().ToString("N"),
+						Guid.NewGuid().ToString("N"),
+						0
+					));
+				}
+			}
+		}
+
 	}
 }
 
