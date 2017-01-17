@@ -32,14 +32,14 @@ namespace Wallet
 		{
 			this.Build ();
 
-			LogController.GetInstance().LogView = this;
+			BalancesController.GetInstance().LogView = this;
 
 			initList (listHeaders, FactorStore (new LogHeaderRow (0, Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listSummary, logSummaryStore);
 			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listTransactions, logEntryStore);
 
-			LogController.GetInstance().Sync();
+			BalancesController.GetInstance().Sync();
 
 			ExposeEvent += (object o, ExposeEventArgs args) => {
 				listSummaryHeader.Hide ();
@@ -150,7 +150,7 @@ namespace Wallet
 
 			LogSummaryRow logSummaryRow = (LogSummaryRow) logSummaryStore.GetValue (storeIter, 0);
 
-			Decimal value = (logEntryItem.Direction ==  DirectionEnum.Recieved ? 1 : -1) * logEntryItem.Amount;
+			Decimal value = 0;//(logEntryItem.Direction ==  DirectionEnum.Recieved ? 1 : -1) * logEntryItem.Amount;
 
 			logSummaryRow[value > 0 ? 1 : 0] += value;
 			logSummaryRow[2] += value;

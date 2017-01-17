@@ -22,10 +22,10 @@ namespace Zen
 		private WalletManager _WalletManager;
 		private NodeManager _NodeManager;
 
-		public void ResetWallet()
-		{
-			_WalletManager.Reset();
-		}
+		//public void ResetWallet()
+		//{
+		//	_WalletManager.Reset();
+		//}
 
 		internal void AddGenesisBlock()
 		{
@@ -89,7 +89,7 @@ namespace Zen
 		public void Start() {
 			new Thread(() =>
 			{
-				_NodeManager = new NodeManager(_BlockChain, Settings.EndpointOptions);
+				_NodeManager = _NodeManager ?? new NodeManager(_BlockChain, Settings.EndpointOptions);
 
 				switch (Settings.Mode.Value)
 				{

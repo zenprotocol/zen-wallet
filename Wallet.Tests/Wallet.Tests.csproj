@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A53B7BE6-504E-4F58-A27A-083618048C6D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Wallet.Tests</RootNamespace>
+    <AssemblyName>Wallet.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="WalletTests.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="TestBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Consensus\Consensus.fsproj">
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

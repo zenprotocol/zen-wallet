@@ -27,8 +27,8 @@ namespace Wallet
 			{
 				new AddKeyDialog(delegate {
 					App.Instance.Wallet.Sync();
-					LogController.GetInstance().Sync();
-					WalletController.GetInstance().Sync();
+					BalancesController.GetInstance().Sync();
+					WalletController.GetInstance().Load();
 				}).ShowDialog();
 			};
 		}

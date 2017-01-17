@@ -155,7 +155,7 @@ namespace BlockChain.Tests
 				//System.Buffer.BlockCopy(
 				//System.Array.Copy(
 				byte[] outputKey = new byte[txHash.Length + 1];
-				txHash.CopyTo(outputKey, 1);
+				txHash.CopyTo(outputKey, 0);
 				outputKey[txHash.Length] = (byte)index;
 
 				utxoStore.Put(context, new Keyed<Consensus.Types.Output>(outputKey, output));

@@ -71,6 +71,14 @@ namespace Store
 			}
 		}
 
+		public void RemoveAll(TransactionContext transactionContext)
+		{
+			foreach (var row in transactionContext.Transaction.SelectForward<byte[], byte[]>(_TableName))
+			{
+				transactionContext.Transaction.RemoveKey<byte[]>(_TableName, row.Key);
+			}
+		}
+
 		protected abstract byte[] Pack(T item);
 		protected abstract T Unpack(byte[] data, byte[] key);
 	}
