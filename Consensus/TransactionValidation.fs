@@ -116,7 +116,7 @@ let isNotLessThan (ml:Map<'K,uint64>) (mr:Map<'K,_>) =
         )
 
 
-let CoinbaseValidate ptx feeMap claimableSacMap reward =
+let validateCoinbase ptx feeMap claimableSacMap reward =
    let allCoinbase = lazy (
        (ptx.pInputs, ptx.witnesses) ||>
        List.forall2 (fun inp wit ->
@@ -244,3 +244,50 @@ let signTx (tx:Transaction) outputkeys =
         outputkeys
     {tx with witnesses=witnesses}
 
+
+let checkHeader (header:BlockHeader) =
+    // No additional checks until first soft-fork
+    true
+
+let uncompressDifficulty pdiff =
+    // get high byte, shift right, use as byte offset
+    // get low bits, use as 'significand'
+    let lshift = ((pdiff &&& 0xff000000u) >>> 24) - 3u
+    let rshift = int <| 31u - lshift //index of low order byte
+    let diff = Array.zeroCreate(32)
+    diff.[rshift] <- byte (pdiff &&& 0xffu)
+    diff.[rshift-1] <- byte ((pdiff &&& 0xff00u) >>> 8)
+    diff.[rshift-2] <- byte ((pdiff &&& 0xff0000u) >>> 16)
+    diff
+
+let checkPOW (header:BlockHeader) consensusDifficulty =
+    if header.pdiff <> consensusDifficulty then false
+    else
+        let blockID = blockHeaderHasher header
+        let target = uncompressDifficulty header.pdiff
+        blockID <= target
+
+let transactionMR cTW txs =
+    merkleRoot cTW transactionHasher txs
+
+let checkTransactionMerkleRoot block =
+    let cTW = block.header.parent
+    let txs = block.transactions
+    block.header.txMerkleRoot = transactionMR cTW txs
+
+let checkWitnessMerkleRoot block =
+    //stub
+    true
+
+let checkContractMerkleRoot block =
+    //stub
+    true
+
+type BlockContext = {difficulty: uint32}
+
+let validateBlock blockcontext (block:Block) =
+   checkHeader block.header &&
+   checkPOW block.header blockcontext.difficulty &&
+   checkTransactionMerkleRoot block &&
+   checkWitnessMerkleRoot block &&
+   checkContractMerkleRoot block

@@ -71,7 +71,7 @@ let transactionHasher = taggedHash Transaction
 let outputLockHasher = taggedHash OutputLock
 let spendHasher = taggedHash Spend
 let outpointHasher = taggedHash Outpoint
-let outputHasher = taggedHash Outpoint
+let outputHasher = taggedHash Output
 let contractHasher = taggedHash Contract
 let extendedContractHasher = taggedHash ExtendedContract
 let blockHeaderHasher = taggedHash BlockHeader
@@ -112,27 +112,18 @@ let bytesToBits (bs:byte[]) =
     ba.CopyTo(ret,0)
     ret
 
-
-type Digest = {digest: byte[]; isDefault: bool}
-
-let leafHash cTW (wrapper:'T->Hashable) defaultHashes = 
-    let typeTag = tag << wrapper <| Unchecked.defaultof<'T>
-    let hasher = fun (x:'T) b ->
-        innerHashList [cTW; typeTag; serialize x; bitsToBytes b]
-    function
-    | {data = None; location={height=h}} -> {digest=defaultHashes h; isDefault=true}
-    | {data = Some x; location={loc=b}} -> {digest=hasher x b; isDefault=false}
-
-let branchHash defaultHashes = fun branchData dL dR ->
-    match branchData.location ,dL, dR with
-    | {height=h}, {isDefault=true}, {isDefault=true} ->
-        {digest = defaultHashes h; isDefault=true}
-    | {height=h;loc=b}, _, _ ->
-        {
-            digest = innerHashList [dL.digest;dR.digest;bitsToBytes b;toBytes h];
-            isDefault=false;
-        }
-
-let merkleRoot cTW wrapper =
+let merkleRoot cTW hasher items =
     let defaultHashes = defaultHash cTW
-    cata (leafHash cTW wrapper defaultHashes) (branchHash defaultHashes)                                                 
+    let leaves = List.map hasher items
+    let rec recursiveRoot innerList height = 
+        match List.length innerList with
+        | 1 -> innerList.Head
+        | n ->
+            let pairs =
+                if n%2 = 0 then
+                    List.chunkBySize 2 innerList
+                else
+                    List.chunkBySize 2 (innerList @ [defaultHashes height])  // this stinks
+            let nextList = List.map (fun p -> innerHashList p) pairs
+            recursiveRoot nextList (height+1)
+    recursiveRoot leaves 0
