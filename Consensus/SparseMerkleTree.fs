@@ -173,3 +173,5 @@ let optAuditSMT smt key  =
     let location = baseLocation
     let kvm = Map.map (fun _ y -> smt.serializer y) smt.kv
     optAudit smt.cTW kvm smt.digests smt.defaultDigests location key 
+
+
