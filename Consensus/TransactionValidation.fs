@@ -255,9 +255,13 @@ let uncompressDifficulty pdiff =
     let lshift = ((pdiff &&& 0xff000000u) >>> 24) - 3u
     let rshift = int <| 31u - lshift //index of low order byte
     let diff = Array.zeroCreate(32)
-    diff.[rshift] <- byte (pdiff &&& 0xffu)
-    diff.[rshift-1] <- byte ((pdiff &&& 0xff00u) >>> 8)
-    diff.[rshift-2] <- byte ((pdiff &&& 0xff0000u) >>> 16)
+    if pdiff <> 0u then
+        diff.[rshift] <- byte (pdiff &&& 0xffu)
+        diff.[rshift-1] <- byte ((pdiff &&& 0xff00u) >>> 8)
+        diff.[rshift-2] <- byte ((pdiff &&& 0xff0000u) >>> 16)
+    else
+        let mdiff = Array.create 32 0xffuy
+        mdiff.CopyTo (diff, 0)
     diff
 
 let checkPOW (header:BlockHeader) consensusDifficulty =
