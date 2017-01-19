@@ -1,3 +1,5 @@
 *.userprefs
 packages
 .vs
+UsingFSharp/
+
