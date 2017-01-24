@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using Store;
 using BlockChain.Store;
 using Consensus;
-using Infrastructure;
 
 namespace BlockChain
 {
-	public class BlockChainAddTransactionOperation
+	public class AddTx
 	{
-		private readonly TransactionContext _TransactionContext;
-		private readonly Keyed<Types.Transaction> _NewTransaction; //TODO: or just use var key
-		private readonly TxMempool _TxMempool;
-		private readonly TxStore _TxStore;
-		private readonly UTXOStore _UTXOStore;
+		private readonly BlockChain _BlockChain;
 		private Dictionary<Types.Outpoint, InputLocationEnum> _InputLocations;
+		private Keyed<Types.Transaction> _Tx;
+		private TransactionContext _DbTx;
+		private readonly List<Action> _DoActions;
+		private readonly List<Action> _UndoActions;
 
 		private enum InputLocationEnum
 		{
@@ -29,20 +28,20 @@ namespace BlockChain
 			Rejected
 		}
 
-		public BlockChainAddTransactionOperation(
-			TransactionContext transactionContext, 
-			Keyed<Types.Transaction> transaction, 
-			TxMempool txMempool, 
-			TxStore txStore, 
-			UTXOStore utxoStore
+		public AddTx(
+			BlockChain blockChain, 
+       		TransactionContext dbTx, 
+			Keyed<Types.Transaction> tx,
+			List<Action> doActions,
+			List<Action> undoActions
 		)
 		{
+			_DoActions = doActions;
+			_UndoActions = undoActions;
+			_BlockChain = blockChain;
+			_Tx = tx;
+			_DbTx = dbTx;
 			_InputLocations = new Dictionary<Types.Outpoint, InputLocationEnum>();
-			_TransactionContext = transactionContext;
-			_NewTransaction = transaction;
-			_TxMempool = txMempool;
-			_TxStore = txStore;
-			_UTXOStore = utxoStore;
 		}
 
 		public Result Start()
@@ -62,7 +61,7 @@ namespace BlockChain
 			if (IsOrphan())
 			{
 				BlockChainTrace.Information("Added as orphan");
-				_TxMempool.Add(_NewTransaction, true);
+				_BlockChain.TxMempool.Add(_Tx, true);
 				return Result.AddedOrphan;
 			}
 
@@ -84,17 +83,19 @@ namespace BlockChain
 			//TODO: 8. Validate each input. If fails, reject
 
 			BlockChainTrace.Information("Transaction added to mempool");
-			_TxMempool.Add(_NewTransaction);
+			_BlockChain.TxMempool.Add(_Tx);
+			_DoActions.Add(() => TxAddedMessage.Publish(_Tx, false));
+			_UndoActions.Add(() => _BlockChain.TxMempool.Remove(_Tx.Key));
 
-			foreach (var transaction in _TxMempool.GetOrphansOf(_NewTransaction)) 
+			foreach (var transaction in _BlockChain.TxMempool.GetOrphansOf(_Tx)) 
 			{
 				BlockChainTrace.Information("Start with orphan");
-				new BlockChainAddTransactionOperation(
-					_TransactionContext, 
-					transaction, 
-					_TxMempool,
-					_TxStore,
-					_UTXOStore
+				new AddTx(
+					_BlockChain,
+					_DbTx,
+					_Tx,
+					_DoActions,
+					_UndoActions
 				).Start();
 			}
 
@@ -108,7 +109,7 @@ namespace BlockChain
 
 		private bool IsInMempool()
 		{
-			var result = _TxMempool.ContainsKey(_NewTransaction.Key);
+			var result = _BlockChain.TxMempool.ContainsKey(_Tx.Key);
 
 			BlockChainTrace.Information($"IsInMempool = {result}");
 
@@ -117,7 +118,7 @@ namespace BlockChain
 
 		private bool IsInTxStore()
 		{
-			var result = _TxStore.ContainsKey(_TransactionContext, _NewTransaction.Key);
+			var result = _BlockChain.TxStore.ContainsKey(_DbTx, _Tx.Key);
 
 			BlockChainTrace.Information($"IsInTxStore = {result}");
 
@@ -126,9 +127,9 @@ namespace BlockChain
 
 		private bool IsMempoolContainsSpendingInput()
 		{
-			foreach (var inputs in _NewTransaction.Value.inputs)
+			foreach (var inputs in _Tx.Value.inputs)
 			{
-				if (_TxMempool.ContainsInputs(_NewTransaction))
+				if (_BlockChain.TxMempool.ContainsInputs(_Tx))
 				{
 					return true;
 				}
@@ -139,13 +140,13 @@ namespace BlockChain
 
 		private bool IsOrphan()
 		{
-			foreach (var input in _NewTransaction.Value.inputs)
+			foreach (var input in _Tx.Value.inputs)
 			{
-				if (_TxMempool.ContainsKey(input.txHash))
+				if (_BlockChain.TxMempool.ContainsKey(input.txHash))
 				{
 					_InputLocations[input] = InputLocationEnum.Mempool;
 				}
-				else if (_TxStore.ContainsKey(_TransactionContext, input.txHash))
+				else if (_BlockChain.TxStore.ContainsKey(_DbTx, input.txHash))
 				{
 					_InputLocations[input] = InputLocationEnum.TxStore;
 				}
@@ -159,7 +160,7 @@ namespace BlockChain
 
 		private bool IsValidInputs()
 		{
-			foreach (var input in _NewTransaction.Value.inputs)
+			foreach (var input in _Tx.Value.inputs)
 			{
 				if (!ParentOutputExists(input))
 				{
@@ -179,9 +180,9 @@ namespace BlockChain
 
 		private bool IsValidPointedInputs()
 		{
-//			var pointedTransaction = Consensus.TransactionValidation.toPointedTransaction (_NewTransaction, _NewTransaction.Value.inputs);
+//			var pointedTransaction = Consensus.TransactionValidation.toPointedTransaction (_Tx, _Tx.Value.inputs);
 //
-//			for (int i=0; i<_NewTransaction.Value.inputs.Length; i++)
+//			for (int i=0; i<_Tx.Value.inputs.Length; i++)
 //			{
 //				if (!Consensus.TransactionValidation.validateAtIndex (pointedTransaction, i))
 //					return false;
@@ -197,10 +198,10 @@ namespace BlockChain
 			switch (_InputLocations[input])
 			{
 				case InputLocationEnum.Mempool:
-					parentTransaction = _TxMempool.Get(input.txHash);
+					parentTransaction = _BlockChain.TxMempool.Get(input.txHash);
 					break;
 				case InputLocationEnum.TxStore:
-					parentTransaction = _TxStore.Get(_TransactionContext, input.txHash);
+					parentTransaction = _BlockChain.TxStore.Get(_DbTx, input.txHash);
 					break;
 			}
 
@@ -219,7 +220,7 @@ namespace BlockChain
 			input.txHash.CopyTo(newArray, 0);
 			newArray[input.txHash.Length] = (byte)input.index;
 
-			if (_InputLocations[input] == InputLocationEnum.TxStore && !_UTXOStore.ContainsKey(_TransactionContext, newArray))
+			if (_InputLocations[input] == InputLocationEnum.TxStore && !_BlockChain.UTXOStore.ContainsKey(_DbTx, newArray))
 			{
 				BlockChainTrace.Information("Output has been spent");
 				return true;
@@ -229,3 +230,29 @@ namespace BlockChain
 		}
 	}
 }
+
+
+//public static class BlockChainExtensions
+//{
+//	private static string TX = "tx";
+
+//	//public static void WithBlockChain(this Types.Transaction tx)
+//	//{
+//	//	FieldEx<Types.Transaction, TxMempool>.Set(tx, new TxMempool());
+//	//}
+
+//	public static bool IsInMempool(this Types.Transaction tx)
+//	{
+//		return FieldEx<Types.Transaction, TxMempool>.Get(tx).ContainsKey(tx.GetHash());
+//	}
+
+//	private static bool IsInStore(this Types.Transaction tx, DBreeze.Transactions.Transaction dbTx)
+//	{
+//		return dbTx.Select<byte[], byte[]>(TX, tx.GetHash()).Exists;
+//	}
+//	//public static bool IsInMempool(this Types.Transaction transaction, DBreeze.Transaction dbTransaction)
+//	//{
+
+//	//	return BlockChain.TxMempool.ContainsKey(_Tx.Key);
+//	//}
+//}

@@ -45,7 +45,7 @@ namespace BlockChain.Store
 			transactionContext.Transaction.Insert<byte[], byte[]>(BLOCK_REFS_TABLE, newKey, item.Key);
 		}
 
-		public IEnumerable<Keyed<Types.Block>> GetOrphansOf(TransactionContext transactionContext, Keyed<Types.Block> item)
+		public IEnumerable<Keyed<Types.Block>> OrphansOf(TransactionContext transactionContext, Keyed<Types.Block> item)
 		{
 			var result = new List<Keyed<Types.Block>>();
 

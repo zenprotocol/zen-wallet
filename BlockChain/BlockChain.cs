@@ -7,26 +7,55 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.FSharp.Collections;
 using System.Linq;
+using BlockChain.Data;
+using NUnit.Framework;
+using System.IO;
 
 namespace BlockChain
 {
+	public class TxAddedMessage
+	{
+		public Keyed<Types.Transaction> Tx { get; set; }
+		public bool IsConfirmed { get; set; }
+
+		public static void Publish(Keyed<Types.Transaction> tx, bool isConfirmed)
+		{
+			MessageProducer<TxAddedMessage>.Instance.PushMessage(new TxAddedMessage()
+			{
+				Tx = tx,
+				IsConfirmed = isConfirmed
+			});
+		}
+	}
+
+	public class BkAddedMessage
+	{
+		public Keyed<Types.Block> Bk { get; set; }
+
+		public static void Publish(Keyed<Types.Block> bk)
+		{
+			MessageProducer<BkAddedMessage>.Instance.PushMessage(new BkAddedMessage()
+			{
+				Bk = bk
+			});
+		}
+	}
+
 	public class BlockChain : ResourceOwner
 	{
 		private readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
 		public TxMempool TxMempool { get; private set; }
+		public UTXOStore UTXOStore { get; private set; }
 		public TxStore TxStore { get; private set; }
-		private readonly UTXOStore _UTXOStore;
-		private readonly MainBlockStore _MainBlockStore;
-		private readonly BranchBlockStore _BranchBlockStore;
-		private readonly OrphanBlockStore _OrphanBlockStore;
-	//	private readonly BlockStore _GenesisBlockStore;
-		private readonly DBContext _DBContext;
-		private readonly BlockDifficultyTable _BlockDifficultyTable;
-		private readonly ChainTip _ChainTip;
-		private readonly byte[] _GenesisBlockHash;
-
-//		public event Action<Types.Transaction> OnAddedToMempool;
-//		public event Action<Types.Transaction> OnAddedToStore;
+		public MainBlockStore MainBlockStore { get; private set; }
+		public BranchBlockStore BranchBlockStore { get; private set; }
+		public OrphanBlockStore OrphanBlockStore { get; private set; }
+		public ContractStore ContractStore { get; private set; }
+ 		private readonly DBContext _DBContext;
+		public BlockDifficultyTable BlockDifficultyTable { get; private set; }
+		public ChainTip ChainTip { get; private set; }
+		public BlockTimestamps Timestamps { get; private set; }
+		public byte[] GenesisBlockHash { get; private set; }
 
 		public bool IsTipOld //TODO: consider caching
 		{
@@ -54,9 +83,9 @@ namespace BlockChain
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				var chainTip = _ChainTip.Context(context).Value;
+				var chainTip = ChainTip.Context(context).Value;
 
-				return chainTip == null ? null : _MainBlockStore.Get(context, chainTip);
+				return chainTip == null ? null : MainBlockStore.Get(context, chainTip);
 			}
 		}
 
@@ -72,13 +101,15 @@ namespace BlockChain
 			_DBContext = new DBContext(dbName);
 			TxMempool = new TxMempool();
 			TxStore = new TxStore();
-			_UTXOStore = new UTXOStore();
-			_MainBlockStore = new MainBlockStore();
-			_BranchBlockStore = new BranchBlockStore();
-			_OrphanBlockStore = new OrphanBlockStore();
-			_BlockDifficultyTable = new BlockDifficultyTable();
-			_ChainTip = new ChainTip();
-			_GenesisBlockHash = genesisBlockHash;// GetGenesisBlock().Key;
+			UTXOStore = new UTXOStore();
+			MainBlockStore = new MainBlockStore();
+			BranchBlockStore = new BranchBlockStore();
+			OrphanBlockStore = new OrphanBlockStore();
+			ContractStore = new ContractStore();
+			BlockDifficultyTable = new BlockDifficultyTable();
+			ChainTip = new ChainTip();
+			Timestamps = new BlockTimestamps();
+			GenesisBlockHash = genesisBlockHash;// GetGenesisBlock().Key;
 
 			OwnResource(_DBContext);
 			//OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
@@ -98,60 +129,60 @@ namespace BlockChain
 
 			Tip = GetTip();
 
+			InitBlockTimestamps();
+		}
+
+		void InitBlockTimestamps()
+		{
 			if (Tip != null)
 			{
-				//var currentBlockChain = new Stack<Types.Block>();
-
+				var timestamps = new List<long>();
 				var itr = Tip == null ? null : Tip.Value;
 
-				int blocks = 0;
-
-				while (itr != null)
+				while (itr != null && timestamps.Count < BlockTimestamps.SIZE)
 				{
-				//	currentBlockChain.Push(itr);
+					timestamps.Add(itr.header.timestamp);
 					itr = GetBlock(itr.header.parent);
-					blocks++;
 				}
-
-				BlockChainTrace.Information("blocks: " + blocks);
-
-				//BlockChainTrace.Information("Genesis is:\n" + System.Convert.ToBase64String(_GenesisBlockHash));
-
-				//var sb = new StringBuilder();
-				//sb.AppendLine("Current chain:");
-
-				//while (currentBlockChain.Count != 0)
-				//{
-				//	itr = currentBlockChain.Pop();
-				//	sb.AppendLine(System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(itr.header)));
-				//}
-
-				//BlockChainTrace.Information(sb.ToString());
+				Timestamps.Init(timestamps.ToArray());
 			}
 		}
 
-		public BlockChainAddBlockOperation.Result HandleNewBlock(Types.Block block) //TODO: use Keyed type
+		public AddBk.Result HandleNewBlock(Types.Block block) //TODO: use Keyed type
 		{
+			var doActions = new List<Action>();
+			var undoActions = new List<Action>();
+
 			//var _block = new Keyed<Types.Block>(Merkle.blockHasher.Invoke(block), block);
 			var _block = new Keyed<Types.Block>(Merkle.blockHeaderHasher.Invoke(block.header), block);
 
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				var result = new BlockChainAddBlockOperation(
+				var result = new AddBk(
+					this,
 					context,
 					_block,
-					_MainBlockStore,
-					_BranchBlockStore,
-					_OrphanBlockStore,
-				//	_GenesisBlockStore,
-					TxMempool,
-					TxStore,
-					_UTXOStore,
-					_ChainTip,
-					_GenesisBlockHash
+					doActions,
+					undoActions
 				).Start();
 
-				context.Commit();
+				if (result != AddBk.Result.Rejected &&
+					result != AddBk.Result.ChangeOverRejected)
+				{
+					context.Commit();
+					foreach (Action action in doActions)
+						action();
+				}
+				else
+				{
+					if (result != AddBk.Result.ChangeOverRejected)
+					{
+						InitBlockTimestamps();
+					}
+
+					foreach (Action action in undoActions)
+						action();
+				}
 
 				//TODO: only do that if tip has changed
 				Tip = GetTip();
@@ -164,28 +195,50 @@ namespace BlockChain
 
 		public bool HandleNewTransaction(Types.Transaction transaction) //TODO: use Keyed type
 		{
+			var doActions = new List<Action>();
+			var undoActions = new List<Action>();
+
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				var result = new BlockChainAddTransactionOperation(
+				var result = new AddTx(
+					this,
 					context,
 					new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction),
-					TxMempool,
-					TxStore,
-					_UTXOStore
+					doActions,
+					undoActions
 				).Start();
 
-				context.Commit();
+				if (result != AddTx.Result.Rejected)
+				{
+					context.Commit(); //TODO: don't need to commit if added to mempool
+					foreach (Action action in doActions)
+						action();
+					return true;
+				}
+				else
+				{
+					foreach (Action action in undoActions)
+						action();
+					return false;
+				}
+			}
+		}
 
-				return result != BlockChainAddTransactionOperation.Result.Rejected;
-				//switch (result)
-				//{
-				//	case BlockChainAddTransactionOperation.Result.Added:
-				//		break;
-				//	case BlockChainAddTransactionOperation.Result.AddedOrphan:
-				//		break;
-				//	case BlockChainAddTransactionOperation.Result.Rejected:
-				//		break;
-				//}
+		public bool HandleNewContract(Types.Contract contract)
+		{
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				var contractHash = ContractHelper.Compile(contract.code);
+
+				if (contractHash != null)
+				{
+					ContractStore.Put(context, new Keyed<Types.Contract>(contractHash, contract));
+					context.Commit();
+
+					return true;
+				}
+
+				return false;
 			}
 		}
 
@@ -213,7 +266,7 @@ namespace BlockChain
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				var bk = _MainBlockStore.Get(context, key);
+				var bk = MainBlockStore.Get(context, key);
 
 				return bk == null ? null : bk.Value;
 			}
@@ -223,7 +276,7 @@ namespace BlockChain
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				return _UTXOStore.All(context).ToList();
+				return UTXOStore.All(context).ToList();
 			}
 		}
 
@@ -273,6 +326,7 @@ namespace BlockChain
 			var blockHeader = new Types.BlockHeader(
 				version,
 				Tip.Key,
+				0,
 				new byte[] { },
 				new byte[] { },
 				new byte[] { },
@@ -284,7 +338,7 @@ namespace BlockChain
 
 			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions.Select(t => t.Value)));
 
-			if (HandleNewBlock(newBlock) == BlockChainAddBlockOperation.Result.Added)
+			if (HandleNewBlock(newBlock) == AddBk.Result.Added)
 			{
 				return newBlock;
 			}
@@ -313,5 +367,87 @@ namespace BlockChain
 
 		//	return result + GetDifficultyRecursive(context, parentBlock);
 		//}
+	}
+
+	[TestFixture()]
+	public class BlockChainTests
+	{
+		private readonly Random _Random = new Random();
+		private BlockChain _BlockChain;
+		private const string DB = "temp";
+		private Keyed<Types.Block> _GenesisBlock;
+
+		[SetUp]
+		public void RunOnceBeforeEachTest()
+		{
+			Dispose();
+			_GenesisBlock = GetBlock();
+			_BlockChain = new BlockChain(DB, _GenesisBlock.Key);
+		}
+
+		[TestFixtureTearDown]
+		public void Dispose()
+		{
+			if (_BlockChain != null)
+			{
+				_BlockChain.Dispose();
+			}
+
+			if (Directory.Exists(DB))
+			{
+				Directory.Delete(DB, true);
+			}
+		}
+
+		[Test()]
+		public void ShouldReorderBlockChain()
+		{
+			var block1 = GetBlock(_GenesisBlock);
+			var block2 = GetBlock(block1);
+			var block3 = GetBlock(block2);
+			var block4 = GetBlock(block3);
+			var sideBlock1 = GetBlock(block1);
+			var sideBlock2 = GetBlock(sideBlock1);
+			var sideBlock3 = GetBlock(sideBlock2);
+
+			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block1.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block2.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block3.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block4.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(sideBlock1.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(sideBlock2.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(sideBlock3.Value), Is.EqualTo(AddBk.Result.Added));
+		}
+
+		private Keyed<Types.Block> GetBlock(Keyed<Types.Block> parent)
+		{
+			return GetBlock(parent.Key);
+		}
+
+		private Keyed<Types.Block> GetBlock(byte[] parent = null)
+		{
+			var nonce = new byte[10];
+
+			_Random.NextBytes(nonce);
+
+			var header = new Types.BlockHeader(
+				0,
+				parent ?? new byte[] { },
+				0,
+				new byte[] { },
+				new byte[] { },
+				new byte[] { },
+				ListModule.OfSeq<byte[]>(new List<byte[]>()),
+				DateTime.Now.ToFileTimeUtc(),
+				0,
+				nonce
+			);
+
+			var block = new Types.Block(header, ListModule.OfSeq<Types.Transaction>(new List<Types.Transaction>()));
+			var key = Merkle.blockHeaderHasher.Invoke(header);
+
+			return new Keyed<Types.Block>(key, block);
+		}
 	}
 }
