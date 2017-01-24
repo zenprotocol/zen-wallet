@@ -264,6 +264,18 @@ let uncompressDifficulty pdiff =
         mdiff.CopyTo (diff, 0)
     diff
 
+let difficultyAsDouble diff =
+    let mutable ret : double = 0.0
+    Array.iteri <|
+        (fun i -> fun (b:byte) ->
+            (ret <- ret + (double)b * (pown 2.0 (8*(31 - i))))
+        ) <|
+        diff
+    ret
+
+let totalWork oldTotal currentDiff =
+    oldTotal + (pown 2.0 256)/(difficultyAsDouble currentDiff)
+
 let checkPOW (header:BlockHeader) consensusDifficulty =
     if header.pdiff <> consensusDifficulty then false
     else
