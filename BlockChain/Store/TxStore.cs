@@ -8,29 +8,13 @@ namespace BlockChain.Store
 {
 	public class TxStore : ConsensusTypeStore<Types.Transaction>
 	{
-		//public event Action<Types.Transaction> OnAdded;
-
-		public class AddedMessage { public Keyed<Types.Transaction> Transaction { get; set; } }
-
-		private static MessageProducer<AddedMessage> _Producer = MessageProducer<AddedMessage>.Instance;
-
-		//	private UTXOStore _UTXOStore;
-
 		public TxStore() : base("tx")
 		{
-	//		_UTXOStore = new UTXOStore();
 		}
-
 
 		public new void Put(TransactionContext transactionContext, Keyed<Types.Transaction> item)
 		{
 			base.Put(transactionContext, item);
-
-			//if (OnAdded != null)
-			//{
-			//	OnAdded(item.Value);
-			//}
-			_Producer.PushMessage(new AddedMessage() { Transaction = item });
 		}
 
 		//	for (int i = 0; i < item.Value.outputs.Length; i++)

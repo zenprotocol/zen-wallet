@@ -46,21 +46,21 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BlockChain.cs" />
-    <Compile Include="BlockChainAddTransactionOperation.cs" />
+    <Compile Include="AddTx.cs" />
     <Compile Include="Store\BlockDifficultyTable.cs" />
     <Compile Include="Store\BlockStore.cs" />
     <Compile Include="Data\HashDictionary.cs" />
     <Compile Include="Store\TxMempool.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Store\UTXOStore.cs" />
-    <Compile Include="Data\MiroringCache.cs" />
-    <Compile Include="Data\Block.cs" />
     <Compile Include="BlockChainTrace.cs" />
-    <Compile Include="Data\KeyedTransaction.cs" />
     <Compile Include="Store\ConsensusTypeStore.cs" />
-    <Compile Include="BlockChainAddBlockOperation.cs" />
-    <Compile Include="Store\_UTXOStore.cs" />
+    <Compile Include="AddBk.cs" />
     <Compile Include="Store\ChainTip.cs" />
+    <Compile Include="ContractHelper.cs" />
+    <Compile Include="Store\ContractStore.cs" />
+    <Compile Include="Data\BlockTimestamps.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -78,6 +78,10 @@
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Consensus.Extentions\Consensus.Extentions.csproj">
+      <Project>{02031D31-CA92-4EF0-93A9-0D345FCB7F77}</Project>
+      <Name>Consensus.Extentions</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
