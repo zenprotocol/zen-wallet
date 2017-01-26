@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Store;
-using BlockChain.Store;
 using Consensus;
 
 namespace BlockChain
@@ -118,7 +117,7 @@ namespace BlockChain
 
 		private bool IsInTxStore()
 		{
-			var result = _BlockChain.TxStore.ContainsKey(_DbTx, _Tx.Key);
+			var result = _BlockChain.BlockStore.TxStore.ContainsKey(_DbTx, _Tx.Key);
 
 			BlockChainTrace.Information($"IsInTxStore = {result}");
 
@@ -146,7 +145,7 @@ namespace BlockChain
 				{
 					_InputLocations[input] = InputLocationEnum.Mempool;
 				}
-				else if (_BlockChain.TxStore.ContainsKey(_DbTx, input.txHash))
+				else if (_BlockChain.BlockStore.TxStore.ContainsKey(_DbTx, input.txHash))
 				{
 					_InputLocations[input] = InputLocationEnum.TxStore;
 				}
@@ -201,7 +200,7 @@ namespace BlockChain
 					parentTransaction = _BlockChain.TxMempool.Get(input.txHash);
 					break;
 				case InputLocationEnum.TxStore:
-					parentTransaction = _BlockChain.TxStore.Get(_DbTx, input.txHash);
+					parentTransaction = _BlockChain.BlockStore.TxStore.Get(_DbTx, input.txHash);
 					break;
 			}
 
@@ -230,29 +229,3 @@ namespace BlockChain
 		}
 	}
 }
-
-
-//public static class BlockChainExtensions
-//{
-//	private static string TX = "tx";
-
-//	//public static void WithBlockChain(this Types.Transaction tx)
-//	//{
-//	//	FieldEx<Types.Transaction, TxMempool>.Set(tx, new TxMempool());
-//	//}
-
-//	public static bool IsInMempool(this Types.Transaction tx)
-//	{
-//		return FieldEx<Types.Transaction, TxMempool>.Get(tx).ContainsKey(tx.GetHash());
-//	}
-
-//	private static bool IsInStore(this Types.Transaction tx, DBreeze.Transactions.Transaction dbTx)
-//	{
-//		return dbTx.Select<byte[], byte[]>(TX, tx.GetHash()).Exists;
-//	}
-//	//public static bool IsInMempool(this Types.Transaction transaction, DBreeze.Transaction dbTransaction)
-//	//{
-
-//	//	return BlockChain.TxMempool.ContainsKey(_Tx.Key);
-//	//}
-//}
