@@ -3,11 +3,7 @@ using BlockChain.Store;
 using Consensus;
 using System;
 using System.Linq;
-using BlockChain.Data;
 using System.Collections.Generic;
-using NUnit.Framework;
-using Microsoft.FSharp.Collections;
-using Infrastructure;
 
 namespace BlockChain
 {
@@ -15,31 +11,21 @@ namespace BlockChain
 	{
 		private readonly BlockChain _BlockChain;
 		private readonly TransactionContext _DbTx;
-		private readonly Keyed<Types.Block> _Bk; //TODO: or just use var key
+		private readonly Keyed<Types.Block> _Bk;
 		private readonly List<Action> _DoActions;
 		private readonly List<Action> _UndoActions;
-
-		private enum PlacementEnum
-		{
-			Genesis,
-			Main,
-			Branch,
-			BranchChangeOver,
-			Orphans
-		}
 
 		public enum Result
 		{
 			Added,
 			AddedOrphan,
-			Rejected,
-			ChangeOverRejected
+			Rejected
 		}
 
 		public AddBk(
 			BlockChain blockChain,
 			TransactionContext dbTx,
-		   	Keyed<Types.Block> bk,
+			Keyed<Types.Block> bk,
 			List<Action> doActions,
 			List<Action> undoActions
 		)
@@ -51,7 +37,8 @@ namespace BlockChain
 			_DbTx = dbTx;
 		}
 
-		public Result Start(bool IsOrphan = false, bool IsSideChain = false)
+
+		public Result Start(bool handleOrphan = false, bool handleBranch = false)
 		{
 			if (!IsValid())
 			{
@@ -59,18 +46,35 @@ namespace BlockChain
 				return Result.Rejected;
 			}
 
-			if (IsInMainOrBranchStore())
+			if (IsInStore())
 			{
-				BlockChainTrace.Information("block already in main/branch store");
-				return Result.Rejected;
-			}
+				var reject = false;
 
-			if (!IsOrphan && IsInOrphanStore())
-			{
-				BlockChainTrace.Information("block already in store");
-				return Result.Rejected;
-			}
+				switch (_BlockChain.BlockStore.GetLocation(_DbTx, _Bk.Key))
+				{
+					case LocationEnum.Branch:
+						reject = !handleBranch;
+						break;
+					case LocationEnum.Orphans:
+						reject = !handleOrphan;
+						break;
+					default:
+						reject = true;
+						break;
+				}
 
+				if (reject)
+				{
+					BlockChainTrace.Information("block already in store");
+					return Result.Rejected;
+				}
+
+				if (!handleBranch || (handleBranch && !_BlockChain.BlockStore.IsLocation(_DbTx, _Bk.Key, LocationEnum.Branch)))
+				{
+					BlockChainTrace.Information("block already in store");
+					return Result.Rejected;
+				}
+			}
 
 			//TODO:
 			/*
@@ -84,61 +88,58 @@ namespace BlockChain
 			10. Verify Merkle hash
 			*/
 
-			var placement = DeterminePlacement();
-
-			if (placement == PlacementEnum.Orphans)
+			if (IsGenesis())
 			{
-				_BlockChain.OrphanBlockStore.Put(_DbTx, _Bk);
+				if (!IsGenesisValid())
+				{
+					BlockChainTrace.Information("invalid genesis block");
+					return Result.Rejected;
+				}
+				else
+				{
+					_BlockChain.Timestamps.Init(_Bk.Value.header.timestamp);
+					AddToMainBlockStore(0);
+					_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
+					return Result.Added;
+				}
+			}
+
+			if (IsOrphan())
+			{
+				_BlockChain.BlockStore.Put(_DbTx, _Bk, LocationEnum.Orphans, 0);
 				BlockChainTrace.Information("added as orphan");
 				return Result.AddedOrphan;
-				//TODO: query peer we got this from for 1st missing orphan block in prev chain
 			}
 
 			//12. Check that nBits value matches the difficulty rules
 
-			if (placement != PlacementEnum.Genesis)
+			if (!IsValidDifficulty() || !IsValidBlockNumber() || !IsValidTimeStamp())
 			{
-				if (!IsValidDifficulty())
-				{
-					BlockChainTrace.Information("invalid difficulty");
-					return Result.Rejected;
-				}
-
-				if (!IsValidTimeStamp())
-				{
-					BlockChainTrace.Information("invalid timestamp");
-					return Result.Rejected;
-				}
+				return Result.Rejected;
 			}
+
+			if (!IsTransactionsValid(_Bk.Key))
+			{
+				return Result.Rejected;
+			}
+
 			//14. For certain old blocks(i.e.on initial block download) check that hash matches known values
 
-			switch (placement)
-			{
-				case PlacementEnum.Genesis:
-					if (!IsGenesisValid(_Bk.Value))
-					{
-						return Result.Rejected;
-					}
-					_BlockChain.Timestamps.Init(_Bk.Value.header.timestamp);
-					AddToMainBlockStore();
-					break;
-				case PlacementEnum.Main:
-					if (!IsTransactionsValid(_Bk.Value))
-					{
-						return Result.Rejected;
-					}
-					//Reject if coinbase value > sum of block creation fee and transaction fees
+			var totalWork = TotalWork();
 
-					//For each transaction, "Add to wallet if mine"
-					AddToMainBlockStore();
-					break;
-					//Relay block to our peers
-				case PlacementEnum.BranchChangeOver:
-					foreach (var block in Utils.BlocksList(
-						_Bk, 
-						_BlockChain.ChainTip.Context(_DbTx).Value,
-						GetBlock
-						))
+			if (handleBranch)
+			{
+				AddToMainBlockStore(totalWork);
+			}
+			else if (IsBranch())
+			{
+				if (IsNewDifficulty(totalWork))
+				{
+					Keyed<Types.Block> fork = null;
+					var newMainChain = GetNewMainChainStartFromForkToLeaf(_Bk, out fork);
+
+					//append new chain
+					foreach (var block in newMainChain)
 					{
 						BlockChainTrace.Information("Start with sidechain");
 						var result = new AddBk(
@@ -151,37 +152,52 @@ namespace BlockChain
 
 						if (result != Result.Added)
 						{
-							return Result.ChangeOverRejected;
+							 _BlockChain.InitBlockTimestamps();
+
+							return Result.Rejected;
 						}
 					}
-					break;
-				case PlacementEnum.Branch:
-					_BlockChain.BranchBlockStore.Put(_DbTx, _Bk);
-					break;
+
+					//TODO: handle do/undo at this point?
+
+					// remove from main + add to mempool of old main
+					foreach (var block in GetOldMainChainStartFromLeafToFork(fork))
+					{
+						_BlockChain.BlockStore.SetLocation(_DbTx, block.Key, LocationEnum.Branch);
+						AddTransactionsToMempool(block.Key);
+					}
+
+					//// remove from mempoo of new main
+					//foreach (var block in newMainChain)
+					//{
+					//	RemoveTransactionsFromMempool(block);
+					//}
+
+					_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
+				}
+				else
+				{
+					_BlockChain.BlockStore.Put(_DbTx, _Bk, LocationEnum.Branch, totalWork);
+				}
+			}
+			else
+			{
+				_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
+				AddToMainBlockStore(totalWork);
+
+				foreach (var block in _BlockChain.BlockStore.Children(_DbTx, _Bk.Key, true))
+				{
+					BlockChainTrace.Information("Start with orphan");
+					new AddBk(
+						_BlockChain,
+						_DbTx,
+						block,
+						_DoActions,
+						_UndoActions
+					).Start(true);
+				}
 			}
 
-			if (IsOrphan)
-			{
-				_BlockChain.OrphanBlockStore.Remove(_DbTx, _Bk.Key);
-			}
-
-			if (IsSideChain)
-			{
-				_BlockChain.BranchBlockStore.Remove(_DbTx, _Bk.Key);
-			}
-
-			foreach (var block in _BlockChain.OrphanBlockStore.OrphansOf(_DbTx, _Bk))
-			{
-				BlockChainTrace.Information("Start with orphan");
-				new AddBk(
-					_BlockChain,
-					_DbTx,
-					block,
-					_DoActions,
-					_UndoActions
-				).Start(true);
-			}
-	
 			return Result.Added;
 		}
 
@@ -195,60 +211,38 @@ namespace BlockChain
 			return false;
 		}
 
-		private PlacementEnum DeterminePlacement()
+		private bool IsGenesis()
 		{
-			PlacementEnum placement;
-
-			var parent = _Bk.Value.header.parent;
-
-			if (_Bk.Key.SequenceEqual(_BlockChain.GenesisBlockHash))
-			{
-				placement = PlacementEnum.Genesis;
-			} else if (_BlockChain.MainBlockStore.ContainsKey(_DbTx, parent))
-			{
-				placement = PlacementEnum.Main;
-			}
-			else if (_BlockChain.BranchBlockStore.ContainsKey(_DbTx, parent))
-			{
-				if (IsNewDifficulty())
-				{
-					placement = PlacementEnum.BranchChangeOver;
-				}
-				else
-				{
-					placement = PlacementEnum.Branch;
-				}
-			}
-			else
-			{
-				placement = PlacementEnum.Orphans;
-			}
-
-			return placement;
+			return _Bk.Key.SequenceEqual(_BlockChain.GenesisBlockHash);
 		}
 
-		private bool IsInMainOrBranchStore()
+		private bool IsOrphan()
 		{
-			return
-				_BlockChain.MainBlockStore.ContainsKey(_DbTx, _Bk.Key) ||
-               	_BlockChain.BranchBlockStore.ContainsKey(_DbTx, _Bk.Key);
+			return !_BlockChain.BlockStore.ContainsKey(_DbTx, _Bk.Value.header.parent);
 		}
 
-		private bool IsInOrphanStore()
+		private bool IsInStore()
 		{
-			return _BlockChain.OrphanBlockStore.ContainsKey(_DbTx, _Bk.Key);
+			return _BlockChain.BlockStore.ContainsKey(_DbTx, _Bk.Key);
 		}
 
-		private bool IsTransactionsValid(Types.Block block)
+		private bool IsBranch()
 		{
-			foreach (var transaction in block.transactions)
+			return 
+				_BlockChain.BlockStore.IsLocation(_DbTx, _Bk.Value.header.parent, LocationEnum.Branch) ||
+				_BlockChain.BlockStore.HasChildren(_DbTx, _Bk.Value.header.parent);
+		}
+
+		private bool IsTransactionsValid(byte[] block)
+		{
+			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
 			{
-				if (IsCoinbase(transaction))
+				if (IsCoinbase(tx.Value))
 				{
 					continue;
 				}
 
-				foreach (Types.Outpoint input in transaction.inputs)
+				foreach (Types.Outpoint input in tx.Value.inputs)
 				{
 					if (!ParentOutputExists(input))
 					{
@@ -275,13 +269,13 @@ namespace BlockChain
 
 		private bool ParentOutputExists(Types.Outpoint input)
 		{
-			if (!_BlockChain.TxStore.ContainsKey(_DbTx, input.txHash))
+			if (!_BlockChain.BlockStore.TxStore.ContainsKey(_DbTx, input.txHash))
 			{
 				BlockChainTrace.Information("referenced transaction missing for input");
 				return false;
 			}
 
-			var transaction = _BlockChain.TxStore.Get(_DbTx, input.txHash).Value;
+			var transaction = _BlockChain.BlockStore.TxStore.Get(_DbTx, input.txHash).Value;
 
 			if (transaction.outputs.Length < input.index + 1)
 			{
@@ -294,12 +288,12 @@ namespace BlockChain
 
 		private bool ParentOutputSpent(Types.Outpoint outpoint)
 		{
-			if (!_BlockChain.TxStore.ContainsKey(_DbTx, outpoint.txHash))
+			if (!_BlockChain.BlockStore.TxStore.ContainsKey(_DbTx, outpoint.txHash))
 			{
 				throw new Exception("Tx not found");
 			}
 
-			var transaction = _BlockChain.TxStore.Get(_DbTx, outpoint.txHash).Value;
+			var transaction = _BlockChain.BlockStore.TxStore.Get(_DbTx, outpoint.txHash).Value;
 
 			if (!_BlockChain.UTXOStore.ContainsKey(_DbTx, GetOutputKey(transaction, (int)outpoint.index)))
 			{
@@ -312,46 +306,78 @@ namespace BlockChain
 
 		private bool IsValidTimeStamp()
 		{
-			return _Bk.Value.header.timestamp > _BlockChain.Timestamps.Median();
+			var result = _Bk.Value.header.timestamp > _BlockChain.Timestamps.Median();
+
+			if (!result)
+				BlockChainTrace.Information("invalid timestamp");
+			
+			return result;
 		}
 
 		private bool IsValidDifficulty()
 		{
+			UInt32 expectedDifficulty;
+
 			if (_Bk.Value.header.blockNumber % 2000 == 1)
 			{
-				var lastBlockHash = _BlockChain.BlockDifficultyTable.GetLast(_DbTx.Transaction);
+				var lastBlockHash = _BlockChain.BlockNumberDifficulties.GetLast(_DbTx.Transaction);
 				var lastBlock = GetBlock(lastBlockHash);
-
-				return _Bk.Value.header.pdiff == NewDifficulty(lastBlock.Value.header.timestamp, _Bk.Value.header.timestamp);
+				expectedDifficulty = NewDifficulty(lastBlock.Value.header.timestamp, _Bk.Value.header.timestamp);
+			}
+			else
+			{
+				var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
+				var tipBlock = GetBlock(tip).Value;
+				expectedDifficulty = tipBlock.header.pdiff;
 			}
 
-			var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
-			var tipBlock = GetBlock(tip).Value;
-			var currentDifficulty = tipBlock.header.pdiff;
+			var blockDifficulty = _Bk.Value.header.pdiff;
 
-			return currentDifficulty == _Bk.Value.header.pdiff;
+#if TRACE
+			if (blockDifficulty != expectedDifficulty)
+			{
+				BlockChainTrace.Information($"expecting difficulty {expectedDifficulty}, found {blockDifficulty}");
+			}
+#endif
+
+			return blockDifficulty == expectedDifficulty;
 		}
 
-		private void AddToMainBlockStore() { 
-			_BlockChain.MainBlockStore.Put(_DbTx, _Bk);
-			_BlockChain.ChainTip.Context(_DbTx).Value = Merkle.blockHeaderHasher.Invoke(_Bk.Value.header);
-			_BlockChain.Timestamps.Push(_Bk.Value.header.timestamp);
+		private bool IsValidBlockNumber()
+		{
+			var parentBlock = GetBlock(_Bk.Value.header.parent).Value;
 
-			if (_Bk.Value.header.blockNumber % 2000 == 0)
+#if TRACE
+			if (parentBlock.header.blockNumber >= _Bk.Value.header.blockNumber)
 			{
-				_BlockChain.BlockDifficultyTable.Add(_DbTx.Transaction, _Bk.Value.header.blockNumber, _Bk.Key);
+				BlockChainTrace.Information($"expecting block-number greater than {parentBlock.header.blockNumber}, found {_Bk.Value.header.blockNumber}");
 			}
-
-			StoreTransactions();
+#endif
+			return parentBlock.header.blockNumber < _Bk.Value.header.blockNumber;
 		}
 
 		private UInt32 NewDifficulty(long startTime, long endTime)
 		{
-			return 1;
+			return 0;
 		}
 
-		private void StoreTransactions()
-		{
+		private void AddToMainBlockStore(double totalWork) {
+			if (_BlockChain.BlockStore.ContainsKey(_DbTx, _Bk.Key))
+			{
+				_BlockChain.BlockStore.SetLocation(_DbTx, _Bk.Key, LocationEnum.Main);
+			}
+			else
+			{
+				_BlockChain.BlockStore.Put(_DbTx, _Bk, LocationEnum.Main, totalWork);
+			}
+
+			_BlockChain.Timestamps.Push(_Bk.Value.header.timestamp);
+
+			if (_Bk.Value.header.blockNumber % 2000 == 0)
+			{
+				_BlockChain.BlockNumberDifficulties.Add(_DbTx.Transaction, _Bk.Value.header.blockNumber, _Bk.Key);
+			}
+
 			foreach (var transaction in _Bk.Value.transactions)
 			{
 				var txHash = Merkle.transactionHasher.Invoke(transaction);
@@ -359,12 +385,12 @@ namespace BlockChain
 				BlockChainTrace.Information("new txstore item");
 
 				var keyedTx = new Keyed<Types.Transaction>(txHash, transaction);
-				_BlockChain.TxStore.Put(_DbTx, keyedTx);
+				_BlockChain.BlockStore.TxStore.Put(_DbTx, keyedTx);
 				_DoActions.Add(() => TxAddedMessage.Publish(keyedTx, true));
 
-				if (_BlockChain.TxMempool.ContainsKey(txHash)) // fucntion adresses orphans also.
+				if (_BlockChain.TxMempool.ContainsKey(txHash)) // function adresses orphans also.
 				{
-					_BlockChain.TxMempool.Remove(txHash);
+					_DoActions.Add(() => _BlockChain.TxMempool.Remove(txHash));
 					_UndoActions.Add(() => _BlockChain.TxMempool.Add(keyedTx));
 				}
 
@@ -389,19 +415,85 @@ namespace BlockChain
 			return outputKey;
 		}
 
-		private bool IsNewDifficulty()
+		private double TotalWork()
 		{
-			return false;
+			var parentTotalWork = _BlockChain.BlockStore.TotalWork(_DbTx, _Bk.Value.header.parent);
+			
+			return TransactionValidation.totalWork(
+				parentTotalWork,
+				TransactionValidation.uncompressDifficulty(_Bk.Value.header.pdiff)
+			);
 		}
 
-		private bool IsGenesisValid(Types.Block block)
+		private bool IsNewDifficulty(double totalWork)
+		{
+			var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
+			var tipBlock = GetBlock(tip);
+			var tipTotalWork = _BlockChain.BlockStore.TotalWork(_DbTx, tipBlock.Key);
+
+			return totalWork > tipTotalWork;
+		}
+
+		private bool IsGenesisValid()
 		{
 			return true;
 		}
 
 		private Keyed<Types.Block> GetBlock(byte[] bkHash)
 		{
-			return _BlockChain.MainBlockStore.Get(_DbTx, bkHash);
+			return _BlockChain.BlockStore.GetBlock(_DbTx, bkHash);
+		}
+
+		private List<Keyed<Types.Block>> GetNewMainChainStartFromForkToLeaf(Keyed<Types.Block> leaf, out Keyed<Types.Block> fork)
+		{
+			var list = new List<Keyed<Types.Block>>();
+
+			do
+			{
+				list.Insert(0, leaf);
+				leaf = GetBlock(leaf.Value.header.parent);
+			} while (_BlockChain.BlockStore.IsLocation(_DbTx, leaf.Key, LocationEnum.Branch));
+
+			fork = leaf;
+
+			return list;
+		}
+
+        private List<Keyed<Types.Block>> GetOldMainChainStartFromLeafToFork(Keyed<Types.Block> fork)
+		{
+			var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
+			var itr = GetBlock(tip);
+			var list = new List<Keyed<Types.Block>>();
+
+			while (!itr.Key.SequenceEqual(fork.Key))
+			{
+				list.Add(itr);
+				itr = GetBlock(itr.Value.header.parent);
+			}
+
+			return list;
+		}
+
+		private void AddTransactionsToMempool(byte[] block)
+		{
+			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
+			{
+				_BlockChain.TxMempool.Add(tx);
+			}
+		}
+
+		private void RemoveTransactionsFromMempool(Keyed<Types.Block> block)
+		{
+			foreach (var tx in block.Value.transactions)
+			{
+				//TODO: use extension methods for hash calc?
+				var txHash = Merkle.transactionHasher.Invoke(tx);
+
+				if (_BlockChain.TxMempool.ContainsKey(txHash))
+				{
+					_BlockChain.TxMempool.Remove(txHash);
+				}
+			}
 		}
 	}
 }

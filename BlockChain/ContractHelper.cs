@@ -33,7 +33,7 @@ namespace BlockChain
 				var method = type.GetMethod("run");
 
 				var args = new object[] { //TODO
-					new Consensus.Types.Context(1999),
+					new Types.ContractContext(1999),
 					ListModule.OfSeq<Types.Output>(outputsList)
 				};
 
