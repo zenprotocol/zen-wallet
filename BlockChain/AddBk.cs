@@ -4,6 +4,7 @@ using Consensus;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace BlockChain
 {
@@ -14,6 +15,7 @@ namespace BlockChain
 		private readonly Keyed<Types.Block> _Bk;
 		private readonly List<Action> _DoActions;
 		private readonly List<Action> _UndoActions;
+		private readonly ConcurrentStack<Types.Block> _OrphansActions;
 
 		public enum Result
 		{
@@ -27,7 +29,8 @@ namespace BlockChain
 			TransactionContext dbTx,
 			Keyed<Types.Block> bk,
 			List<Action> doActions,
-			List<Action> undoActions
+			List<Action> undoActions,
+			ConcurrentStack<Types.Block> handlingStack
 		)
 		{
 			_DoActions = doActions;
@@ -35,8 +38,8 @@ namespace BlockChain
 			_BlockChain = blockChain;
 			_Bk = bk;
 			_DbTx = dbTx;
+			_OrphansActions = handlingStack;
 		}
-
 
 		public Result Start(bool handleOrphan = false, bool handleBranch = false)
 		{
@@ -56,7 +59,7 @@ namespace BlockChain
 						reject = !handleBranch;
 						break;
 					case LocationEnum.Orphans:
-						reject = !handleOrphan;
+						reject = !handleOrphan && !handleBranch;
 						break;
 					default:
 						reject = true;
@@ -65,13 +68,7 @@ namespace BlockChain
 
 				if (reject)
 				{
-					BlockChainTrace.Information("block already in store");
-					return Result.Rejected;
-				}
-
-				if (!handleBranch || (handleBranch && !_BlockChain.BlockStore.IsLocation(_DbTx, _Bk.Key, LocationEnum.Branch)))
-				{
-					BlockChainTrace.Information("block already in store");
+					BlockChainTrace.Information("block already in store: " + _BlockChain.BlockStore.GetLocation(_DbTx, _Bk.Key));
 					return Result.Rejected;
 				}
 			}
@@ -147,7 +144,8 @@ namespace BlockChain
 							_DbTx,
 							block,
 							_DoActions,
-							_UndoActions
+							_UndoActions,
+							_OrphansActions
 						).Start(false, true);
 
 						if (result != Result.Added)
@@ -163,8 +161,7 @@ namespace BlockChain
 					// remove from main + add to mempool of old main
 					foreach (var block in GetOldMainChainStartFromLeafToFork(fork))
 					{
-						_BlockChain.BlockStore.SetLocation(_DbTx, block.Key, LocationEnum.Branch);
-						AddTransactionsToMempool(block.Key);
+						RemoveFromMainBlockStore(block.Key);
 					}
 
 					//// remove from mempoo of new main
@@ -184,18 +181,12 @@ namespace BlockChain
 			{
 				_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
 				AddToMainBlockStore(totalWork);
+			}
 
-				foreach (var block in _BlockChain.BlockStore.Children(_DbTx, _Bk.Key, true))
-				{
-					BlockChainTrace.Information("Start with orphan");
-					new AddBk(
-						_BlockChain,
-						_DbTx,
-						block,
-						_DoActions,
-						_UndoActions
-					).Start(true);
-				}
+			foreach (var block in _BlockChain.BlockStore.Children(_DbTx, _Bk.Key, true))
+			{
+				BlockChainTrace.Information("Start with orphan");
+				_OrphansActions.Push(block.Value);
 			}
 
 			return Result.Added;
@@ -474,11 +465,19 @@ namespace BlockChain
 			return list;
 		}
 
-		private void AddTransactionsToMempool(byte[] block)
+		private void RemoveFromMainBlockStore(byte[] block)
 		{
+			_BlockChain.BlockStore.SetLocation(_DbTx, block, LocationEnum.Branch);
+
 			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
 			{
 				_BlockChain.TxMempool.Add(tx);
+
+				for (var i = 0; i < tx.Value.outputs.Length; i++)
+				{
+					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(tx.Value, i));
+					_UndoActions.Add(() => _BlockChain.TxMempool.Add(tx));
+				}
 			}
 		}
 

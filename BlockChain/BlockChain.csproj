@@ -65,9 +65,12 @@
     <Compile Include="Tests\BlockChainRelocationTests.cs" />
     <Compile Include="Tests\BlockChainTestsBase.cs" />
     <Compile Include="Tests\BlockChainTipTests.cs" />
-    <Compile Include="Tests\BlockChainRelocationTransactionTests.cs" />
+    <Compile Include="Tests\BlockChainTransactionRelocationTests.cs" />
     <Compile Include="Store\tests\BlockStoreTests.cs" />
     <Compile Include="Data\tests\BlockTimestampsTests.cs" />
+    <Compile Include="Tests\BlockChainTipExtendByOrphanTests.cs" />
+    <Compile Include="TxAddedMessage.cs" />
+    <Compile Include="BkAddedMessage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -89,10 +92,6 @@
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
-      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
-      <Name>Infrastructure.Testing</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

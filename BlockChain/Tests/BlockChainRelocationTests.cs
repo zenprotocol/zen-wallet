@@ -2,33 +2,19 @@ using Consensus;
 using BlockChain.Store;
 using Store;
 using NUnit.Framework;
-using Infrastructure.Testing;
 using BlockChain.Data;
 
 namespace BlockChain.Tests
 {
-	//public static class BlockExtensions
+	//public static class TagHelper
 	//{
-	//	public static string GetTag(this Keyed<Types.Block> block)
-	//	{
-	//		return FieldEx<Keyed<Types.Block>, string>.Get(block);
-	//	}
+	//	public static HashDictionary<string> values = new HashDictionary<string>();
 
-	//	public static void SetTag(this Keyed<Types.Block> block, string value)
+	//	public static string GetValue(byte[] key)
 	//	{
-	//		FieldEx<Keyed<Types.Block>, string>.Set(block, value);
+	//		return values[key];
 	//	}
 	//}
-
-	public static class TagHelper
-	{
-		public static HashDictionary<string> values = new HashDictionary<string>();
-
-		public static string GetValue(byte[] key)
-		{
-			return values[key];
-		}
-	}
 
 	[TestFixture()]
 	public class BlockChainRelocationTests : BlockChainTestsBase
@@ -50,10 +36,10 @@ namespace BlockChain.Tests
 			//block2.SetTag("2");
 			//block3.SetTag("3");
 
-			TagHelper.values[_GenesisBlock.Key] = "g";
-			TagHelper.values[block1.Key] = "1";
-			TagHelper.values[block2.Key] = "2";
-			TagHelper.values[block3.Key] = "3";
+			//TagHelper.values[_GenesisBlock.Key] = "g";
+			//TagHelper.values[block1.Key] = "1";
+			//TagHelper.values[block2.Key] = "2";
+			//TagHelper.values[block3.Key] = "3";
 
 			//System.Console.WriteLine("g: " + (int)_GenesisBlock.Key[0]);
 			//System.Console.WriteLine("1: " + (int)block1.Key[0]);
