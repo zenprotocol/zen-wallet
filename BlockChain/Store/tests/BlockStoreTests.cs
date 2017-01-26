@@ -58,6 +58,19 @@ namespace BlockChain.Store.Tests
 		}
 
 		[Test()]
+		public void ShouldNotGetChild()
+		{
+			var parent = GetBlock();
+			var child = GetBlock(parent);
+
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				_BlockStore.Put(dbTx, child, LocationEnum.Main, 0);
+				Assert.That(_BlockStore.Children(dbTx, parent.Key, true), Is.Empty);
+			}
+		}
+
+		[Test()]
 		public void ShouldHaveChildren()
 		{
 			var parent = GetBlock();

@@ -2,13 +2,12 @@ using Consensus;
 using BlockChain.Store;
 using Store;
 using NUnit.Framework;
-using Infrastructure.Testing;
 using BlockChain.Data;
 
 namespace BlockChain.Tests
 {
 	[TestFixture()]
-	public class BlockChainRelocationTransactionTests : BlockChainTestsBase
+	public class BlockChainTransactionRelocationTests : BlockChainTestsBase
 	{
 		private Keyed<Types.Block> block1;
 		private Keyed<Types.Block> block2;
@@ -41,7 +40,7 @@ namespace BlockChain.Tests
 		}
 
 		[Test, Order(1)]
-		public void ShouldAddToTxStore()
+		public void ShouldAddToUtxoSet()
 		{
 			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock.Value), Is.EqualTo(AddBk.Result.Added));
 			Assert.That(_BlockChain.HandleNewBlock(block1.Value), Is.EqualTo(AddBk.Result.Added));
@@ -101,12 +100,12 @@ namespace BlockChain.Tests
 			Assert.That(_BlockChain.TxMempool.ContainsKey(tx), Is.EqualTo(contains));
 		}
 
-		//private void AssertTxStore(byte[] tx, bool contains)
-		//{
-		//	using (var dbTx = _BlockChain.GetDBTransaction())
-		//	{
-		//		Assert.That(_BlockChain.BlockStore.TxStore.ContainsKey(dbTx, tx), Is.EqualTo(contains));
-		//	}
-		//}
+		private void AssertTxStore(byte[] tx, bool contains)
+		{
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(_BlockChain.UTXOStore.ContainsKey(dbTx, tx), Is.EqualTo(contains));
+			}
+		}
 	}
 }
