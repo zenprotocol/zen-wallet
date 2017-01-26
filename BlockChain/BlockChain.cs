@@ -3,13 +3,10 @@ using Consensus;
 using BlockChain.Store;
 using Store;
 using Infrastructure;
-using System.Text;
 using System.Collections.Generic;
 using Microsoft.FSharp.Collections;
 using System.Linq;
 using BlockChain.Data;
-using NUnit.Framework;
-using System.IO;
 
 namespace BlockChain
 {
@@ -44,15 +41,13 @@ namespace BlockChain
 	public class BlockChain : ResourceOwner
 	{
 		private readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
+		private readonly DBContext _DBContext;
+
 		public TxMempool TxMempool { get; private set; }
 		public UTXOStore UTXOStore { get; private set; }
-		public TxStore TxStore { get; private set; }
-		public MainBlockStore MainBlockStore { get; private set; }
-		public BranchBlockStore BranchBlockStore { get; private set; }
-		public OrphanBlockStore OrphanBlockStore { get; private set; }
+		public BlockStore BlockStore { get; private set; }
 		public ContractStore ContractStore { get; private set; }
- 		private readonly DBContext _DBContext;
-		public BlockDifficultyTable BlockDifficultyTable { get; private set; }
+		public BlockNumberDifficulties BlockNumberDifficulties { get; private set; }
 		public ChainTip ChainTip { get; private set; }
 		public BlockTimestamps Timestamps { get; private set; }
 		public byte[] GenesisBlockHash { get; private set; }
@@ -69,7 +64,7 @@ namespace BlockChain
 				}
 				else 
 				{
-					DateTime tipDateTime = DateTime.FromBinary(tipBlock.Value.header.timestamp);
+					DateTime tipDateTime = DateTime.FromBinary(tipBlock.Value.timestamp);
 					TimeSpan diff = DateTime.Now - tipDateTime;
 
 					return diff > OLD_TIP_TIME_SPAN;
@@ -77,62 +72,43 @@ namespace BlockChain
 			}
 		}
 
-		public Keyed<Types.Block> Tip { get; private set; }
+		//private Keyed<Types.Block> _tip = null;
+		public Keyed<Types.BlockHeader> Tip { 
+			get {
+				Keyed<Types.BlockHeader> _tip = null;
 
-		private Keyed<Types.Block> GetTip()
-		{
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				var chainTip = ChainTip.Context(context).Value;
+				//if (_tip == null)
+				//{ 
+				using (var context = _DBContext.GetTransactionContext())
+				{
+					var chainTip = ChainTip.Context(context).Value;
 
-				return chainTip == null ? null : MainBlockStore.Get(context, chainTip);
+					//TODO: should asset that the block came from main?
+					_tip = chainTip == null ? null : BlockStore.Get(context, chainTip);
+				}
+				//}
+
+				return _tip;
 			}
 		}
-
-		//public IEnumerable<Keyed<Types.Transaction>> GetTransactions()
-		//{
-		//	using (TransactionContext context = _DBContext.GetTransactionContext())
-		//	{
-		//		return TxStore.All(context);//.ToList();
-		//	}
-		//}
 
 		public BlockChain(string dbName, byte[] genesisBlockHash) {
 			_DBContext = new DBContext(dbName);
 			TxMempool = new TxMempool();
-			TxStore = new TxStore();
 			UTXOStore = new UTXOStore();
-			MainBlockStore = new MainBlockStore();
-			BranchBlockStore = new BranchBlockStore();
-			OrphanBlockStore = new OrphanBlockStore();
+			BlockStore = new BlockStore();
 			ContractStore = new ContractStore();
-			BlockDifficultyTable = new BlockDifficultyTable();
+			BlockNumberDifficulties = new BlockNumberDifficulties();
 			ChainTip = new ChainTip();
 			Timestamps = new BlockTimestamps();
 			GenesisBlockHash = genesisBlockHash;// GetGenesisBlock().Key;
 
 			OwnResource(_DBContext);
-			//OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
-			//	new EventLoopMessageListener<TxMempool.AddedMessage>(m =>
-			//	{
-			//		if (OnAddedToMempool != null)
-			//			OnAddedToMempool(m.Transaction.Value);
-			//	})
-			//));
-			//OwnResource(MessageProducer<TxStore.AddedMessage>.Instance.AddMessageListener(
-			//	new EventLoopMessageListener<TxStore.AddedMessage>(m =>
-			//	{
-			//		if (OnAddedToStore != null)
-			//			OnAddedToStore(m.Transaction.Value);
-			//	})
-			//));
-
-			Tip = GetTip();
 
 			InitBlockTimestamps();
 		}
 
-		void InitBlockTimestamps()
+		public void InitBlockTimestamps()
 		{
 			if (Tip != null)
 			{
@@ -141,11 +117,16 @@ namespace BlockChain
 
 				while (itr != null && timestamps.Count < BlockTimestamps.SIZE)
 				{
-					timestamps.Add(itr.header.timestamp);
-					itr = GetBlock(itr.header.parent);
+					timestamps.Add(itr.timestamp);
+					itr = GetBlock(itr.parent);
 				}
 				Timestamps.Init(timestamps.ToArray());
 			}
+		}
+
+		public TransactionContext GetDBTransaction()
+		{
+			return _DBContext.GetTransactionContext();
 		}
 
 		public AddBk.Result HandleNewBlock(Types.Block block) //TODO: use Keyed type
@@ -166,26 +147,19 @@ namespace BlockChain
 					undoActions
 				).Start();
 
-				if (result != AddBk.Result.Rejected &&
-					result != AddBk.Result.ChangeOverRejected)
+				if (result != AddBk.Result.Rejected)
 				{
-					context.Commit();
-					foreach (Action action in doActions)
-						action();
+					TxMempool.Lock(() => { 
+						context.Commit();
+						foreach (Action action in doActions)
+							action();
+					});
 				}
 				else
 				{
-					if (result != AddBk.Result.ChangeOverRejected)
-					{
-						InitBlockTimestamps();
-					}
-
 					foreach (Action action in undoActions)
 						action();
 				}
-
-				//TODO: only do that if tip has changed
-				Tip = GetTip();
 
 				BlockChainTrace.Information("Block " + System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(block.header)) + " is " + result);
 
@@ -252,9 +226,9 @@ namespace BlockChain
 			{
 				using (TransactionContext context = _DBContext.GetTransactionContext())
 				{
-					if (TxStore.ContainsKey(context, key))
+					if (BlockStore.TxStore.ContainsKey(context, key))
 					{
-						return TxStore.Get(context, key).Value;
+						return BlockStore.TxStore.Get(context, key).Value;
 					}
 				}
 			}
@@ -262,11 +236,12 @@ namespace BlockChain
 			return null;
 		}
 
-		public Types.Block GetBlock(byte[] key)
+		//TODO: should asset that the block came from main?
+		public Types.BlockHeader GetBlock(byte[] key)
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				var bk = MainBlockStore.Get(context, key);
+				var bk = BlockStore.Get(context, key);
 
 				return bk == null ? null : bk.Value;
 			}
@@ -369,85 +344,5 @@ namespace BlockChain
 		//}
 	}
 
-	[TestFixture()]
-	public class BlockChainTests
-	{
-		private readonly Random _Random = new Random();
-		private BlockChain _BlockChain;
-		private const string DB = "temp";
-		private Keyed<Types.Block> _GenesisBlock;
-
-		[SetUp]
-		public void RunOnceBeforeEachTest()
-		{
-			Dispose();
-			_GenesisBlock = GetBlock();
-			_BlockChain = new BlockChain(DB, _GenesisBlock.Key);
-		}
-
-		[TestFixtureTearDown]
-		public void Dispose()
-		{
-			if (_BlockChain != null)
-			{
-				_BlockChain.Dispose();
-			}
-
-			if (Directory.Exists(DB))
-			{
-				Directory.Delete(DB, true);
-			}
-		}
-
-		[Test()]
-		public void ShouldReorderBlockChain()
-		{
-			var block1 = GetBlock(_GenesisBlock);
-			var block2 = GetBlock(block1);
-			var block3 = GetBlock(block2);
-			var block4 = GetBlock(block3);
-			var sideBlock1 = GetBlock(block1);
-			var sideBlock2 = GetBlock(sideBlock1);
-			var sideBlock3 = GetBlock(sideBlock2);
-
-			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(block1.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(block2.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(block3.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(block4.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(sideBlock1.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(sideBlock2.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(sideBlock3.Value), Is.EqualTo(AddBk.Result.Added));
-		}
-
-		private Keyed<Types.Block> GetBlock(Keyed<Types.Block> parent)
-		{
-			return GetBlock(parent.Key);
-		}
-
-		private Keyed<Types.Block> GetBlock(byte[] parent = null)
-		{
-			var nonce = new byte[10];
-
-			_Random.NextBytes(nonce);
-
-			var header = new Types.BlockHeader(
-				0,
-				parent ?? new byte[] { },
-				0,
-				new byte[] { },
-				new byte[] { },
-				new byte[] { },
-				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Now.ToFileTimeUtc(),
-				0,
-				nonce
-			);
-
-			var block = new Types.Block(header, ListModule.OfSeq<Types.Transaction>(new List<Types.Transaction>()));
-			var key = Merkle.blockHeaderHasher.Invoke(header);
-
-			return new Keyed<Types.Block>(key, block);
-		}
-	}
+	
 }

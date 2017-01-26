@@ -1,88 +1,139 @@
-using System;
 using Consensus;
 using System.Linq;
 using Store;
-using BlockChain.Data;
 using System.Collections.Generic;
+using Microsoft.FSharp.Collections;
 
 namespace BlockChain.Store
 {
-	public abstract class BlockStore : ConsensusTypeStore<Types.Block>
+	public enum LocationEnum
 	{
-		protected BlockStore(string blockStoreType) : base($"bk-{blockStoreType}")
+		Genesis = 1,
+		Main = 2,
+		Branch = 3,
+		Orphans = 4
+	}
+
+	public class BlockStore : ConsensusTypeStore<Types.BlockHeader>
+	{
+		private const string BLOCK_HEADERS = "bk-headers";
+		private const string CHILDREN = "bk-children";
+		private const string LOCATIONS = "bk-locations";
+		private const string TOTAL_WORK = "bk-totalwork";
+		private const string BLOCK_TRANSACTIONS = "bk-transactions";
+		private const string TRANSACTIONS = "transactions";
+		public Store<Types.Transaction> TxStore { get; private set; }
+
+		public BlockStore() : base(BLOCK_HEADERS)
 		{
-		}
-	}
-
-	//public class GenesisBlockStore : BlockStore
-	//{
-	//	public GenesisBlockStore() : base("genesis") { }
-	//}
-
-	public class MainBlockStore : BlockStore
-	{
-		public MainBlockStore() : base("main") { }
-	}
-
-	public class BranchBlockStore : BlockStore
-	{
-		public BranchBlockStore() : base("branch") { }
-	}
-
-	public class OrphanBlockStore : BlockStore
-	{
-		private const string BLOCK_REFS_TABLE = "bk-refs";
-
-		public OrphanBlockStore() : base("orphan") { }
-
-		public new void Put(TransactionContext transactionContext, Keyed<Types.Block> item) //TODO: used Keyed?
-		{
-			base.Put(transactionContext, item);
-
-			var max = GetMaxIndex(transactionContext, item.Key);
-			var newKey = GetSuffixedKey(item.Value.header.parent, max);
-
-			transactionContext.Transaction.Insert<byte[], byte[]>(BLOCK_REFS_TABLE, newKey, item.Key);
+			TxStore = new ConsensusTypeStore<Types.Transaction>(TRANSACTIONS);
 		}
 
-		public IEnumerable<Keyed<Types.Block>> OrphansOf(TransactionContext transactionContext, Keyed<Types.Block> item)
+		public void Put(TransactionContext transactionContext, Keyed<Types.Block> block, LocationEnum location, double totalWork)
 		{
-			var result = new List<Keyed<Types.Block>>();
+			base.Put(transactionContext, new Keyed<Types.BlockHeader>(block.Key, block.Value.header));
 
-			foreach (var row in transactionContext.Transaction.SelectForwardStartFrom<byte[], byte[]>(BLOCK_REFS_TABLE, item.Key, true))
+			//children
+			var children = new HashSet<byte[]>();
+			children.Add(block.Key);
+
+			transactionContext.Transaction.InsertHashSet<byte[], byte[]>(
+				CHILDREN,
+				block.Value.header.parent,
+				children,
+				0,
+				false
+			);
+
+			//location
+			SetLocation(transactionContext, block.Key, location);
+
+			//total work
+			transactionContext.Transaction.Insert<byte[], double>(TOTAL_WORK, block.Key, totalWork);
+
+			//transactions
+			var transactionsSet = new HashSet<byte[]>();
+
+			foreach (var tx in block.Value.transactions)
 			{
-				var baseKey = row.Key.Take(row.Key.Length - 1);
+				var txHash = Merkle.transactionHasher.Invoke(tx);
 
-				if (!baseKey.SequenceEqual(item.Key))
+				transactionsSet.Add(txHash);
+
+				if (!TxStore.ContainsKey(transactionContext, txHash))
 				{
-					break;
+					TxStore.Put(transactionContext, new Keyed<Types.Transaction>(txHash, tx)); 
 				}
-
-				result.Add(Get(transactionContext, row.Value));
 			}
 
-			return result;
+			transactionContext.Transaction.InsertHashSet<byte[], byte[]>(
+				BLOCK_TRANSACTIONS,
+				block.Key,
+				transactionsSet,
+				0,
+				false
+			);
 		}
 
-		private int GetMaxIndex(TransactionContext transactionContext, byte[] key)
+		public Keyed<Types.Block> GetBlock(TransactionContext transactionContext, byte[] key)
 		{
-			int count = 0;
+			var header = base.Get(transactionContext, key);
+			var txs = new List<Types.Transaction>();
 
-			foreach (var row in transactionContext.Transaction.SelectForwardStartFrom<byte[], byte[]>(BLOCK_REFS_TABLE, key, true))
+			foreach (var tx in transactionContext.Transaction.SelectHashSet<byte[], byte[]>(BLOCK_TRANSACTIONS, key, 0))
 			{
-				count++;
+				txs.Add(TxStore.Get(transactionContext, tx).Value);
 			}
 
-			return count;
+			var block = new Types.Block(header.Value, ListModule.OfSeq<Types.Transaction>(txs));
+
+			return new Keyed<Types.Block>(key, block);
 		}
 
-		private byte[] GetSuffixedKey(byte[] baseKey, int index)
+		public bool IsLocation(TransactionContext transactionContext, byte[] item, LocationEnum location)
 		{
-			byte[] result = new byte[baseKey.Length + 1];
-			baseKey.CopyTo(result, 0);
-			result[baseKey.Length] = (byte)index;
+			return transactionContext.Transaction.Select<byte[], int>(LOCATIONS, item).Value == (int) location;
+		}
 
-			return result;
+		public LocationEnum GetLocation(TransactionContext transactionContext, byte[] item)
+		{
+			return (LocationEnum) transactionContext.Transaction.Select<byte[], int>(LOCATIONS, item).Value;
+		}
+
+		public void SetLocation(TransactionContext transactionContext, byte[] item, LocationEnum location)
+		{
+			transactionContext.Transaction.Insert<byte[], int>(LOCATIONS, item, (int)location);
+		}
+
+		public double TotalWork(TransactionContext transactionContext, byte[] item)
+		{
+			return transactionContext.Transaction.Select<byte[], double>(TOTAL_WORK, item).Value;
+		}
+
+		public IEnumerable<Keyed<Types.Block>> Children(TransactionContext transactionContext, byte[] parent, bool orphans)
+		{
+			foreach (var child in transactionContext.Transaction.SelectHashSet<byte[], byte[]>(CHILDREN, parent, 0))
+			{
+				if (orphans == IsLocation(transactionContext, child, LocationEnum.Orphans))
+				{
+					yield return GetBlock(transactionContext, child);
+				}
+			}
+		}
+
+		public IEnumerable<Keyed<Types.Transaction>> Transactions(TransactionContext transactionContext, byte[] block)
+		{
+			foreach (var txHash in transactionContext.Transaction.SelectHashSet<byte[], byte[]>(BLOCK_TRANSACTIONS, block, 0))
+			{
+				yield return TxStore.Get(transactionContext, txHash);
+			}
+		}
+
+		public bool HasChildren(TransactionContext transactionContext, byte[] parent)
+		{
+			var hashSet = transactionContext.Transaction.SelectHashSet<byte[], byte[]>(CHILDREN, parent, 0);
+
+			return hashSet.Count() > 0;
 		}
 	}
 }
