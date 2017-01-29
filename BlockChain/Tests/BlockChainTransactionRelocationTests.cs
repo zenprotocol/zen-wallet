@@ -45,9 +45,9 @@ namespace BlockChain.Tests
 			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock.Value), Is.EqualTo(AddBk.Result.Added));
 			Assert.That(_BlockChain.HandleNewBlock(block1.Value), Is.EqualTo(AddBk.Result.Added));
 
-		//	AssertTxStore(block1_tx.Key, true);
+			AssertUtxoSet(block1_tx.Key, block1_tx.Value, true);
 			Assert.That(_BlockChain.HandleNewBlock(block2.Value), Is.EqualTo(AddBk.Result.Added));
-		//	AssertTxStore(block2_tx.Key, false); // branch
+			AssertUtxoSet(block2_tx.Key, block2_tx.Value, false); // branch
 		}
 
 		[Test, Order(2)]
@@ -56,10 +56,10 @@ namespace BlockChain.Tests
 			Assert.That(_BlockChain.HandleNewBlock(block3.Value), Is.EqualTo(AddBk.Result.Added));
 
 			AssertMempool(block1_tx.Key, true);
-		//	AssertTxStore(block1_tx.Key, false);
+			AssertUtxoSet(block1_tx.Key, block1_tx.Value, false);
 
-		//	AssertTxStore(block2_tx.Key, true);
-		//	AssertTxStore(block3_tx.Key, true);
+			AssertUtxoSet(block2_tx.Key, block2_tx.Value, true);
+			AssertUtxoSet(block3_tx.Key, block3_tx.Value, true);
 		}
 
 		[Test, Order(3)]
@@ -68,10 +68,10 @@ namespace BlockChain.Tests
 			Assert.That(_BlockChain.HandleNewBlock(block4.Value), Is.EqualTo(AddBk.Result.Added));
 
 			AssertMempool(block1_tx.Key, true);
-		//	AssertTxStore(block1_tx.Key, false);
+			AssertUtxoSet(block1_tx.Key, block1_tx.Value, false);
 
-		//	AssertTxStore(block2_tx.Key, true);
-		//	AssertTxStore(block3_tx.Key, true);
+			AssertUtxoSet(block2_tx.Key, block2_tx.Value, true);
+			AssertUtxoSet(block3_tx.Key, block3_tx.Value, true);
 		}
 
 		[Test, Order(4)]
@@ -80,19 +80,19 @@ namespace BlockChain.Tests
 			Assert.That(_BlockChain.HandleNewBlock(block5.Value), Is.EqualTo(AddBk.Result.Added));
 
 			AssertMempool(block2_tx.Key, true);
-		//	AssertTxStore(block2_tx.Key, false);
+			AssertUtxoSet(block2_tx.Key, block2_tx.Value, false);
 
 			AssertMempool(block3_tx.Key, true);
-		//	AssertTxStore(block3_tx.Key, false);
+			AssertUtxoSet(block3_tx.Key, block3_tx.Value, false);
 
 			AssertMempool(block1_tx.Key, false);
-		//	AssertTxStore(block1_tx.Key, true);
+			AssertUtxoSet(block1_tx.Key, block1_tx.Value, true);
 
 			AssertMempool(block4_tx.Key, false);
-		//	AssertTxStore(block4_tx.Key, true);
+			AssertUtxoSet(block4_tx.Key, block4_tx.Value, true);
 
 			AssertMempool(block5_tx.Key, false);
-		//	AssertTxStore(block5_tx.Key, true);
+			AssertUtxoSet(block5_tx.Key, block5_tx.Value, true);
 		}
 
 		private void AssertMempool(byte[] tx, bool contains)
@@ -100,11 +100,26 @@ namespace BlockChain.Tests
 			Assert.That(_BlockChain.TxMempool.ContainsKey(tx), Is.EqualTo(contains));
 		}
 
-		private void AssertTxStore(byte[] tx, bool contains)
+		private void AssertUtxoSet(byte[] txHash, Types.Transaction tx, bool contains)
 		{
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(_BlockChain.UTXOStore.ContainsKey(dbTx, tx), Is.EqualTo(contains));
+				int i = 0;
+				foreach (var output in tx.outputs)
+				{
+					byte[] outputKey = new byte[txHash.Length + 1];
+					txHash.CopyTo(outputKey, 0);
+					outputKey[txHash.Length] = (byte)i;
+
+					Assert.That(_BlockChain.UTXOStore.ContainsKey(dbTx, outputKey), Is.EqualTo(contains));
+
+					if (contains)
+					{
+						Assert.That(_BlockChain.UTXOStore.Get(dbTx, outputKey).Value, Is.EqualTo(output));
+					}
+
+					i++;
+				}
 			}
 		}
 	}
