@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Store;
 using Consensus;
+using Microsoft.FSharp.Collections;
 
 namespace BlockChain
 {
@@ -60,21 +61,17 @@ namespace BlockChain
 			if (IsOrphan())
 			{
 				BlockChainTrace.Information("Added as orphan");
-				_BlockChain.TxMempool.Add(_Tx, true);
+				_BlockChain.TxMempool.AddOrphan(_Tx);
 				return Result.AddedOrphan;
 			}
 
 			//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
 
-			if (!IsValidInputs())
+			var pointedTransaction = GetValidatedPointedTransaction();
+
+			if (pointedTransaction == null)
 			{
 				BlockChainTrace.Information("invalid inputs");
-				return Result.Rejected;
-			}
-
-			if (!IsValidPointedInputs())
-			{
-				BlockChainTrace.Information("invalid pointed inputs");
 				return Result.Rejected;
 			}
 
@@ -82,8 +79,8 @@ namespace BlockChain
 			//TODO: 8. Validate each input. If fails, reject
 
 			BlockChainTrace.Information("Transaction added to mempool");
-			_BlockChain.TxMempool.Add(_Tx);
-			_DoActions.Add(() => TxAddedMessage.Publish(_Tx, false));
+			_BlockChain.TxMempool.Add(_Tx.Key, pointedTransaction);
+			_DoActions.Add(() => TxAddedMessage.Publish(pointedTransaction));
 			_UndoActions.Add(() => _BlockChain.TxMempool.Remove(_Tx.Key));
 
 			foreach (var transaction in _BlockChain.TxMempool.GetOrphansOf(_Tx)) 
@@ -157,60 +154,64 @@ namespace BlockChain
 			return false;
 		}
 
-		private bool IsValidInputs()
+		private TransactionValidation.PointedTransaction GetValidatedPointedTransaction()
 		{
+			var outputs = new List<Types.Output>();
+
 			foreach (var input in _Tx.Value.inputs)
 			{
-				if (!ParentOutputExists(input))
+				var output = GetTxOutput(input);
+
+				if (output == null)
 				{
 					BlockChainTrace.Information("parent output does not exist");
-					return false;
+					return null;
 				}
 
 				if (ParentOutputSpent(input))
 				{
 					BlockChainTrace.Information("parent output spent");
-					return false;
+					return null;
 				}
+
+				outputs.Add(output);
 			}
 
-			return true;
+			var pointedTransaction = TransactionValidation.toPointedTransaction(
+				_Tx.Value, 
+				ListModule.OfSeq<Types.Output>(outputs)
+			);
+
+			for (int i = 0; i < _Tx.Value.inputs.Length; i++)
+			{
+				if (!TransactionValidation.validateAtIndex(pointedTransaction, i))
+					return null;
+			}
+
+			return pointedTransaction;
 		}
 
-		private bool IsValidPointedInputs()
+		private Types.Output GetTxOutput(Types.Outpoint input)
 		{
-//			var pointedTransaction = Consensus.TransactionValidation.toPointedTransaction (_Tx, _Tx.Value.inputs);
-//
-//			for (int i=0; i<_Tx.Value.inputs.Length; i++)
-//			{
-//				if (!Consensus.TransactionValidation.validateAtIndex (pointedTransaction, i))
-//					return false;
-//			}
-
-			return true;
-		}
-
-		private bool ParentOutputExists(Types.Outpoint input)
-		{
-			Keyed<Types.Transaction> parentTransaction = null;
+			FSharpList<Types.Output> outputs = null;
 
 			switch (_InputLocations[input])
 			{
 				case InputLocationEnum.Mempool:
-					parentTransaction = _BlockChain.TxMempool.Get(input.txHash);
+					outputs = _BlockChain.TxMempool.Get(input.txHash).outputs;
 					break;
 				case InputLocationEnum.TxStore:
-					parentTransaction = _BlockChain.BlockStore.TxStore.Get(_DbTx, input.txHash);
+					outputs = _BlockChain.BlockStore.TxStore.Get(_DbTx, input.txHash).Value.outputs;
 					break;
 			}
 
-			if (input.index >= parentTransaction.Value.outputs.Length)
+			if (input.index >= outputs.Length)
 			{
 				BlockChainTrace.Information("Input index not found");
-				return false;
+				return null;
 			}
 
-			return true;
+			return outputs[(int)input.index];
 		}
 
 		private bool ParentOutputSpent(Types.Outpoint input)

@@ -377,21 +377,22 @@ namespace BlockChain
 
 				var keyedTx = new Keyed<Types.Transaction>(txHash, transaction);
 				_BlockChain.BlockStore.TxStore.Put(_DbTx, keyedTx);
-				_DoActions.Add(() => TxAddedMessage.Publish(keyedTx, true));
 
 				if (_BlockChain.TxMempool.ContainsKey(txHash)) // function adresses orphans also.
 				{
 					_DoActions.Add(() => _BlockChain.TxMempool.Remove(txHash));
-					_UndoActions.Add(() => _BlockChain.TxMempool.Add(keyedTx));
+					_UndoActions.Add(() => _BlockChain.TxMempool.Add(txHash, _BlockChain.GetPointedTransaction(_DbTx, transaction)));
 				}
 
 				for (int i = 0; i < transaction.outputs.Length; i++)
 				{
 					BlockChainTrace.Information($"new utxo item: {transaction.outputs[i].spend.amount}");
 					_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(transaction, i), transaction.outputs[i]));
-					_UndoActions.Add(() => _BlockChain.TxMempool.Add(keyedTx));
+					_UndoActions.Add(() => _BlockChain.TxMempool.Add(txHash, _BlockChain.GetPointedTransaction(_DbTx, transaction)));
 				}
 			}
+
+			_DoActions.Add(() => BkAddedMessage.Publish(_Bk.Value));
 		}
 
 		private byte[] GetOutputKey(Types.Transaction transaction, int index) //TODO: convert to outpoint
@@ -471,12 +472,13 @@ namespace BlockChain
 
 			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
 			{
-				_BlockChain.TxMempool.Add(tx);
+				_BlockChain.TxMempool.Add(tx.Key, _BlockChain.GetPointedTransaction(_DbTx, tx.Value));
+				_UndoActions.Add(() => _BlockChain.TxMempool.Remove(tx.Key));
 
 				for (var i = 0; i < tx.Value.outputs.Length; i++)
 				{
 					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(tx.Value, i));
-					_UndoActions.Add(() => _BlockChain.TxMempool.Add(tx));
+					//_UndoActions.Add(() => _BlockChain.TxMempool.Add(tx));
 				}
 			}
 		}

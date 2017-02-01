@@ -14,9 +14,9 @@ namespace BlockChain
 
 	public class BkAddedMessage
 	{
-		public Keyed<Types.Block> Bk { get; set; }
+		public Types.Block Bk { get; set; }
 
-		public static void Publish(Keyed<Types.Block> bk)
+		public static void Publish(Types.Block bk)
 		{
 			MessageProducer<BkAddedMessage>.Instance.PushMessage(new BkAddedMessage()
 			{
