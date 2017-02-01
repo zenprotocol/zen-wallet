@@ -28,7 +28,7 @@ namespace Wallet.core.Store
 			return true;
 		}
 
-		public Key GetUnsendKey(TransactionContext context, bool isChange = false) {
+		public Key GetUnusedKey(TransactionContext context) {
 			var list = List (context, false, false);
 
 			if (list.Count == 0) {
@@ -49,26 +49,26 @@ namespace Wallet.core.Store
 				.ToList ();
 		}
 
-		public bool Find(TransactionContext context, Types.Output output, bool markAsUsed) {
-			foreach (var key in List(context)) {
-				if (key.IsMatch(output.@lock))
-				{
-					if (!key.Used && markAsUsed)
-					{
-						key.Used = true;
-						Put(context, new Keyed<Key>(key.Private, key));
-					}
-					return true;
-				}
-			}
+		//public bool Find(TransactionContext context, Types.Output output, bool markAsUsed) {
+		//	foreach (var key in List(context)) {
+		//		if (key.IsMatch(output.@lock))
+		//		{
+		//			if (!key.Used && markAsUsed)
+		//			{
+		//				key.Used = true;
+		//				Put(context, new Keyed<Key>(key.Private, key));
+		//			}
+		//			return true;
+		//		}
+		//	}
 
-			return false;
-		}
-
-		//public void Used(TransactionContext context, Key key)
-		//{
-		//	key.Used = true;
-		//	Put(context, new Keyed<Key>(key.Private, key));
+		//	return false;
 		//}
+
+		public void Used(TransactionContext context, Key key)
+		{
+			key.Used = true;
+			Put(context, new Keyed<Key>(key.Private, key));
+		}
 	}
 }
