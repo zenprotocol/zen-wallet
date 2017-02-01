@@ -25,6 +25,7 @@ namespace Zen
 			options["main"].Add("Start GUI");
 			options["main"].Add("Wallet Menu");
 			options["main"].Add("BlockChain Menu");
+			options["main"].Add("Tests");
 			options["main"].Add("Stop");
 			options["main"].Add("Exit");
 
@@ -37,6 +38,10 @@ namespace Zen
 			options["blockchain"] = new List<string>();
 			options["blockchain"].Add("Add Genesis");
 			options["blockchain"].Add("Back");
+
+			options["tests"] = new List<string>();
+			options["tests"].Add("Aquire genesis outputs");
+			options["tests"].Add("Back");
 
 
 			var actions = new Dictionary<string, Action<string>>();
@@ -91,6 +96,9 @@ namespace Zen
 						app.Stop();
 						dialog.Text = "Zen";
 						break;
+					case "Tests":
+						menu("tests");
+						break;
 					case "Exit":
 						app.Stop();
 						root.Detach();
@@ -127,8 +135,8 @@ namespace Zen
 					//case "Reset":
 					//	app.ResetWallet();
 					//	break;
-					case "Sync":
-						app.Sync();
+					case "Import":
+						app.ImportWallet();
 						break;
 					case "Back":
 						menu("main");
@@ -141,6 +149,29 @@ namespace Zen
 								app.AddKey(output.Key);
 							}
 						}
+						break;
+				}
+			};
+
+			actions["tests"] = a =>
+			{
+				switch (a)
+				{
+					case "Aquire genesis outputs":
+						//			app.GenesisBlock.Value.transactions.ToList().ForEach(t => t.outputs.ToList().ForEach(o=>app.AddKey(o.
+					app.Settings.Mode = Settings.AppModeEnum.GUI;
+			//			app.Init();
+
+						app.AddGenesisBlock();
+
+						JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.AddKey(o.Key));
+
+						app.ImportWallet();
+
+						app.Start();	
+						break;
+					case "Back":
+						menu("main");
 						break;
 				}
 			};
@@ -180,13 +211,15 @@ namespace Zen
 		public static void WriteColor(string message, ConsoleColor color)
 		{
 			if (listTrace != null)
+			{
 				listTrace.Items.Add(message.Split('\n')[0]);
 
-			listTrace.SelectedIndex = listTrace.Items.Count - 1;
-		
+				listTrace.SelectedIndex = listTrace.Items.Count - 1;
+			}
 		}
 
 			//	listTrace.Items.Add(new Label(listTrace) { Text = message.Trim(), Foreground = color });
+
 
 	}
 }

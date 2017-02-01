@@ -34,12 +34,12 @@ namespace Zen
 
 		internal void AddKey(string key)
 		{
-			_WalletManager.AddKey(key);
+	//		_WalletManager.AddKey(key);
 		}
 
-		internal void Sync()
+		internal void ImportWallet()
 		{
-			_WalletManager.Sync();
+			_WalletManager.Import();
 		}
 
 		public App()
@@ -57,11 +57,11 @@ namespace Zen
 
 		public event Action<Network> OnInitProfile;
 		public event Action<Settings> OnInitSettings;
-		private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
+		//private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
 		private ManualResetEventSlim stoppedEvent = new ManualResetEventSlim();
 
 		public void Stop() {
-			stopEvent.Set();
+			//stopEvent.Set();
 
 			if (_NodeManager != null)
 			{
@@ -87,8 +87,8 @@ namespace Zen
 		}
 
 		public void Start() {
-			new Thread(() =>
-			{
+			//new Thread(() =>
+			//{
 				_NodeManager = _NodeManager ?? new NodeManager(_BlockChain, Settings.EndpointOptions);
 
 				switch (Settings.Mode.Value)
@@ -98,8 +98,8 @@ namespace Zen
 						break;
 				}
 
-				stopEvent.Wait();
-			}).Start();
+			//	stopEvent.Wait();
+			//}).Start();
 		}
 
 		private Keyed<Types.Block> _GenesisBlock = null;
@@ -128,7 +128,7 @@ namespace Zen
 								JsonLoader<Outputs>.Instance.Value.Values.Add(new Output() { Key = key.ToString(), Amount = amount });
 
 								var pklock = Types.OutputLock.NewPKLock(key.Address);
-								outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
+								outputs.Add(new Types.Output(pklock, new Types.Spend(Consensus.Tests.zhash, amount)));
 							}
 							catch
 							{
@@ -147,7 +147,7 @@ namespace Zen
 							var amount = output.Amount;
 
 							var pklock = Types.OutputLock.NewPKLock(key.Address);
-							outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
+							outputs.Add(new Types.Output(pklock, new Types.Spend(Consensus.Tests.zhash, amount)));
 						}
 					}
 
@@ -163,6 +163,7 @@ namespace Zen
 					var blockHeader = new Types.BlockHeader(
 						version,
 						new byte[] { },
+						0,
 						new byte[] { },
 						new byte[] { },
 						new byte[] { },

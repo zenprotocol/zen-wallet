@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NDesk.Options;
 using Infrastructure;
 using NBitcoinDerive;
+using System.Threading;
 
 namespace Zen
 {
@@ -83,7 +84,13 @@ namespace Zen
 					return;
 				}
 
-				TUI.Start(app, String.Join(" ", args));
+				//new Thread(() =>
+				//{
+					TUI.Start(app, String.Join(" ", args));
+					//stopEvent.Wait();
+				//}).Start();
+
+
 			}
 			catch (Exception e)
 			{
