@@ -10,11 +10,11 @@ namespace BlockChain.Store
 {
 	public class TxMempool
 	{
-		private readonly HashDictionary<Keyed<Types.Transaction>> _Transactions;
-		private readonly List<Types.Outpoint> _TransactionsInputs;
+		private readonly HashDictionary<TransactionValidation.PointedTransaction> _Transactions;
+		private readonly List<Types.Outpoint> _TransactionOutpoints;
 
 		private readonly HashDictionary<Keyed<Types.Transaction>> _OrphanTransactions;
-		private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanTransactionsInputs;
+		private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanTransactionsOutpoints;
 
 		private object _Lock = new Object();
 
@@ -27,11 +27,11 @@ namespace BlockChain.Store
 		}
 
 		//demo
-		public List<Keyed<Types.Transaction>> GetAll()
+		public List<TransactionValidation.PointedTransaction> GetAll()
 		{
 			lock (_Lock)
 			{
-				var result = new List<Keyed<Types.Transaction>>();
+				var result = new List<TransactionValidation.PointedTransaction>();
 
 				foreach (var item in _Transactions)
 				{
@@ -44,11 +44,11 @@ namespace BlockChain.Store
 
 		public TxMempool()
 		{
-			_Transactions = new HashDictionary<Keyed<Types.Transaction>>();
-			_TransactionsInputs = new List<Types.Outpoint>();
+			_Transactions = new HashDictionary<TransactionValidation.PointedTransaction>();
+			_TransactionOutpoints = new List<Types.Outpoint>();
 
 			_OrphanTransactions = new HashDictionary<Keyed<Types.Transaction>>();
-			_OrphanTransactionsInputs = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
+			_OrphanTransactionsOutpoints = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
 		}
 
 		public bool ContainsKey(byte[] key)
@@ -70,7 +70,7 @@ namespace BlockChain.Store
 			}
 		}
 
-		public Keyed<Types.Transaction> Get(byte[] key)
+		public TransactionValidation.PointedTransaction Get(byte[] key)
 		{
 			lock (_Lock)
 			{
@@ -82,9 +82,9 @@ namespace BlockChain.Store
 		{
 			lock (_Lock)
 			{
-				foreach (Types.Outpoint input in transaction.Value.inputs)
+				foreach (Types.Outpoint outpoint in transaction.Value.inputs)
 				{
-					if (_TransactionsInputs.Contains(input))
+					if (_TransactionOutpoints.Contains(outpoint))
 					{
 						return true;
 					}
@@ -98,29 +98,30 @@ namespace BlockChain.Store
 		{
 			lock (_Lock)
 			{
-				return _OrphanTransactionsInputs.Keys
+				return _OrphanTransactionsOutpoints.Keys
 					.Where(key => key.txHash.SequenceEqual(parentTransaction.Key))
-					.Select(key => _OrphanTransactionsInputs[key]);
+					.Select(key => _OrphanTransactionsOutpoints[key]);
 			}
 		}
 
-		public void Add(Keyed<Types.Transaction> transaction, bool isOrphan = false)
+		public void Add(byte[] key, TransactionValidation.PointedTransaction transaction)
 		{
 			lock (_Lock)
 			{
-				if (isOrphan)
-				{
-					_OrphanTransactions.Add(transaction.Key, transaction);
+				_Transactions.Add(key, transaction);
+				_TransactionOutpoints.AddRange(transaction.pInputs.Select(t=>t.Item1));
+			}
+		}
 
-					foreach (Types.Outpoint input in transaction.Value.inputs)
-					{
-						_OrphanTransactionsInputs.Add(input, transaction);
-					}
-				}
-				else
+		public void AddOrphan(Keyed<Types.Transaction> transaction)
+		{
+			lock (_Lock)
+			{
+				_OrphanTransactions.Add(transaction.Key, transaction);
+
+				foreach (Types.Outpoint input in transaction.Value.inputs)
 				{
-					_Transactions.Add(transaction.Key, transaction);
-					_TransactionsInputs.AddRange(transaction.Value.inputs);
+					_OrphanTransactionsOutpoints.Add(input, transaction);
 				}
 			}
 		}

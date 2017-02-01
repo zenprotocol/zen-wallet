@@ -27,6 +27,32 @@ namespace BlockChain
 		public byte[] GenesisBlockHash { get; private set; }
 		private object _lockObject = new Object();
 
+		public TransactionValidation.PointedTransaction GetPointedTransaction(TransactionContext dbTx, Types.Transaction tx)
+		{
+			var outputs = new List<Types.Output>();
+
+			foreach (var input in tx.inputs)
+			{
+				FSharpList<Types.Output> _outputs = null;
+
+				if (TxMempool.ContainsKey(input.txHash))
+				{
+					_outputs = TxMempool.Get(input.txHash).outputs;
+				}
+				else if (BlockStore.TxStore.ContainsKey(dbTx, input.txHash))
+				{
+					_outputs = BlockStore.TxStore.Get(dbTx, input.txHash).Value.outputs;
+				}
+
+				outputs.Add(_outputs[(int)input.index]);
+			}
+
+			return TransactionValidation.toPointedTransaction(
+				tx,
+				ListModule.OfSeq<Types.Output>(outputs)
+			);
+		}
+
 		public bool IsTipOld //TODO: consider caching
 		{
 			get
@@ -94,7 +120,7 @@ namespace BlockChain
 				while (itr != null && timestamps.Count < BlockTimestamps.SIZE)
 				{
 					timestamps.Add(itr.timestamp);
-					itr = GetBlock(itr.parent);
+					itr = GetBlockHeader(itr.parent);
 				}
 				Timestamps.Init(timestamps.ToArray());
 			}
@@ -205,7 +231,7 @@ namespace BlockChain
 		{
 			if (TxMempool.ContainsKey(key))
 			{
-				return TxMempool.Get(key).Value;
+				return TransactionValidation.unpoint(TxMempool.Get(key));
 			}
 			else
 			{
@@ -222,7 +248,7 @@ namespace BlockChain
 		}
 
 		//TODO: should asset that the block came from main?
-		public Types.BlockHeader GetBlock(byte[] key)
+		public Types.BlockHeader GetBlockHeader(byte[] key)
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
@@ -232,12 +258,43 @@ namespace BlockChain
 			}
 		}
 
-		public List<Keyed<Types.Output>> GetUTXOSet()
+		//TODO: should asset that the block came from main?
+		public Types.Block GetBlock(byte[] key)
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				return UTXOStore.All(context).ToList();
+				var bk = BlockStore.GetBlock(context, key);
+
+				return bk == null ? null : bk.Value;
 			}
+		}
+
+		// TODO: use linq, return enumerator, remove predicate
+		public Dictionary<Keyed<Types.Transaction>, Types.Output> GetUTXOSet(Func<Types.Output, bool> predicate)
+		{
+			var outputs = new Dictionary<byte[], Types.Output>();
+			var values = new Dictionary<Keyed<Types.Transaction>, Types.Output>();
+
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				foreach (var output in UTXOStore.All(context, predicate, true))
+				{
+					byte[] txHash = new byte[output.Key.Length - 1];
+					Array.Copy(output.Key, txHash, txHash.Length);
+					outputs[txHash] = output.Value;
+				}
+			}
+
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				foreach (var output in outputs)
+				{
+					var tx = BlockStore.TxStore.Get(context, output.Key);
+					values[tx] = output.Value;
+				}
+			}
+
+			return values;
 		}
 
 		//public List<Tuple<Types.Outpoint,Types.Output>> GetUTXOSet()
@@ -296,7 +353,9 @@ namespace BlockChain
 				nonce
 			);
 
-			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions.Select(t => t.Value)));
+			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions.Select(
+				t => TransactionValidation.unpoint(t)))
+          	);
 
 			if (HandleNewBlock(newBlock) == AddBk.Result.Added)
 			{

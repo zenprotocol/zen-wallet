@@ -29,9 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="DBreeze">
-      <HintPath>..\packages\DBreeze.1.79.0\lib\net45\DBreeze.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core" />
     <Reference Include="MsgPack">
       <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
@@ -41,6 +38,9 @@
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.6.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="DBreeze">
+      <HintPath>..\packages\DBreeze.1.80.0\lib\net45\DBreeze.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
