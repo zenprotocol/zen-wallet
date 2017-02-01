@@ -11,17 +11,15 @@ using System.Collections.Concurrent;
 
 namespace BlockChain
 {
-	public class TxAddedMessage
+	public class TxAddedMessage 
 	{
-		public Keyed<Types.Transaction> Tx { get; set; }
-		public bool IsConfirmed { get; set; }
+		public TransactionValidation.PointedTransaction Tx { get; set; }
 
-		public static void Publish(Keyed<Types.Transaction> tx, bool isConfirmed)
+		public static void Publish(TransactionValidation.PointedTransaction tx)
 		{
 			MessageProducer<TxAddedMessage>.Instance.PushMessage(new TxAddedMessage()
 			{
 				Tx = tx,
-				IsConfirmed = isConfirmed
 			});
 		}
 	}
