@@ -6,368 +6,227 @@ using System.Linq;
 using Wallet.core.Store;
 using Wallet.core.Data;
 using Consensus;
-using Microsoft.FSharp.Collections;
 using BlockChain.Data;
-using BlockChain.Store;
+using BlockChain;
 
 namespace Wallet.core
 {
-	public class Balances : HashDictionary<List<long>>
-	{
-	}
-
 	public class WalletManager : ResourceOwner
 	{
 		private DBContext _DBContext;
 		private BlockChain.BlockChain _BlockChain;
-		private Store.UTXOStore _UTXOStore;
-		private UTXOMem _UTXOMem;
+		private TxBalancesStore _TxBalancesStore;
 		private KeyStore _KeyStore { get; set; }
-		private HashDictionary<bool> _HandledTransactions;
-		private BalanceStore _BalanceStore;
+		private List<Key> _Keys;
 
-		public event Action<HashDictionary<long>> OnNewBalance;
+		public WalletBalances WalletBalances { get; private set; }
 
-//#if DEBUG
-//		public void Reset()
-//		{
-//			WalletTrace.Information("reset");
-//		}
-//#endif
+		private EventLoopMessageListener<TxAddedMessage> _BlockChainTxListener;
+		private EventLoopMessageListener<BkAddedMessage> _BlockChainBkListener;
 
 		public WalletManager(BlockChain.BlockChain blockChain, string dbName)
 		{
 			_BlockChain = blockChain;
 
-			_HandledTransactions = new HashDictionary<bool>();
 			_DBContext = new DBContext(dbName);
 			OwnResource(_DBContext);
 
 			_KeyStore = new KeyStore();
-			_UTXOStore = new Store.UTXOStore();
-			_UTXOMem = new UTXOMem();
-			_BalanceStore = new BalanceStore();
+			_TxBalancesStore = new TxBalancesStore();
 
-			using (var context = _DBContext.GetTransactionContext())
+			WalletBalances = new WalletBalances();
+
+			_BlockChainTxListener = new EventLoopMessageListener<TxAddedMessage>(HandleTx, false);
+			_BlockChainBkListener = new EventLoopMessageListener<BkAddedMessage>(OnBlock, false);
+
+			OwnResource(MessageProducer<TxAddedMessage>.Instance.AddMessageListener(_BlockChainTxListener));
+			OwnResource(MessageProducer<BkAddedMessage>.Instance.AddMessageListener(_BlockChainBkListener));
+
+			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				WalletTrace.Information($"Keystore contains {_KeyStore.List(context, false).Count} unused, {_KeyStore.List(context, true).Count} used");
+				_Keys = _KeyStore.List(dbTx);
+				_TxBalancesStore.All(dbTx).ToList().ForEach(t =>
+				{
+					var balances = _TxBalancesStore.Balances(dbTx, t.Key);
+					WalletBalances.Add(new UpdateInfoItem(t, balances));
+				});
 			}
-
-			OwnResource(MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
-				new EventLoopMessageListener<TxMempool.AddedMessage>(m =>
-				{
-					HandleTransaction(m.Transaction, false);
-				})
-			));
-
-			OwnResource(MessageProducer<TxStore.AddedMessage>.Instance.AddMessageListener(
-				new EventLoopMessageListener<TxStore.AddedMessage>(m =>
-				{
-					HandleTransaction(m.Transaction, true);
-				})
-			));
-
-			//JsonLoader<Balances>.Instance.FileName = "balances.json";
 		}
 
-		public HashDictionary<List<long>> Load()
+		public void OnBlock(BkAddedMessage m)
 		{
-			var balances = new HashDictionary<List<long>>();
+			var txs = new List<TransactionValidation.PointedTransaction>();
 
-			using (var context = _DBContext.GetTransactionContext())
+			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				foreach (var item in _BalanceStore.All(context))
-				{
-					balances[item.Key] = item.Value;
-				}
+				m.Bk.transactions.ToList().ForEach(tx=>txs.Add(_BlockChain.GetPointedTransaction(dbTx, tx)));
 			}
 
-			return balances;
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				txs.ForEach(tx => HandleTx(dbTx, tx));
+			}
 		}
 
-		public void Sync()
+		public void Import()
 		{
-			_HandledTransactions.Clear();
-			var utxoSet = _BlockChain.GetUTXOSet();
-			WalletTrace.Information($"loading blockchain's {utxoSet.Count()} utxos");
-			var transactions = new List<Types.Transaction>();
+			var utxoSetTxs = _BlockChain.GetUTXOSet(IsMatch); // TODO: use linq, return enumerator, remove predicate
 
-			var tip = _BlockChain.Tip;
-
-			if (tip == null)
+			WalletBalances.Clear();
+			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				return;
-			}
+				dbTx.Transaction.SynchronizeTables(TxBalancesStore.INDEXES);
+				_TxBalancesStore.Reset(dbTx);
 
-			var block = tip.Value;
-
-			while (block != null)
-			{
-				foreach (var transaction in block.transactions)
+				foreach (var tx in utxoSetTxs)
 				{
-					transactions.Add(transaction);
+					var balances = new HashDictionary<long>();
+
+					tx.Key.Value.outputs.Where(IsMatch).ToList().ForEach(o => Add(balances, o));
+					_TxBalancesStore.Put(dbTx, tx.Key, balances, TxStateEnum.Confirmed);
+					WalletBalances.Add(new UpdateInfoItem(tx.Key, balances));
 				}
 
-				block = _BlockChain.GetBlock(block.header.parent);
+				_BlockChain.TxMempool.GetAll().ForEach(ptx => HandleTx(ptx));
+
+				dbTx.Commit();
 			}
 
-			using (var context = _DBContext.GetTransactionContext())
-			{
-				//_OutpointAssetsStore.RemoveAll(context);
-				_UTXOStore.RemoveAll(context);
-				_BalanceStore.RemoveAll(context);
+			_BlockChainBkListener.Start();
+			_BlockChainTxListener.Start();
 
-				foreach (var item in utxoSet)
-				{
-					if (_KeyStore.Find(context, item.Value, true))
-					{
-						_UTXOStore.Put(context, item);
+			MessageProducer<IWalletMessage>.Instance.PushMessage(new ResetMessage());
+		}
 
-						//_AssetsManager.Add(item);
-						//AddToRunningBalance(item.Value);
-						//if (!myTransactions.Contains(item.Item1.txHash))
-						//{
-						//	myTransactions.Add(item.Item1.txHash);
-						//}
-					}
-				}
 
-				context.Commit();
-			}
+	//	public void Sync()
+	//	{
+			//_HandledTransactions.Clear();
+			//var utxoSet = _BlockChain.GetUTXOSet();
+			//WalletTrace.Information($"loading blockchain's {utxoSet.Count()} utxos");
+			//var transactions = new List<Types.Transaction>();
+
+
+			//var tipItr = _BlockChain.Tip.Key;
+
+			//while (tipItr != null && !tipItr.SequenceEqual(new byte[] { }))
+			//{
+			//	using (var context = _DBContext.GetTransactionContext()) // TODO: encap
+			//	{
+			//		foreach (var transaction in _BlockChain.BlockStore.Transactions(context, tipItr))
+			//		{
+			//			transactions.Add(transaction.Value);
+			//		}
+			//	}
+
+			//	tipItr = _BlockChain.GetBlockHeader(tipItr).parent;
+			//}
+
+			//using (var context = _DBContext.GetTransactionContext())
+			//{
+			//	//_OutpointAssetsStore.RemoveAll(context);
+			//	_UTXOStore.RemoveAll(context);
+			//	_BalanceStore.RemoveAll(context);
+
+			//	foreach (var item in utxoSet)
+			//	{
+			//		if (_KeyStore.Find(context, item.Value, true))
+			//		{
+			//			_UTXOStore.Put(context, item);
+
+			//			//_AssetsManager.Add(item);
+			//			//AddToRunningBalance(item.Value);
+			//			//if (!myTransactions.Contains(item.Item1.txHash))
+			//			//{
+			//			//	myTransactions.Add(item.Item1.txHash);
+			//			//}
+			//		}
+			//	}
+
+			//	context.Commit();
+			//}
 				
-			foreach (var transaction in transactions)
-			{
-				HandleTransaction(new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction), true);
-			}
-		}
-
-		private void AddBalance(HashDictionary<List<long>> balances, Types.Output output, bool isNegative = false)
-		{
-			if (!balances.ContainsKey(output.spend.asset))
-			{
-				balances[output.spend.asset] = new List<long>();
-			}
-
-			if (isNegative)
-				WalletTrace.Information($"removing {output.spend.amount} {AssetsHelper.Find(output.spend.asset)}");
-			else
-				WalletTrace.Information($"adding {output.spend.amount} {AssetsHelper.Find(output.spend.asset)}");
-			
-			balances[output.spend.asset].Add((long)output.spend.amount * (isNegative ? -1 : 1));
-		}
-
-		//private void HandleOutput(TransactionContext context, byte[] transaction, Types.Output output, bool confirmed, bool isSent = false)
-		//{
-		//	byte[] key = new byte[transaction.Length + 1];
-		//	transaction.CopyTo(key, 0);
-		//	key[transaction.Length] = (byte)i;
-
-		//	if (confirmed)
-		//	{
-		//		_UTXOStore.Put(context, new Keyed<Types.Output>(key, output));
-
-		//		if (_UTXOMem.ContainsKey(key))
-		//		{
-		//			_UTXOMem.Remove(key);
-		//		}
-		//	}
-		//	else
-		//	{
-		//		_UTXOMem[key] = output;
-		//	}
-		//}
-
-		private void HandleTransaction(Keyed<Types.Transaction> transaction, bool confirmed)
-		{
-			var handled = _HandledTransactions.ContainsKey(transaction.Key);
-			var balances = new HashDictionary<List<long>>();
-			var balances_ = new HashDictionary<long>();
-
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				byte i = 0;
-				bool shouldCommit = false;
-
-				foreach (var input in transaction.Value.inputs)
-				{
-					byte[] key = new byte[input.txHash.Length + 1];
-					input.txHash.CopyTo(key, 0);
-					key[input.txHash.Length] = (byte)input.index;
-
-					Types.Output output = null;
-
-					if (_UTXOMem.ContainsKey(key))
-					{
-						output = _UTXOMem[key];
-						_UTXOMem.Remove(key);
-					}
-					else if (_UTXOStore.ContainsKey(context, key))
-					{
-						output = _UTXOStore.Get(context, key).Value;
-
-						if (confirmed)
-						{
-							_UTXOStore.Remove(context, key);
-							shouldCommit = true;
-						}
-					}
-
-					if (!handled)
-					{
-						AddBalance(balances, output, true);
-					}
-				}
-
-				foreach (var output in transaction.Value.outputs)
-				{
-					if (_KeyStore.Find(context, output, true))
-					{
-						shouldCommit = true;
-
-						byte[] key = new byte[transaction.Key.Length + 1];
-						transaction.Key.CopyTo(key, 0);
-						key[transaction.Key.Length] = (byte)i;
-
-						if (confirmed)
-						{
-							_UTXOStore.Put(context, new Keyed<Types.Output>(key, output));
-
-							if (_UTXOMem.ContainsKey(key))
-							{
-								_UTXOMem.Remove(key);
-							}
-						}
-						else
-						{
-							_UTXOMem[key] = output;
-						}
-
-						if (!handled)
-						{
-							AddBalance(balances, output);
-						}
-					}
-
-					i++;
-				}
-
-				foreach (var item in balances)
-				{
-					foreach (var item_ in item.Value)
-					{
-						if (!balances_.ContainsKey(item.Key))
-						{
-							balances_[item.Key] = 0;
-						}
-						balances_[item.Key] += item_;
-					}
-				}
-
-				if (shouldCommit)
-				{
-					foreach (var item in balances)
-					{
-						var values_ = _BalanceStore.ContainsKey(context, item.Key) ? _BalanceStore.Get(context, item.Key).Value : new List<long>();
-						values_.Add(balances_[item.Key]);
-
-						_BalanceStore.Put(context, new Keyed<List<long>>(item.Key, values_));
-					}
-					context.Commit();
-				}
-			}
-
-			if (!handled)
-			{
-				_HandledTransactions[transaction.Key] = true;
-
-				try
-				{
-					if (OnNewBalance != null)
-					{
-						OnNewBalance(balances_);
-					}
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e); //TODO
-				}
-			}
-		}
+			//foreach (var transaction in transactions)
+			//{
+			//	HandleTransaction(new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction), true);
+			//}
+	//	}
 
 		public bool Spend(string address, byte[] asset, ulong amount) //TODO: sign it.
 		{
-			var assets = new SortedSet<Tuple<Types.Outpoint, Types.Output>>(new OutputComparer());
+			//var assets = new SortedSet<Tuple<Types.Outpoint, Types.Output>>(new OutputComparer());
 
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				// add confirmed utxos first
-				foreach (var utxo in _UTXOStore.All(context))
-				{
-					if (utxo.Value.spend.asset.SequenceEqual(asset))
-					{
-						//TODO: this probably should be done using msgpack
-						byte[] txHash = new byte[utxo.Key.Length - 1];
-						Array.Copy(utxo.Key, txHash, txHash.Length);
-						uint index = utxo.Key[utxo.Key.Length - 1];
-						var outpoint = new Types.Outpoint(txHash, index);
-						assets.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, utxo.Value));
-					}
-				}
+			//using (TransactionContext context = _DBContext.GetTransactionContext())
+			//{
+			//	// add confirmed utxos first
+			//	foreach (var utxo in _UTXOStore.All(context))
+			//	{
+			//		if (utxo.Value.spend.asset.SequenceEqual(asset))
+			//		{
+			//			//TODO: this probably should be done using msgpack
+			//			byte[] txHash = new byte[utxo.Key.Length - 1];
+			//			Array.Copy(utxo.Key, txHash, txHash.Length);
+			//			uint index = utxo.Key[utxo.Key.Length - 1];
+			//			var outpoint = new Types.Outpoint(txHash, index);
+			//			assets.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, utxo.Value));
+			//		}
+			//	}
 
-				// ..then add mem utxos
-				foreach (var utxo in _UTXOMem)
-				{
-					if (utxo.Value.spend.asset.SequenceEqual(asset))
-					{
-						//TODO: this probably should be done using msgpack
-						byte[] txHash = new byte[utxo.Key.Length - 1];
-						Array.Copy(utxo.Key, txHash, txHash.Length);
-						uint index = utxo.Key[utxo.Key.Length - 1];
-						var outpoint = new Types.Outpoint(txHash, index);
-						assets.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, utxo.Value));
-					}
-				}
-			}
+			//	// ..then add mem utxos
+			//	foreach (var utxo in _UTXOMem)
+			//	{
+			//		if (utxo.Value.spend.asset.SequenceEqual(asset))
+			//		{
+			//			//TODO: this probably should be done using msgpack
+			//			byte[] txHash = new byte[utxo.Key.Length - 1];
+			//			Array.Copy(utxo.Key, txHash, txHash.Length);
+			//			uint index = utxo.Key[utxo.Key.Length - 1];
+			//			var outpoint = new Types.Outpoint(txHash, index);
+			//			assets.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, utxo.Value));
+			//		}
+			//	}
+			//}
 
-			var inputs = new List<Types.Outpoint>();
-			ulong total = 0;
+			//var inputs = new List<Types.Outpoint>();
+			//ulong total = 0;
 
-			foreach (var item in assets)
-			{
-				inputs.Add(item.Item1);
-				total += item.Item2.spend.amount;
+			//foreach (var item in assets)
+			//{
+			//	inputs.Add(item.Item1);
+			//	total += item.Item2.spend.amount;
 
-				if (total >= amount)
-				{
-					break;
-				}
-			}
+			//	if (total >= amount)
+			//	{
+			//		break;
+			//	}
+			//}
 
-			if (total < amount)
-			{
-				return false;
-			}
+			//if (total < amount)
+			//{
+			//	return false;
+			//}
 
-			var outputs = new List<Types.Output>();
+			//var outputs = new List<Types.Output>();
 
-			outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(Key.FromBase64String(address)), new Types.Spend(Tests.zhash, amount)));
+			//outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(Key.FromBase64String(address)), new Types.Spend(Tests.zhash, amount)));
 
-			if (total - amount > 0)
-			{
-				outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(GetUnsendKey(true).Address), new Types.Spend(Tests.zhash, total - amount)));
-			}
+			//if (total - amount > 0)
+			//{
+			//	outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(GetUnusedKey(true).Address), new Types.Spend(Tests.zhash, total - amount)));
+			//}
 
-			var hashes = new List<byte[]>();
-			var version = (uint)1;
+			//var hashes = new List<byte[]>();
+			//var version = (uint)1;
 
-			Types.Transaction transaction = new Types.Transaction(version,
-				ListModule.OfSeq(inputs),
-				ListModule.OfSeq(hashes),
-				ListModule.OfSeq(outputs),
-				null);
+			//Types.Transaction transaction = new Types.Transaction(version,
+			//	ListModule.OfSeq(inputs),
+			//	ListModule.OfSeq(hashes),
+			//	ListModule.OfSeq(outputs),
+			//	null);
 
-			//TODO:		Consensus.TransactionValidation.signTx(
-			return _BlockChain.HandleNewTransaction(transaction);
+			////TODO:		Consensus.TransactionValidation.signTx(
+			//return _BlockChain.HandleNewTransaction(transaction);
+			return false;
 		}
 
 		public bool AddKey(string base64EncodedPrivateKey)
@@ -383,27 +242,18 @@ namespace Wallet.core
 			return result;
 		}
 
-		public Key GetUnsendKey(bool isChange = false)
+		public Key GetUnusedKey()
 		{
 			Key result;
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
-				result = _KeyStore.GetUnsendKey(context, isChange);
+				result = _KeyStore.GetUnusedKey(context);
 				context.Commit();
 			}
 
 			return result;
 		}
-
-		//public void Used(Key key)
-		//{
-		//	using (var context = _DBContext.GetTransactionContext())
-		//	{
-		//		_KeyStore.Used(context, key);
-		//		context.Commit();
-		//	}
-		//}
 
 		public List<Key> ListKeys(bool? used = null, bool? isChange = null)
 		{
@@ -413,16 +263,67 @@ namespace Wallet.core
 			}
 		}
 
-								//private void InvalidateKeys(TransactionContext context, params Key[] keys)
-		//{
-		//	foreach (var key in keys)
-		//	{
-		//		if (!key.Used)
-		//		{
-		//			WalletTrace.Information($"Key used: {key.PrivateAsString}");
-		//			_KeyStore.Used(context, key);
-		//		}
-		//	}
-		//}
+		private void HandleTx(TxAddedMessage m)
+		{
+			HandleTx(m.Tx);
+		}
+
+		private void HandleTx(TransactionValidation.PointedTransaction ptx)
+		{
+			using (var context = _DBContext.GetTransactionContext())
+			{
+				HandleTx(context, ptx);
+			}
+		}
+
+		private void HandleTx(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
+		{
+			var balances = new HashDictionary<long>();
+
+			ptx.outputs.Where(IsMatch).ToList().ForEach(o => Add(balances, o));
+			ptx.pInputs.Where(IsMatch).ToList().ForEach(o => Add(balances, o));
+
+			if (balances.Count > 0)
+			{
+				var tx = TransactionValidation.unpoint(ptx);
+				var keyedTx = new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(tx), tx);
+
+				_TxBalancesStore.Put(dbTx, keyedTx, balances, TxStateEnum.Unconfirmed);
+				WalletBalances.Add(new UpdateInfoItem(keyedTx, balances));
+			}
+		}
+
+		private bool IsMatch(Tuple<Types.Outpoint, Types.Output> pointedOutput)
+		{
+			return IsMatch(pointedOutput.Item2);
+		}
+
+		private bool IsMatch(Types.Output output)
+		{
+			foreach (var key in _Keys)
+			{
+				if (key.IsMatch(output.@lock))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private void Add(HashDictionary<long> balances, Types.Output output, bool isSpending = false)
+		{
+			if (!balances.ContainsKey(output.spend.asset))
+			{
+				balances[output.spend.asset] = 0;
+			}
+
+			balances[output.spend.asset] += isSpending  ? (long)output.spend.amount : (long)output.spend.amount * -1;
+		}
+
+		private void Add(HashDictionary<long> balances, Tuple<Types.Outpoint, Types.Output> pointedOutput)
+		{
+			Add(balances, pointedOutput.Item2, true);
+		}
 	}
 }

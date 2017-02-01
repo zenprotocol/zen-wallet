@@ -71,7 +71,7 @@ namespace Wallet.core.Data
 		{
 			var pkLock = outputLock as Types.OutputLock.PKLock;
 
-			return pkLock != null && Address.SequenceEqual(pkLock.pkHash);
+			return pkLock != null && Address != null && Address.SequenceEqual(pkLock.pkHash);
 		}
 
 		public static byte[] FromBase64String(string base64Encoded)
