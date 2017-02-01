@@ -38,6 +38,9 @@
       <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core" />
+    <Reference Include="nunit.framework">
+      <Package>nunit</Package>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -48,6 +51,7 @@
     <Compile Include="Config\Settings.cs" />
     <Compile Include="Config\Keys.cs" />
     <Compile Include="AppTraceListener.cs" />
+    <Compile Include="Tests\Tests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -102,5 +106,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\" />
+    <Folder Include="Tests\" />
   </ItemGroup>
 </Project>
