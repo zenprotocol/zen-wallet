@@ -3,34 +3,41 @@ using BlockChain.Store;
 using Store;
 using NUnit.Framework;
 using BlockChain.Data;
+using Infrastructure.Testing;
+using System;
 
 namespace BlockChain.Tests
 {
 	[TestFixture()]
 	public class BlockChainTransactionInvalidationTests : BlockChainTestsBase
 	{
-		[OneTimeSetUp]
-		public new void OneTimeSetUp()
+		[Test, Order(1)]
+		public void ShouldSetup()
 		{
-			base.OneTimeSetUp();
+			var key = new byte[32];
+			new Random().NextBytes(key);
 
-			var newTx = GetTx(_GenesisTx);
+			_GenesisTx = _GenesisTx.AddOutput(key, Consensus.Tests.zhash, 100);
+
+			var newTx = Utils.GetTx().AddInput(_GenesisTx, 0);
+
 			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewTransaction(newTx.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewTransaction(newTx), Is.EqualTo(AddBk.Result.Added));
 		}
 
-		[Test, Order(1)]
+		[Test, Order(2)]
 		public void ShouldEvictFromMempool()
 		{
-			var newTx = GetTx(_GenesisTx);
-			var newBlock = GetBlock(_GenesisBlock, newTx);
-			Assert.That(_BlockChain.HandleNewBlock(newBlock.Value), Is.EqualTo(AddBk.Result.Added));
+			var newTx = Utils.GetTx().AddInput(_GenesisTx, 0);
 
-			var sideChainBlock = GetBlock(_GenesisBlock);
-			Assert.That(_BlockChain.HandleNewBlock(sideChainBlock.Value), Is.EqualTo(AddBk.Result.Added));
+			var newBlock = _GenesisBlock.Value.Child().AddTx(newTx);
+			Assert.That(_BlockChain.HandleNewBlock(newBlock), Is.EqualTo(AddBk.Result.Added));
+
+			var sideChainBlock = _GenesisBlock.Value.Child();
+			Assert.That(_BlockChain.HandleNewBlock(sideChainBlock), Is.EqualTo(AddBk.Result.Added));
 		
-			var sideChainExtendingBlock = GetBlock(sideChainBlock);
-			Assert.That(_BlockChain.HandleNewBlock(sideChainExtendingBlock.Value), Is.EqualTo(AddBk.Result.Added));
+			var sideChainExtendingBlock = sideChainBlock.Child();
+			Assert.That(_BlockChain.HandleNewBlock(sideChainExtendingBlock), Is.EqualTo(AddBk.Result.Added));
 
 			Assert.That(Location(newBlock), Is.EqualTo(LocationEnum.Branch));
 			Assert.That(Location(sideChainBlock), Is.EqualTo(LocationEnum.Main));
