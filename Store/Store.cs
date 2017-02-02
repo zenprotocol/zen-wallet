@@ -9,7 +9,7 @@ namespace Store
 	//calling table.Close
 
 	//public abstract class Store<TWrapper, TItem> where TWrapper : StoredItem<TItem>
-	public abstract class Store<T> where T : class
+	public abstract class Store<T> //where T : class
 	{
 		protected readonly string _TableName;
 
@@ -18,7 +18,7 @@ namespace Store
 			_TableName = tableName;
 		}
 
-		public void Put(TransactionContext transactionContext, Keyed<T> item) //TODO: used Keyed?
+		public void Put(TransactionContext transactionContext, Keyed<T> item) //TODO: use Keyed?
 		{
 			Put(transactionContext, new Keyed<T>[] { item });
 		}
@@ -63,11 +63,34 @@ namespace Store
 			transactionContext.Transaction.RemoveKey<byte[]>(_TableName, key);
 		}
 
-		public IEnumerable<Keyed<T>> All(TransactionContext transactionContext)
+		public void Count(TransactionContext transactionContext)
 		{
+			transactionContext.Transaction.Count(_TableName);
+		}
+		//public IEnumerable<Keyed<T>> All(TransactionContext transactionContext)
+		//{
+		//	foreach (var row in transactionContext.Transaction.SelectForward<byte[], byte[]>(_TableName))
+		//	{
+		//		yield return new Keyed<T>(row.Key, Unpack(row.Value, row.Key));
+		//	}
+		//}
+
+		public IEnumerable<Keyed<T>> All(TransactionContext transactionContext, Func<T, bool> predicate = null, bool syncronized = false)
+		{
+			if (syncronized)
+			{
+				//TODO: this WILL cause an exception when hit more than once per tx
+				transactionContext.Transaction.SynchronizeTables(_TableName);
+			}
+
 			foreach (var row in transactionContext.Transaction.SelectForward<byte[], byte[]>(_TableName))
 			{
-				yield return new Keyed<T>(row.Key, Unpack(row.Value, row.Key));
+				var value = Unpack(row.Value, row.Key);
+
+				if (predicate == null || predicate(value))
+				{
+					yield return new Keyed<T>(row.Key, value);
+				}
 			}
 		}
 
