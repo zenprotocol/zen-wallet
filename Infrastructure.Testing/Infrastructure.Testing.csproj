@@ -29,10 +29,24 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ColorConsoleTraceListener.cs" />
+    <Compile Include="FieldEx.cs" />
+    <Compile Include="TransactionExtensions.cs" />
+    <Compile Include="BlockExtensions.cs" />
+    <Compile Include="Utils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
