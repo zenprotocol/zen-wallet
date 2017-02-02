@@ -3,6 +3,7 @@ using BlockChain.Store;
 using Store;
 using NUnit.Framework;
 using BlockChain.Data;
+using Infrastructure.Testing;
 
 namespace BlockChain.Tests
 {
@@ -19,17 +20,17 @@ namespace BlockChain.Tests
 	[TestFixture()]
 	public class BlockChainRelocationTests : BlockChainTestsBase
 	{
-		private Keyed<Types.Block> block1;
-		private Keyed<Types.Block> block2;
-		private Keyed<Types.Block> block3;
+		private Types.Block block1;
+		private Types.Block block2;
+		private Types.Block block3;
 
 		[OneTimeSetUp]
 		public new void OneTimeSetUp()
 		{
 			base.OneTimeSetUp();
-			block1 = GetBlock(_GenesisBlock);
-			block2 = GetBlock(_GenesisBlock);
-			block3 = GetBlock(block2);
+			block1 = _GenesisBlock.Value.Child();
+			block2 = _GenesisBlock.Value.Child();
+			block3 = block2.Child();
 
 			//_GenesisBlock.SetTag("g");
 			//block1.SetTag("1");
@@ -51,27 +52,27 @@ namespace BlockChain.Tests
 		public void ShouldAddBlocks()
 		{
 			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock.Value), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(Location(_GenesisBlock), Is.EqualTo(LocationEnum.Main));
+			Assert.That(Location(_GenesisBlock.Value), Is.EqualTo(LocationEnum.Main));
 			Assert.That(_BlockChain.Tip.Key, Is.EqualTo(_GenesisBlock.Key));
 
-			Assert.That(_BlockChain.HandleNewBlock(block1.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block1), Is.EqualTo(AddBk.Result.Added));
 			Assert.That(Location(block1), Is.EqualTo(LocationEnum.Main));
-			Assert.That(_BlockChain.Tip.Key, Is.EqualTo(block1.Key));
+			Assert.That(_BlockChain.Tip.Value.Equals(block1.header), Is.True);
 
-			Assert.That(_BlockChain.HandleNewBlock(block2.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block2), Is.EqualTo(AddBk.Result.Added));
 			Assert.That(Location(block2), Is.EqualTo(LocationEnum.Branch));
-			Assert.That(_BlockChain.Tip.Key, Is.EqualTo(block1.Key));
+			Assert.That(_BlockChain.Tip.Value.Equals(block1.header), Is.True);
 		}
 
 		[Test, Order(2)]
 		public void ShouldReorganize()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(block3.Value), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block3), Is.EqualTo(AddBk.Result.Added));
 
 			Assert.That(Location(block1), Is.EqualTo(LocationEnum.Branch));
 			Assert.That(Location(block2), Is.EqualTo(LocationEnum.Main));
 			Assert.That(Location(block3), Is.EqualTo(LocationEnum.Main));
-			Assert.That(_BlockChain.Tip.Key, Is.EqualTo(block3.Key));
+			Assert.That(_BlockChain.Tip.Value.Equals(block3.header), Is.True);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Store;
 using Consensus;
 using Microsoft.FSharp.Collections;
+using System.Linq;
 
 namespace BlockChain
 {
@@ -182,9 +183,9 @@ namespace BlockChain
 				ListModule.OfSeq<Types.Output>(outputs)
 			);
 
-			for (int i = 0; i < _Tx.Value.inputs.Length; i++)
+			for (var ix = 0; ix < pointedTransaction.pInputs.Length; ix++)
 			{
-				if (!TransactionValidation.validateAtIndex(pointedTransaction, i))
+				if (!TransactionValidation.validateAtIndex(pointedTransaction, ix))
 					return null;
 			}
 

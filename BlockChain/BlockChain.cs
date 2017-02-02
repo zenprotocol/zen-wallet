@@ -272,7 +272,7 @@ namespace BlockChain
 		// TODO: use linq, return enumerator, remove predicate
 		public Dictionary<Keyed<Types.Transaction>, Types.Output> GetUTXOSet(Func<Types.Output, bool> predicate)
 		{
-			var outputs = new Dictionary<byte[], Types.Output>();
+			var outputs = new HashDictionary<Types.Output>();
 			var values = new Dictionary<Keyed<Types.Transaction>, Types.Output>();
 
 			using (TransactionContext context = _DBContext.GetTransactionContext())

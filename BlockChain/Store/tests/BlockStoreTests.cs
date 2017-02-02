@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using BlockChain.Store;
-using Consensus;
-using DBreeze;
-using Microsoft.FSharp.Collections;
 using NUnit.Framework;
 using Store;
 using System.Linq;
@@ -11,6 +6,8 @@ using System.IO;
 using System.Reflection;
 using BlockChain.Tests;
 using System.Linq;
+using Infrastructure.Testing;
+using Consensus;
 
 namespace BlockChain.Store.Tests
 {
@@ -47,25 +44,25 @@ namespace BlockChain.Store.Tests
 		[Test()]
 		public void ShouldGetChild()
 		{
-			var parent = GetBlock();
-			var child = GetBlock(parent);
+			var parent = Utils.GetGenesisBlock();
+			var child = parent.Value.Child();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, child, LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Children(dbTx, parent.Key, false).Select(t => t.Value), Contains.Item(child.Value));
+				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
+				Assert.That(_BlockStore.Children(dbTx, parent.Key, false).Select(t => t.Value), Contains.Item(child));
 			}
 		}
 
 		[Test()]
 		public void ShouldNotGetChild()
 		{
-			var parent = GetBlock();
-			var child = GetBlock(parent);
+			var parent = Utils.GetGenesisBlock();
+			var child = parent.Value.Child();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, child, LocationEnum.Main, 0);
+				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
 				Assert.That(_BlockStore.Children(dbTx, parent.Key, true), Is.Empty);
 			}
 		}
@@ -73,12 +70,12 @@ namespace BlockChain.Store.Tests
 		[Test()]
 		public void ShouldHaveChildren()
 		{
-			var parent = GetBlock();
-			var child = GetBlock(parent);
+			var parent = Utils.GetGenesisBlock();
+			var child = parent.Value.Child();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, child, LocationEnum.Main, 0);
+				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
 				Assert.That(_BlockStore.HasChildren(dbTx, parent.Key), Is.True);
 			}
 		}
@@ -86,27 +83,27 @@ namespace BlockChain.Store.Tests
 		[Test()]
 		public void ShouldStoreTx()
 		{
-			var tx = GetTx();
-			var block = GetBlock(tx);
+			var tx = Utils.GetTx();
+			var block = Utils.GetGenesisBlock().Value.AddTx(tx);
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, block, LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Transactions(dbTx, block.Key).Select(t=>t.Key), Contains.Item(tx.Key));
+				_BlockStore.Put(dbTx, Keyed(block), LocationEnum.Main, 0);
+				Assert.That(_BlockStore.Transactions(dbTx, Keyed(block).Key).Select(t=>t.Key), Contains.Item(tx));
 			}
 		}
 
 		[Test()]
 		public void ShouldReassembleBlock()
 		{
-			var tx = GetTx();
-			var block = GetBlock(tx);
+			var tx = Utils.GetTx();
+			var block = Utils.GetGenesisBlock().Value.AddTx(tx);
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, block, LocationEnum.Main, 0);
+				_BlockStore.Put(dbTx, Keyed(block), LocationEnum.Main, 0);
 
-				var retrievedBlock = _BlockChain.BlockStore.GetBlock(dbTx, block.Key);
+				var retrievedBlock = _BlockChain.BlockStore.GetBlock(dbTx, Keyed(block).Key);
 
 				Assert.That(retrievedBlock.Equals(block), Is.True);
 			}
@@ -115,14 +112,14 @@ namespace BlockChain.Store.Tests
 		[Test()]
 		public void ShoulGetChildren()
 		{
-			var parent = GetBlock();
-			var child1 = GetBlock(parent);
-			var child2 = GetBlock(parent);
+			var parent = Utils.GetGenesisBlock();
+			var child1 = parent.Value.Child();
+			var child2 = parent.Value.Child();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, child1, LocationEnum.Main, 0);
-				_BlockStore.Put(dbTx, child2, LocationEnum.Main, 0);
+				_BlockStore.Put(dbTx, Keyed(child1), LocationEnum.Main, 0);
+				_BlockStore.Put(dbTx, Keyed(child2), LocationEnum.Main, 0);
 				Assert.That(_BlockStore.Children(dbTx, parent.Key, false).Count, Is.EqualTo(2));
 			}
 		}
@@ -130,7 +127,7 @@ namespace BlockChain.Store.Tests
 		[Test()]
 		public void ShouldGetLocation()
 		{
-			var block = GetBlock();
+			var block = Utils.GetGenesisBlock();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
@@ -138,6 +135,11 @@ namespace BlockChain.Store.Tests
 				Assert.That(_BlockStore.GetLocation(dbTx, block.Key), Is.EqualTo(LocationEnum.Main));
 				Assert.That(_BlockStore.IsLocation(dbTx, block.Key, LocationEnum.Main), Is.True);
 			}
+		}
+
+		private Keyed<Types.Block> Keyed(Types.Block bk)
+		{
+			return new Keyed<Types.Block>(Merkle.blockHeaderHasher.Invoke(bk.header), bk);
 		}
 	}
 }
