@@ -31,7 +31,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			WalletController.GetInstance().TransactionsView = this;
+			WalletController.Instance.TransactionsView = this;
 
 			ScrolledWindow sw = new ScrolledWindow();
 
@@ -39,8 +39,6 @@ namespace Wallet
 			FindChild<Gtk.VBox>().PackStart(sw, true, true, 0);
 
 			CreateList();
-
-			WalletController.GetInstance().Load();
 
 			sw.Add(list);
 		}

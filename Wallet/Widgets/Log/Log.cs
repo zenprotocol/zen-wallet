@@ -32,14 +32,12 @@ namespace Wallet
 		{
 			this.Build ();
 
-			BalancesController.GetInstance().LogView = this;
+			BalancesController.Instance.LogView = this;
 
 			initList (listHeaders, FactorStore (new LogHeaderRow (0, Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listSummary, logSummaryStore);
 			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listTransactions, logEntryStore);
-
-			BalancesController.GetInstance().Sync();
 
 			ExposeEvent += (object o, ExposeEventArgs args) => {
 				listSummaryHeader.Hide ();

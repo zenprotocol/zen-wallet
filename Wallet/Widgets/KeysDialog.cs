@@ -26,9 +26,7 @@ namespace Wallet
 			buttonAdd.Clicked += delegate
 			{
 				new AddKeyDialog(delegate {
-					App.Instance.Wallet.Sync();
-					BalancesController.GetInstance().Sync();
-					WalletController.GetInstance().Load();
+					App.Instance.Wallet.Import();
 				}).ShowDialog();
 			};
 		}
@@ -61,10 +59,10 @@ namespace Wallet
 
 		private void Populate(Gtk.TreeView treeView, bool? used = null, bool? isChange = null)
 		{
-			foreach (var key in App.Instance.Wallet.ListKeys(used, isChange))
-			{
-				_Store.AppendValues(key, DisplayKey(key.Address), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
-			};
+			//foreach (var key in App.Instance.Wallet.ListKeys(used, isChange))
+			//{
+			//	_Store.AppendValues(key, DisplayKey(key.Address), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
+			//};
 		}
 
 		private String DisplayKey(byte[] key)

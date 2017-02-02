@@ -188,6 +188,7 @@
     <Compile Include="gtk-gui\Wallet.AddKeyDialog.cs" />
     <Compile Include="Widgets\MessageBox.cs" />
     <Compile Include="gtk-gui\Wallet.MessageBox.cs" />
+    <Compile Include="Controllers\WalletManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

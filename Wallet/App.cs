@@ -39,11 +39,5 @@ namespace Wallet
 
 			Gtk.Application.Run();
 		}
-
-		public void Close()
-		{
-		//	_MainWindow.Hide();
-			Gtk.Application.Quit ();
-		}
 	}
 }
