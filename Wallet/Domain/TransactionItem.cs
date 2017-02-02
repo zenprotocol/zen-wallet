@@ -5,7 +5,7 @@ namespace Wallet.Domain
 {
 	public class TransactionItem
 	{
-		public ulong Amount { get; set; }
+		public long Amount { get; set; }
 		public AssetType Asset { get; set; }
 		public DirectionEnum Direction { get; set; }
 		public DateTime Date { get; set; }
@@ -19,7 +19,7 @@ namespace Wallet.Domain
 		//	}
 		//}
 
-		public TransactionItem(ulong Amount, DirectionEnum Direction, AssetType Asset, DateTime Date, String To, String Id, Decimal Fee) {
+		public TransactionItem(long Amount, DirectionEnum Direction, AssetType Asset, DateTime Date, String To, String Id, Decimal Fee) {
 			this.Amount = Amount;
 			this.Direction = Direction;
 			this.Asset = Asset;

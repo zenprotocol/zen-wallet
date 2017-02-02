@@ -4,81 +4,80 @@ using Wallet.Domain;
 using System.Linq;
 using BlockChain.Data;
 using System.Collections.Generic;
+using Infrastructure;
 
 namespace Wallet
 {
-	public class BalancesController
+	public class BalancesController : Singleton<BalancesController>
 	{
-		private static BalancesController instance = null;
-		public ILogView LogView { get; set; }
-
-		public static BalancesController GetInstance() {
-			if (instance == null) {
-				instance = new BalancesController ();
-			}
-
-			return instance;
-		}
-			
-		public BalancesController ()
+		private ILogView _LogView;
+		public ILogView LogView
 		{
-			App.Instance.Wallet.OnNewBalance += OnNewBalance;
-		}
-
-		public void Sync()
-		{
-			LogView.Clear();
-			AddNewBalances(App.Instance.Wallet.Load());
-		}
-
-		public void AddNewBalances(HashDictionary<List<long>> balances)
-		{
-			if (LogView != null)
+			get
 			{
-				foreach (var item in balances)
-				{
-					var asset = item.Key;
-
-					foreach (var item_ in item.Value)
-					{
-						var amount = item.Value;
-
-						LogView.AddLogEntryItem(new LogEntryItem(
-							(ulong)Math.Abs(item_),
-							item_ < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-							AssetsHelper.Find(asset),
-							DateTime.Now,
-							Guid.NewGuid().ToString("N"),
-							Guid.NewGuid().ToString("N"),
-							0
-						));
-					}
-				}
+				return _LogView;
 			}
-		}
-
-		public void OnNewBalance(HashDictionary<long> balance)
-		{
-			if (LogView != null)
+			set
 			{
-				foreach (var item in balance)
-				{
-					var asset = item.Key;
+				_LogView = value;
+				AddNewBalances(App.Instance.Wallet.WalletBalances);
 
-					var amount = item.Value;
-
-					LogView.AddLogEntryItem(new LogEntryItem(
-						(ulong)Math.Abs(amount),
-						amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-						AssetsHelper.Find(asset),
-						DateTime.Now,
-						Guid.NewGuid().ToString("N"),
-						Guid.NewGuid().ToString("N"),
-						0
-					));
-				}
+				MessageProducer<IWalletMessage>.Instance.AddMessageListener(new MessageListener<IWalletMessage>(m =>
+{
+					//	if (m.GetType() == typeof(WalletBalances))
+					//	{
+					AddNewBalances(m as WalletBalances);
+					//	}
+				}));
 			}
 		}
+
+		public void AddNewBalances(WalletBalances walletBalances)
+		{
+			Gtk.Application.Invoke(delegate
+			{
+				//if (LogView != null)
+				//{
+				if (walletBalances.GetType() == typeof(ResetMessage))
+				{
+					LogView.Clear();
+				}
+
+				walletBalances.ForEach(u => u.Balances.ToList().ForEach(b => LogView.AddLogEntryItem(new LogEntryItem(
+					Math.Abs(b.Value),
+					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+					AssetsHelper.Find(b.Key),
+					DateTime.Now,
+					Guid.NewGuid().ToString("N"),
+					Guid.NewGuid().ToString("N"),
+					0
+				))));
+				//}
+			});
+		}
+
+		//public void OnNewBalance(HashDictionary<long> balance)
+		//{
+		//	if (LogView != null)
+		//	{
+		//		foreach (var item in balance)
+		//		{
+		//			var asset = item.Key;
+
+		//			var amount = item.Value;
+
+		//			LogView.AddLogEntryItem(new LogEntryItem(
+		//				(ulong)Math.Abs(amount),
+		//				amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+		//				AssetsHelper.Find(asset),
+		//				DateTime.Now,
+		//				Guid.NewGuid().ToString("N"),
+		//				Guid.NewGuid().ToString("N"),
+		//				0
+		//			));
+		//		}
+		//	}
+		//}
 
 	}
 }

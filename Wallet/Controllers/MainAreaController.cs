@@ -46,6 +46,13 @@ namespace Wallet
 			return instance;
 		}
 
+		internal void Quit()
+		{
+			Gtk.Application.Quit();
+		//	a.RetVal = true;
+		//	Hide();
+		}
+
 		public String MainAreaSelected { 
 			set {
 			switch (value) {

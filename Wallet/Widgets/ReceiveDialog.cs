@@ -13,12 +13,12 @@ namespace Wallet
 
 			dialogfieldAddress.Caption = "Public Key:";
 
-			SelectedKey = App.Instance.Wallet.GetUnsendKey ();
+			SelectedKey = App.Instance.Wallet.GetUnusedKey ();
 
-			foreach (var key_ in App.Instance.Wallet.ListKeys())
-			{
-				Console.WriteLine(key_.Address);
-			}
+			//foreach (var key_ in App.Instance.Wallet.ListKeys())
+			//{
+			//	Console.WriteLine(key_.Address);
+			//}
 
 			buttonClose.Clicked += delegate { 
 				CloseDialog(); 

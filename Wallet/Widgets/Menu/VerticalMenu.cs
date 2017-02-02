@@ -27,7 +27,7 @@ namespace Wallet
 			
 		public override MenuButton Selection { 
 			set {
-				WalletController.GetInstance().Asset = AssetsHelper.AssetTypes[value.Name];
+				WalletController.Instance.Asset = AssetsHelper.AssetTypes[value.Name];
 			}
 		}
 
