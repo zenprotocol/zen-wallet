@@ -19,10 +19,10 @@ namespace Wallet.core
 		private KeyStore _KeyStore { get; set; }
 		private List<Key> _Keys;
 
-		public WalletBalances WalletBalances { get; private set; }
-
 		private EventLoopMessageListener<TxAddedMessage> _BlockChainTxListener;
 		private EventLoopMessageListener<BkAddedMessage> _BlockChainBkListener;
+
+		public WalletBalances WalletBalances { get; private set; }
 
 		public WalletManager(BlockChain.BlockChain blockChain, string dbName)
 		{
@@ -53,21 +53,9 @@ namespace Wallet.core
 			}
 		}
 
-		public void OnBlock(BkAddedMessage m)
-		{
-			var txs = new List<TransactionValidation.PointedTransaction>();
-
-			using (var dbTx = _BlockChain.GetDBTransaction())
-			{
-				m.Bk.transactions.ToList().ForEach(tx=>txs.Add(_BlockChain.GetPointedTransaction(dbTx, tx)));
-			}
-
-			using (var dbTx = _DBContext.GetTransactionContext())
-			{
-				txs.ForEach(tx => HandleTx(dbTx, tx));
-			}
-		}
-
+		/// <summary>
+		/// Imports wallet file 
+		/// </summary>
 		public void Import()
 		{
 			var utxoSetTxs = _BlockChain.GetUTXOSet(IsMatch); // TODO: use linq, return enumerator, remove predicate
@@ -98,6 +86,20 @@ namespace Wallet.core
 			MessageProducer<IWalletMessage>.Instance.PushMessage(new ResetMessage());
 		}
 
+		private void OnBlock(BkAddedMessage m)
+		{
+			var txs = new List<TransactionValidation.PointedTransaction>();
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				m.Bk.transactions.ToList().ForEach(tx => txs.Add(_BlockChain.GetPointedTransaction(dbTx, tx)));
+			}
+
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				txs.ForEach(tx => HandleTx(dbTx, tx));
+			}
+		}
 
 	//	public void Sync()
 	//	{
@@ -229,18 +231,18 @@ namespace Wallet.core
 			return false;
 		}
 
-		public bool AddKey(string base64EncodedPrivateKey)
-		{
-			bool result = false;
+		//private bool AddKey(string base64EncodedPrivateKey)
+		//{
+		//	bool result = false;
 
-			using (var context = _DBContext.GetTransactionContext())
-			{
-				result = _KeyStore.AddKey(context, base64EncodedPrivateKey);
-				context.Commit();
-			}
+		//	using (var context = _DBContext.GetTransactionContext())
+		//	{
+		//		result = _KeyStore.AddKey(context, base64EncodedPrivateKey);
+		//		context.Commit();
+		//	}
 
-			return result;
-		}
+		//	return result;
+		//}
 
 		public Key GetUnusedKey()
 		{
@@ -253,14 +255,6 @@ namespace Wallet.core
 			}
 
 			return result;
-		}
-
-		public List<Key> ListKeys(bool? used = null, bool? isChange = null)
-		{
-			using (var context = _DBContext.GetTransactionContext())
-			{
-				return _KeyStore.List(context, used, isChange);
-			}
 		}
 
 		private void HandleTx(TxAddedMessage m)
@@ -318,7 +312,7 @@ namespace Wallet.core
 				balances[output.spend.asset] = 0;
 			}
 
-			balances[output.spend.asset] += isSpending  ? (long)output.spend.amount : (long)output.spend.amount * -1;
+			balances[output.spend.asset] += isSpending  ? -1 * (long)output.spend.amount : (long)output.spend.amount;
 		}
 
 		private void Add(HashDictionary<long> balances, Tuple<Types.Outpoint, Types.Output> pointedOutput)
