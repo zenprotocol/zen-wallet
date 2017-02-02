@@ -33,9 +33,9 @@ namespace Wallet
 
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 		{
-			App.Instance.Close ();
-			a.RetVal = true;
-			Hide();
+			MainAreaController.GetInstance().Quit();
+			//	a.RetVal = true;
+			//	Hide();
 		}
 
 		public Boolean SideMenuVisible { 

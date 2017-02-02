@@ -5,7 +5,7 @@ namespace Wallet.Domain
 {
 	public class LogEntryItem
 	{
-		public ulong Amount { get; set; }
+		public long Amount { get; set; }
 		public AssetType Asset { get; set; }
 		public DirectionEnum Direction { get; set; }
 		public DateTime Date { get; set; }
@@ -13,7 +13,7 @@ namespace Wallet.Domain
 		public String Id { get; set; }
 		public Decimal Balance { get; set; }
 
-		public LogEntryItem(ulong Amount, DirectionEnum Direction, AssetType Asset, DateTime Date, String To, String Id, Decimal Balance) {
+		public LogEntryItem(long Amount, DirectionEnum Direction, AssetType Asset, DateTime Date, String To, String Id, Decimal Balance) {
 			this.Amount = Amount;
 			this.Direction = Direction;
 			this.Asset = Asset;

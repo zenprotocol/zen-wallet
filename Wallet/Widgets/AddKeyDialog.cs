@@ -14,15 +14,15 @@ namespace Wallet
 
 			buttonCreate.Clicked += delegate
 			{
-				if (App.Instance.Wallet.AddKey(dialogfield1.Value))
-				{
-					done();
-					CloseDialog();
-				}
-				else
-				{
-					new MessageBox("already exists").ShowDialog();
-				}
+				//if (App.Instance.Wallet.AddKey(dialogfield1.Value))
+				//{
+				//	done();
+				//	CloseDialog();
+				//}
+				//else
+				//{
+				//	new MessageBox("already exists").ShowDialog();
+				//}
 			};
 		}
 	}
