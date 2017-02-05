@@ -65,7 +65,7 @@ namespace BlockChain
 				}
 				else 
 				{
-					DateTime tipDateTime = DateTime.FromBinary(tipBlock.Value.timestamp);
+					DateTime tipDateTime = DateTime.FromBinary(tipBlock.Value.header.timestamp);
 					TimeSpan diff = DateTime.Now - tipDateTime;
 
 					return diff > OLD_TIP_TIME_SPAN;
@@ -73,25 +73,8 @@ namespace BlockChain
 			}
 		}
 
-		//private Keyed<Types.Block> _tip = null;
-		public Keyed<Types.BlockHeader> Tip { 
-			get {
-				Keyed<Types.BlockHeader> _tip = null;
-
-				//if (_tip == null)
-				//{ 
-				using (var context = _DBContext.GetTransactionContext())
-				{
-					var chainTip = ChainTip.Context(context).Value;
-
-					//TODO: should asset that the block came from main?
-					_tip = chainTip == null ? null : BlockStore.Get(context, chainTip);
-				}
-				//}
-
-				return _tip;
-			}
-		}
+		//TODO: refactor
+		public Keyed<Types.Block> Tip { get; set; }
 
 		public BlockChain(string dbName, byte[] genesisBlockHash) {
 			_DBContext = new DBContext(dbName);
@@ -107,6 +90,14 @@ namespace BlockChain
 
 			OwnResource(_DBContext);
 
+			using (var context = _DBContext.GetTransactionContext())
+			{
+				var chainTip = ChainTip.Context(context).Value;
+
+				//TODO: check if makred as main?
+				Tip = chainTip == null ? null : BlockStore.GetBlock(context, chainTip);
+			}
+
 			InitBlockTimestamps();
 		}
 
@@ -119,8 +110,8 @@ namespace BlockChain
 
 				while (itr != null && timestamps.Count < BlockTimestamps.SIZE)
 				{
-					timestamps.Add(itr.timestamp);
-					itr = GetBlockHeader(itr.parent);
+					timestamps.Add(itr.header.timestamp);
+					itr = itr.header.parent.Length == 0 ? null : GetBlock(itr.header.parent);
 				}
 				Timestamps.Init(timestamps.ToArray());
 			}
@@ -153,12 +144,12 @@ namespace BlockChain
 
 					if (result != AddBk.Result.Rejected)
 					{
-						TxMempool.Lock(() =>
-						{
+					//	TxMempool.Lock(() =>
+					//	{
 							context.Commit();
 							foreach (Action action in doActions)
 								action();
-						});
+					//	});
 					}
 					else
 					{
@@ -178,7 +169,7 @@ namespace BlockChain
 			return result;
 		}
 
-		public bool HandleNewTransaction(Types.Transaction transaction) //TODO: use Keyed type
+		public AddTx.Result HandleNewTransaction(Types.Transaction transaction) //TODO: use Keyed type
 		{
 			var doActions = new List<Action>();
 			var undoActions = new List<Action>();
@@ -198,14 +189,14 @@ namespace BlockChain
 					context.Commit(); //TODO: don't need to commit if added to mempool
 					foreach (Action action in doActions)
 						action();
-					return true;
 				}
 				else
 				{
 					foreach (Action action in undoActions)
 						action();
-					return false;
 				}
+
+				return result;
 			}
 		}
 
@@ -248,17 +239,6 @@ namespace BlockChain
 		}
 
 		//TODO: should asset that the block came from main?
-		public Types.BlockHeader GetBlockHeader(byte[] key)
-		{
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				var bk = BlockStore.Get(context, key);
-
-				return bk == null ? null : bk.Value;
-			}
-		}
-
-		//TODO: should asset that the block came from main?
 		public Types.Block GetBlock(byte[] key)
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
@@ -283,10 +263,7 @@ namespace BlockChain
 					Array.Copy(output.Key, txHash, txHash.Length);
 					outputs[txHash] = output.Value;
 				}
-			}
 
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
 				foreach (var output in outputs)
 				{
 					var tx = BlockStore.TxStore.Get(context, output.Key);
