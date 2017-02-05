@@ -49,12 +49,12 @@ namespace NBitcoin.Protocol.Behaviors
 
 				switch (result)
 				{
-					case BlockChain.BlockChainAddBlockOperation.Result.AddedOrphan:
+					case BlockChain.AddBk.Result.AddedOrphan:
 						node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
 							new InventoryVector(InventoryType.MSG_BLOCK, bk.header.parent)
 						}));
 						break;
-					case BlockChain.BlockChainAddBlockOperation.Result.Rejected:
+					case BlockChain.AddBk.Result.Rejected:
 						node.SendMessageAsync(new RejectPayload()
 						{
 							Hash = Consensus.Merkle.blockHeaderHasher.Invoke(bk.header),
@@ -71,8 +71,8 @@ namespace NBitcoin.Protocol.Behaviors
 
 				if (tip != null)
 				{
-					NodeServerTrace.Information("Sending tip: " + System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(tip.Value.header)));
-					node.SendMessageAsync(tip.Value);
+					NodeServerTrace.Information("Sending tip: " + System.Convert.ToBase64String(tip.Key));
+					node.SendMessageAsync(_BlockChain.GetBlock(tip.Key));
 				}
 				else 
 				{
