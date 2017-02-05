@@ -65,9 +65,15 @@ namespace Wallet.core.Store
 		//	return false;
 		//}
 
-		public void Used(TransactionContext context, Key key)
+		public void Used(TransactionContext context, Key key, bool? isChange)
 		{
 			key.Used = true;
+
+			if (isChange.HasValue)
+			{
+				key.Change = isChange.Value;
+			}
+
 			Put(context, new Keyed<Key>(key.Private, key));
 		}
 	}

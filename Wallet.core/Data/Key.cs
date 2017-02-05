@@ -74,7 +74,7 @@ namespace Wallet.core.Data
 			return pkLock != null && Address != null && Address.SequenceEqual(pkLock.pkHash);
 		}
 
-		public static byte[] FromBase64String(string base64Encoded)
+		private static byte[] FromBase64String(string base64Encoded)
 		{
 			return Convert.FromBase64String(base64Encoded);
 		}

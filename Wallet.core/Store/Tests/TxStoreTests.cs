@@ -1,4 +1,4 @@
-﻿//using NUnit.Framework;
+//using NUnit.Framework;
 //using System;
 //using Wallet.core.Store;
 //using Store;
@@ -50,7 +50,7 @@
 
 //			using (var dbTx = _DBContext.GetTransactionContext())
 //			{
-//				_TxBalancesStore.Put(dbTx, tx, new HashDictionary<long>(), TxStateEnum.Confirmed);
+//				_TxBalancesStore.Put(dbTx, tx, new AssetDeltas(), TxStateEnum.Confirmed);
 //				dbTx.Commit();
 //			}
 
@@ -67,7 +67,7 @@
 
 //			using (var dbTx = _DBContext.GetTransactionContext())
 //			{
-//				_TxBalancesStore.Put(dbTx, tx, new HashDictionary<long>(), TxStateEnum.Confirmed);
+//				_TxBalancesStore.Put(dbTx, tx, new AssetDeltas(), TxStateEnum.Confirmed);
 //				dbTx.Commit();
 //			}
 //		}
@@ -80,7 +80,7 @@
 
 //			using (var dbTx = _DBContext.GetTransactionContext())
 //			{
-//				_TxBalancesStore.Put(dbTx, tx, new HashDictionary<long>(), TxStateEnum.Confirmed);
+//				_TxBalancesStore.Put(dbTx, tx, new AssetDeltas(), TxStateEnum.Confirmed);
 
 //				Assert.That(_TxBalancesStore.ContainsKey(dbTx, new byte[] { 0xFF, 0xFF }), Is.EqualTo(false));
 //			}
@@ -92,7 +92,7 @@
 //		{
 //			var tx = Utils.GetTx();
 
-//			var x = new HashDictionary<long>();
+//			var x = new AssetDeltas();
 
 //			x[new byte[] { 0x010, 0x020 }] = 10;
 //			x[new byte[] { 0x020, 0x030 }] = 100;
