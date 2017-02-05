@@ -39,5 +39,12 @@ namespace Wallet
 
 			Gtk.Application.Run();
 		}
+
+		internal void Quit()
+		{
+			Gtk.Application.Quit();
+			//	a.RetVal = true;
+			//	Hide();
+		}
 	}
 }

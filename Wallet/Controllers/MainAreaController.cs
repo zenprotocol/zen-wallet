@@ -1,19 +1,19 @@
 ﻿using System;
+using Infrastructure;
 
 namespace Wallet
 {
-	public class MainAreaController
+	public class MainAreaController : Singleton<MainAreaController>
 	{
 		private const int DEFAULT_MENU_TOP_IDX = 1;
 		private const int DEFAULT_MENU_LEFT_IDX = 1;
 
 		private Type DEFAULT_CONTROL = typeof(Log);//Wallet);
-		private static MainAreaController instance = null;
 
-		private MainAreaView mainAreaView; 
+		private IMainAreaView mainAreaView; 
 		private IVerticalMenu verticalMenu;
 
-		public MainAreaView MainAreaView { 
+		public IMainAreaView MainAreaView { 
 			set { 
 				mainAreaView = value; 
 				mainAreaView.Control = DEFAULT_CONTROL;
@@ -38,20 +38,7 @@ namespace Wallet
 			} 
 		}
 
-		public static MainAreaController GetInstance() {
-			if (instance == null) {
-				instance = new MainAreaController ();
-			}
-
-			return instance;
-		}
-
-		internal void Quit()
-		{
-			Gtk.Application.Quit();
-		//	a.RetVal = true;
-		//	Hide();
-		}
+		public void Spend() { }
 
 		public String MainAreaSelected { 
 			set {

@@ -30,7 +30,7 @@ namespace Wallet
 
 		private global::Gtk.Image image1;
 
-		private global::Gtk.EventBox eventbox9;
+		private global::Gtk.EventBox eventboxSend;
 
 		private global::Gtk.Image imageNext;
 
@@ -136,15 +136,15 @@ namespace Wallet
 			w10.Expand = false;
 			w10.Fill = false;
 			// Container child hbox12.Gtk.Box+BoxChild
-			this.eventbox9 = new global::Gtk.EventBox();
-			this.eventbox9.Name = "eventbox9";
-			// Container child eventbox9.Gtk.Container+ContainerChild
+			this.eventboxSend = new global::Gtk.EventBox();
+			this.eventboxSend.Name = "eventboxSend";
+			// Container child eventboxSend.Gtk.Container+ContainerChild
 			this.imageNext = new global::Gtk.Image();
 			this.imageNext.Name = "imageNext";
 			this.imageNext.Pixbuf = global::Stetic.IconLoader.LoadIcon(this, "gtk-dnd-multiple", global::Gtk.IconSize.Menu);
-			this.eventbox9.Add(this.imageNext);
-			this.hbox12.Add(this.eventbox9);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox12[this.eventbox9]));
+			this.eventboxSend.Add(this.imageNext);
+			this.hbox12.Add(this.eventboxSend);
+			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox12[this.eventboxSend]));
 			w12.Position = 1;
 			w12.Expand = false;
 			w12.Fill = false;

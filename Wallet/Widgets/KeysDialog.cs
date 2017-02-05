@@ -25,9 +25,9 @@ namespace Wallet
 
 			buttonAdd.Clicked += delegate
 			{
-				new AddKeyDialog(delegate {
-					App.Instance.Wallet.Import();
-				}).ShowDialog();
+				//new AddKeyDialog(delegate {
+				//	App.Instance.Wallet.Import();
+				//}).ShowDialog();
 			};
 		}
 
