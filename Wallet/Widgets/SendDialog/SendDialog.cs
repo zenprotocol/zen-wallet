@@ -3,22 +3,13 @@ using Gtk;
 using Cairo;
 using Wallet.Constants;
 using Wallet.core;
+using Consensus;
 
 namespace Wallet
 {
-	public interface ISendDialogView {
-		decimal Amount { get; }
-		string To { get; }
-		void Send();
-		void Sign();
-}
-
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class SendDialog : DialogBase, ISendDialogView
+	public partial class SendDialog : DialogBase
 	{
-		public decimal Amount { get { return senddialogstep1.Amount; } }
-		public string To { get { return senddialogstep1.To; } }
-
 		//private const int WAITING_PAGE = 0;
 		//private const int PAGE_1 = 1;
 		//private const int PAGE_2 = 2;
@@ -36,32 +27,16 @@ namespace Wallet
 			//}
 		}
 
-		public void Next() {
-			try
-			{
-				SetContent(senddialogstep2);
-				//if (!App.Instance.Wallet.Spend(senddialogstep1.To, AssetsHelper.AssetCodes["zen"], (ulong)senddialogstep1.Amount))
-				//{
-				//	new MessageBox("error during send").ShowDialog();
-				//}
-				//CloseDialog();
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex);
-			}
+		internal void Next(Types.Transaction tx)
+		{
+			SetContent(senddialogstep2);
+			senddialogstep2.Tx = tx; //TODO
 		}
 
 		public void Back()
 		{
 			SetContent(senddialogstep1);
 		}
-
-		public void Send()
-		{
-			SetContent(senddialogstep1);
-		}
-
 
 		public SendDialog (AssetType asset)
 		{
@@ -85,7 +60,7 @@ namespace Wallet
 			imageCurrency.Pixbuf = Utils.ToPixbuf(Images.AssetLogo(asset.Image));
 		}
 			
-		public void Confirm() {
+		public void Close() {
 		//	WalletController.GetInstance ().SendStub.RequestSend("assetId", 10, "desc", 10);
 			//..
 			CloseDialog();
