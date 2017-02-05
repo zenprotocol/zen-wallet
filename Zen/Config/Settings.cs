@@ -7,14 +7,13 @@ namespace Zen
 {
 	public class Settings
 	{
-		public enum AppModeEnum
-		{
-			Tester,
-			GUI,
-			Console,
-		}
+		//public enum AppModeEnum
+		//{
+		//	GUI,
+		//	Console,
+		//}
 
-		public AppModeEnum? Mode { get; set; }
+//		public AppModeEnum? Mode { get; set; }
 		public List<Tuple<string, string>> GenesisOutputs { get; set; }
 		public bool InitGenesisBlock { get; set; }
 		public String BlockChainDB { get; set; }
@@ -62,15 +61,7 @@ namespace Zen
 
 		public void SpecifyIp(String ip)
 		{
-			if (String.IsNullOrEmpty(ip))
-			{
-				EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseNone;
-			}
-			else
-			{
-				EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseSpecified;
-				EndpointOptions.SpecifiedAddress = IPAddress.Parse(ip);
-			}
+			EndpointOptions.SpecifiedAddress = String.IsNullOrEmpty(ip) ? null : IPAddress.Parse(ip);
 		}
 	}
 }

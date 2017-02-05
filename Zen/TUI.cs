@@ -31,7 +31,7 @@ namespace Zen
 
 			options["wallet"] = new List<string>();
 		//	options["wallet"].Add("Reset");
-			options["wallet"].Add("Sync");
+		//	options["wallet"].Add("Sync");
 			options["wallet"].Add("Add Key");
 			options["wallet"].Add("Back");
 
@@ -40,7 +40,9 @@ namespace Zen
 			options["blockchain"].Add("Back");
 
 			options["tests"] = new List<string>();
-			options["tests"].Add("Aquire genesis outputs");
+			options["tests"].Add("Import all genesis");
+			options["tests"].Add("Localhost Client");
+			options["tests"].Add("Localhost Server");
 			options["tests"].Add("Back");
 
 
@@ -83,13 +85,11 @@ namespace Zen
 						menu("blockchain");
 						break;
 					case "Start Console":
-						app.Settings.Mode = Settings.AppModeEnum.Console;
 						app.Start();
 						dialog.Text += " (running)";
 						break;
 					case "Start GUI":
-						app.Settings.Mode = Settings.AppModeEnum.GUI;
-						app.Start();
+						app.GUI();
 						dialog.Text += " (running)";
 						break;
 					case "Stop":
@@ -135,9 +135,9 @@ namespace Zen
 					//case "Reset":
 					//	app.ResetWallet();
 					//	break;
-					case "Import":
-						app.ImportWallet();
-						break;
+					//case "Import":
+					//	app.ImportWallet();
+					//	break;
 					case "Back":
 						menu("main");
 						break;
@@ -146,7 +146,7 @@ namespace Zen
 						{
 							if (a == output.Amount + " " + output.Key)
 							{
-								app.AddKey(output.Key);
+								app.ImportKey(output.Key);
 							}
 						}
 						break;
@@ -157,21 +157,26 @@ namespace Zen
 			{
 				switch (a)
 				{
-					case "Aquire genesis outputs":
-						//			app.GenesisBlock.Value.transactions.ToList().ForEach(t => t.outputs.ToList().ForEach(o=>app.AddKey(o.
-					app.Settings.Mode = Settings.AppModeEnum.GUI;
-			//			app.Init();
-
+					case "Import all genesis":
 						app.AddGenesisBlock();
 
-						JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.AddKey(o.Key));
+						JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
 
-						app.ImportWallet();
-
-						app.Start();	
+						app.Start();
+						app.GUI();
 						break;
 					case "Back":
 						menu("main");
+						break;
+					case "Localhost Client":
+						app.Settings.EndpointOptions.EndpointOption =
+								NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.LocalhostClient;
+//						app.Start();
+						break;
+					case "Localhost Server":
+						app.Settings.EndpointOptions.EndpointOption =
+							   NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.LocalhostServer;
+//						app.Start();
 						break;
 				}
 			};
@@ -204,7 +209,7 @@ namespace Zen
 				}
 			};
 
-			app.Init();
+		//	app.Init();
 			root.Run();
 		}
 
