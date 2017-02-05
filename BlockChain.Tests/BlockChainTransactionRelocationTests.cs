@@ -54,7 +54,7 @@ namespace BlockChain.Tests
 		[Test, Order(2)]
 		public void ShouldReorganizeMempool()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(block3), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block3), Is.EqualTo(AddBk.Result.Added)); // cause a reorganization
 
 			AssertMempool(block1_tx, true);
 			AssertUtxoSet(block1_tx, false);
