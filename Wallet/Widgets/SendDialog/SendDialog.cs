@@ -9,18 +9,19 @@ namespace Wallet
 	public interface ISendDialogView {
 		decimal Amount { get; }
 		string To { get; }
-		void Confirm();
-	}
+		void Send();
+		void Sign();
+}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class SendDialog : DialogBase//, ISendDialogView
+	public partial class SendDialog : DialogBase, ISendDialogView
 	{
-//		public decimal Amount { get { return Utils.ToDecimal(entryAmount.Text); } }
-//		public string To { get { return entryTo.Text; } }
+		public decimal Amount { get { return senddialogstep1.Amount; } }
+		public string To { get { return senddialogstep1.To; } }
 
-		private const int WAITING_PAGE = 0;
-		private const int PAGE_1 = 1;
-		private const int PAGE_2 = 2;
+		//private const int WAITING_PAGE = 0;
+		//private const int PAGE_1 = 1;
+		//private const int PAGE_2 = 2;
 
 		private void SetContent(Widget widget) {
 			foreach (Widget child in hboxContent.AllChildren) {
@@ -38,11 +39,12 @@ namespace Wallet
 		public void Next() {
 			try
 			{
-				if (!App.Instance.Wallet.Spend(senddialogstep1.To, AssetsHelper.AssetCodes["zen"], (ulong)senddialogstep1.Amount))
-				{
-					new MessageBox("error during send").ShowDialog();
-				}
-				CloseDialog();
+				SetContent(senddialogstep2);
+				//if (!App.Instance.Wallet.Spend(senddialogstep1.To, AssetsHelper.AssetCodes["zen"], (ulong)senddialogstep1.Amount))
+				//{
+				//	new MessageBox("error during send").ShowDialog();
+				//}
+				//CloseDialog();
 			}
 			catch (Exception ex)
 			{
@@ -50,9 +52,16 @@ namespace Wallet
 			}
 		}
 
-		public void Back() {
+		public void Back()
+		{
 			SetContent(senddialogstep1);
 		}
+
+		public void Send()
+		{
+			SetContent(senddialogstep1);
+		}
+
 
 		public SendDialog (AssetType asset)
 		{
@@ -74,13 +83,17 @@ namespace Wallet
 //			}, entryTo, entryAmount);
 		
 			imageCurrency.Pixbuf = Utils.ToPixbuf(Images.AssetLogo(asset.Image));
-
 		}
 			
 		public void Confirm() {
 		//	WalletController.GetInstance ().SendStub.RequestSend("assetId", 10, "desc", 10);
 			//..
 			CloseDialog();
+		}
+
+		public void Sign()
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

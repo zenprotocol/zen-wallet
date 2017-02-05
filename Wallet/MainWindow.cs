@@ -13,7 +13,7 @@ namespace Wallet
 			base (Gtk.WindowType.Toplevel)
 		{
 			this.Build ();
-			MainAreaController.GetInstance().MainView = this;
+			MainAreaController.Instance.MainView = this;
 
 //			Gdk.Pixbuf one= Gdk.Pixbuf.LoadFromResource ("Wallet.portfolio.png");
 //			one = 
@@ -33,9 +33,9 @@ namespace Wallet
 
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 		{
-			MainAreaController.GetInstance().Quit();
-			//	a.RetVal = true;
-			//	Hide();
+			a.RetVal = true;
+			Hide();
+			App.Instance.Quit();
 		}
 
 		public Boolean SideMenuVisible { 

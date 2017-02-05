@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Wallet.core;
 using Wallet.Domain;
 using System.Linq;
@@ -10,40 +10,18 @@ namespace Wallet
 {
 	public class BalancesController : Singleton<BalancesController>
 	{
-		private ILogView _LogView;
-		public ILogView LogView
+		public void SetLogView(ILogView logView)
 		{
-			get
-			{
-				return _LogView;
-			}
-			set
-			{
-				_LogView = value;
-				AddNewBalances(App.Instance.Wallet.WalletBalances);
-
-				MessageProducer<IWalletMessage>.Instance.AddMessageListener(new MessageListener<IWalletMessage>(m =>
-{
-					//	if (m.GetType() == typeof(WalletBalances))
-					//	{
-					AddNewBalances(m as WalletBalances);
-					//	}
-				}));
-			}
+			Apply(logView, App.Instance.Wallet.TxDeltaList);
+			App.Instance.Wallet.OnReset += delegate { logView.Clear(); };
+			App.Instance.Wallet.OnItems += a => { Apply(logView, a); };
 		}
 
-		public void AddNewBalances(WalletBalances walletBalances)
+		public void Apply(ILogView view, TxDeltaItemsEventArgs deltas)
 		{
 			Gtk.Application.Invoke(delegate
 			{
-				//if (LogView != null)
-				//{
-				if (walletBalances.GetType() == typeof(ResetMessage))
-				{
-					LogView.Clear();
-				}
-
-				walletBalances.ForEach(u => u.Balances.ToList().ForEach(b => LogView.AddLogEntryItem(new LogEntryItem(
+				deltas.ForEach(u => u.AssetDeltas.ToList().ForEach(b => view.AddLogEntryItem(new LogEntryItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					AssetsHelper.Find(b.Key),
@@ -52,33 +30,8 @@ namespace Wallet
 					Guid.NewGuid().ToString("N"),
 					0
 				))));
-				//}
 			});
 		}
-
-		//public void OnNewBalance(HashDictionary<long> balance)
-		//{
-		//	if (LogView != null)
-		//	{
-		//		foreach (var item in balance)
-		//		{
-		//			var asset = item.Key;
-
-		//			var amount = item.Value;
-
-		//			LogView.AddLogEntryItem(new LogEntryItem(
-		//				(ulong)Math.Abs(amount),
-		//				amount < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-		//				AssetsHelper.Find(asset),
-		//				DateTime.Now,
-		//				Guid.NewGuid().ToString("N"),
-		//				Guid.NewGuid().ToString("N"),
-		//				0
-		//			));
-		//		}
-		//	}
-		//}
-
 	}
 }
 

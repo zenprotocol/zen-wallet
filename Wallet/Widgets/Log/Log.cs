@@ -32,7 +32,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			BalancesController.Instance.LogView = this;
+			BalancesController.Instance.SetLogView(this);
 
 			initList (listHeaders, FactorStore (new LogHeaderRow (0, Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listSummary, logSummaryStore);

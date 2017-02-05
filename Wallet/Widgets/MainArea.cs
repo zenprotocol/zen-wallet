@@ -3,15 +3,15 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface MainAreaView {
+	public interface IMainAreaView {
 		//int Page { set; }
 		Type Control { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class MainArea : WidgetBase, MainAreaView
+	public partial class MainArea : WidgetBase, IMainAreaView
 	{
-		MainAreaController MainAreaController = MainAreaController.GetInstance ();
+		MainAreaController MainAreaController = MainAreaController.Instance;
 
 		public MainArea ()
 		{
