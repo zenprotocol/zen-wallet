@@ -188,7 +188,6 @@
     <Compile Include="Widgets\MessageBox.cs" />
     <Compile Include="gtk-gui\Wallet.MessageBox.cs" />
     <Compile Include="Controllers\WalletManager.cs" />
-    <Compile Include="Controllers\SendDialogController.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -219,10 +218,6 @@
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>NBitcoinDerive</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.Testing.Blockchain\Infrastructure.Testing.Blockchain.csproj">
-      <Project>{75798183-9B5D-4CB3-80BD-644CAF13F317}</Project>
-      <Name>Infrastructure.Testing.Blockchain</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
@@ -234,6 +229,10 @@
     <ProjectReference Include="..\BlockChain\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Consensus\Consensus.fsproj">
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
