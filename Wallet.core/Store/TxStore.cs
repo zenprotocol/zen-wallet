@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using BlockChain.Data;
 using BlockChain.Store;
 using Consensus;
@@ -8,8 +8,8 @@ namespace Wallet.core
 {
 	public enum TxStateEnum
 	{
-		Unconfirmed = 1,
-		Confirmed = 2,
+		Confirmed = 1,
+		Unconfirmed = 2,
 		Invalid = 3,
 	}
 
@@ -39,22 +39,26 @@ namespace Wallet.core
 			}
 		}
 
-		public void Put(TransactionContext dbTx, Keyed<Types.Transaction> item, HashDictionary<long> assetBalances, TxStateEnum txState)
+		public void Put(TransactionContext dbTx, Keyed<Types.Transaction> item, AssetDeltas assetBalances, TxStateEnum txState)
 		{
-		//	dbTx.Transaction.SynchronizeTables(INDEXES);
+			//	dbTx.Transaction.SynchronizeTables(INDEXES);
 
-			int identity = 0;
+			//if (!ContainsKey(dbTx, item.Key))
+			//{
+				int identity = 0;
 
-			var row = dbTx.Transaction.Max<int, byte[]>(INDEXES);
+				var row = dbTx.Transaction.Max<int, byte[]>(INDEXES);
 
-			if (row.Exists)
-				identity = row.Key;
+				if (row.Exists)
+					identity = row.Key;
 
-			identity++;
+				identity++;
 
-			dbTx.Transaction.Insert<int, byte[]>(INDEXES, identity, item.Key);
+				dbTx.Transaction.Insert<int, byte[]>(INDEXES, identity, item.Key);
+			//}
 
 			Put(dbTx, item);
+
 			dbTx.Transaction.Insert<byte[], int>(STATES, item.Key, (int)txState);
 
 			var table = dbTx.Transaction.InsertTable<byte[]>(BALANCES, item.Key, 0);
@@ -65,9 +69,9 @@ namespace Wallet.core
 			}
 		}
 
-		public HashDictionary<long> Balances(TransactionContext dbTx, byte[] tx)
+		public AssetDeltas Balances(TransactionContext dbTx, byte[] tx)
 		{
-			var balances = new HashDictionary<long>();
+			var balances = new AssetDeltas();
 			var table = dbTx.Transaction.SelectTable<byte[]>(BALANCES, tx, 0);
 
 			foreach (var asset in table.SelectForward<byte[], long>())
@@ -76,6 +80,17 @@ namespace Wallet.core
 			}
 
 			return balances;
+		}
+
+		public TxStateEnum TxState(TransactionContext dbTx, byte[] tx)
+		{
+			return (TxStateEnum) dbTx.Transaction.Select<byte[], int>(STATES, tx).Value;
+		}
+
+		public void SetTxState(TransactionContext dbTx, byte[] tx, TxStateEnum txState)
+		{
+			
+			dbTx.Transaction.Insert<byte[], int>(STATES, tx, (int)txState);
 		}
 
 		//public bool Contains(TransactionContext dbTx, byte[] tx)
