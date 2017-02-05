@@ -1,4 +1,5 @@
 using System;
+using Consensus;
 using Store;
 
 namespace BlockChain.Store

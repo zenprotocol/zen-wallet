@@ -97,6 +97,7 @@ namespace BlockChain
 					_BlockChain.Timestamps.Init(_Bk.Value.header.timestamp);
 					AddToMainBlockStore(0);
 					_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
+					_BlockChain.Tip = _Bk;
 					return Result.Added;
 				}
 			}
@@ -165,12 +166,13 @@ namespace BlockChain
 					}
 
 					//// remove from mempoo of new main
-					//foreach (var block in newMainChain)
-					//{
-					//	RemoveTransactionsFromMempool(block);
-					//}
+					foreach (var block in newMainChain)
+					{
+						RemoveTransactionsFromMempool(block);
+					}
 
 					_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
+					_BlockChain.Tip = _Bk;
 				}
 				else
 				{
@@ -180,6 +182,7 @@ namespace BlockChain
 			else
 			{
 				_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
+				_BlockChain.Tip = _Bk;
 				AddToMainBlockStore(totalWork);
 			}
 
@@ -384,6 +387,14 @@ namespace BlockChain
 					_UndoActions.Add(() => _BlockChain.TxMempool.Add(txHash, _BlockChain.GetPointedTransaction(_DbTx, transaction)));
 				}
 
+				for (int i = 0; i < transaction.inputs.Length; i++)
+				{
+					_BlockChain.UTXOStore.Remove(
+						_DbTx, 
+						GetOutputKey(transaction.inputs[i].txHash, (int)transaction.inputs[i].index)
+					);
+				}
+
 				for (int i = 0; i < transaction.outputs.Length; i++)
 				{
 					BlockChainTrace.Information($"new utxo item: {transaction.outputs[i].spend.amount}");
@@ -392,14 +403,19 @@ namespace BlockChain
 				}
 			}
 
+			RemoveTransactionsFromMempool(_Bk);
+			//RemoveUTXO(_Bk.Key);
+
 			_DoActions.Add(() => BkAddedMessage.Publish(_Bk.Value));
 		}
 
 		private byte[] GetOutputKey(Types.Transaction transaction, int index) //TODO: convert to outpoint
 		{
-			var output = transaction.outputs[index];
-			var txHash = Merkle.transactionHasher.Invoke(transaction);
+			return GetOutputKey(Merkle.transactionHasher.Invoke(transaction), index);
+		}
 
+		private byte[] GetOutputKey(byte[] txHash, int index) //TODO: convert to outpoint
+		{
 			byte[] outputKey = new byte[txHash.Length + 1];
 			txHash.CopyTo(outputKey, 0);
 			outputKey[txHash.Length] = (byte)index;
@@ -469,12 +485,18 @@ namespace BlockChain
 		private void RemoveFromMainBlockStore(byte[] block)
 		{
 			_BlockChain.BlockStore.SetLocation(_DbTx, block, LocationEnum.Branch);
-
+			RemoveUTXO(block);
 			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
 			{
 				_BlockChain.TxMempool.Add(tx.Key, _BlockChain.GetPointedTransaction(_DbTx, tx.Value));
 				_UndoActions.Add(() => _BlockChain.TxMempool.Remove(tx.Key));
+			}
+		}
 
+		private void RemoveUTXO(byte[] block)
+		{
+			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
+			{
 				for (var i = 0; i < tx.Value.outputs.Length; i++)
 				{
 					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(tx.Value, i));
@@ -493,6 +515,8 @@ namespace BlockChain
 				if (_BlockChain.TxMempool.ContainsKey(txHash))
 				{
 					_BlockChain.TxMempool.Remove(txHash);
+					//TODO: undo needed?
+					//_UndoActions.Add(() => _BlockChain.TxMempool.Add(txHash, TransactionValidation.toPointedTransaction( tx));
 				}
 			}
 		}
