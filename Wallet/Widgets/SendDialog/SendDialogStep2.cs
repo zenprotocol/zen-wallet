@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Consensus;
 
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class SendDialogStep2 : WidgetBase
 	{
+		public Types.Transaction Tx { get; set; }//TODO
+
 		public SendDialogStep2 ()
 		{
 			this.Build ();
@@ -22,7 +25,14 @@ namespace Wallet
 
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
 			{
-				FindParent<SendDialog>().Send();
+				if (App.Instance.Wallet.Spend(Tx))
+				{
+					FindParent<SendDialog>().Close();
+				}
+				else
+				{
+					new MessageBox("Rejected").ShowDialog();
+				}
 			};
 
 			expander.Activated += (object sender, EventArgs e) => {

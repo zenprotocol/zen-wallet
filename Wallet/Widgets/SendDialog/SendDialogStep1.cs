@@ -1,18 +1,11 @@
 ﻿using System;
+using Wallet.core.Data;
 
 namespace Wallet
 {
-	public interface ISendDialogStep1 {
-		decimal Amount { get; }
-		string To { get; }
-	}
-
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class SendDialogStep1 : WidgetBase
 	{
-		public decimal Amount { get { return  Utils.ToDecimal(dialogfieldAmount.Value); } }
-		public string To { get { return dialogfieldTo.Value; } }
-
 		public SendDialogStep1 ()
 		{
 			this.Build ();
@@ -21,7 +14,42 @@ namespace Wallet
 			dialogfieldTo.Caption = "TO";
 
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) => {
-				FindParent<SendDialog>().Next();
+				ulong amount;
+				byte[] address;
+
+				try
+				{
+					amount = ulong.Parse(dialogfieldAmount.Value);
+				}
+				catch (Exception e)
+				{
+					new MessageBox("Invalid amount").ShowDialog();
+					return;
+				}
+
+				try
+				{
+					address = Key.FromBase64String(dialogfieldTo.Value);
+				}
+				catch (Exception e)
+				{
+					new MessageBox("Invalid address").ShowDialog();
+					return;
+				}
+
+				var tx = App.Instance.Wallet.Sign(
+						address, 
+						Consensus.Tests.zhash, 
+						amount);
+
+				if (tx != null)
+				{
+					FindParent<SendDialog>().Next(tx);
+				}
+				else
+				{
+					new MessageBox("Could not satisfy amount for asset").ShowDialog();
+				}
 			};
 		}
 	}
