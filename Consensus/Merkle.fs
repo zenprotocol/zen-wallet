@@ -9,8 +9,8 @@ open Consensus.Serialization
 
 open Consensus.Tree
 
-// TODO: Make thread-safe
-let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
+// doneTODO: Make thread-safe
+//let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
 
 type Hashable =
     public
@@ -41,6 +41,7 @@ let tag : Hashable -> byte[] =
 let innerHash : byte[] -> byte[] =
     fun bs ->
     let res = Array.zeroCreate 32
+    let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
     sha3.BlockUpdate(bs,0,Array.length bs)
     sha3.DoFinal(res, 0) |> ignore
     res
@@ -48,6 +49,7 @@ let innerHash : byte[] -> byte[] =
 let innerHashList : seq<byte[]> -> byte[] =
     fun bseq ->
     let res = Array.zeroCreate 32
+    let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
     Seq.iter (fun bs -> sha3.BlockUpdate(bs,0,Array.length bs)) bseq
     sha3.DoFinal(res,0) |> ignore
     res
