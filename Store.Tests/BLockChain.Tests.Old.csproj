@@ -51,6 +51,8 @@
     <Compile Include="BlockChainAddBlockOperationTests.cs" />
     <Compile Include="Utils\TestBlockChain.cs" />
     <Compile Include="BlockChainTests.cs" />
+    <Compile Include="ContractTests.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -72,6 +74,10 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

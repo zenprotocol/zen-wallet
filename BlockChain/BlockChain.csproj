@@ -72,6 +72,7 @@
     <Compile Include="TxAddedMessage.cs" />
     <Compile Include="BkAddedMessage.cs" />
     <Compile Include="Tests\BlockChainTransactionInvalidationTests.cs" />
+    <Compile Include="Tests\BlockChainSimpleTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

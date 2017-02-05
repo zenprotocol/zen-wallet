@@ -67,10 +67,17 @@ namespace BlockChain
 			}
 
 			//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
+			List<Types.Output> outputs = null;
 
-			var pointedTransaction = GetValidatedPointedTransaction();
+			if (!IsValidInputs(out outputs))
+			{
+				BlockChainTrace.Information("Added as orphan");
+				return Result.Rejected;
+			}
 
-			if (pointedTransaction == null)
+			TransactionValidation.PointedTransaction pointedTransaction = null;
+
+			if (!IsValidPointedInputs(outputs, out pointedTransaction))
 			{
 				BlockChainTrace.Information("invalid inputs");
 				return Result.Rejected;
@@ -124,15 +131,7 @@ namespace BlockChain
 
 		private bool IsMempoolContainsSpendingInput()
 		{
-			foreach (var inputs in _Tx.Value.inputs)
-			{
-				if (_BlockChain.TxMempool.ContainsInputs(_Tx))
-				{
-					return true;
-				}
-			}
-
-			return false;
+			return _BlockChain.TxMempool.ContainsInputs(_Tx);
 		}
 
 		private bool IsOrphan()
@@ -155,44 +154,51 @@ namespace BlockChain
 			return false;
 		}
 
-		private TransactionValidation.PointedTransaction GetValidatedPointedTransaction()
+		private bool IsValidInputs(out List<Types.Output> outputs)
 		{
-			var outputs = new List<Types.Output>();
+			outputs = new List<Types.Output>();
 
 			foreach (var input in _Tx.Value.inputs)
 			{
-				var output = GetTxOutput(input);
+				Types.Output output = null;
 
-				if (output == null)
+				var outputFound = TryGetTxOutput(input, out output);
+
+				if (!outputFound)
 				{
 					BlockChainTrace.Information("parent output does not exist");
-					return null;
+					return false;
 				}
 
 				if (ParentOutputSpent(input))
 				{
 					BlockChainTrace.Information("parent output spent");
-					return null;
+					return false;
 				}
 
 				outputs.Add(output);
 			}
 
-			var pointedTransaction = TransactionValidation.toPointedTransaction(
+			return true;
+		}
+
+		private bool IsValidPointedInputs(List<Types.Output> outputs, out TransactionValidation.PointedTransaction ptx)
+		{
+			ptx = TransactionValidation.toPointedTransaction(
 				_Tx.Value, 
 				ListModule.OfSeq<Types.Output>(outputs)
 			);
 
-			for (var ix = 0; ix < pointedTransaction.pInputs.Length; ix++)
-			{
-				if (!TransactionValidation.validateAtIndex(pointedTransaction, ix))
-					return null;
-			}
+			//for (var i = 0; i < ptx.pInputs.Length; i++)
+			//{
+			//	if (!TransactionValidation.validateAtIndex(ptx, i))
+			//		return false;
+			//}
 
-			return pointedTransaction;
+			return true;
 		}
 
-		private Types.Output GetTxOutput(Types.Outpoint input)
+		private bool TryGetTxOutput(Types.Outpoint input, out Types.Output output)
 		{
 			FSharpList<Types.Output> outputs = null;
 
@@ -209,10 +215,13 @@ namespace BlockChain
 			if (input.index >= outputs.Length)
 			{
 				BlockChainTrace.Information("Input index not found");
-				return null;
+				output = null;
+				return false;
 			}
 
-			return outputs[(int)input.index];
+			output = outputs[(int)input.index];
+
+			return true;
 		}
 
 		private bool ParentOutputSpent(Types.Outpoint input)
