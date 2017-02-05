@@ -32,26 +32,25 @@ namespace Zen
 			_BlockChain.HandleNewBlock(GenesisBlock.Value);
 		}
 
-		internal void AddKey(string key)
+		internal void ImportKey(string key)
 		{
-	//		_WalletManager.AddKey(key);
+			_WalletManager.Import(Key.Create(key));
 		}
 
-		internal void ImportWallet()
-		{
-			_WalletManager.Import();
-		}
+		//internal void ImportWallet()
+		//{
+		//	_WalletManager.Import();
+		//}
 
 		public App()
 		{
 			Settings = new Settings()
 			{
-				Mode = null,
 				SaveNetworkProfile = false,
 				PeersToFind = null,
 				BlockChainDB = "blockchain_db",
 				WalletDB = "wallet_db",
-				EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.UseUPnP }
+				EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.LocalhostClient }
 			};
 		}
 
@@ -63,14 +62,19 @@ namespace Zen
 		public void Stop() {
 			//stopEvent.Set();
 
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+			}
+
 			if (_NodeManager != null)
 			{
 				_NodeManager.Dispose();
 			}
 
-			if (_WalletManager != null)
+			if (_BlockChain != null)
 			{
-				_WalletManager.Dispose();
+				_BlockChain.Dispose();
 			}
 		}
 
@@ -84,22 +88,17 @@ namespace Zen
 
 			_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
 			_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
+			_NodeManager = new NodeManager(_BlockChain);
 		}
 
-		public void Start() {
-			//new Thread(() =>
-			//{
-				_NodeManager = _NodeManager ?? new NodeManager(_BlockChain, Settings.EndpointOptions);
+		public void Start()
+		{
+			_NodeManager.Connect(Settings.EndpointOptions);
+		}
 
-				switch (Settings.Mode.Value)
-				{
-					case Settings.AppModeEnum.GUI:
-						Wallet.App.Instance.Start(_WalletManager);
-						break;
-				}
-
-			//	stopEvent.Wait();
-			//}).Start();
+		public void GUI()
+		{
+			Wallet.App.Instance.Start(_WalletManager);
 		}
 
 		private Keyed<Types.Block> _GenesisBlock = null;

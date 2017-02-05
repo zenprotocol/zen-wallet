@@ -13,16 +13,14 @@ namespace Zen
 		{
 			App app = new App();
 
-			app.Settings.Mode = Settings.AppModeEnum.GUI;
 			app.Init();
 
 			app.AddGenesisBlock();
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.AddKey(o.Key));
-
-			app.ImportWallet();
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
 
 			app.Start();
+			app.GUI();
 		}
 	}
 }
