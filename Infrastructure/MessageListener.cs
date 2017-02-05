@@ -21,7 +21,15 @@ namespace Infrastructure
 
 		public virtual void PushMessage(T message)
 		{
-			processMessage (message);
+			try
+			{
+				processMessage(message);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Exception during message handler", ex); //TODO: write to trace
+				throw ex;
+			}
 		}
 
 		#endregion
@@ -29,6 +37,9 @@ namespace Infrastructure
 
 	public class EventLoopMessageListener<T> : IMessageListener<T>, IDisposable
 	{
+		private AutoResetEvent continueEvent = new AutoResetEvent(true);
+		private Thread thread;
+
 #if DEBUG
 		public string _CreatorStackTrace;
 #endif
@@ -39,32 +50,49 @@ namespace Infrastructure
 			_CreatorStackTrace = Environment.StackTrace;
 #endif
 
-			new Thread(new ThreadStart(() =>
+			thread = new Thread(new ThreadStart(() =>
+			{
+				try
 				{
-					try
+					while (!cancellationSource.IsCancellationRequested)
 					{
-						while(!cancellationSource.IsCancellationRequested)
+						var message = _MessageQueue.Take(cancellationSource.Token);
+
+						continueEvent.WaitOne();
+
+						if (message != null)
 						{
-							var message = _MessageQueue.Take(cancellationSource.Token);
-							if(message != null)
+							try
 							{
-								try
-								{
-									processMessage(message);
-								}
-								catch(Exception ex)
-								{
-									Console.WriteLine("Unexpected expected during message loop", ex);
-									//NodeServerTrace.Error("Unexpected expected during message loop", ex);
-								}
+								processMessage(message);
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine("Exception during message loop", ex); //TODO: write to trace
+																						//NodeServerTrace.Error("Exception during message loop", ex);
+								throw ex;
 							}
 						}
 					}
-					catch(OperationCanceledException)
-					{
-					}
-				})).Start();
+				}
+				catch (OperationCanceledException)
+				{
+				}
+			}));
+				
+			thread.Start();
 		}
+
+		public void Pause()
+		{
+			continueEvent.Reset();
+		}
+
+		public void Continue()
+		{
+			continueEvent.Set();
+		}
+
 		BlockingCollection<T> _MessageQueue = new BlockingCollection<T>(new ConcurrentQueue<T>());
 		public BlockingCollection<T> MessageQueue
 		{
@@ -92,6 +120,7 @@ namespace Infrastructure
 			if(cancellationSource.IsCancellationRequested)
 				return;
 			cancellationSource.Cancel();
+			thread.Join();
 		}
 
 		#endregion
