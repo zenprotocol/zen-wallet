@@ -14,14 +14,14 @@ namespace Zen
 		{
 			App app = new App();
 			bool show_help = false;
-		
+			bool headless = false;
+			bool tui = false;
+
 			var p = new OptionSet () {
-				{ "c|console", "launch the console", 
-					v => app.Settings.Mode = Settings.AppModeEnum.Console },
-				{ "g|gui", "launch the wallet gui", 
-					v => app.Settings.Mode = Settings.AppModeEnum.GUI },
-				{ "tester", "launch the tester gui", 
-					v => app.Settings.Mode = Settings.AppModeEnum.Tester },
+				{ "headless", "start in headless mode", 
+					v => headless = true },
+				{ "t|gui", "show TUI",
+					v => tui = true },
 				{ "p|profile=", "use settings profile",
 					v =>  app.Settings.NetworkProfile = v },
 				{ "settings=", "use settings profile",
@@ -42,8 +42,10 @@ namespace Zen
 					v => app.Settings.Port = int.Parse(v) },
 				{ "ip=", "use ip address. use blank for none (to disable inbound mode)", 
 					v => app.Settings.SpecifyIp(v) },
-				{ "i|internal", "use internal ip", 
-					v => app.Settings.EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.UseInternalIP },
+				{ "localhost-client", "run as localhost client, add localhost server as peer",
+					v => app.Settings.EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.LocalhostClient },
+				{ "localhost-server", "run as localhost server, don't discover peers (avoid connecting to self)",
+					v => app.Settings.EndpointOptions.EndpointOption = EndpointOptions.EndpointOptionsEnum.LocalhostServer },
 				{ "blockchaindb=", "BlockChain's DB name of", 
 					v => app.Settings.BlockChainDB = v },
 				{ "walletdb=", "Wallet's DB name",
@@ -52,8 +54,8 @@ namespace Zen
 					v => app.Settings.AddOutput(v) },
 				{ "ge|genesis", "init the genesis block",
 					v => app.Settings.InitGenesisBlock = v != null },
-				{ "v", "increase debug message verbosity",
-					v => { if (v != null) ++verbosity; } },
+				//{ "v", "increase debug message verbosity",
+				//	v => { if (v != null) ++verbosity; } },
 				{ "h|help",  "show this message and exit", 
 					v => show_help = v != null },
 			};
@@ -75,26 +77,15 @@ namespace Zen
 				return;
 			}
 
-			try
+			app.Init();
+
+			if (tui)
+				TUI.Start(app, String.Join(" ", args));
+
+			if (!headless)
 			{
-				if (app.Settings.Mode.HasValue)
-				{
-					app.Init();
-					app.Start();
-					return;
-				}
-
-				//new Thread(() =>
-				//{
-					TUI.Start(app, String.Join(" ", args));
-					//stopEvent.Wait();
-				//}).Start();
-
-
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e);
+				app.Start();
+				app.GUI();
 			}
 		}
 
