@@ -9,6 +9,7 @@ using NBitcoin;
 using System.Threading;
 using Consensus;
 using BlockChain.Store;
+using BlockChain;
 
 namespace NBitcoin.Protocol.Behaviors
 {
@@ -50,10 +51,10 @@ namespace NBitcoin.Protocol.Behaviors
 	{
 		public BroadcastHub(BlockChain.BlockChain blockChain)
 		{
-			Infrastructure.MessageProducer<TxMempool.AddedMessage>.Instance.AddMessageListener(
-				new Infrastructure.MessageListener<TxMempool.AddedMessage>(t =>
+			Infrastructure.MessageProducer<TxAddedMessage>.Instance.AddMessageListener(
+				new Infrastructure.MessageListener<TxAddedMessage>(t =>
 				{
-					BroadcastTransactionAsync(t.Transaction.Value);
+					BroadcastTransactionAsync(TransactionValidation.unpoint(t.Tx));
 				})
 			);
 		}

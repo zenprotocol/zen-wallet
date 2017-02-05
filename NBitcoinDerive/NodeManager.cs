@@ -7,20 +7,15 @@ using System.Collections.Generic;
 using NBitcoin;
 using NBitcoin.Protocol.Behaviors;
 using System.Net;
-using Infrastructure.Testing.Blockchain;
-using Consensus;
-using Microsoft.FSharp.Collections;
 
 namespace NBitcoinDerive
 {
 	public class EndpointOptions {
 		public enum EndpointOptionsEnum {
 			#if DEBUG
-			UseInternalIP,
-			UseNone,
+			LocalhostClient,
+			LocalhostServer,
 			#endif
-			UseUPnP,
-			UseSpecified
 		}
 
 		public EndpointOptionsEnum EndpointOption { get; set; }
@@ -52,7 +47,7 @@ namespace NBitcoinDerive
 		#endif
 		NodesGroup _NodesGroup;
 
-		public NodeManager(BlockChain.BlockChain blockChain, EndpointOptions endpointOptions)
+		public NodeManager(BlockChain.BlockChain blockChain)
 		{
 			_BlockChain = blockChain;
 			OwnResource (_BlockChain);
@@ -65,38 +60,45 @@ namespace NBitcoinDerive
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
 			_NATManager = new NATManager(_Network.DefaultPort);
+		}
 
-			switch (endpointOptions.EndpointOption) 
+		public void Connect(EndpointOptions endpointOptions)
+		{
+			IPAddress ipAddress = null;
+
+			if (endpointOptions.SpecifiedAddress != null)
 			{
-			case EndpointOptions.EndpointOptionsEnum.UseInternalIP:
-				StartNode(_NATManager.InternalIPAddress);
-				break;
-			case EndpointOptions.EndpointOptionsEnum.UseNone:
-				StartNode();
-				break;
-			case EndpointOptions.EndpointOptionsEnum.UseSpecified:
-				StartNode (endpointOptions.SpecifiedAddress);
-				break;
-			case EndpointOptions.EndpointOptionsEnum.UseUPnP:
-				_NATManager.Init ().ContinueWith (t => {
+				ipAddress = endpointOptions.SpecifiedAddress;
+			}
+#if DEBUG
+			if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.LocalhostServer)
+			{
+				_Network.DefaultPort = 9999;
+				_Network.PeersToFind = 0;
+				_Network.MaximumNodeConnection = 0;
+				ipAddress = _NATManager.InternalIPAddress;
+			}
+			else if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.LocalhostClient)
+			{
+				_Network.DefaultPort = 9999;
+				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
+				_Network.PeersToFind = 1;
+				_Network.MaximumNodeConnection = 1;
+			}
+#endif
+			else
+			{
+				_NATManager.Init().ContinueWith(t =>
+				{
 					if (_NATManager.DeviceFound &&
 						_NATManager.Mapped.Value &&
 						_NATManager.ExternalIPVerified.Value)
 					{
-						StartNode(_NATManager.ExternalIPAddress);
+						ipAddress = _NATManager.ExternalIPAddress;
 					}
-					else 
-					{
-						StartNode();
-					}
-				});	
-
-				break;
+				});
 			}
-		}
-			
-		public async Task StartNode(IPAddress externalAddress = null)
-		{
+
 			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior(_BlockChain);
 
 			Miner miner = new Miner(_BlockChain);
@@ -110,27 +112,17 @@ namespace NBitcoinDerive
 			//	broadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(t);
 			//};
 
-			if (externalAddress != null) {
-				_Server = new Server (externalAddress, _Network, _NodeConnectionParameters);
+			if (ipAddress != null) {
+				_Server = new Server (ipAddress, _Network, _NodeConnectionParameters);
 				OwnResource (_Server);
 
 				if (_Server.Start ()) {
-					NodeServerTrace.Information ($"Server started at {externalAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information ($"Server started at {ipAddress}:{_Network.DefaultPort}");
 				} else {
-					NodeServerTrace.Information ($"Could not start server at {externalAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information ($"Could not start server at {ipAddress}:{_Network.DefaultPort}");
 				}
 			}
 
-			StartDiscovery ();
-		}
-									
-		#if DEBUG
-		public
-		#else 
-		private 
-		#endif
-		void StartDiscovery() 
-		{
 			if (_Network.Seeds.Count == 0)
 			{
 				NodeServerTrace.Information("No seeds defined");
