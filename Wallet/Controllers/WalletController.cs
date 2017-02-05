@@ -22,25 +22,11 @@ namespace Wallet
 
 		public SendStub SendStub = new SendStub ();
 
-		private TransactionsView _TransactionsView;
-		public TransactionsView TransactionsView { 
-			get 
-			{
-				return _TransactionsView;
-			}
-			set 
-			{
-				_TransactionsView = value;
-				AddNewBalances(App.Instance.Wallet.WalletBalances);
-
-				MessageProducer<IWalletMessage>.Instance.AddMessageListener(new MessageListener<IWalletMessage>(m =>
-				{
-				//	if (m.GetType() == typeof(WalletBalances))
-				//	{
-					AddNewBalances(m as WalletBalances);
-				//	}
-				}));
-			} 
+		public void SetTxView(ITransactionsView view)
+		{
+			Apply(view, App.Instance.Wallet.TxDeltaList);
+			App.Instance.Wallet.OnReset += delegate { view.Clear(); };
+			App.Instance.Wallet.OnItems += a => { Apply(view, a); };
 		}
 
 		public IWalletView WalletView { get; set; }
@@ -57,7 +43,7 @@ namespace Wallet
 			}
 		}
 
-		public void AddNewBalances(WalletBalances walletBalances)
+		public void Apply(ITransactionsView view, TxDeltaItemsEventArgs deltas)
 		{
 			//if (ActionBarView != null)
 			//{
@@ -67,15 +53,7 @@ namespace Wallet
 			//}
 			Gtk.Application.Invoke(delegate
 			{
-				//if (TransactionsView != null)
-				//{
-
-				if (walletBalances.GetType() == typeof(ResetMessage))
-				{
-					TransactionsView.Clear();
-				}
-
-				walletBalances.ForEach(u => u.Balances.ToList().ForEach(b => TransactionsView.AddTransactionItem(new TransactionItem(
+				deltas.ForEach(u => u.AssetDeltas.ToList().ForEach(b => view.AddTransactionItem(new TransactionItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					AssetsHelper.Find(b.Key),
@@ -84,7 +62,6 @@ namespace Wallet
 					Guid.NewGuid().ToString("N"),
 					0
 				))));
-				//}
 			});
 		}
 	}

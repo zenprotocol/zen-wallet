@@ -1396,7 +1396,7 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.EventBox" id="eventbox9">
+              <widget class="Gtk.EventBox" id="eventboxSend">
                 <property name="MemberName" />
                 <child>
                   <widget class="Gtk.Image" id="imageNext">

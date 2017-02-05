@@ -20,7 +20,7 @@ namespace Wallet
 				AddButton(key, AssetsHelper.AssetTypes[key]);
 			}
 
-			MainAreaController.GetInstance().VerticalMenuView = this;
+			MainAreaController.Instance.VerticalMenuView = this;
 
 			WidthRequest = 170;
 		}

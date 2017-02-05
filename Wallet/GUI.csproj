@@ -161,7 +161,6 @@
     <Compile Include="Widgets\Menu\TextButton.cs" />
     <Compile Include="Widgets\Portfolio\PortfolioItem.cs" />
     <Compile Include="gtk-gui\Wallet.PortfolioItem.cs" />
-    <Compile Include="Widgets\IAssetsView.cs" />
     <Compile Include="gtk-gui\Wallet.SendDialog.cs" />
     <Compile Include="Widgets\DialogBase.cs" />
     <Compile Include="Utils.cs" />
@@ -189,6 +188,7 @@
     <Compile Include="Widgets\MessageBox.cs" />
     <Compile Include="gtk-gui\Wallet.MessageBox.cs" />
     <Compile Include="Controllers\WalletManager.cs" />
+    <Compile Include="Controllers\SendDialogController.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

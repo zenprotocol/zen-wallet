@@ -20,6 +20,11 @@ namespace Wallet
 				FindParent<SendDialog>().Back();
 			};
 
+			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
+			{
+				FindParent<SendDialog>().Send();
+			};
+
 			expander.Activated += (object sender, EventArgs e) => {
 				System.Threading.Thread.Sleep(100);
 				FindParent<SendDialog>().Resize();

@@ -5,14 +5,14 @@ using Wallet.Domain;
 
 namespace Wallet
 {	
-	public interface TransactionsView {
+	public interface ITransactionsView {
 		List<TransactionItem> TransactionsList { set; }
 		void AddTransactionItem (TransactionItem transaction);
 		void Clear();
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class Transactions : FocusableWidget, TransactionsView
+	public partial class Transactions : FocusableWidget, ITransactionsView
 	{
 		private bool setFocus = false;
 
@@ -31,7 +31,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			WalletController.Instance.TransactionsView = this;
+			WalletController.Instance.SetTxView(this);
 
 			ScrolledWindow sw = new ScrolledWindow();
 
