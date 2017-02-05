@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BlockChain.Data;
 using Consensus;
@@ -6,31 +6,30 @@ using Store;
 
 namespace Wallet.core
 {
-	public interface IWalletMessage
+	public class ResetEventArgs
+	{
+		public TxDeltaItemsEventArgs TxDeltaList { get; set; }
+	}
+
+	public class TxDeltaItemsEventArgs : List<TxDelta>
 	{
 	}
 
-	public class ResetMessage : UpdatedMessage
+	public class AssetDeltas : HashDictionary<long>
 	{
 	}
 
-	public abstract class UpdatedMessage : WalletBalances, IWalletMessage
+	public class TxDelta
 	{
-	}
+		public TxStateEnum TxState { get; set; }
+		public Types.Transaction Transaction { get; set; }
+		public AssetDeltas AssetDeltas { get; set; }
 
-	public class WalletBalances : List<UpdateInfoItem>
-	{
-	}
-
-	public class UpdateInfoItem
-	{
-		public Keyed<Types.Transaction> Transaction { get; set; }
-		public HashDictionary<long> Balances { get; set; }
-
-		public UpdateInfoItem(Keyed<Types.Transaction> transaction, HashDictionary<long> balances)
+		public TxDelta(TxStateEnum txState, Types.Transaction transaction, AssetDeltas assetDeltas)
 		{
+			TxState = txState;
 			Transaction = transaction;
-			Balances = balances;
+			AssetDeltas = assetDeltas;
 		}
 	}
 }

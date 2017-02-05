@@ -64,7 +64,6 @@
     <Compile Include="Data\AssetType.cs" />
     <Compile Include="Data\AssetTypes.cs" />
     <Compile Include="Store\UTXOStore.cs" />
-    <Compile Include="Data\UTXOMem.cs" />
     <Compile Include="Store\BalanceStore.cs" />
     <Compile Include="Tests\WalletTests.cs" />
     <Compile Include="Store\TxStore_.cs" />
@@ -72,6 +71,8 @@
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Data\UpdateInfo.cs" />
     <Compile Include="vpod.cs" />
+    <Compile Include="Tests\WalletTestsBase.cs" />
+    <Compile Include="Tests\WalletSpendTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">

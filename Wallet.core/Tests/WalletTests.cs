@@ -1,170 +1,105 @@
-﻿using NUnit.Framework;
-using System;
-using System.IO;
-using System.Reflection;
-using Store;
+using NUnit.Framework;
 using Consensus;
-using Microsoft.FSharp.Collections;
-using System.Collections.Generic;
-using Wallet.core.Data;
 using System.Threading;
-using System.Threading.Tasks;
-using Infrastructure;
+using Infrastructure.Testing;
+using BlockChain;
 
 namespace Wallet.core
 {
 	[TestFixture()]
-	public class WalletTests
+	public class WalletTests : WalletTestsBase
 	{
-		private readonly Random _Random = new Random();
-		private const string WALLET_DB = "temp_wallet";
-		private const string BLOCKCHAIN_DB = "temp_blockchain";
-
-		protected BlockChain.BlockChain _BlockChain;
-		protected Keyed<Types.Block> _GenesisBlock;
-	//	protected Types.Transaction _GenesisTx;
-		protected WalletManager _WalletManager;
-
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			Dispose();
-			_GenesisBlock = GetBlock();
-
-		//	_GenesisTx = GetTx(null, Key.Create().Address, 100).Value;
-			_BlockChain = new BlockChain.BlockChain(BLOCKCHAIN_DB, _GenesisBlock.Key);
-			_WalletManager = new WalletManager(_BlockChain, WALLET_DB);
-		}
-
-		[OneTimeTearDown]
-		public void Dispose()
-		{
-			if (_WalletManager != null)
-			{
-				_WalletManager.Dispose();
-			}
-
-			if (_BlockChain != null)
-			{
-				_BlockChain.Dispose();
-			}
-
-			if (Directory.Exists(BLOCKCHAIN_DB))
-			{
-				Directory.Delete(BLOCKCHAIN_DB, true);
-			}
-
-			if (Directory.Exists(WALLET_DB))
-			{
-				Directory.Delete(WALLET_DB, true);
-			}
-		}
-
 		[Test(), Order(1)]
-		public void ShouldShowBalances()
+		public void ShouldImport()
 		{
-			var _event = new AutoResetEvent(false);
-			var tx = GetTx(null, _WalletManager.GetUnusedKey().Address, 10);
-			var block = GetBlock(_GenesisBlock, tx);
+			ulong amount = 10;
+			var walletMessageEvent = new AutoResetEvent(false);
 
-			_BlockChain.HandleNewBlock(_GenesisBlock.Value);
+			// init genesis with a key from wallet
+			var key = _WalletManager.GetUnusedKey();
+			var tx = Utils.GetTx().AddOutput(key.Address, Tests.zhash, amount);
+			_GenesisBlock = _GenesisBlock.AddTx(tx);
 
-			MessageProducer<IWalletMessage>.Instance.AddMessageListener(new MessageListener<IWalletMessage>(i => { 
-				Assert.That(i, Is.InstanceOf(typeof(ResetMessage)));
-				Assert.That(((ResetMessage)i)[0].Balances[Tests.zhash] == 10, Is.True);
-				_event.Set();
-			}));
+			// pls stop syncing now, wallet
+			_WalletManager.Dispose();
 
-			_WalletManager.Import();
-			_BlockChain.HandleNewBlock(block.Value);
+			// init the blockchain while wallet's out
+			_BlockChain.HandleNewBlock(_GenesisBlock);
 
-			Assert.That(_event.WaitOne(30000), Is.True);
+			// new unsynced wallet
+			_WalletManager = new WalletManager(_BlockChain, WALLET_DB);
+
+			_WalletManager.OnReset += a =>
+			{
+				Assert.That(a.TxDeltaList.Count, Is.EqualTo(1));
+				var txBalances = a.TxDeltaList[0];
+				Assert.That(txBalances.Transaction, Is.EqualTo(tx));
+				Assert.That(txBalances.AssetDeltas[Tests.zhash], Is.EqualTo((long)amount));
+				walletMessageEvent.Set();
+			};
+
+			// sync
+			_WalletManager.Import(key);
+
+			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
 		}
 
 		[Test(), Order(2)]
-		public void ShouldLoadWalletDB()
+		public void ShouldRestart()
 		{
 			_WalletManager.Dispose();
 
 			_WalletManager = new WalletManager(_BlockChain, WALLET_DB);
 
-			Assert.That(_WalletManager.WalletBalances[0].Balances[Tests.zhash] == 10, Is.True);
+			Assert.That(_WalletManager.TxDeltaList[0].AssetDeltas[Tests.zhash] == 10, Is.True);
 		}
 
-
-//		TODO: test: are keys marked as used during spend?
-
-		/////////////////////////////////////
-
-		protected Keyed<Types.Block> GetBlock(Keyed<Types.Block> parent, Keyed<Types.Transaction> tx = null)
+		[Test(), Order(3)]
+		public void ShouldSeeUnconfirmedTx()
 		{
-			return GetBlock(parent.Key, parent.Value.header.blockNumber + 1, tx);
-		}
+			ulong amount = 11;
+			var walletMessageEvent = new AutoResetEvent(false);
 
-		protected Keyed<Types.Block> GetBlock(Keyed<Types.Transaction> tx = null)
-		{
-			return GetBlock(null, 0, tx);
-		}
+			_NewTx = Utils.GetTx().AddOutput(_WalletManager.GetUnusedKey().Address, Tests.zhash, amount);
 
-		protected Keyed<Types.Block> GetBlock(byte[] parent, uint blockNumber, Keyed<Types.Transaction> tx = null)
-		{
-			var nonce = new byte[10];
-
-			_Random.NextBytes(nonce);
-
-			var header = new Types.BlockHeader(
-				0,
-				parent ?? new byte[] { },
-				blockNumber,
-				new byte[] { },
-				new byte[] { },
-				new byte[] { },
-				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Now.ToFileTimeUtc(),
-				0,
-				nonce
-			);
-
-			var txs = new List<Types.Transaction>();
-
-			if (tx != null)
+			_WalletManager.OnItems += a =>
 			{
-				txs.Add(tx.Value);
-			}
-
-			var block = new Types.Block(header, ListModule.OfSeq<Types.Transaction>(txs));
-			var key = Merkle.blockHeaderHasher.Invoke(header);
-
-			return new Keyed<Types.Block>(key, block);
+				Assert.That(a.Count, Is.EqualTo(1));
+				var txBalances = a[0];
+				Assert.That(txBalances.Transaction, Is.EqualTo(_NewTx));
+				Assert.That(txBalances.AssetDeltas[Tests.zhash], Is.EqualTo((long)amount));
+				Assert.That(txBalances.TxState, Is.EqualTo(TxStateEnum.Unconfirmed));
+				walletMessageEvent.Set();
+			};
+	
+			Assert.That(_BlockChain.HandleNewTransaction(_NewTx), Is.EqualTo(AddTx.Result.Added));
+			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
 		}
 
-		protected Keyed<Types.Transaction> GetTx(byte[] parentTx, byte[] address, ulong amount)
+		[Test(), Order(4)]
+		public void ShouldSeeConfirmedTx()
 		{
-			var outpoints = new List<Types.Outpoint>();
+			var walletMessageEvent = new AutoResetEvent(false);
 
-			if (parentTx != null)
-				outpoints.Add(new Types.Outpoint(parentTx, 0));
+			var newBlock = _GenesisBlock.Child().AddTx(_NewTx);
 
-			var outputs = new List<Types.Output>();
+			_WalletManager.OnItems += a =>
+			{
+				Assert.That(a.Count, Is.EqualTo(1));
+				var txBalances = a[0];
+				Assert.That(txBalances.Transaction, Is.EqualTo(_NewTx));
+				//Assert.That(txBalances.Balances[Tests.zhash], Is.EqualTo((long)amount));
+				Assert.That(txBalances.TxState, Is.EqualTo(TxStateEnum.Confirmed));
 
-			var pklock = Types.OutputLock.NewPKLock(address);
-			outputs.Add(new Types.Output(pklock, new Types.Spend(Tests.zhash, amount)));
+				walletMessageEvent.Set();
+			};
 
-			var tx = new Types.Transaction(
-				0,
-				ListModule.OfSeq(outpoints),
-				ListModule.OfSeq(new List<byte[]>()),
-				ListModule.OfSeq(outputs),
-				null);
-
-			var key = Merkle.transactionHasher.Invoke(tx);
-
-			return new Keyed<Types.Transaction>(key, tx);
+				//	does a new row gets inserted into wallets txs table here!?!?!?!?!?!?!?!
+			_BlockChain.HandleNewBlock(newBlock);
+			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
 		}
 
+
+		//		TODO: test: are keys marked as used during spend?
 	}
 }
-
-
-
