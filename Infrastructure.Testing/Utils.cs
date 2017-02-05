@@ -9,7 +9,7 @@ namespace Infrastructure.Testing
 {
 	public class Utils
 	{
-		public static Keyed<Types.Block> GetGenesisBlock()
+		public static Types.Block GetGenesisBlock()
 		{
 			var nonce = new byte[10];
 
@@ -28,41 +28,17 @@ namespace Infrastructure.Testing
 				nonce
 			);
 
-			var block = new Types.Block(header, ListModule.OfSeq<Types.Transaction>(new List<Types.Transaction>()));
-			var key = Merkle.blockHeaderHasher.Invoke(header);
-
-			return new Keyed<Types.Block>(key, block);
+			return new Types.Block(header, ListModule.OfSeq<Types.Transaction>(new List<Types.Transaction>()));
 		}
 
-		//protected Keyed<Types.Transaction> GetTx(Keyed<Types.Transaction> tx)
-		//{
-		//	return GetTx(tx.Key);
-		//}
-
-		//protected Keyed<Types.Transaction> GetTx(Types.Transaction tx)
-		//{
-		//	return GetTx(Merkle.transactionHasher.Invoke(tx));
-		//}
-
-		public static Types.Transaction GetTx(params Tuple<Types.Outpoint, byte[]>[] outpoints)
+		public static Types.Transaction GetTx()
 		{
-			var outputs = new List<Types.Output>();
-
-			var tx = new Types.Transaction(
+			return new Types.Transaction(
 				0,
 				ListModule.OfSeq(new List<Types.Outpoint>()),
 				ListModule.OfSeq(new List<byte[]>()),
-				ListModule.OfSeq(outputs),
+				ListModule.OfSeq(new List<Types.Output>()),
 				null);
-
-
-			//			var signedTx = TransactionValidation.signTx(tx, ListModule.OfSeq(outpoints.Select(o => o.Item2))); 
-
-			//	var key = Merkle.transactionHasher.Invoke(tx);
-
-			//	return new Keyed<Types.Transaction>(key, tx);
-
-			return tx;
 		}
 	}
 }

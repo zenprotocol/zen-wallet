@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Consensus;
 using Microsoft.FSharp.Collections;
@@ -17,38 +18,35 @@ namespace Infrastructure.Testing
 
 		public static Types.Transaction AddOutput(this Types.Transaction tx, Types.Output output)
 		{
-			var outputs = tx.outputs.ToList();
-
-			outputs.Add(output);
-
 			return new Types.Transaction(tx.version,
 										 tx.inputs,
 										 tx.witnesses,
-										 ListModule.OfSeq(outputs),
+			                             FSharpList<Types.Output>.Cons(output, tx.outputs),
 										 tx.contract);
 		}
 
-		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Transaction txRef, int index)
+		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Transaction txRef, int index, byte[] key)
 		{
-			return tx.AddInput(new Types.Outpoint(Merkle.transactionHasher.Invoke(txRef), (uint)index));
+			return tx.AddInput(new Types.Outpoint(Merkle.transactionHasher.Invoke(txRef), (uint)index), key);
 		}
 
-		public static Types.Transaction AddInput(this Types.Transaction tx, byte[] txHash, int index)
+		public static Types.Transaction AddInput(this Types.Transaction tx, byte[] txHash, int index, byte[] key)
 		{
-			return tx.AddInput(new Types.Outpoint(txHash, (uint)index));
+			return tx.AddInput(new Types.Outpoint(txHash, (uint)index), key);
 		}
 
-		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Outpoint outpoint)
+		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Outpoint outpoint, byte[] key)
 		{
-			var inputs = tx.inputs.ToList();
-
-			inputs.Add(outpoint);
-
 			return new Types.Transaction(tx.version,
-										 ListModule.OfSeq(inputs),
+			                             FSharpList<Types.Outpoint>.Cons(outpoint, tx.inputs),
 										 tx.witnesses,
 			                             tx.outputs,
 										 tx.contract);
+		}
+
+		public static Types.Transaction Sign(this Types.Transaction tx, params byte[][] keys)
+		{
+			return TransactionValidation.signTx(tx, ListModule.OfSeq(keys));
 		}
 	}
 }
