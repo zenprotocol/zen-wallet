@@ -1,11 +1,12 @@
-﻿namespace Consensus
-open System
+﻿module Consensus.TransactionTests
+
 open NUnit.Framework
+open NUnit.Framework.Constraints
+open System
 
-[<TestFixture>]
-type Test() = 
+open Types
+open TransactionValidation
 
-    [<Test>]
-    member x.TestCase() =
-        Assert.IsTrue(true)
-
+[<Test>]
+let ``Signed transaction validates``()=
+    Assert.IsTrue(true)

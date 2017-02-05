@@ -29,8 +29,16 @@ let compressedToBigInt (pdiff:uint32) =
 
 //let compressedToBytes pdiff = pdiff |> compressedToBigInt |> bigIntToBytes
 
-let compressDifficulty ucmp =
-    0u
+let compressDifficulty bigdiff =
+    if bigdiff > pown 2I 256 then 0xff000000u elif bigdiff <= 0I then 0x0u
+    else
+        let mutable exp = 0u
+        let mutable bd = bigdiff
+        while bd >= 2I do
+            exp <- exp + 1u
+            bd <- bd >>> 1
+        0u //TODO
+   
 
 let target bigdiff = (pown 2I 256) / bigdiff |> bigIntToBytes
 
@@ -42,10 +50,10 @@ type Difficulty = {compressed:uint32; uncompressed:byte[]; big:bigint; target:by
         {compressed=compressed; uncompressed=ucmp; big=big; target=target big}
     static member create(ucmp:byte[]) =
         let big= bytesToBigInt ucmp in
-        {compressed=compressDifficulty ucmp; uncompressed=ucmp; big=big; target=target big}
+        {compressed=compressDifficulty big; uncompressed=ucmp; big=big; target=target big}
     static member create(big:bigint) =
         let ucmp = bigIntToBytes big in
-        {compressed=compressDifficulty ucmp; uncompressed=ucmp; big=big; target=target big}
+        {compressed=compressDifficulty big; uncompressed=ucmp; big=big; target=target big}
 
 let nextDifficulty {big=bigDiff} (timeDelta:TimeSpan) =
     let udiff = bigDiff * bigint expectedTimeSpan.Ticks / bigint timeDelta.Ticks
@@ -57,8 +65,8 @@ let checkHeader (header:BlockHeader) =
     // No additional checks until first soft-fork
     true
 
-let totalWork oldTotal currentDiff =
-    oldTotal + bytesToBigInt currentDiff
+let totalWork (oldTotal:double) currentDiff =
+    oldTotal + double (compressedToBigInt currentDiff)
 
 let checkPOW (header:BlockHeader) consensusDifficulty =
     if header.pdiff <> consensusDifficulty.compressed then false
