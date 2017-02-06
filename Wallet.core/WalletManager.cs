@@ -20,7 +20,9 @@ namespace Wallet.core
 		private KeyStore _KeyStore { get; set; }
 		private List<Key> _Keys;
 
+		//TODO: merge, consider not using thread loops - * watchout from dbreeze threading limitation
 		private EventLoopMessageListener<TxAddedMessage> _BlockChainTxListener;
+		private EventLoopMessageListener<TxInvalidatedMessage> _BlockChainTxInvalidatedListener;
 		private EventLoopMessageListener<BkAddedMessage> _BlockChainBkListener;
 
 		public TxDeltaItemsEventArgs TxDeltaList { get; private set; }
@@ -40,9 +42,11 @@ namespace Wallet.core
 			TxDeltaList = new TxDeltaItemsEventArgs();
 
 			_BlockChainTxListener = new EventLoopMessageListener<TxAddedMessage>(OnTxAddedMessage);
+			_BlockChainTxInvalidatedListener = new EventLoopMessageListener<TxInvalidatedMessage>(OnTxInvalidatedMessage);
 			_BlockChainBkListener = new EventLoopMessageListener<BkAddedMessage>(OnBkAddedMessage);
 
 			OwnResource(MessageProducer<TxAddedMessage>.Instance.AddMessageListener(_BlockChainTxListener));
+			OwnResource(MessageProducer<TxInvalidatedMessage>.Instance.AddMessageListener(_BlockChainTxInvalidatedListener));
 			OwnResource(MessageProducer<BkAddedMessage>.Instance.AddMessageListener(_BlockChainBkListener));
 
 			using (var dbTx = _DBContext.GetTransactionContext())
@@ -64,6 +68,7 @@ namespace Wallet.core
 		{
 			_BlockChainTxListener.Pause();
 			_BlockChainBkListener.Pause();
+			_BlockChainTxInvalidatedListener.Pause();
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
@@ -90,7 +95,7 @@ namespace Wallet.core
 					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, tx.Key.Value, balances));
 				}
 
-				_BlockChain.TxMempool.GetAll().ForEach(ptx => HandleTx(dbTx, ptx, TxDeltaList, false));
+				_BlockChain.TxMempool.GetAll().ForEach(ptx => HandleTx(dbTx, ptx, TxDeltaList, TxStateEnum.Unconfirmed));
 
 				dbTx.Commit();
 			}
@@ -100,6 +105,7 @@ namespace Wallet.core
 
 			_BlockChainBkListener.Continue();
 			_BlockChainTxListener.Continue();
+			_BlockChainTxInvalidatedListener.Continue();
 		}
 
 		private void OnBkAddedMessage(BkAddedMessage m)
@@ -117,8 +123,10 @@ namespace Wallet.core
 			{
 				txs.ForEach(tx =>
 				{
-					HandleTx(dbTx, tx, deltas, true);
+					HandleTx(dbTx, tx, deltas, TxStateEnum.Confirmed);
 				});
+
+				dbTx.Commit();
 			}
 
 			if (deltas.Count > 0)
@@ -128,6 +136,111 @@ namespace Wallet.core
 				if (OnItems != null)
 					OnItems(deltas);
 			}
+		}
+
+		private void OnTxInvalidatedMessage(TxInvalidatedMessage m)
+		{
+			var deltas = new TxDeltaItemsEventArgs();
+
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				HandleTx(dbTx, m.Tx, deltas, TxStateEnum.Invalid);
+				dbTx.Commit();
+
+				if (deltas.Count > 0)
+				{
+
+					if (OnItems != null)
+						OnItems(deltas);
+				}
+			}
+		}
+
+		private void OnTxAddedMessage(TxAddedMessage m)
+		{
+			var deltas = new TxDeltaItemsEventArgs();
+
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				HandleTx(dbTx, m.Tx, deltas, TxStateEnum.Unconfirmed);
+				dbTx.Commit();
+
+				if (deltas.Count > 0)
+				{
+
+					if (OnItems != null)
+						OnItems(deltas);
+				}
+			}
+		}
+
+		private void HandleTx(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, TxDeltaItemsEventArgs deltas, TxStateEnum txState)
+		{
+			var _deltas = new AssetDeltas();
+
+			ptx.outputs.Where(IsMatch).ToList().ForEach(o => AddOutput(_deltas, o));
+			ptx.pInputs.ToList().ForEach(pInput =>
+			{
+				var key = GetKey(pInput.Item2);
+
+				if (key != null)
+				{
+					AddOutput(_deltas, pInput.Item2, true);
+					_KeyStore.Used(dbTx, key, true);
+				}
+			});
+
+			if (_deltas.Count > 0)
+			{
+				var tx = TransactionValidation.unpoint(ptx);
+				var keyedTx = new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(tx), tx);
+
+				if (_TxBalancesStore.ContainsKey(dbTx, keyedTx.Key))
+				{
+					_TxBalancesStore.SetTxState(dbTx, keyedTx.Key, txState);
+				}
+				else
+				{
+					_TxBalancesStore.Put(dbTx, keyedTx, _deltas, txState);
+				}
+
+				//dbTx.Commit();
+
+				deltas.Add(new TxDelta(txState, TransactionValidation.unpoint(ptx), _deltas));
+			}
+		}
+
+		private bool IsMatch(Tuple<Types.Outpoint, Types.Output> pointedOutput)
+		{
+			return IsMatch(pointedOutput.Item2);
+		}
+
+		private bool IsMatch(Types.Output output)
+		{
+			return GetKey(output) != null;
+		}
+
+		private Key GetKey(Types.Output output)
+		{
+			foreach (var key in _Keys)
+			{
+				if (key.IsMatch(output.@lock))
+				{
+					return key;
+				}
+			}
+
+			return null;
+		}
+
+		private void AddOutput(AssetDeltas balances, Types.Output output, bool isSpending = false)
+		{
+			if (!balances.ContainsKey(output.spend.asset))
+			{
+				balances[output.spend.asset] = 0;
+			}
+
+			balances[output.spend.asset] += isSpending ? -1 * (long)output.spend.amount : (long)output.spend.amount;
 		}
 
 		//	public void Sync()
@@ -189,59 +302,85 @@ namespace Wallet.core
 		/// <returns>null if could not satisfy</returns>
 		/// <param name="asset">Asset.</param>
 		/// <param name="amount">Amount.</param>
-		private Assets Require(byte[] asset, ulong amount, out ulong change)
+		private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, out Assets assets)
 		{
-			var assets = new Assets();
+			var matchingAssets = new Assets();
 
-			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
+			_TxBalancesStore.All(dbTx).ToList().ForEach(t =>
 			{
-				_TxBalancesStore.All(dbTx).ToList().ForEach(t =>
+				uint idx = 0;
+				t.Value.outputs.ToList().ForEach(o =>
 				{
-					uint idx = 0;
-					t.Value.outputs.ToList().ForEach(o =>
+					if (o.spend.asset.SequenceEqual(asset))
 					{
-						if (o.spend.asset.SequenceEqual(asset))
+						var key = GetKey(o);
+
+						if (key != null)
 						{
-							var key = GetKey(o);
+							var txState = _TxBalancesStore.TxState(dbTx, t.Key);
 
-							if (key != null)
+							if (txState != TxStateEnum.Invalid)
 							{
-								var txState = _TxBalancesStore.TxState(dbTx, t.Key);
-
-								if (txState != TxStateEnum.Invalid)
+								matchingAssets.Add(new Asset()
 								{
-									assets.Add(new Asset()
-									{
-										Key = key,
-										TxState = txState,
-										Outpoint = new Types.Outpoint(t.Key, idx),
-										Output = o
-									});
-								}
+									Key = key,
+									TxState = txState,
+									Outpoint = new Types.Outpoint(t.Key, idx),
+									Output = o
+								});
 							}
 						}
-						idx++;
-					});
+					}
+					idx++;
 				});
+			});
+
+			var unspentMatchingAssets = new Assets();
+
+			using (TransactionContext context = _BlockChain.GetDBTransaction())
+			{
+				foreach (Asset matchingAsset in matchingAssets)
+				{
+					byte[] outputKey = new byte[matchingAsset.Outpoint.txHash.Length + 1];
+					matchingAsset.Outpoint.txHash.CopyTo(outputKey, 0);
+					outputKey[matchingAsset.Outpoint.txHash.Length] = (byte)matchingAsset.Outpoint.index;
+
+					bool canSpend = false;
+					switch (matchingAsset.TxState)
+					{
+						case TxStateEnum.Confirmed:
+							canSpend = _BlockChain.UTXOStore.ContainsKey(context, outputKey) &&
+								!_BlockChain.TxMempool.ContainsOutpoint(matchingAsset.Outpoint);
+							break;
+						case TxStateEnum.Unconfirmed:
+							canSpend = !_BlockChain.TxMempool.ContainsOutpoint(matchingAsset.Outpoint) &&
+								_BlockChain.TxMempool.ContainsKey(matchingAsset.Outpoint.txHash);
+							break;
+					}
+
+					if (canSpend)
+					{
+						unspentMatchingAssets.Add(matchingAsset);
+					}
+				}
 			}
 
 			ulong total = 0;
-			var _assets = new Assets();
+			assets = new Assets();
 
-			foreach (var _asset in assets)
+			foreach (var unspentMatchingAsset in unspentMatchingAssets)
 			{
 				if (total >= amount)
 				{
 					break;
 				}
 
-				_assets.Add(_asset);
-				total += _asset.Output.spend.amount;
+				assets.Add(unspentMatchingAsset);
+				total += unspentMatchingAsset.Output.spend.amount;
 			}
 
 			change = total - amount;
-
-			return total < amount ? null : assets;
+			return total >= amount;
 		}
 
 		/// <summary>
@@ -249,7 +388,7 @@ namespace Wallet.core
 		/// </summary>
 		/// <returns>The spend.</returns>
 		/// <param name="tx">Tx.</param>
-		public bool Spend(Types.Transaction tx)
+		public bool Transmit(Types.Transaction tx)
 		{
 			return _BlockChain.HandleNewTransaction(tx) == AddTx.Result.Added;
 		}
@@ -261,37 +400,44 @@ namespace Wallet.core
 		/// <param name="address">Address.</param>
 		/// <param name="asset">Asset.</param>
 		/// <param name="amount">Amount.</param>
-		public Types.Transaction Sign(byte[] address, byte[] asset, ulong amount)
+		public bool Sign(byte[] address, byte[] asset, ulong amount, out Types.Transaction signedTx)
 		{
 			ulong change;
+			Assets assets;
+
 			var outputs = new List<Types.Output>();
 
-			var assets = Require(asset, amount, out change);
-
-			if (assets == null)
+			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
-				return null;
-			}
-			else if (change > 0)
-			{
-				using (TransactionContext dbTx = _DBContext.GetTransactionContext())
+				if (!Require(dbTx, asset, amount, out change, out assets))
 				{
-					var key = _KeyStore.GetUnusedKey(dbTx);
-					outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(key.Address), new Types.Spend(Tests.zhash, change)));
+					signedTx = null;
+					return false;
+				}
+				else if (change > 0)
+				{
+					Key key;
 
-					_KeyStore.Used(dbTx, key, true); //TODO: necessary?
-					dbTx.Commit();
+					if (_KeyStore.GetUnusedKey(dbTx, out key, true))
+					{
+						_Keys.Add(key);
+						dbTx.Commit();
+					}
+			
+					outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(key.Address), new Types.Spend(asset, change)));
 				}
 			}
 
 			outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(address), new Types.Spend(Tests.zhash, amount)));
 
-			return TransactionValidation.signTx(new Types.Transaction(
+			signedTx = TransactionValidation.signTx(new Types.Transaction(
 				1,
 				ListModule.OfSeq(assets.Select(t => t.Outpoint)),
 				ListModule.OfSeq(new List<byte[]>()),
 				ListModule.OfSeq(outputs),
-				null), ListModule.OfSeq(assets.Select(i => i.Key.Private)));			
+				null), ListModule.OfSeq(assets.Select(i => i.Key.Private)));
+
+			return true;
 		}
 
 		public Key GetUnusedKey()
@@ -300,95 +446,14 @@ namespace Wallet.core
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
-				key = _KeyStore.GetUnusedKey(context);
-				context.Commit();
+				if (_KeyStore.GetUnusedKey(context, out key))
+				{
+					_Keys.Add(key);
+					context.Commit();
+				}
 			}
-
-			_Keys.Add(key);
 
 			return key;
-		}
-
-		private void OnTxAddedMessage(TxAddedMessage m)
-		{
-			var deltas = new TxDeltaItemsEventArgs();
-
-			using (var dbTx = _DBContext.GetTransactionContext())
-			{
-				HandleTx(dbTx, m.Tx, deltas, false);
-			}
-
-			if (deltas.Count > 0)
-			{
-				if (OnItems != null)
-					OnItems(deltas);
-			}
-		}
-
-		private void HandleTx(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, TxDeltaItemsEventArgs deltas, bool confirmed)
-		{
-			var _deltas = new AssetDeltas();
-
-			ptx.outputs.Where(IsMatch).ToList().ForEach(o => AddOutput(_deltas, o));
-			ptx.pInputs.Where(IsMatch).ToList().ForEach(o => AddPOutput(_deltas, o));
-
-			if (_deltas.Count > 0)
-			{
-				var tx = TransactionValidation.unpoint(ptx);
-				var keyedTx = new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(tx), tx);
-
-				var state = confirmed ? TxStateEnum.Confirmed : TxStateEnum.Unconfirmed;
-
-				if (_TxBalancesStore.ContainsKey(dbTx, keyedTx.Key))
-				{
-					_TxBalancesStore.SetTxState(dbTx, keyedTx.Key, state);
-				}
-				else
-				{
-					_TxBalancesStore.Put(dbTx, keyedTx, _deltas, state);
-				}
-				dbTx.Commit();
-
-				deltas.Add(new TxDelta(state, TransactionValidation.unpoint(ptx), _deltas));
-			}
-		}
-
-		private bool IsMatch(Tuple<Types.Outpoint, Types.Output> pointedOutput)
-		{
-			return IsMatch(pointedOutput.Item2);
-		}
-
-		private bool IsMatch(Types.Output output)
-		{
-			return GetKey(output) != null;
-		}
-
-		private Key GetKey(Types.Output output)
-		{
-			foreach (var key in _Keys)
-			{
-				if (key.IsMatch(output.@lock))
-				{
-					return key;
-				}
-			}
-
-			return null;
-		}
-
-		private void AddOutput(AssetDeltas balances, Types.Output output, bool isSpending = false)
-		{
-			if (!balances.ContainsKey(output.spend.asset))
-			{
-				balances[output.spend.asset] = 0;
-			}
-
-			balances[output.spend.asset] += isSpending  ? -1 * (long)output.spend.amount : (long)output.spend.amount;
-		}
-
-		private void AddPOutput(AssetDeltas balances, Tuple<Types.Outpoint, Types.Output> pointedOutput)
-		{
-			AddOutput(balances, pointedOutput.Item2, true);
 		}
 	}
 }

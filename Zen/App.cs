@@ -27,14 +27,52 @@ namespace Zen
 		//	_WalletManager.Reset();
 		//}
 
-		internal void AddGenesisBlock()
+		internal bool AddGenesisBlock()
 		{
-			_BlockChain.HandleNewBlock(GenesisBlock.Value);
+			return AddBlock(GenesisBlock.Value);
 		}
+
+		internal bool AddBlock(Types.Block block)
+		{
+			return _BlockChain.HandleNewBlock(block) == BlockChain.AddBk.Result.Added;
+		}
+
 
 		internal void ImportKey(string key)
 		{
 			_WalletManager.Import(Key.Create(key));
+		}
+
+		internal Key GetUnusedKey()
+		{
+			return _WalletManager.GetUnusedKey();
+		}
+
+		internal bool Spend(ulong amount)
+		{
+			Types.Transaction tx;
+			return Spend(amount, out tx);
+		}
+
+		internal bool Spend(ulong amount, out Types.Transaction tx)
+		{
+			var key = Key.Create();
+
+//			Console.WriteLine(key.AddressAsString);
+
+			if (_WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx))
+			{
+				return _WalletManager.Transmit(tx);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		internal void CloseGUI()
+		{
+			Wallet.App.Instance.Quit();
 		}
 
 		//internal void ImportWallet()
@@ -50,7 +88,7 @@ namespace Zen
 				PeersToFind = null,
 				BlockChainDB = "blockchain_db",
 				WalletDB = "wallet_db",
-				EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.LocalhostClient }
+				EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.NoNetworking }
 			};
 		}
 
@@ -88,12 +126,15 @@ namespace Zen
 
 			_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
 			_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
-			_NodeManager = new NodeManager(_BlockChain);
+
+			if (Settings.EndpointOptions.EndpointOption != EndpointOptions.EndpointOptionsEnum.NoNetworking)
+				_NodeManager = new NodeManager(_BlockChain);
 		}
 
 		public void Start()
 		{
-			_NodeManager.Connect(Settings.EndpointOptions);
+			if (_NodeManager != null)
+				_NodeManager.Connect(Settings.EndpointOptions);
 		}
 
 		public void GUI()
@@ -167,7 +208,7 @@ namespace Zen
 						new byte[] { },
 						new byte[] { },
 						ListModule.OfSeq<byte[]>(new List<byte[]>()),
-						DateTime.Parse(date).ToBinary(),
+						DateTime.Now/*Parse(date)*/.ToBinary(),
 						1,
 						new byte[] { }
 					);

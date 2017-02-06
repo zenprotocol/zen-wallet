@@ -13,7 +13,7 @@ using System.IO;
 using System.Reflection;
 using Infrastructure.Testing;
 
-namespace BlockChain.Tests
+namespace BlockChain
 {
 	public class BlockChainTestsBase
 	{

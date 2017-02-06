@@ -12,7 +12,7 @@ namespace Infrastructure.Testing.Blockchain
 		public List<String> List { get; private set; }
 		private Dictionary<String, String> Tree { get; set; }
 		public Dictionary<String, TestBlock> Blocks { get; set; }
-		public Dictionary<String, BlockChainAddBlockOperation.Result> Expectations { get; set; }
+		public Dictionary<String, AddBk.Result> Expectations { get; set; }
 		public byte[] GenesisBlockHash { get; set; }
 
 		public TestBlockBlockChainExpectationPool()
@@ -20,10 +20,10 @@ namespace Infrastructure.Testing.Blockchain
 			List = new List<String>();
 			Tree = new Dictionary<String, String>();
 			Blocks = new Dictionary<String, TestBlock>();
-			Expectations = new Dictionary<String, BlockChainAddBlockOperation.Result>();
+			Expectations = new Dictionary<String, AddBk.Result>();
 		}
 
-		public void Add(String tag, TestBlock block, BlockChainAddBlockOperation.Result expectedResult, String parent = null) {
+		public void Add(String tag, TestBlock block, AddBk.Result expectedResult, String parent = null) {
 			List.Add(tag);
 
 			Blocks[tag] = block;
@@ -93,6 +93,7 @@ namespace Infrastructure.Testing.Blockchain
 			var blockHeader = new Types.BlockHeader(
 				version,
 				parentKey,
+				0,
 				new byte[] { },
 				new byte[] { },
 				new byte[] { },

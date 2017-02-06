@@ -37,7 +37,7 @@ namespace Infrastructure
 
 	public class EventLoopMessageListener<T> : IMessageListener<T>, IDisposable
 	{
-		private AutoResetEvent continueEvent = new AutoResetEvent(true);
+		private ManualResetEvent continueEvent = new ManualResetEvent(true);
 		private Thread thread;
 
 #if DEBUG
@@ -64,10 +64,12 @@ namespace Infrastructure
 						{
 							try
 							{
+								InfrastructureTrace.Information("99i8");
 								processMessage(message);
 							}
 							catch (Exception ex)
 							{
+								InfrastructureTrace.Error("Exception during message loop", ex);
 								Console.WriteLine("Exception during message loop", ex); //TODO: write to trace
 																						//NodeServerTrace.Error("Exception during message loop", ex);
 								throw ex;

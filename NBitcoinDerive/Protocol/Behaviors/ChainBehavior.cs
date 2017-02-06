@@ -88,7 +88,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 					if (bk != null)
 					{
-						NodeServerTrace.Information("Sending block: " + System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(bk.header)));
+						NodeServerTrace.Information("Sending block: " + bk.header.blockNumber);
 						node.SendMessageAsync(bk);
 					}
 				}

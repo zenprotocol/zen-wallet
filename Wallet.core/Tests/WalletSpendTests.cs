@@ -4,6 +4,7 @@ using System.Threading;
 using Infrastructure.Testing;
 using BlockChain;
 using Wallet.core.Data;
+using System.Linq;
 
 namespace Wallet.core
 {
@@ -48,24 +49,23 @@ namespace Wallet.core
 
 			_WalletManager.Import(key);
 
-			var txNew = _WalletManager.Sign(key1.Address, Tests.zhash, spendAmount);
-			Assert.That(txNew, Is.Not.Null);
-			Assert.That(_WalletManager.Spend(txNew), Is.True);
+			Types.Transaction txNew;
+			Assert.That(_WalletManager.Sign(key1.Address, Tests.zhash, spendAmount, out txNew), Is.True);
+			Assert.That(_WalletManager.Transmit(txNew), Is.True);
 
 			// mine the tx from mempool
-			_BlockChain.HandleNewBlock(_GenesisBlock.Child().AddTx(TransactionValidation.unpoint(_BlockChain.TxMempool.GetAll()[0])));
+			_BlockChain.HandleNewBlock(_GenesisBlock.Child().AddTx(txNew));
 
-			_WalletManager.Import(key);
+			//Thread.Sleep(1000);
 
-			txNew = _WalletManager.Sign(key1.Address, Tests.zhash, spendAmount);
-			Assert.That(txNew, Is.Null);
+			Assert.That(_WalletManager.Sign(key2.Address, Tests.zhash, spendAmount, out txNew), Is.False);
 		}
 
 		[Test()]
-		public void ShouldNotOverspendUsingConfirmedTxXXXXXXXXXX()
+		public void ShouldSpendMultiple()
 		{
 			ulong initialAmount = 11;
-			ulong spendAmount = 10;
+			ulong spendAmount = 2;
 			var walletMessageEvent = new AutoResetEvent(false);
 
 			var key1 = Key.Create();
@@ -78,12 +78,51 @@ namespace Wallet.core
 			_GenesisBlock = _GenesisBlock.AddTx(tx);
 			_BlockChain.HandleNewBlock(_GenesisBlock);
 
+			_WalletManager.Import(key);
+
+			Types.Transaction txNew;
+
+			Assert.That(_WalletManager.Sign(key1.Address, Tests.zhash, spendAmount, out txNew), Is.True);
+			Assert.That(_WalletManager.Transmit(txNew), Is.True);
+
+			//Assert.That(_BlockChain.GetUTXOSet(null).Values.Count, Is.EqualTo(2));
+
+
+			//	CollectionAssert.DoesNotContain(_BlockChain.GetUTXOSet(null).Values, tx.outputs[0]);
+
+			Thread.Sleep(1000);
+
+			Assert.That(_WalletManager.Sign(key2.Address, Tests.zhash, spendAmount, out txNew), Is.True);
+			Assert.That(_WalletManager.Transmit(txNew), Is.True);
+		}
+
+		[Test()]
+		public void ShouldNotOverspendUsingConfirmedTxXXXXXXXXXX()
+		{
+			ulong initialAmount = 11;
+			ulong spendAmount = 10;
+			var walletMessageEvent = new AutoResetEvent(false);
+
+		//	var key1 = Key.Create();
+		//	var key2 = Key.Create();
+
+			var key1 = Key.Create("3c/oykrHM4qPmKo4sCMGT1PVfN+SXR7vNnEO7PvoWENGjVh0wy97F9bLeygidHSuejHmcXYKAVFdD7e33yPtyQ==");
+			var key2 = Key.Create("0PO1RfoZCeJsezF1Enk2t79W1HsYQywd9EZl7VVpRJL7z9wxs/ExZxMdh3Sx10GSx5OQNyhY2pYrw3JESFJo2w==");
+
+			// init genesis with a key from wallet
+			var key = _WalletManager.GetUnusedKey();
+			var tx = Utils.GetTx().AddOutput(key.Address, Tests.zhash, initialAmount);
+
+			_GenesisBlock = _GenesisBlock.AddTx(tx);
+			_BlockChain.HandleNewBlock(_GenesisBlock);
+
 			Thread.Sleep(1000);
 
 
 			//_WalletManager.Import();
-			var txNew = _WalletManager.Sign(key1.Address, Tests.zhash, spendAmount);
-			Assert.That(_WalletManager.Spend(txNew), Is.True);
+			Types.Transaction txNew;
+			Assert.That(_WalletManager.Sign(key1.Address, Tests.zhash, spendAmount, out txNew), Is.True);
+			Assert.That(_WalletManager.Transmit(txNew), Is.True);
 
 			var mempoolPtx = _BlockChain.TxMempool.GetAll()[0];
 			var _tx = TransactionValidation.unpoint(mempoolPtx);
@@ -91,10 +130,8 @@ namespace Wallet.core
 			Thread.Sleep(1000);
 			_WalletManager.Import(key);
 
-			txNew = _WalletManager.Sign(key2.Address, Tests.zhash, spendAmount);
-			Assert.That(_WalletManager.Spend(txNew), Is.Null);
+			Assert.That(_WalletManager.Sign(key2.Address, Tests.zhash, spendAmount, out txNew), Is.False);
 		//	Thread.Sleep(1000);
-
 		}
 	}
 }
