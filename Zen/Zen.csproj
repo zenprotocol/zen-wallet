@@ -39,7 +39,7 @@
     </Reference>
     <Reference Include="FSharp.Core" />
     <Reference Include="nunit.framework">
-      <Package>nunit</Package>
+      <HintPath>..\packages\NUnit.3.6.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -51,7 +51,7 @@
     <Compile Include="Config\Settings.cs" />
     <Compile Include="Config\Keys.cs" />
     <Compile Include="AppTraceListener.cs" />
-    <Compile Include="Tests\Tests.cs" />
+    <Compile Include="Tests\UITests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

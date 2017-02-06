@@ -1,3 +1,4 @@
+using System;
 using Consensus;
 using System.Linq;
 using Store;
@@ -6,6 +7,18 @@ using Microsoft.FSharp.Collections;
 
 namespace BlockChain.Store
 {
+	public class BlockUndoData
+	{
+		public List<Tuple<Types.Outpoint, Types.Output>> AddedUTXO { get; set; }
+		public List<Tuple<Types.Outpoint, Types.Output>> RemovedUTXO { get; set; }
+
+		public BlockUndoData()
+		{
+			AddedUTXO = new List<Tuple<Types.Outpoint, Types.Output>>();
+			RemovedUTXO = new List<Tuple<Types.Outpoint, Types.Output>>();
+		}
+	}
+
 	public enum LocationEnum
 	{
 		Genesis = 1,
@@ -22,14 +35,21 @@ namespace BlockChain.Store
 		private const string TOTAL_WORK = "bk-totalwork";
 		private const string BLOCK_TRANSACTIONS = "bk-transactions";
 		private const string TRANSACTIONS = "transactions";
+		private const string BLOCK_UNDO = "block_undo";
 		public Store<Types.Transaction> TxStore { get; private set; }
+		public ConsensusTypeStore<BlockUndoData> BlockUndo { get; private set; }
 
 		public BlockStore() : base(BLOCK_HEADERS)
 		{
 			TxStore = new ConsensusTypeStore<Types.Transaction>(TRANSACTIONS);
+			BlockUndo = new ConsensusTypeStore<BlockUndoData>(BLOCK_UNDO);
 		}
 
-		public void Put(TransactionContext transactionContext, Keyed<Types.Block> block, LocationEnum location, double totalWork)
+		public void Put(
+			TransactionContext transactionContext,
+			Keyed<Types.Block> block,
+			LocationEnum location,
+			double totalWork)
 		{
 			base.Put(transactionContext, new Keyed<Types.BlockHeader>(block.Key, block.Value.header));
 
@@ -62,7 +82,8 @@ namespace BlockChain.Store
 
 				if (!TxStore.ContainsKey(transactionContext, txHash))
 				{
-					TxStore.Put(transactionContext, new Keyed<Types.Transaction>(txHash, tx)); 
+					TxStore.Put(transactionContext, new Keyed<Types.Transaction>(txHash, tx));
+					//transactionContext.Transaction.Insert<byte[], double>(TX_BLOCKNUMBER, block.Key, totalWork);
 				}
 			}
 
@@ -73,6 +94,23 @@ namespace BlockChain.Store
 				0,
 				false
 			);
+
+		}
+
+		public void SetUndoData(
+			TransactionContext transactionContext,
+			byte[] block,
+			BlockUndoData blockUndoData)
+		{
+			BlockUndo.Put(transactionContext, new Keyed<BlockUndoData>(block, blockUndoData));
+		}
+
+		public BlockUndoData GetUndoData(
+			TransactionContext transactionContext,
+			byte[] block)
+		{
+			var rec = BlockUndo.Get(transactionContext, block);
+			return rec.Value;
 		}
 
 		public Keyed<Types.Block> GetBlock(TransactionContext transactionContext, byte[] key)

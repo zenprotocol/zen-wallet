@@ -4,9 +4,9 @@ using Store;
 
 namespace Store
 {
-	public class MsgPackStore<T> : Store<T> where T : class
+	public class MsgPackStore<T> : Store<T> //where T : class
 	{
-		SerializationContext _Context;
+		protected SerializationContext _Context;
 
 		public MsgPackStore(String tableName) : base(tableName)
 		{

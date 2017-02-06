@@ -109,15 +109,15 @@ namespace NodeTester
 
 		private void Populate(TreeView treeView, bool? used, bool? isChange)
 		{
-			App.WalletManager.ListKeys(used, isChange).ToList().ForEach(key =>
-			{
-				((ListStore) treeView.Model).AppendValues(
-					DisplayKey(key.Address), 
-					DisplayKey(key.Private), 
-					key.Used ? "Yes" : "No", 
-					key.Change ? "Yes" : "No"
-				);
-			});
+			//App.WalletManager.ListKeys(used, isChange).ToList().ForEach(key =>
+			//{
+			//	((ListStore) treeView.Model).AppendValues(
+			//		DisplayKey(key.Address), 
+			//		DisplayKey(key.Private), 
+			//		key.Used ? "Yes" : "No", 
+			//		key.Change ? "Yes" : "No"
+			//	);
+			//});
 		}
 
 		private String DisplayKey(byte[] key)

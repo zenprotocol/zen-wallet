@@ -15,6 +15,7 @@ namespace NBitcoinDerive
 			#if DEBUG
 			LocalhostClient,
 			LocalhostServer,
+			NoNetworking,
 			#endif
 		}
 
@@ -71,7 +72,10 @@ namespace NBitcoinDerive
 				ipAddress = endpointOptions.SpecifiedAddress;
 			}
 #if DEBUG
-			if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.LocalhostServer)
+			if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.NoNetworking)
+			{
+			}
+			else if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.LocalhostServer)
 			{
 				_Network.DefaultPort = 9999;
 				_Network.PeersToFind = 0;
@@ -80,10 +84,14 @@ namespace NBitcoinDerive
 			}
 			else if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.LocalhostClient)
 			{
-				_Network.DefaultPort = 9999;
-				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
-				_Network.PeersToFind = 1;
-				_Network.MaximumNodeConnection = 1;
+				//TODO: 
+				if (_NATManager.InternalIPAddress != null)
+				{
+					_Network.DefaultPort = 9999;
+					_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
+					_Network.PeersToFind = 1;
+					_Network.MaximumNodeConnection = 1;
+				}
 			}
 #endif
 			else

@@ -144,6 +144,8 @@ namespace BlockChain
 
 					if (result != AddBk.Result.Rejected)
 					{
+						BlockChainTrace.Information("Block " + block.header.blockNumber + " " + result);
+
 					//	TxMempool.Lock(() =>
 					//	{
 							context.Commit();
@@ -156,13 +158,12 @@ namespace BlockChain
 						foreach (Action action in undoActions)
 							action();
 					}
-
-					BlockChainTrace.Information("Block " + System.Convert.ToBase64String(Merkle.blockHeaderHasher.Invoke(block.header)) + " is " + result);
 				}
 			}
 
 			while (_OrphansActions.TryPop(out block))
 			{
+				BlockChainTrace.Information("Start with orphan bk: " + block.header.blockNumber);
 				HandleNewBlock(block, true);
 			}
 
@@ -340,8 +341,12 @@ namespace BlockChain
 			}
 			else 
 			{
-				throw new Exception();
+				BlockChainTrace.Information("*** error mining block ***");
+				//	throw new Exception();
+				return null;
 			}
+
+
 		}
 
 

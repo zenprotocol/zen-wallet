@@ -1,7 +1,8 @@
 using BlockChain.Store;
 using NUnit.Framework;
 using Infrastructure.Testing;
-namespace BlockChain.Tests
+
+namespace BlockChain
 {
 	[TestFixture()]
 	public class BlockChainBranchTests : BlockChainTestsBase
@@ -28,5 +29,4 @@ namespace BlockChain.Tests
 			Assert.That(Location(block3), Is.EqualTo(LocationEnum.Main));
 		}
 	}
-	
 }

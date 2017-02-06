@@ -22,8 +22,8 @@ namespace Infrastructure.Testing
 		public static Types.Block Child(this Types.Block bk)
 		{
 			var nonce = new byte[10];
-
 			new Random().NextBytes(nonce);
+			//var nonce = new byte[] { };
 
 			var header = new Types.BlockHeader(
 				0,
@@ -43,9 +43,9 @@ namespace Infrastructure.Testing
 
 		public static Types.Block AddTx(this Types.Block bk, Types.Transaction tx)
 		{
-			var nonce = new byte[10];
-
-			new Random().NextBytes(nonce);
+			//var nonce = new byte[10];
+			//new Random().NextBytes(nonce);
+			var nonce = new byte[] { };
 
 			var header = new Types.BlockHeader(
 				0,

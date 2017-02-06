@@ -16,6 +16,7 @@ namespace BlockChain
 		private readonly List<Action> _DoActions;
 		private readonly List<Action> _UndoActions;
 		private readonly ConcurrentStack<Types.Block> _OrphansActions;
+		private readonly BlockUndoData _BlockUndoData;
 
 		public enum Result
 		{
@@ -39,6 +40,7 @@ namespace BlockChain
 			_Bk = bk;
 			_DbTx = dbTx;
 			_OrphansActions = handlingStack;
+			_BlockUndoData = new BlockUndoData();
 		}
 
 		public Result Start(bool handleOrphan = false, bool handleBranch = false)
@@ -96,8 +98,6 @@ namespace BlockChain
 				{
 					_BlockChain.Timestamps.Init(_Bk.Value.header.timestamp);
 					AddToMainBlockStore(0);
-					_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
-					_BlockChain.Tip = _Bk;
 					return Result.Added;
 				}
 			}
@@ -116,14 +116,11 @@ namespace BlockChain
 				return Result.Rejected;
 			}
 
-			if (!IsTransactionsValid(_Bk.Key))
-			{
-				return Result.Rejected;
-			}
-
 			//14. For certain old blocks(i.e.on initial block download) check that hash matches known values
 
 			var totalWork = TotalWork();
+
+			//var skipOrphans = false;
 
 			if (handleBranch)
 			{
@@ -131,38 +128,74 @@ namespace BlockChain
 			}
 			else if (IsBranch())
 			{
-				if (IsNewDifficulty(totalWork))
+				if (IsNewGreatestWork(totalWork))
 				{
+					if (!IsTransactionsValid(true))
+					{
+						return Result.Rejected;
+					}
+
+					BlockChainTrace.Information($"block {_Bk.Value.header.blockNumber} extends a branch with new difficulty.");
+
+					var originalTip = _BlockChain.Tip;
+
 					Keyed<Types.Block> fork = null;
 					var newMainChain = GetNewMainChainStartFromForkToLeaf(_Bk, out fork);
+
+					_BlockChain.ChainTip.Context(_DbTx).Value = fork.Key;
+					_BlockChain.Tip = fork;
+
+					var oldMainChain = GetOldMainChainStartFromLeafToFork(fork, originalTip.Key);
+
+					foreach (var block in oldMainChain)
+					{
+						//TODO: tx invalidation?
+						UndoBlock(block.Key);
+					}
+
+					bool undoNewMainChain = false;
 
 					//append new chain
 					foreach (var block in newMainChain)
 					{
-						BlockChainTrace.Information("Start with sidechain");
-						var result = new AddBk(
+						BlockChainTrace.Information("Start with sidechain for block: " + block.Value.header.blockNumber);
+
+						if (new AddBk(
 							_BlockChain,
 							_DbTx,
 							block,
 							_DoActions,
 							_UndoActions,
 							_OrphansActions
-						).Start(false, true);
-
-						if (result != Result.Added)
+						).Start(false, true) != Result.Added)
 						{
-							 _BlockChain.InitBlockTimestamps();
-
-							return Result.Rejected;
+							undoNewMainChain = true;
+							break;
 						}
 					}
 
-					//TODO: handle do/undo at this point?
-
-					// remove from main + add to mempool of old main
-					foreach (var block in GetOldMainChainStartFromLeafToFork(fork))
+					if (undoNewMainChain)
 					{
-						RemoveFromMainBlockStore(block.Key);
+						_BlockChain.ChainTip.Context(_DbTx).Value = originalTip.Key;
+						_BlockChain.Tip = originalTip;
+						_BlockChain.InitBlockTimestamps();
+
+						return Result.Rejected;
+					}
+					// remove from main + add to mempool of old main
+					foreach (var block in oldMainChain)
+					{
+						BlockChainTrace.Information($"doin somethin with block {block.Value.header.blockNumber} {block.Value.transactions.Length} txs");
+						//TODO
+						block.Value.transactions.ToList().ForEach((Types.Transaction obj) =>
+						{
+							BlockChainTrace.Information($"tx invalidated of block {block.Value.header.blockNumber}");
+							TxInvalidatedMessage.Publish(_BlockChain.GetPointedTransaction(_DbTx, obj));
+
+								//TODO: undo
+							});
+
+						EvictIntoMempool(block.Key);
 					}
 
 					//// remove from mempoo of new main
@@ -170,9 +203,6 @@ namespace BlockChain
 					{
 						RemoveTransactionsFromMempool(block);
 					}
-
-					_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
-					_BlockChain.Tip = _Bk;
 				}
 				else
 				{
@@ -181,18 +211,28 @@ namespace BlockChain
 			}
 			else
 			{
-				_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
-				_BlockChain.Tip = _Bk;
 				AddToMainBlockStore(totalWork);
 			}
 
+			//if (!skipOrphans)
 			foreach (var block in _BlockChain.BlockStore.Children(_DbTx, _Bk.Key, true))
 			{
-				BlockChainTrace.Information("Start with orphan");
 				_OrphansActions.Push(block.Value);
 			}
 
 			return Result.Added;
+		}
+
+		void EvictIntoMempool(byte[] block)
+		{
+			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
+			{
+				if (IsTransactionValid(tx.Value, false))
+				{
+					_DoActions.Add(() => _BlockChain.TxMempool.Add(tx.Key, _BlockChain.GetPointedTransaction(_DbTx, tx.Value)));
+					_UndoActions.Add(() => _BlockChain.TxMempool.Remove(tx.Key));
+				}
+			}
 		}
 
 		private bool IsValid()
@@ -227,35 +267,54 @@ namespace BlockChain
 				_BlockChain.BlockStore.HasChildren(_DbTx, _Bk.Value.header.parent);
 		}
 
-		private bool IsTransactionsValid(byte[] block)
+		private bool IsTransactionsValid(bool checkExistance)
 		{
-			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
+			foreach (var tx in _Bk.Value.transactions)
 			{
-				if (IsCoinbase(tx.Value))
+				if (!IsTransactionValid(tx, checkExistance))
 				{
-					continue;
+					return false;
+				}
+			}
+
+			return true;
+		}
+							
+		private bool IsTransactionValid(Types.Transaction tx, bool checkExistance)
+		{
+			if (IsCoinbase(tx))
+			{
+				return true;
+			}
+
+			//TODO: checkExistance?
+			if (checkExistance)
+			{
+				var key = Merkle.transactionHasher.Invoke(tx);
+				if (_BlockChain.BlockStore.TxStore.ContainsKey(_DbTx, key))
+					return false;
+			}
+
+			foreach (Types.Outpoint input in tx.inputs)
+			{
+					
+				if (!ParentOutputExists(input))
+				{
+					BlockChainTrace.Information("parent output does not exist");
+					return false;
 				}
 
-				foreach (Types.Outpoint input in tx.Value.inputs)
+				//For each input, if the referenced output transaction is coinbase (i.e.only 1 input, with hash = 0, n = -1), it must have at least COINBASE_MATURITY (100) confirmations; else reject.
+				//Verify crypto signatures for each input; reject if any are bad
+
+				if (ParentOutputSpent(input))
 				{
-					if (!ParentOutputExists(input))
-					{
-						BlockChainTrace.Information("parent output does not exist");
-						return false;
-					}
-
-					//For each input, if the referenced output transaction is coinbase (i.e.only 1 input, with hash = 0, n = -1), it must have at least COINBASE_MATURITY (100) confirmations; else reject.
-					//Verify crypto signatures for each input; reject if any are bad
-
-					if (ParentOutputSpent(input))
-					{
-						BlockChainTrace.Information("parent output spent");
-						return false;
-					}
-
-					//Using the referenced output transactions to get input values, check that each input value, as well as the sum, are in legal money range
-					//Reject if the sum of input values < sum of output values
+					BlockChainTrace.Information("parent output spent");
+					return false;
 				}
+
+				//Using the referenced output transactions to get input values, check that each input value, as well as the sum, are in legal money range
+				//Reject if the sum of input values < sum of output values
 			}
 
 			return true;
@@ -387,24 +446,60 @@ namespace BlockChain
 					_UndoActions.Add(() => _BlockChain.TxMempool.Add(txHash, _BlockChain.GetPointedTransaction(_DbTx, transaction)));
 				}
 
+				var toEvict = _BlockChain.TxMempool.GetTransactionsInConflict(transaction).ToList();
+
+				_DoActions.Add(() =>
+				{
+					toEvict.ForEach(i => _BlockChain.TxMempool.Remove(i.Item1));
+				});
+
+				_UndoActions.Add(() =>
+				{
+					toEvict.ForEach(i => _BlockChain.TxMempool.Add(i.Item1, i.Item2));
+				});
+
 				for (int i = 0; i < transaction.inputs.Length; i++)
 				{
-					_BlockChain.UTXOStore.Remove(
+					var outpoint = new Types.Outpoint(transaction.inputs[i].txHash, transaction.inputs[i].index);
+					var output = _BlockChain.UTXOStore.Get(
 						_DbTx, 
 						GetOutputKey(transaction.inputs[i].txHash, (int)transaction.inputs[i].index)
 					);
+
+					_BlockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, output.Value));
+					//_BlockChain.UTXOStore.Remove(
+					//	_DbTx, 
+					//	GetOutputKey(transaction.inputs[i].txHash, (int)transaction.inputs[i].index)
+					//);
 				}
 
 				for (int i = 0; i < transaction.outputs.Length; i++)
 				{
 					BlockChainTrace.Information($"new utxo item: {transaction.outputs[i].spend.amount}");
-					_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(transaction, i), transaction.outputs[i]));
+
+					_BlockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, (uint)i), transaction.outputs[i]));
+					//_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(transaction, i), transaction.outputs[i]));
+
 					_UndoActions.Add(() => _BlockChain.TxMempool.Add(txHash, _BlockChain.GetPointedTransaction(_DbTx, transaction)));
 				}
 			}
 
 			RemoveTransactionsFromMempool(_Bk);
-			//RemoveUTXO(_Bk.Key);
+
+			_BlockUndoData.AddedUTXO.ForEach(u =>                    
+			{
+				_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
+			});
+
+			_BlockUndoData.RemovedUTXO.ForEach(u =>
+			{
+				_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
+			});
+
+			_BlockChain.BlockStore.SetUndoData(_DbTx, _Bk.Key, _BlockUndoData);
+
+			_BlockChain.ChainTip.Context(_DbTx).Value = _Bk.Key;
+			_BlockChain.Tip = _Bk;
 
 			_DoActions.Add(() => BkAddedMessage.Publish(_Bk.Value));
 		}
@@ -425,19 +520,20 @@ namespace BlockChain
 
 		private double TotalWork()
 		{
-			var parentTotalWork = _BlockChain.BlockStore.TotalWork(_DbTx, _Bk.Value.header.parent);
+			return 1000 * _Bk.Value.header.blockNumber;
+			//var parentTotalWork = _BlockChain.BlockStore.TotalWork(_DbTx, _Bk.Value.header.parent);
 			
-			return TransactionValidation.totalWork(
-				parentTotalWork,
-				TransactionValidation.uncompressDifficulty(_Bk.Value.header.pdiff)
-			);
+			//return TransactionValidation.totalWork(
+			//	parentTotalWork,
+			//	_Bk.Value.header.pdiff
+			//);
 		}
 
-		private bool IsNewDifficulty(double totalWork)
+		private bool IsNewGreatestWork(double totalWork)
 		{
 			var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
 			var tipBlock = GetBlock(tip);
-			var tipTotalWork = _BlockChain.BlockStore.TotalWork(_DbTx, tipBlock.Key);
+			var tipTotalWork = 1000 * tipBlock.Value.header.blockNumber; // _BlockChain.BlockStore.TotalWork(_DbTx, tipBlock.Key);
 
 			return totalWork > tipTotalWork;
 		}
@@ -467,9 +563,8 @@ namespace BlockChain
 			return list;
 		}
 
-        private List<Keyed<Types.Block>> GetOldMainChainStartFromLeafToFork(Keyed<Types.Block> fork)
+		private List<Keyed<Types.Block>> GetOldMainChainStartFromLeafToFork(Keyed<Types.Block> fork, byte[] tip)
 		{
-			var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
 			var itr = GetBlock(tip);
 			var list = new List<Keyed<Types.Block>>();
 
@@ -482,28 +577,54 @@ namespace BlockChain
 			return list;
 		}
 
-		private void RemoveFromMainBlockStore(byte[] block)
+		private void UndoBlock(byte[] block)
 		{
 			_BlockChain.BlockStore.SetLocation(_DbTx, block, LocationEnum.Branch);
-			RemoveUTXO(block);
-			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
-			{
-				_BlockChain.TxMempool.Add(tx.Key, _BlockChain.GetPointedTransaction(_DbTx, tx.Value));
-				_UndoActions.Add(() => _BlockChain.TxMempool.Remove(tx.Key));
-			}
-		}
 
-		private void RemoveUTXO(byte[] block)
-		{
+			//undo utxos
 			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
 			{
 				for (var i = 0; i < tx.Value.outputs.Length; i++)
 				{
-					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(tx.Value, i));
-					//_UndoActions.Add(() => _BlockChain.TxMempool.Add(tx));
+					var blockUndoData = _BlockChain.BlockStore.GetUndoData(_DbTx, block);
+
+					blockUndoData.AddedUTXO.ForEach(u =>
+					{
+						_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
+					});
+
+					blockUndoData.RemovedUTXO.ForEach(u =>
+					{
+						_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
+					});
+
+
+
+
+					//_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(tx.Value, i));
+					////_UndoActions.Add(() => _BlockChain.TxMempool.Add(tx));
+
+					//var outpoint = new Types.Outpoint(tx.Value.inputs[i].txHash, tx.Value.inputs[i].index);
+					//var output = _BlockChain.UTXOStore.Get(
+					//	_DbTx,
+					//	GetOutputKey(tx.Value.inputs[i].txHash, (int)tx.Value.inputs[i].index)
+					//);
+
+					//_BlockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, output.Value));
+					////_BlockChain.UTXOStore.Remove(
+					////	_DbTx, 
+					////	GetOutputKey(transaction.inputs[i].txHash, (int)transaction.inputs[i].index)
+					////);
 				}
 			}
+
+			//foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, block))
+			//{
+			//	_BlockChain.TxMempool.Add(tx.Key, _BlockChain.GetPointedTransaction(_DbTx, tx.Value));
+			//	_UndoActions.Add(() => _BlockChain.TxMempool.Remove(tx.Key));
+			//}
 		}
+
 
 		private void RemoveTransactionsFromMempool(Keyed<Types.Block> block)
 		{

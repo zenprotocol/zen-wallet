@@ -93,7 +93,7 @@ namespace BlockChain
 
 			foreach (var transaction in _BlockChain.TxMempool.GetOrphansOf(_Tx)) 
 			{
-				BlockChainTrace.Information("Start with orphan");
+				BlockChainTrace.Information("Start with orphan tx");
 				new AddTx(
 					_BlockChain,
 					_DbTx,
@@ -131,7 +131,7 @@ namespace BlockChain
 
 		private bool IsMempoolContainsSpendingInput()
 		{
-			return _BlockChain.TxMempool.ContainsInputs(_Tx);
+			return _BlockChain.TxMempool.ContainsInputs(_Tx.Value);
 		}
 
 		private bool IsOrphan()

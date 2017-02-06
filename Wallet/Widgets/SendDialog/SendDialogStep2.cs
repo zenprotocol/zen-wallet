@@ -25,7 +25,7 @@ namespace Wallet
 
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
 			{
-				if (App.Instance.Wallet.Spend(Tx))
+				if (App.Instance.Wallet.Transmit(Tx))
 				{
 					FindParent<SendDialog>().Close();
 				}

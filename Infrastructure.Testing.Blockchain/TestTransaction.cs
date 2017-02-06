@@ -9,7 +9,7 @@ namespace Infrastructure.Testing.Blockchain
 {
 	public class TestTransactionBlockChainExpectationPool : TestPool<TestTransactionBlockChainExpectation>
 	{
-		public void Add(string tag, int outputs, BlockChainAddTransactionOperation.Result result)
+		public void Add(string tag, int outputs, AddTx.Result result)
 		{
 			Add(tag, new TestTransactionBlockChainExpectation()
 			{
@@ -124,7 +124,7 @@ namespace Infrastructure.Testing.Blockchain
 
 	public class TestTransactionBlockChainExpectation : TestTransaction
 	{
-		public BlockChainAddTransactionOperation.Result Result { get; set; }
+		public AddTx.Result Result { get; set; }
 	}
 
 	public class TestTransaction

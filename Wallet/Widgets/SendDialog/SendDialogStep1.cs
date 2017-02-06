@@ -1,4 +1,5 @@
 ﻿using System;
+using Consensus;
 using Wallet.core.Data;
 
 namespace Wallet
@@ -37,12 +38,14 @@ namespace Wallet
 					return;
 				}
 
-				var tx = App.Instance.Wallet.Sign(
-						address, 
-						Consensus.Tests.zhash, 
-						amount);
+				Types.Transaction tx;
 
-				if (tx != null)
+				if (App.Instance.Wallet.Sign(
+					address,
+					Consensus.Tests.zhash,
+					amount,
+					out tx
+				))
 				{
 					FindParent<SendDialog>().Next(tx);
 				}

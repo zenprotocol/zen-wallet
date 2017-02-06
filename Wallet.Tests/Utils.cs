@@ -57,6 +57,7 @@ namespace Wallet.Tests
 			var blockHeader = new Types.BlockHeader(
 				version,
 				new byte[] { },
+				0,
 				new byte[] { },
 				new byte[] { },
 				new byte[] { },
@@ -76,7 +77,7 @@ namespace Wallet.Tests
 		{
 			long total = 0;
 
-			var balances = wallet.Load();
+			var balances = wallet.Import();
 
 			if (balances.ContainsKey(asset))
 			{

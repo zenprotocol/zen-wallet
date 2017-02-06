@@ -24,4 +24,16 @@ namespace BlockChain
 		}
 	}
 	
+	public class TxInvalidatedMessage
+	{
+		public TransactionValidation.PointedTransaction Tx { get; set; }
+
+		public static void Publish(TransactionValidation.PointedTransaction tx)
+		{
+			MessageProducer<TxInvalidatedMessage>.Instance.PushMessage(new TxInvalidatedMessage()
+			{
+				Tx = tx,
+			});
+		}
+	}
 }

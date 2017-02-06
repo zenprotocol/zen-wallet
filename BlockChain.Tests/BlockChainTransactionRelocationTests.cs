@@ -4,8 +4,9 @@ using Store;
 using NUnit.Framework;
 using BlockChain.Data;
 using Infrastructure.Testing;
+using Wallet.core.Data;
 
-namespace BlockChain.Tests
+namespace BlockChain
 {
 	[TestFixture()]
 	public class BlockChainTransactionRelocationTests : BlockChainTestsBase
@@ -27,17 +28,17 @@ namespace BlockChain.Tests
 		{
 			base.OneTimeSetUp();
 
-			block1_tx = Utils.GetTx();
-			block2_tx = Utils.GetTx();
-			block3_tx = Utils.GetTx();
-			block4_tx = Utils.GetTx();
-			block5_tx = Utils.GetTx();
+			block1_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			block2_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			block3_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			block4_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			block5_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
 
 			block1 = _GenesisBlock.Child().AddTx(block1_tx);
 			block2 = _GenesisBlock.Child().AddTx(block2_tx);
-			block3 = _GenesisBlock.Child().AddTx(block3_tx);
-			block4 = _GenesisBlock.Child().AddTx(block4_tx);
-			block5 = _GenesisBlock.Child().AddTx(block5_tx);
+			block3 = block2.Child().AddTx(block3_tx);
+			block4 = block1.Child().AddTx(block4_tx);
+			block5 = block4.Child().AddTx(block5_tx);
 		}
 
 		[Test, Order(1)]
@@ -55,6 +56,7 @@ namespace BlockChain.Tests
 		public void ShouldReorganizeMempool()
 		{
 			Assert.That(_BlockChain.HandleNewBlock(block3), Is.EqualTo(AddBk.Result.Added)); // cause a reorganization
+			Assert.That(_BlockChain.Tip.Value, Is.EqualTo(block3)); // cause a reorganization
 
 			AssertMempool(block1_tx, true);
 			AssertUtxoSet(block1_tx, false);

@@ -60,7 +60,8 @@ namespace Wallet
 					DateTime.Now,
 					Guid.NewGuid().ToString("N"),
 					Guid.NewGuid().ToString("N"),
-					0
+					0,
+					u.TxState
 				))));
 			});
 		}
