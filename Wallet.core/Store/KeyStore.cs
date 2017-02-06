@@ -8,6 +8,11 @@ using System.Linq;
 
 namespace Wallet.core.Store
 {
+	public class KeysManager
+	{
+		
+	}
+
 	public class KeyStore : MsgPackStore<Key>
 	{
 		public KeyStore() : base("key")
@@ -28,16 +33,24 @@ namespace Wallet.core.Store
 			return true;
 		}
 
-		public Key GetUnusedKey(TransactionContext context) {
-			var list = List (context, false, false);
+		/// <summary>
+		/// Creates a new key if all are marked as used.
+		/// </summary>
+		/// <returns><c>true</c>, if unused key was created, <c>false</c> otherwise.</returns>
+		/// <param name="context">Context.</param>
+		/// <param name="isChange">Is change.</param>
+		public bool GetUnusedKey(TransactionContext context, out Key key, bool? isChange = null) {
+			var list = List (context, false, isChange);
 
 			if (list.Count == 0) {
-				var key = Key.Create();
-				Put(context, new Keyed<Key>(key.Private, key));
+				var _key = Key.Create();
+				Put(context, new Keyed<Key>(_key.Private, _key));
 
-				return key;
+				key = _key;
+				return true;
 			} else {
-				return list [0];
+				key = list [0];
+				return false;
 			}
 		}
 

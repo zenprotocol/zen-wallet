@@ -3,21 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatibility", "Compatibility\Compatibility.csproj", "{7745B74E-F9A4-4E4B-AC06-FCB2CA83904B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLockChain.Tests", "Store.Tests\BLockChain.Tests.csproj", "{AC531A6E-F0A3-487D-883C-89BBA901A5F8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Testing", "Infrastructure.Testing\Infrastructure.Testing.csproj", "{D3641686-BDB9-4399-8B53-10897DD26337}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatability.Tests", "Compatability.Tests\Compatability.Tests.csproj", "{D7156357-AC86-41BD-AF6E-14C9D545CD1D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain", "BlockChain\BlockChain.csproj", "{9D566AD5-659D-4042-A5CA-F804287CA992}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store", "Store\Store.csproj", "{1D6CF29D-253C-44BB-813A-701676A1349F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeTester", "NodeTester\NodeTester.csproj", "{7469FE62-A886-460D-8439-8048AF6514A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NBitcoinDerive", "NBitcoinDerive\NBitcoinDerive.csproj", "{4741344C-3334-42C6-B3BF-5AB10280E6C4}"
 EndProject
@@ -29,21 +21,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.core", "Wallet.core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Console", "Infrastructure.Console\Infrastructure.Console.csproj", "{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Testing.Blockchain", "Infrastructure.Testing.Blockchain\Infrastructure.Testing.Blockchain.csproj", "{75798183-9B5D-4CB3-80BD-644CAF13F317}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen", "Zen\Zen.csproj", "{1F030257-FBB4-4538-BBD8-4B241FD73B13}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.CLRCLI", "Zen.CLRCLI\Zen.CLRCLI.csproj", "{29BB24E8-D6C7-403E-8B7C-DC65765E342B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.Tests", "Wallet.Tests\Wallet.Tests.csproj", "{A53B7BE6-504E-4F58-A27A-083618048C6D}"
-EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "TestMsgPack", "TestMsgPack\TestMsgPack.fsproj", "{736FC746-0E9F-4618-BE02-F7E3349CBAD7}"
-EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "NodeCore", "NodeCore\NodeCore.csproj", "{B2911293-F0A5-4D60-A131-957E8C979702}"
-EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "NBitcoinDerive.Tests", "NBitcoinDerive.Tests\NBitcoinDerive.Tests.csproj", "{3972205A-3263-4A37-8835-D872385897AC}"
-EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "NodeConsole", "NodeConsole\NodeConsole.csproj", "{6ECB9869-342A-45A0-B037-701A0B5F50C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain.Tests", "BlockChain.Tests\BlockChain.Tests.csproj", "{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,26 +61,10 @@ Global
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Debug|x86.Build.0 = Debug|x86
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.ActiveCfg = Release|x86
 		{6B1189D4-2B5A-4764-A1D7-6E8258730303}.Release|x86.Build.0 = Release|x86
-		{7469FE62-A886-460D-8439-8048AF6514A1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{7469FE62-A886-460D-8439-8048AF6514A1}.Debug|x86.Build.0 = Debug|Any CPU
-		{7469FE62-A886-460D-8439-8048AF6514A1}.Release|x86.ActiveCfg = Release|Any CPU
-		{7469FE62-A886-460D-8439-8048AF6514A1}.Release|x86.Build.0 = Release|Any CPU
-		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Debug|x86.ActiveCfg = Debug|x86
-		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Debug|x86.Build.0 = Debug|x86
-		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Release|x86.ActiveCfg = Release|x86
-		{75798183-9B5D-4CB3-80BD-644CAF13F317}.Release|x86.Build.0 = Release|x86
-		{7745B74E-F9A4-4E4B-AC06-FCB2CA83904B}.Debug|x86.ActiveCfg = Debug|x86
-		{7745B74E-F9A4-4E4B-AC06-FCB2CA83904B}.Debug|x86.Build.0 = Debug|x86
-		{7745B74E-F9A4-4E4B-AC06-FCB2CA83904B}.Release|x86.ActiveCfg = Release|x86
-		{7745B74E-F9A4-4E4B-AC06-FCB2CA83904B}.Release|x86.Build.0 = Release|x86
 		{9D566AD5-659D-4042-A5CA-F804287CA992}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{9D566AD5-659D-4042-A5CA-F804287CA992}.Debug|x86.Build.0 = Debug|Any CPU
 		{9D566AD5-659D-4042-A5CA-F804287CA992}.Release|x86.ActiveCfg = Release|Any CPU
 		{9D566AD5-659D-4042-A5CA-F804287CA992}.Release|x86.Build.0 = Release|Any CPU
-		{AC531A6E-F0A3-487D-883C-89BBA901A5F8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{AC531A6E-F0A3-487D-883C-89BBA901A5F8}.Debug|x86.Build.0 = Debug|Any CPU
-		{AC531A6E-F0A3-487D-883C-89BBA901A5F8}.Release|x86.ActiveCfg = Release|Any CPU
-		{AC531A6E-F0A3-487D-883C-89BBA901A5F8}.Release|x86.Build.0 = Release|Any CPU
 		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Debug|x86.Build.0 = Debug|Any CPU
 		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Release|x86.ActiveCfg = Release|Any CPU
@@ -107,10 +73,6 @@ Global
 		{D3641686-BDB9-4399-8B53-10897DD26337}.Debug|x86.Build.0 = Debug|Any CPU
 		{D3641686-BDB9-4399-8B53-10897DD26337}.Release|x86.ActiveCfg = Release|Any CPU
 		{D3641686-BDB9-4399-8B53-10897DD26337}.Release|x86.Build.0 = Release|Any CPU
-		{D7156357-AC86-41BD-AF6E-14C9D545CD1D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D7156357-AC86-41BD-AF6E-14C9D545CD1D}.Debug|x86.Build.0 = Debug|Any CPU
-		{D7156357-AC86-41BD-AF6E-14C9D545CD1D}.Release|x86.ActiveCfg = Release|Any CPU
-		{D7156357-AC86-41BD-AF6E-14C9D545CD1D}.Release|x86.Build.0 = Release|Any CPU
 		{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}.Debug|x86.Build.0 = Debug|Any CPU
 		{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}.Release|x86.ActiveCfg = Release|Any CPU
@@ -119,25 +81,9 @@ Global
 		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Debug|x86.Build.0 = Debug|x86
 		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Release|x86.ActiveCfg = Release|x86
 		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Release|x86.Build.0 = Release|x86
-		{A53B7BE6-504E-4F58-A27A-083618048C6D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A53B7BE6-504E-4F58-A27A-083618048C6D}.Debug|x86.Build.0 = Debug|Any CPU
-		{A53B7BE6-504E-4F58-A27A-083618048C6D}.Release|x86.ActiveCfg = Release|Any CPU
-		{A53B7BE6-504E-4F58-A27A-083618048C6D}.Release|x86.Build.0 = Release|Any CPU
-		{736FC746-0E9F-4618-BE02-F7E3349CBAD7}.Debug|x86.ActiveCfg = Debug|x86
-		{736FC746-0E9F-4618-BE02-F7E3349CBAD7}.Debug|x86.Build.0 = Debug|x86
-		{736FC746-0E9F-4618-BE02-F7E3349CBAD7}.Release|x86.ActiveCfg = Release|x86
-		{736FC746-0E9F-4618-BE02-F7E3349CBAD7}.Release|x86.Build.0 = Release|x86
-		{B2911293-F0A5-4D60-A131-957E8C979702}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B2911293-F0A5-4D60-A131-957E8C979702}.Debug|x86.Build.0 = Debug|Any CPU
-		{B2911293-F0A5-4D60-A131-957E8C979702}.Release|x86.ActiveCfg = Release|Any CPU
-		{B2911293-F0A5-4D60-A131-957E8C979702}.Release|x86.Build.0 = Release|Any CPU
-		{3972205A-3263-4A37-8835-D872385897AC}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3972205A-3263-4A37-8835-D872385897AC}.Debug|x86.Build.0 = Debug|Any CPU
-		{3972205A-3263-4A37-8835-D872385897AC}.Release|x86.ActiveCfg = Release|Any CPU
-		{3972205A-3263-4A37-8835-D872385897AC}.Release|x86.Build.0 = Release|Any CPU
-		{6ECB9869-342A-45A0-B037-701A0B5F50C9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6ECB9869-342A-45A0-B037-701A0B5F50C9}.Debug|x86.Build.0 = Debug|Any CPU
-		{6ECB9869-342A-45A0-B037-701A0B5F50C9}.Release|x86.ActiveCfg = Release|Any CPU
-		{6ECB9869-342A-45A0-B037-701A0B5F50C9}.Release|x86.Build.0 = Release|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.Build.0 = Debug|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.ActiveCfg = Release|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

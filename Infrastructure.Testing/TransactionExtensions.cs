@@ -11,9 +11,7 @@ namespace Infrastructure.Testing
 	{
 		public static Types.Transaction AddOutput(this Types.Transaction tx, byte[] address, byte[] asset, ulong amount)
 		{
-			return tx.AddOutput(new Types.Output(
-				Types.OutputLock.NewPKLock(address), 
-				new Types.Spend(asset, amount)));
+			return tx.AddOutput(Utils.GetOutput(address, asset, amount));
 		}
 
 		public static Types.Transaction AddOutput(this Types.Transaction tx, Types.Output output)

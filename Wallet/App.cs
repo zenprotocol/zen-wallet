@@ -40,8 +40,9 @@ namespace Wallet
 			Gtk.Application.Run();
 		}
 
-		internal void Quit()
+		public void Quit()
 		{
+			_MainWindow.Hide();
 			Gtk.Application.Quit();
 			//	a.RetVal = true;
 			//	Hide();

@@ -4,7 +4,7 @@ using Store;
 using Infrastructure.Testing;
 using NUnit.Framework;
 
-namespace BlockChain.Tests
+namespace BlockChain
 {
 	[TestFixture()]
 	public class BlockChainTipExtendByOrphanTests : BlockChainTestsBase
@@ -23,8 +23,7 @@ namespace BlockChain.Tests
 		public void TipShouldBeOfGenesis()
 		{
 			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.Tip, Is.Not.Null);
-			Assert.That(_BlockChain.Tip.Value.Equals(_GenesisBlock.header), Is.True);
+			Assert.That(_BlockChain.Tip.Value.Equals(_GenesisBlock), Is.True);
 		}
 
 		[Test, Order(3)]
@@ -32,9 +31,8 @@ namespace BlockChain.Tests
 		{
 			block1 = _GenesisBlock.Child();
 			Assert.That(_BlockChain.HandleNewBlock(block1), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.Tip.Value.Equals(block1.header), Is.True);
+			Assert.That(_BlockChain.Tip.Value.Equals(block1), Is.True);
 		}
-
 
 		[Test, Order(4)]
 		public void TipShouldNotBecomeNewBlock()
@@ -42,14 +40,14 @@ namespace BlockChain.Tests
 			block2 = _GenesisBlock.Child();
 			block3 = block2.Child();
 			Assert.That(_BlockChain.HandleNewBlock(block3), Is.EqualTo(AddBk.Result.AddedOrphan));
-			Assert.That(_BlockChain.Tip.Value.Equals(block1.header), Is.True);
+			Assert.That(_BlockChain.Tip.Value.Equals(block1), Is.True);
 		}
 
 		[Test, Order(5)]
-		public void TipShouldBecomeBranch()
+		public void TipShouldBecomeBranchAfterReorganization()
 		{
 			Assert.That(_BlockChain.HandleNewBlock(block2), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.Tip.Value.Equals(block3.header), Is.True);
+			Assert.That(_BlockChain.Tip.Value.Equals(block3), Is.True);
 		}
 	}
 }

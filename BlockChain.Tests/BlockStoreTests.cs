@@ -5,11 +5,10 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 using BlockChain.Tests;
-using System.Linq;
 using Infrastructure.Testing;
 using Consensus;
 
-namespace BlockChain.Store.Tests
+namespace BlockChain.Store
 {
 	[TestFixture()]
 	public class BlockStoreTests : BlockChainTestsBase

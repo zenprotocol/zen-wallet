@@ -33,7 +33,7 @@ namespace Infrastructure.Testing.Blockchain
 			UInt32 pdiff = Convert.ToUInt32(difficulty);
 			byte[] parentKey = parent == null ? new byte[] {} : Merkle.blockHeaderHasher.Invoke(parent.header);
 
-			Types.BlockHeader newBlockHeader = new Types.BlockHeader(1, parentKey, new byte[] { }, new byte[] { }, new byte[] { }, ListModule.OfSeq(new List<byte[]>()), 0, pdiff, null);
+			Types.BlockHeader newBlockHeader = new Types.BlockHeader(1, parentKey, 0, new byte[] { }, new byte[] { }, new byte[] { }, ListModule.OfSeq(new List<byte[]>()), 0, pdiff, null);
 			var transactions = new List<Types.Transaction>();
 			FSharpList<Types.Transaction> newBlockTransactions = ListModule.OfSeq(transactions);
 			Types.Block newBlock = new Types.Block(newBlockHeader, newBlockTransactions);

@@ -33,12 +33,13 @@ namespace Wallet
 		}
 
 		private String GetDescrption() {
-			return String.Format("{0} {1} {2} ({3} {4})", 
+			return String.Format("{0} {1} {2} ({3} {4}) {5}",
 				TransactionItem.Direction == DirectionEnum.Recieved ? Constants.Strings.Received : Constants.Strings.Sent,
 				TransactionItem.Amount,
 				TransactionItem.Asset,
 				"0.34",
-				"USD"
+				"USD",
+				 TransactionItem.TxState
 			);
 		}
 

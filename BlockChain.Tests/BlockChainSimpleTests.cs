@@ -4,7 +4,7 @@ using Infrastructure.Testing;
 using Consensus;
 using Wallet.core.Data;
 
-namespace BlockChain.Tests
+namespace BlockChain
 {
 	[TestFixture()]
 	public class BlockChainSimpleTests : BlockChainTestsBase
@@ -27,7 +27,7 @@ namespace BlockChain.Tests
 		{
 			var nonOrphanTx = Utils.GetTx().AddInput(_GenesisTx, 0, _Key.Private).Sign(_Key.Private);
 
-			Assert.That(_BlockChain.HandleNewTransaction(nonOrphanTx), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewTransaction(nonOrphanTx), Is.EqualTo(AddTx.Result.Added));
 		}
 	}
 }

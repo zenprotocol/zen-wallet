@@ -36,12 +36,10 @@
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.6.0\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="DBreeze">
       <HintPath>..\packages\DBreeze.1.80.0\lib\net45\DBreeze.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -61,18 +59,8 @@
     <Compile Include="Store\ContractStore.cs" />
     <Compile Include="Data\BlockTimestamps.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="Tests\BlockChainBranchTests.cs" />
-    <Compile Include="Tests\BlockChainRelocationTests.cs" />
-    <Compile Include="Tests\BlockChainTestsBase.cs" />
-    <Compile Include="Tests\BlockChainTipTests.cs" />
-    <Compile Include="Tests\BlockChainTransactionRelocationTests.cs" />
-    <Compile Include="Store\tests\BlockStoreTests.cs" />
-    <Compile Include="Data\tests\BlockTimestampsTests.cs" />
-    <Compile Include="Tests\BlockChainTipExtendByOrphanTests.cs" />
     <Compile Include="TxAddedMessage.cs" />
     <Compile Include="BkAddedMessage.cs" />
-    <Compile Include="Tests\BlockChainTransactionInvalidationTests.cs" />
-    <Compile Include="Tests\BlockChainSimpleTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -82,9 +70,6 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Store\" />
-    <Folder Include="Tests\" />
-    <Folder Include="Store\tests\" />
-    <Folder Include="Data\tests\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">

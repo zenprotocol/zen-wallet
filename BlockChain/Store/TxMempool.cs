@@ -78,19 +78,44 @@ namespace BlockChain.Store
 			}
 		}
 
-		public bool ContainsInputs(Keyed<Types.Transaction> transaction)
+		public bool ContainsInputs(Types.Transaction tx)
 		{
 			lock (_Lock)
 			{
-				foreach (Types.Outpoint outpoint in transaction.Value.inputs)
+				foreach (var outpoint in tx.inputs)
 				{
-					if (_TransactionOutpoints.Contains(outpoint))
+					if (ContainsOutpoint(outpoint))
 					{
 						return true;
 					}
 				}
 
 				return false;
+			}
+		}
+
+		public bool ContainsOutpoint(Types.Outpoint outpoint)
+		{
+			return _TransactionOutpoints.Contains(outpoint);
+		}
+
+		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetTransactionsInConflict(Types.Transaction tx)
+		{
+			lock (_Lock)
+			{
+				foreach (var item in _Transactions)
+				{
+					foreach (var _outpoint in item.Value.pInputs.Select(t=>t.Item1))
+					{
+						foreach (var outpoint in tx.inputs)
+						{
+							if (outpoint.Equals(_outpoint))
+							{
+								yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -125,5 +150,6 @@ namespace BlockChain.Store
 				}
 			}
 		}
-	}
+
+}
 }

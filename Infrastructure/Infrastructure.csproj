@@ -48,6 +48,7 @@
     <Compile Include="IResourceOwner.cs" />
     <Compile Include="ResourceOwner.cs" />
     <Compile Include="Container.cs" />
+    <Compile Include="InfrastructureTrace.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -40,5 +40,12 @@ namespace Infrastructure.Testing
 				ListModule.OfSeq(new List<Types.Output>()),
 				null);
 		}
+
+		public static Types.Output GetOutput(byte[] address, byte[] asset, ulong amount)
+		{
+			return new Types.Output(
+				Types.OutputLock.NewPKLock(address),
+				new Types.Spend(asset, amount));
+		}
 	}
 }

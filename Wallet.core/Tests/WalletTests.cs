@@ -3,6 +3,7 @@ using Consensus;
 using System.Threading;
 using Infrastructure.Testing;
 using BlockChain;
+using System;
 
 namespace Wallet.core
 {
@@ -29,7 +30,7 @@ namespace Wallet.core
 			// new unsynced wallet
 			_WalletManager = new WalletManager(_BlockChain, WALLET_DB);
 
-			_WalletManager.OnReset += a =>
+			Action<ResetEventArgs> onReset = a =>
 			{
 				Assert.That(a.TxDeltaList.Count, Is.EqualTo(1));
 				var txBalances = a.TxDeltaList[0];
@@ -37,11 +38,13 @@ namespace Wallet.core
 				Assert.That(txBalances.AssetDeltas[Tests.zhash], Is.EqualTo((long)amount));
 				walletMessageEvent.Set();
 			};
+			_WalletManager.OnReset += onReset;
 
 			// sync
 			_WalletManager.Import(key);
 
 			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
+			_WalletManager.OnReset -= onReset;
 		}
 
 		[Test(), Order(2)]
@@ -62,7 +65,7 @@ namespace Wallet.core
 
 			_NewTx = Utils.GetTx().AddOutput(_WalletManager.GetUnusedKey().Address, Tests.zhash, amount);
 
-			_WalletManager.OnItems += a =>
+			Action<TxDeltaItemsEventArgs> onItems = a =>
 			{
 				Assert.That(a.Count, Is.EqualTo(1));
 				var txBalances = a[0];
@@ -71,9 +74,12 @@ namespace Wallet.core
 				Assert.That(txBalances.TxState, Is.EqualTo(TxStateEnum.Unconfirmed));
 				walletMessageEvent.Set();
 			};
-	
+
+			_WalletManager.OnItems += onItems;
+			  
 			Assert.That(_BlockChain.HandleNewTransaction(_NewTx), Is.EqualTo(AddTx.Result.Added));
 			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
+			_WalletManager.OnItems -= onItems;
 		}
 
 		[Test(), Order(4)]
@@ -81,9 +87,7 @@ namespace Wallet.core
 		{
 			var walletMessageEvent = new AutoResetEvent(false);
 
-			var newBlock = _GenesisBlock.Child().AddTx(_NewTx);
-
-			_WalletManager.OnItems += a =>
+			Action<TxDeltaItemsEventArgs> onItems = a =>
 			{
 				Assert.That(a.Count, Is.EqualTo(1));
 				var txBalances = a[0];
@@ -94,9 +98,44 @@ namespace Wallet.core
 				walletMessageEvent.Set();
 			};
 
-				//	does a new row gets inserted into wallets txs table here!?!?!?!?!?!?!?!
-			_BlockChain.HandleNewBlock(newBlock);
+			_WalletManager.OnItems += onItems;
+				//	does a new row get inserted into wallets txs table here!?!?!?!?!?!?!?!
+
+			_BlockChain.HandleNewBlock(_GenesisBlock.Child().AddTx(_NewTx));
 			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
+
+			_WalletManager.OnItems -= onItems;
+		}
+
+
+		[Test(), Order(5)]
+		public void ShouldSeeInvalidatedTx()
+		{
+			//var block = _BlockChain.Tip.Value.Child().AddTx(_NewTx);
+			//TODO: should the block be rejected?
+			//Assert.That(_BlockChain.HandleNewBlock(block), Is.EqualTo(AddBk.Result.Rejected));
+
+			var walletMessageEvent = new AutoResetEvent(false);
+
+			Action<TxDeltaItemsEventArgs> onItems = a =>
+			{
+				Assert.That(a.Count, Is.EqualTo(1));
+				var txBalances = a[0];
+				Assert.That(txBalances.Transaction, Is.EqualTo(_NewTx));
+				//Assert.That(txBalances.Balances[Tests.zhash], Is.EqualTo((long)amount));
+				Assert.That(txBalances.TxState, Is.EqualTo(TxStateEnum.Invalid));
+
+				walletMessageEvent.Set();
+			};
+
+			_WalletManager.OnItems += onItems;
+
+			var block = _GenesisBlock.Child();
+			Assert.That(_BlockChain.HandleNewBlock(block), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleNewBlock(block.Child()), Is.EqualTo(AddBk.Result.Added));
+
+			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
+			_WalletManager.OnItems -= onItems;
 		}
 
 
