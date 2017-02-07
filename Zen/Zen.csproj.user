@@ -3,7 +3,7 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
     <StartProgram></StartProgram>
-    <StartArguments>-t -localhost-server -blockchaindb=bc_1 -walletdb=wa_1</StartArguments>
+    <StartArguments>-t -localhost-server</StartArguments>
     <ExternalConsole>true</ExternalConsole>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>

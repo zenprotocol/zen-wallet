@@ -18,6 +18,16 @@ namespace Zen
 		public void OneTimeSetUp()
 		{
 			Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+			if (Directory.Exists(App.DefaultBlockChainDB))
+			{
+				Directory.Delete(App.DefaultBlockChainDB, true);
+			}
+
+			if (Directory.Exists(App.WalletDB))
+			{
+				Directory.Delete(App.WalletDB, true);
+			}
 		}
 
 		[Test(), Order(1)]
@@ -116,6 +126,58 @@ namespace Zen
 				Thread.Sleep(1000);
 
 				app.AddBlock(block);
+				Thread.Sleep(1000);
+			});
+
+			Task.Run(() =>
+			{
+				Thread.Sleep(5000);
+				app.CloseGUI();
+			});
+
+			app.GUI();
+			Thread.Sleep(1000); // sleep on main
+
+			Task.Run(() =>
+			{
+				Thread.Sleep(5000);
+				app.CloseGUI();
+				app.Stop();
+			});
+
+			app.GUI();
+		}
+
+		[Test(), Order(2)]
+		public async Task ShouldUndoInvalidation()
+		{
+			App app = new App();
+
+			app.Init();
+			app.AddGenesisBlock();
+
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+
+			app.Start();
+
+			Task.Run(() =>
+			{
+				Types.Transaction tx;
+				Thread.Sleep(1000);
+				Assert.That(app.Spend(2, out tx), Is.True);
+				Thread.Sleep(1000);
+
+				var block = app.GenesisBlock.Value.Child().AddTx(tx);
+				app.AddBlock(block);
+
+				block = app.GenesisBlock.Value.Child();
+				var block1 = block.Child().AddTx(tx);
+
+				app.AddBlock(block1);
+				Thread.Sleep(1000);
+
+				app.AddBlock(block);
+				//Assert.That(app.AddBlock(block), Is.False);
 				Thread.Sleep(1000);
 			});
 
