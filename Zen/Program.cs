@@ -20,7 +20,7 @@ namespace Zen
 			var p = new OptionSet () {
 				{ "headless", "start in headless mode", 
 					v => headless = true },
-				{ "t|gui", "show TUI",
+				{ "t|tui", "show TUI",
 					v => tui = true },
 				{ "p|profile=", "use settings profile",
 					v =>  app.Settings.NetworkProfile = v },
