@@ -79,9 +79,13 @@ namespace BlockChain
 		[Test, Order(3)]
 		public void ShouldUndoReorganize()
 		{
-			var invalidBlock = _GenesisBlock.Child().AddTx(tx);
-			Assert.That(_BlockChain.HandleNewBlock(invalidBlock), Is.EqualTo(AddBk.Result.Rejected));
-		}
+			var branch = _GenesisBlock.Child();
+			var branchExtend = branch.Child();
+			var branchExtendInvalid = branchExtend.Child().AddTx(tx);
 
+			Assert.That(_BlockChain.HandleNewBlock(branchExtendInvalid), Is.EqualTo(AddBk.Result.AddedOrphan));
+			Assert.That(_BlockChain.HandleNewBlock(branchExtend), Is.EqualTo(AddBk.Result.AddedOrphan));
+			Assert.That(_BlockChain.HandleNewBlock(branch), Is.EqualTo(AddBk.Result.Added));
+		}
 	}
 }
