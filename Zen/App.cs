@@ -80,14 +80,17 @@ namespace Zen
 		//	_WalletManager.Import();
 		//}
 
+		public readonly static string DefaultBlockChainDB = "blockchain_db";
+		public readonly static string WalletDB = "wallet_db";
+
 		public App()
 		{
 			Settings = new Settings()
 			{
 				SaveNetworkProfile = false,
 				PeersToFind = null,
-				BlockChainDB = "blockchain_db",
-				WalletDB = "wallet_db",
+				BlockChainDB = DefaultBlockChainDB,
+				WalletDB = WalletDB,
 				EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.NoNetworking }
 			};
 		}
