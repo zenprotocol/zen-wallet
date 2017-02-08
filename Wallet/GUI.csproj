@@ -62,10 +62,10 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cairo" />
+    <Reference Include="FSharp.Core" />
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -229,10 +229,6 @@
     <ProjectReference Include="..\BlockChain\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Consensus\Consensus.fsproj">
-      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
-      <Name>Consensus</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -34,7 +34,6 @@ namespace Wallet
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 		{
 			a.RetVal = true;
-			Hide();
 			App.Instance.Quit();
 		}
 
