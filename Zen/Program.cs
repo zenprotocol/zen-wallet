@@ -81,11 +81,11 @@ namespace Zen
 
 			if (tui)
 				TUI.Start(app, String.Join(" ", args));
-
-			if (!headless)
+			else if (!headless)
 			{
 				app.Start();
 				app.GUI();
+				app.Stop();
 			}
 		}
 
