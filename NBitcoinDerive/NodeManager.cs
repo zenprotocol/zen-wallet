@@ -51,7 +51,7 @@ namespace NBitcoinDerive
 		public NodeManager(BlockChain.BlockChain blockChain)
 		{
 			_BlockChain = blockChain;
-			OwnResource (_BlockChain);
+			//OwnResource (_BlockChain);
 			_Network = JsonLoader<NBitcoinDerive.Network>.Instance.Value;
 
 			AddressManager addressManager = new AddressManager();
