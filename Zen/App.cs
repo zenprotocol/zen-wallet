@@ -137,7 +137,14 @@ namespace Zen
 		public void Start()
 		{
 			if (_NodeManager != null)
-				_NodeManager.Connect(Settings.EndpointOptions);
+			{
+				_NodeManager.Dispose();
+				_NodeManager = null;
+
+				_NodeManager = new NodeManager(_BlockChain);
+			}
+
+			_NodeManager.Connect(Settings.EndpointOptions);
 		}
 
 		public void GUI()
