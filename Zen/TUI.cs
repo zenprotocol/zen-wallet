@@ -227,9 +227,5 @@ namespace Zen
 				Console.Write(message);
 			}
 		}
-
-			//	listTrace.Items.Add(new Label(listTrace) { Text = message.Trim(), Foreground = color });
-
-
 	}
 }
