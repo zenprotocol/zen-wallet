@@ -1,10 +1,11 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using Consensus;
 using System.Threading;
 using Infrastructure.Testing;
 using BlockChain;
 using Wallet.core.Data;
 using System.Linq;
+using System;
 
 namespace Wallet.core
 {
@@ -30,6 +31,47 @@ namespace Wallet.core
 			OneTimeSetUp();
 		}
 
+
+		[Test()]
+		public void ShouldSpend()
+		{
+			ulong initialAmount = 11;
+			ulong spendAmount = 10;
+			var walletMessageEvent = new AutoResetEvent(false);
+
+			var key1 = Key.Create();
+
+			// init genesis with a key from wallet
+			var key = _WalletManager.GetUnusedKey();
+			var tx = Utils.GetTx().AddOutput(key.Address, Tests.zhash, initialAmount);
+
+			Action<ResetEventArgs> onReset = a => {
+				Console.Write("X");
+			};
+
+			Action<TxDeltaItemsEventArgs> onItems = a => { 
+				Console.Write("X");
+			};
+
+
+			_GenesisBlock = _GenesisBlock.AddTx(tx);
+			_BlockChain.HandleBlock(_GenesisBlock);
+
+
+			_WalletManager.Import(key);
+
+			Types.Transaction txNew;
+			Assert.That(_WalletManager.Sign(key1.Address, Tests.zhash, spendAmount, out txNew), Is.True);
+			Assert.That(_WalletManager.Transmit(txNew), Is.True);
+
+			_WalletManager.OnItems += onItems;
+			_WalletManager.OnReset += onReset;
+
+
+			Thread.Sleep(10000);
+		}
+
+
 		[Test()]
 		public void ShouldNotOverspendUsingConfirmedTx()
 		{
@@ -45,7 +87,7 @@ namespace Wallet.core
 			var tx = Utils.GetTx().AddOutput(key.Address, Tests.zhash, initialAmount);
 
 			_GenesisBlock = _GenesisBlock.AddTx(tx);
-			_BlockChain.HandleNewBlock(_GenesisBlock);
+			_BlockChain.HandleBlock(_GenesisBlock);
 
 			_WalletManager.Import(key);
 
@@ -54,7 +96,7 @@ namespace Wallet.core
 			Assert.That(_WalletManager.Transmit(txNew), Is.True);
 
 			// mine the tx from mempool
-			_BlockChain.HandleNewBlock(_GenesisBlock.Child().AddTx(txNew));
+			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(txNew));
 
 			//Thread.Sleep(1000);
 
@@ -76,7 +118,7 @@ namespace Wallet.core
 			var tx = Utils.GetTx().AddOutput(key.Address, Tests.zhash, initialAmount);
 
 			_GenesisBlock = _GenesisBlock.AddTx(tx);
-			_BlockChain.HandleNewBlock(_GenesisBlock);
+			_BlockChain.HandleBlock(_GenesisBlock);
 
 			_WalletManager.Import(key);
 
@@ -114,7 +156,7 @@ namespace Wallet.core
 			var tx = Utils.GetTx().AddOutput(key.Address, Tests.zhash, initialAmount);
 
 			_GenesisBlock = _GenesisBlock.AddTx(tx);
-			_BlockChain.HandleNewBlock(_GenesisBlock);
+			_BlockChain.HandleBlock(_GenesisBlock);
 
 			Thread.Sleep(1000);
 
@@ -126,7 +168,7 @@ namespace Wallet.core
 
 			var mempoolPtx = _BlockChain.TxMempool.GetAll()[0];
 			var _tx = TransactionValidation.unpoint(mempoolPtx);
-			_BlockChain.HandleNewBlock(_GenesisBlock.Child().AddTx(_tx));
+			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_tx));
 			Thread.Sleep(1000);
 			_WalletManager.Import(key);
 
