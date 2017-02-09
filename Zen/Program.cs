@@ -80,12 +80,18 @@ namespace Zen
 			app.Init();
 
 			if (tui)
+			{
 				TUI.Start(app, String.Join(" ", args));
-			else if (!headless)
+			}
+			else
 			{
 				app.Start();
-				app.GUI();
-				app.Stop();
+
+				if (!headless)
+				{
+					app.GUI();
+					app.Stop();
+				}
 			}
 		}
 

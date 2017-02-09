@@ -31,17 +31,58 @@ namespace Zen
 		}
 
 		[Test(), Order(1)]
-		public void CanAquireGenesisOutputs()
+		public void CanAquireGenesisOutputsAfterGensis()
 		{
 			App app = new App();
 
-		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 			app.Init();
 
 			app.AddGenesisBlock();
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+			ulong expectedAmount = 0;
 
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o =>
+			{
+				expectedAmount += o.Amount;
+				app.ImportKey(o.Key);
+			});
+
+			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
+
+			app.Start();
+
+			new Thread(() =>
+			{
+				Thread.Sleep(2000);
+				app.CloseGUI();
+				app.Stop();
+			}).Start();
+
+			app.GUI();
+		}
+
+
+		[Test(), Order(1)]
+		public void CanAquireGenesisOutputsBeforeGenesis()
+		{
+			App app = new App();
+
+			app.Init();
+
+			ulong expectedAmount = 0;
+
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o =>
+			{
+				expectedAmount += o.Amount;
+				app.ImportKey(o.Key);
+			});
+
+			Thread.Sleep(000);
+			app.AddGenesisBlock();
+			Thread.Sleep(1000);
+
+			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
+			      
 			app.Start();
 
 			new Thread(() =>
@@ -60,7 +101,6 @@ namespace Zen
 			App app = new App();
 
 
-		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 			app.Init();
 
 			app.AddGenesisBlock();

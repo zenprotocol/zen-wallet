@@ -21,7 +21,7 @@ namespace Zen
 			var options = new Dictionary<string, List<string>>();
 
 			options["main"] = new List<string>();
-			options["main"].Add("Start Console");
+			options["main"].Add("Start Node");
 			options["main"].Add("Start GUI");
 			options["main"].Add("Wallet Menu");
 			options["main"].Add("BlockChain Menu");
@@ -84,7 +84,7 @@ namespace Zen
 					case "BlockChain Menu":
 						menu("blockchain");
 						break;
-					case "Start Console":
+					case "Start Node":
 						app.Start();
 						dialog.Text += " (running)";
 						break;
@@ -220,6 +220,11 @@ namespace Zen
 				listTrace.Items.Add(message.Split('\n')[0]);
 
 				listTrace.SelectedIndex = listTrace.Items.Count - 1;
+			}
+			else
+			{
+				Console.ForegroundColor = color;
+				Console.Write(message);
 			}
 		}
 

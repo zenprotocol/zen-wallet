@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Infrastructure;
 using NBitcoinDerive;
 using Wallet.core;
@@ -11,6 +11,7 @@ using Wallet.core.Data;
 using System.Threading;
 using Infrastructure.TestingGtk;
 using System.IO;
+using BlockChain.Data;
 
 namespace Zen
 {
@@ -34,9 +35,8 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
-			return _BlockChain.HandleNewBlock(block) == BlockChain.AddBk.Result.Added;
+			return _BlockChain.HandleBlock(block);
 		}
-
 
 		internal void ImportKey(string key)
 		{
@@ -68,6 +68,21 @@ namespace Zen
 			{
 				return false;
 			}
+		}
+
+		internal long AssetMount()
+		{
+			long amount = 0;
+
+			_WalletManager.TxDeltaList.ForEach((obj) =>
+			{
+				if (obj.TxState != TxStateEnum.Invalid && obj.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
+				{
+					amount += obj.AssetDeltas[Consensus.Tests.zhash];
+				}
+			});
+
+			return amount;
 		}
 
 		internal void CloseGUI()
@@ -130,21 +145,21 @@ namespace Zen
 			_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
 			_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
 
-			if (Settings.EndpointOptions.EndpointOption != EndpointOptions.EndpointOptionsEnum.NoNetworking)
-				_NodeManager = new NodeManager(_BlockChain);
 		}
 
 		public void Start()
 		{
-			if (_NodeManager != null)
+			if (Settings.EndpointOptions.EndpointOption != EndpointOptions.EndpointOptionsEnum.NoNetworking)
 			{
-				_NodeManager.Dispose();
-				_NodeManager = null;
+				if (_NodeManager != null)
+				{
+					_NodeManager.Dispose();
+					_NodeManager = null;
+				}
 
 				_NodeManager = new NodeManager(_BlockChain);
+				_NodeManager.Connect(Settings.EndpointOptions);
 			}
-
-			_NodeManager.Connect(Settings.EndpointOptions);
 		}
 
 		public void GUI()
