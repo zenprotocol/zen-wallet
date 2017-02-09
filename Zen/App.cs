@@ -23,10 +23,10 @@ namespace Zen
 		private WalletManager _WalletManager;
 		private NodeManager _NodeManager;
 
-		//public void ResetWallet()
-		//{
-		//	_WalletManager.Reset();
-		//}
+		public App()
+		{
+			Settings = new Settings();
+		}
 
 		internal bool AddGenesisBlock()
 		{
@@ -96,19 +96,7 @@ namespace Zen
 		//}
 
 		public readonly static string DefaultBlockChainDB = "blockchain_db";
-		public readonly static string WalletDB = "wallet_db";
-
-		public App()
-		{
-			Settings = new Settings()
-			{
-				SaveNetworkProfile = false,
-				PeersToFind = null,
-				BlockChainDB = DefaultBlockChainDB,
-				WalletDB = WalletDB//,
-				//EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.NoNetworking }
-			};
-		}
+		public readonly static string DefaultWalletDB = "wallet_db";
 
 		public event Action<Network> OnInitProfile;
 		public event Action<Settings> OnInitSettings;
@@ -142,14 +130,13 @@ namespace Zen
 
 			InitSettingsProfile();
 
-			_BlockChain = new BlockChain.BlockChain(Settings.BlockChainDB, GenesisBlock.Key);
-			_WalletManager = new WalletManager(_BlockChain, Settings.WalletDB);
-
+			_BlockChain = new BlockChain.BlockChain(DefaultBlockChainDB + Settings.DBSuffix, GenesisBlock.Key);
+			_WalletManager = new WalletManager(_BlockChain, DefaultWalletDB + Settings.DBSuffix);
 		}
 
 		public void Start()
 		{
-			if (Settings.EndpointOptions == null || Settings.EndpointOptions.EndpointOption != EndpointOptions.EndpointOptionsEnum.NoNetworking)
+			if (!Settings.DisableNetworking)
 			{
 				if (_NodeManager != null)
 				{
@@ -158,7 +145,27 @@ namespace Zen
 				}
 
 				_NodeManager = new NodeManager(_BlockChain);
-				_NodeManager.Connect(Settings.EndpointOptions);
+
+				if (Settings.ConnectToSeed != null)
+				{
+					_NodeManager.ConnectToSeed(Settings.ConnectToSeed);
+				}
+				else if (Settings.ExternalAddress != null)
+				{
+					_NodeManager.Connect(Settings.ExternalAddress);
+				}
+				else if (Settings.AsLocalhost)
+				{
+					_NodeManager.AsLocalhost();
+				}
+				else if (Settings.ConnectToLocalhost)
+				{
+					_NodeManager.ConnectToLocalhost();
+				}
+				else
+				{
+					_NodeManager.Connect();
+				}
 			}
 		}
 

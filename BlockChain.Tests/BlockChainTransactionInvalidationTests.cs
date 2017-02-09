@@ -32,6 +32,7 @@ namespace BlockChain
 			var txConflicting = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(txConflicting)), Is.True);
 
+			System.Threading.Thread.Sleep(1000);
 			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(txToBeEvictedFromMempool)), Is.False);
 		}
 
@@ -80,18 +81,37 @@ namespace BlockChain
 			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
 			_GenesisBlock = _GenesisBlock.AddTx(genesisTx);
 
-			var txSpending1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var txSpending2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(txSpending1)), Is.True);
 
-			var sideChainBlock = _GenesisBlock.Child().AddTx(txSpending2);
-			Assert.That(_BlockChain.HandleBlock(sideChainBlock), Is.True);
-			Assert.That(_BlockChain.HandleBlock(sideChainBlock.Child()), Is.True); // reorganize
+			var output1 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			var tx1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1);
 
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(txSpending1)), Is.False);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(txSpending2)), Is.False);
+			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 2);
+			var tx2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
+
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1)), Is.True);
+
+			TestDelegate x = delegate
+			{
+				Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1), Is.True);
+				Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.False);
+				Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.False);
+				Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
+			};
+
+			x();
+
+			var branch = _GenesisBlock.Child().AddTx(tx2);
+			Assert.That(_BlockChain.HandleBlock(branch), Is.True);
+
+			x();
+
+			Assert.That(_BlockChain.HandleBlock(branch.Child()), Is.True); // reorganize
+
+			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1), Is.False);
+			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.True);
+			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.True);
+			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
 		}
 
 		[Test]
@@ -142,21 +162,23 @@ namespace BlockChain
 			_GenesisBlock = _GenesisBlock.AddTx(genesisTx);
 
 			var output1 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
-			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
+			var tx1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1);
 
-			var txSpending1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1);
-			var txSpending2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
+			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
+			var tx2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(txSpending1)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1)), Is.True);
 
-			var sideChainBlock = _GenesisBlock.Child().AddTx(txSpending2);
-			Assert.That(_BlockChain.HandleBlock(sideChainBlock), Is.True);
+			var branch = _GenesisBlock.Child().AddTx(tx2);
+			Assert.That(_BlockChain.HandleBlock(branch), Is.True);
 
-			Assert.That(_BlockChain.HandleBlock(sideChainBlock.Child().AddTx(genesisTx)), Is.False); // should undo reorganization
 
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(txSpending1)), Is.False);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(txSpending2)), Is.False);
+			//TODO: ???????
+			Assert.That(_BlockChain.HandleBlock(branch.Child().AddTx(genesisTx)), Is.False); // should undo reorganization
+
+			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.False);
+			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
 
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1), Is.True);
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.False);
