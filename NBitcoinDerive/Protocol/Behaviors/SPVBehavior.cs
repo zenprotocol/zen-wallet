@@ -132,23 +132,22 @@ namespace NBitcoin.Protocol.Behaviors
 				//	}
 				//}
 
-				switch (_BlockChain.HandleNewTransaction(tx))
+				if (_BlockChain.HandleTransaction(tx))
 				{
-					case BlockChain.AddTx.Result.Added:
-						foreach (var other in Nodes)
-						{
-							if (other != AttachedNode && other.State == NodeState.HandShaked)
-								other.SendMessageAsync(new InvPayload(tx));
-						}
-						break;
-					case BlockChain.AddTx.Result.Rejected:
-						node.SendMessageAsync(new RejectPayload()
-						{
-							Hash = GetHash(tx),
-							Code = RejectCode.INVALID,
-							Message = "tx"
-						});
-						break;
+					foreach (var other in Nodes)
+					{
+						if (other != AttachedNode && other.State == NodeState.HandShaked)
+							other.SendMessageAsync(new InvPayload(tx));
+					}
+				}
+				else
+				{
+					node.SendMessageAsync(new RejectPayload()
+					{
+						Hash = GetHash(tx),
+						Code = RejectCode.INVALID,
+						Message = "tx"
+					});
 				}
 			});
 		}
