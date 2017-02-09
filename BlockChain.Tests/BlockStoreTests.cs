@@ -41,7 +41,7 @@ namespace BlockChain.Store
 		}
 
 		[Test()]
-		public void ShouldGetChild()
+		public void ShouldGetOrphan()
 		{
 			var parent = Utils.GetGenesisBlock();
 			var child = parent.Child();
@@ -49,12 +49,12 @@ namespace BlockChain.Store
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Children(dbTx, Keyed(parent).Key, false).Select(t => t.Value), Contains.Item(child));
+				Assert.That(_BlockStore.Orphans(dbTx, Keyed(parent).Key).Select(t => t.Value), Contains.Item(child));
 			}
 		}
 
 		[Test()]
-		public void ShouldNotGetChild()
+		public void ShouldNotGetOrphan()
 		{
 			var parent = Utils.GetGenesisBlock();
 			var child = parent.Child();
@@ -62,7 +62,7 @@ namespace BlockChain.Store
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Children(dbTx, Keyed(parent).Key, true), Is.Empty);
+				Assert.That(_BlockStore.Orphans(dbTx, Keyed(parent).Key), Is.Empty);
 			}
 		}
 
@@ -109,7 +109,7 @@ namespace BlockChain.Store
 		}
 
 		[Test()]
-		public void ShoulGetChildren()
+		public void ShoulGetOrphans()
 		{
 			var parent = Utils.GetGenesisBlock();
 			var child1 = parent.Child();
@@ -119,7 +119,7 @@ namespace BlockChain.Store
 			{
 				_BlockStore.Put(dbTx, Keyed(child1), LocationEnum.Main, 0);
 				_BlockStore.Put(dbTx, Keyed(child2), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Children(dbTx, Keyed(parent).Key, false).Count, Is.EqualTo(2));
+				Assert.That(_BlockStore.Orphans(dbTx, Keyed(parent).Key).Count, Is.EqualTo(2));
 			}
 		}
 
