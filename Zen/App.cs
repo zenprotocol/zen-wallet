@@ -105,8 +105,8 @@ namespace Zen
 				SaveNetworkProfile = false,
 				PeersToFind = null,
 				BlockChainDB = DefaultBlockChainDB,
-				WalletDB = WalletDB,
-				EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.NoNetworking }
+				WalletDB = WalletDB//,
+				//EndpointOptions = new EndpointOptions() { EndpointOption = EndpointOptions.EndpointOptionsEnum.NoNetworking }
 			};
 		}
 
@@ -149,7 +149,7 @@ namespace Zen
 
 		public void Start()
 		{
-			if (Settings.EndpointOptions.EndpointOption != EndpointOptions.EndpointOptionsEnum.NoNetworking)
+			if (Settings.EndpointOptions == null || Settings.EndpointOptions.EndpointOption != EndpointOptions.EndpointOptionsEnum.NoNetworking)
 			{
 				if (_NodeManager != null)
 				{
