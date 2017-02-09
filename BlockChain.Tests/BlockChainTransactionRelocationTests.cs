@@ -44,18 +44,18 @@ namespace BlockChain
 		[Test, Order(1)]
 		public void ShouldAddToUtxoSet()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(block1), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
+			Assert.That(_BlockChain.HandleBlock(block1), Is.True);
 
 			AssertUtxoSet(block1_tx, true);
-			Assert.That(_BlockChain.HandleNewBlock(block2), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(block2), Is.True);
 			AssertUtxoSet(block2_tx, false); // branch
 		}
 
 		[Test, Order(2)]
 		public void ShouldReorganizeMempool()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(block3), Is.EqualTo(AddBk.Result.Added)); // cause a reorganization
+			Assert.That(_BlockChain.HandleBlock(block3), Is.True); // cause a reorganization
 			Assert.That(_BlockChain.Tip.Value, Is.EqualTo(block3)); // cause a reorganization
 
 			AssertMempool(block1_tx, true);
@@ -68,7 +68,7 @@ namespace BlockChain
 		[Test, Order(3)]
 		public void ShouldNotReorganizeMempoolAgain()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(block4), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(block4), Is.True);
 
 			AssertMempool(block1_tx, true);
 			AssertUtxoSet(block1_tx, false);
@@ -80,7 +80,7 @@ namespace BlockChain
 		[Test, Order(4)]
 		public void ShouldReorganizeMempoolAgain()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(block5), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(block5), Is.True);
 
 			AssertMempool(block2_tx, true);
 			AssertUtxoSet(block2_tx, false);

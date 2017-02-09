@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using Infrastructure.Testing;
 using Consensus;
@@ -19,7 +19,7 @@ namespace BlockChain
 
 			_GenesisTx = Utils.GetTx().AddOutput(_Key.Address, Consensus.Tests.zhash, 100);
 			_GenesisBlock = _GenesisBlock.AddTx(_GenesisTx);
-			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 		}
 
 		[Test(), Order(2)]
@@ -27,7 +27,7 @@ namespace BlockChain
 		{
 			var nonOrphanTx = Utils.GetTx().AddInput(_GenesisTx, 0, _Key.Private).Sign(_Key.Private);
 
-			Assert.That(_BlockChain.HandleNewTransaction(nonOrphanTx), Is.EqualTo(AddTx.Result.Added));
+			Assert.That(_BlockChain.HandleTransaction(nonOrphanTx), Is.True);
 		}
 	}
 }
