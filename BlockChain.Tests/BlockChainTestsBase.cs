@@ -27,6 +27,7 @@ namespace BlockChain
 		public void OneTimeSetUp()
 		{
 			Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
 			Dispose();
 		//	_GenesisTx = Infrastructure.Testing.Utils.GetTx();
 			_GenesisBlock = Infrastructure.Testing.Utils.GetGenesisBlock();

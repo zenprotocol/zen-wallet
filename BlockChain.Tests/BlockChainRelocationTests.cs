@@ -52,15 +52,15 @@ namespace BlockChain
 		[Test, Order(1)]
 		public void ShouldAddBlocks()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(_GenesisBlock), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 			Assert.That(Location(_GenesisBlock), Is.EqualTo(LocationEnum.Main));
 			Assert.That(_BlockChain.Tip.Value, Is.EqualTo(_GenesisBlock));
 
-			Assert.That(_BlockChain.HandleNewBlock(block1), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(block1), Is.True);
 			Assert.That(Location(block1), Is.EqualTo(LocationEnum.Main));
 			Assert.That(_BlockChain.Tip.Value.Equals(block1), Is.True);
 
-			Assert.That(_BlockChain.HandleNewBlock(block2), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(block2), Is.True);
 			Assert.That(Location(block2), Is.EqualTo(LocationEnum.Branch));
 			Assert.That(_BlockChain.Tip.Value.Equals(block1), Is.True);
 		}
@@ -68,7 +68,7 @@ namespace BlockChain
 		[Test, Order(2)]
 		public void ShouldReorganize()
 		{
-			Assert.That(_BlockChain.HandleNewBlock(block3), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(block3), Is.True);
 
 			Assert.That(Location(block1), Is.EqualTo(LocationEnum.Branch));
 			Assert.That(Location(block2), Is.EqualTo(LocationEnum.Main));
@@ -83,9 +83,9 @@ namespace BlockChain
 			var branchExtend = branch.Child();
 			var branchExtendInvalid = branchExtend.Child().AddTx(tx);
 
-			Assert.That(_BlockChain.HandleNewBlock(branchExtendInvalid), Is.EqualTo(AddBk.Result.AddedOrphan));
-			Assert.That(_BlockChain.HandleNewBlock(branchExtend), Is.EqualTo(AddBk.Result.AddedOrphan));
-			Assert.That(_BlockChain.HandleNewBlock(branch), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(branchExtendInvalid), Is.True); //TODO: assert: orphan
+			Assert.That(_BlockChain.HandleBlock(branchExtend), Is.True); //TODO: assert: orphan
+			Assert.That(_BlockChain.HandleBlock(branch), Is.True);
 		}
 	}
 }
