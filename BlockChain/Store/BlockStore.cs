@@ -148,11 +148,11 @@ namespace BlockChain.Store
 			return transactionContext.Transaction.Select<byte[], double>(TOTAL_WORK, item).Value;
 		}
 
-		public IEnumerable<Keyed<Types.Block>> Children(TransactionContext transactionContext, byte[] parent, bool orphans)
+		public IEnumerable<Keyed<Types.Block>> Orphans(TransactionContext transactionContext, byte[] parent)
 		{
 			foreach (var child in transactionContext.Transaction.SelectHashSet<byte[], byte[]>(CHILDREN, parent, 0))
 			{
-				if (orphans == IsLocation(transactionContext, child, LocationEnum.Orphans))
+				if (IsLocation(transactionContext, child, LocationEnum.Orphans))
 				{
 					yield return GetBlock(transactionContext, child);
 				}

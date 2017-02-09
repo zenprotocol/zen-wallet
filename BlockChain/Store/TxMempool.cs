@@ -11,10 +11,10 @@ namespace BlockChain.Store
 	public class TxMempool
 	{
 		private readonly HashDictionary<TransactionValidation.PointedTransaction> _Transactions;
-		private readonly List<Types.Outpoint> _TransactionOutpoints;
+		//private readonly List<Types.Outpoint> _TransactionOutpoints;
 
-		private readonly HashDictionary<Keyed<Types.Transaction>> _OrphanTransactions;
-		private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanTransactionsOutpoints;
+		private readonly HashDictionary<Types.Transaction> _OrphanTransactions;
+		//private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanTransactionsOutpoints;
 
 		private object _Lock = new Object();
 
@@ -29,127 +29,143 @@ namespace BlockChain.Store
 		//demo
 		public List<TransactionValidation.PointedTransaction> GetAll()
 		{
-			lock (_Lock)
+			var result = new List<TransactionValidation.PointedTransaction>();
+
+			foreach (var item in _Transactions)
 			{
-				var result = new List<TransactionValidation.PointedTransaction>();
-
-				foreach (var item in _Transactions)
-				{
-					result.Add(item.Value);
-				}
-
-				return result;
+				result.Add(item.Value);
 			}
+
+			return result;
 		}
 
 		public TxMempool()
 		{
 			_Transactions = new HashDictionary<TransactionValidation.PointedTransaction>();
-			_TransactionOutpoints = new List<Types.Outpoint>();
+			//_TransactionOutpoints = new List<Types.Outpoint>();
 
-			_OrphanTransactions = new HashDictionary<Keyed<Types.Transaction>>();
-			_OrphanTransactionsOutpoints = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
+			_OrphanTransactions = new HashDictionary<Types.Transaction>();
+		//	_OrphanTransactionsOutpoints = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
 		}
 
 		public bool ContainsKey(byte[] key)
 		{
-			lock (_Lock)
+			return _Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
+		}
+
+		public bool Remove(byte[] key)
+		{
+			if (_Transactions.ContainsKey(key))
 			{
-				return _Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
+				_Transactions.Remove(key);
+				return true;
+			}
+			else
+			{
+				return false;
+				_OrphanTransactions.Remove(key);
 			}
 		}
 
-		public void Remove(byte[] key)
+		public void RemoveOrphan(byte[] key)
 		{
-			lock (_Lock)
-			{
-				if (_Transactions.ContainsKey(key))
-					_Transactions.Remove(key);
-				else
-					_OrphanTransactions.Remove(key);
-			}
+			_OrphanTransactions.Remove(key);
 		}
 
 		public TransactionValidation.PointedTransaction Get(byte[] key)
 		{
-			lock (_Lock)
-			{
-				return _Transactions[key];
-			}
+			return _Transactions[key];
 		}
 
 		public bool ContainsInputs(Types.Transaction tx)
 		{
-			lock (_Lock)
+			foreach (var outpoint in tx.inputs)
 			{
-				foreach (var outpoint in tx.inputs)
+				if (ContainsOutpoint(outpoint))
 				{
-					if (ContainsOutpoint(outpoint))
-					{
-						return true;
-					}
+					return true;
 				}
-
-				return false;
 			}
+
+			return false;
 		}
 
 		public bool ContainsOutpoint(Types.Outpoint outpoint)
 		{
-			return _TransactionOutpoints.Contains(outpoint);
+			foreach (var item in _Transactions)
+			{
+				if (item.Value.pInputs.Select(t => t.Item1).Contains(outpoint))
+				{
+					return true;
+				}
+			}
+
+			return false;
+					
+			//return _TransactionOutpoints.Contains(outpoint);
 		}
+
+		//internal void ValidateOrphansOf(byte[] key)
+		//{
+		//	foreach (var item in GetOrphansOf(key))
+		//	{
+
+		//	}
+		//}
 
 		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetTransactionsInConflict(Types.Transaction tx)
 		{
-			lock (_Lock)
+			foreach (var item in _Transactions)
 			{
-				foreach (var item in _Transactions)
+				foreach (var _outpoint in item.Value.pInputs.Select(t => t.Item1))
 				{
-					foreach (var _outpoint in item.Value.pInputs.Select(t=>t.Item1))
+					foreach (var outpoint in tx.inputs)
 					{
-						foreach (var outpoint in tx.inputs)
+						if (outpoint.Equals(_outpoint))
 						{
-							if (outpoint.Equals(_outpoint))
-							{
-								yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
-							}
+							yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
 						}
 					}
 				}
 			}
 		}
 
-		public IEnumerable<Keyed<Types.Transaction>> GetOrphansOf(Keyed<Types.Transaction> parentTransaction)
+		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetDependencies(byte[] txHash)
 		{
-			lock (_Lock)
+			foreach (var item in _Transactions)
 			{
-				return _OrphanTransactionsOutpoints.Keys
-					.Where(key => key.txHash.SequenceEqual(parentTransaction.Key))
-					.Select(key => _OrphanTransactionsOutpoints[key]);
+				if (item.Value.pInputs.Count(t => t.Item1.txHash.SequenceEqual(txHash)) > 0)
+				{
+					yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
+				}
+			}
+		}
+
+		public IEnumerable<Tuple<byte[], Types.Transaction>> GetOrphansOf(byte[] txHash)
+		{
+			foreach (var item in _OrphanTransactions)
+			{
+				if (item.Value.inputs.Count(t => t.txHash.SequenceEqual(txHash)) > 0)
+				{
+					yield return new Tuple<byte[], Types.Transaction>(item.Key, item.Value);
+				}
 			}
 		}
 
 		public void Add(byte[] key, TransactionValidation.PointedTransaction transaction)
 		{
-			lock (_Lock)
-			{
-				_Transactions.Add(key, transaction);
-				_TransactionOutpoints.AddRange(transaction.pInputs.Select(t=>t.Item1));
-			}
+			_Transactions.Add(key, transaction);
+		//	_TransactionOutpoints.AddRange(transaction.pInputs.Select(t => t.Item1));
 		}
 
-		public void AddOrphan(Keyed<Types.Transaction> transaction)
+		public void AddOrphan(byte[] txHash, Types.Transaction tx)
 		{
-			lock (_Lock)
-			{
-				_OrphanTransactions.Add(transaction.Key, transaction);
+			_OrphanTransactions.Add(txHash, tx);
 
-				foreach (Types.Outpoint input in transaction.Value.inputs)
-				{
-					_OrphanTransactionsOutpoints.Add(input, transaction);
-				}
-			}
+			//foreach (Types.Outpoint input in transaction.Value.inputs)
+			//{
+			//	_OrphanTransactionsOutpoints.Add(input, transaction);
+			//}
 		}
-
-}
+	}
 }

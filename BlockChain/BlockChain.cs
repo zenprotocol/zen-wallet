@@ -7,76 +7,25 @@ using System.Collections.Generic;
 using Microsoft.FSharp.Collections;
 using System.Linq;
 using BlockChain.Data;
-using System.Collections.Concurrent;
 
 namespace BlockChain
 {
 	public class BlockChain : ResourceOwner
 	{
-		private readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
-		private readonly DBContext _DBContext;
-		private readonly ConcurrentStack<Types.Block> _OrphansActions;
+		readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
+		readonly DBContext _DBContext;
 
-		public TxMempool TxMempool { get; private set; }
-		public UTXOStore UTXOStore { get; private set; }
-		public BlockStore BlockStore { get; private set; }
-		public ContractStore ContractStore { get; private set; }
-		public BlockNumberDifficulties BlockNumberDifficulties { get; private set; }
-		public ChainTip ChainTip { get; private set; }
-		public BlockTimestamps Timestamps { get; private set; }
-		public byte[] GenesisBlockHash { get; private set; }
-		private object _lockObject = new Object();
+		public TxMempool TxMempool { get; set; }
+		public UTXOStore UTXOStore { get; set; }
+		public BlockStore BlockStore { get; set; }
+		public ContractStore ContractStore { get; set; }
+		public BlockNumberDifficulties BlockNumberDifficulties { get; set; }
+		public ChainTip ChainTip { get; set; }
+		public BlockTimestamps Timestamps { get; set; }
+		public byte[] GenesisBlockHash { get; set; }
 
-		public TransactionValidation.PointedTransaction GetPointedTransaction(TransactionContext dbTx, Types.Transaction tx)
+		public BlockChain(string dbName, byte[] genesisBlockHash)
 		{
-			var outputs = new List<Types.Output>();
-
-			foreach (var input in tx.inputs)
-			{
-				FSharpList<Types.Output> _outputs = null;
-
-				if (TxMempool.ContainsKey(input.txHash))
-				{
-					_outputs = TxMempool.Get(input.txHash).outputs;
-				}
-				else if (BlockStore.TxStore.ContainsKey(dbTx, input.txHash))
-				{
-					_outputs = BlockStore.TxStore.Get(dbTx, input.txHash).Value.outputs;
-				}
-
-				outputs.Add(_outputs[(int)input.index]);
-			}
-
-			return TransactionValidation.toPointedTransaction(
-				tx,
-				ListModule.OfSeq<Types.Output>(outputs)
-			);
-		}
-
-		public bool IsTipOld //TODO: consider caching
-		{
-			get
-			{
-				var tipBlock = Tip;
-
-				if (tipBlock == null)
-				{
-					return true;
-				}
-				else 
-				{
-					DateTime tipDateTime = DateTime.FromBinary(tipBlock.Value.header.timestamp);
-					TimeSpan diff = DateTime.Now - tipDateTime;
-
-					return diff > OLD_TIP_TIME_SPAN;
-				}
-			}
-		}
-
-		//TODO: refactor
-		public Keyed<Types.Block> Tip { get; set; }
-
-		public BlockChain(string dbName, byte[] genesisBlockHash) {
 			_DBContext = new DBContext(dbName);
 			TxMempool = new TxMempool();
 			UTXOStore = new UTXOStore();
@@ -85,10 +34,7 @@ namespace BlockChain
 			BlockNumberDifficulties = new BlockNumberDifficulties();
 			ChainTip = new ChainTip();
 			Timestamps = new BlockTimestamps();
-			_OrphansActions = new ConcurrentStack<Types.Block>();
-            GenesisBlockHash = genesisBlockHash;// GetGenesisBlock().Key;
-
-			OwnResource(_DBContext);
+			GenesisBlockHash = genesisBlockHash;
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
@@ -99,6 +45,290 @@ namespace BlockChain
 			}
 
 			InitBlockTimestamps();
+
+			OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(new EventLoopMessageListener<QueueAction>(ProcessAction)));
+			OwnResource(_DBContext);
+		}
+
+		void ProcessAction(QueueAction action)
+		{
+			if (action is HandleBlockAction) 
+				HandleBlock(action as HandleBlockAction);
+			else if (action is HandleOrphansOfTxAction) 
+				HandleOrphansOfTransaction(action as HandleOrphansOfTxAction);
+		}
+
+		void HandleOrphansOfTransaction(HandleOrphansOfTxAction a)
+		{
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				foreach (var tx in TxMempool.GetOrphansOf(a.TxHash))
+				{
+					TransactionValidation.PointedTransaction ptx;
+					if (!IsOrphanTx(context, tx.Item2, out ptx) && IsValidTransaction(context, ptx))
+					{
+						AddToMempool(tx.Item1, ptx);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Handles a new transaction from network or wallet. 
+		/// </summary>
+		/// <returns><c>true</c>, if new transaction was acceped, <c>false</c> rejected.</returns>
+		public bool HandleTransaction(Types.Transaction tx)
+		{
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				TransactionValidation.PointedTransaction ptx;
+				var txHash = Merkle.transactionHasher.Invoke(tx);
+
+				if (TxMempool.ContainsKey(txHash))
+				{
+					BlockChainTrace.Information("Tx already in mempool");
+					return false;
+				}
+
+				if (BlockStore.TxStore.ContainsKey(context, txHash))
+				{
+					BlockChainTrace.Information("Tx already in store");
+					return false;
+				}
+
+				if (TxMempool.ContainsInputs(tx))
+				{
+					BlockChainTrace.Information("Mempool contains spending input");
+					return false;
+				}
+
+				if (IsOrphanTx(context, tx, out ptx))
+				{
+					BlockChainTrace.Information("Added as orphan");
+					TxMempool.AddOrphan(txHash, tx);
+					return true;
+				}
+
+				//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
+				//TODO: 7. Apply fee rules. If fails, reject
+				//TODO: 8. Validate each input. If fails, reject
+				if (!IsValidTransaction(context, ptx))
+				{
+					BlockChainTrace.Information("invalid inputs");
+					return false;
+				}
+
+				AddToMempool(txHash, ptx);
+				return true;
+			}
+		}
+
+		void AddToMempool(byte[] txHash, TransactionValidation.PointedTransaction ptx)
+		{
+			BlockChainTrace.Information("Transaction added to mempool");
+			TxMempool.Lock(delegate {
+				TxMempool.Add(txHash, ptx);
+			});
+			new NewTxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
+			new HandleOrphansOfTxAction(txHash).Publish();
+		}
+
+		/// <summary>
+		/// Handles a block from network.
+		/// </summary>
+		/// <returns><c>true</c>, if new block was acceped, <c>false</c> rejected.</returns>
+		public bool HandleBlock(Types.Block bk)
+		{
+			return HandleBlock(new HandleBlockAction(bk));
+		}
+
+		bool HandleBlock(HandleBlockAction a)
+		{
+			var queuedActions = new List<QueueAction>();
+			BlockVerificationHelper.ResultEnum result;
+
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				var txs = new HashDictionary<Tuple<Types.Transaction, bool>>();
+
+				result = new BlockVerificationHelper(
+					this,
+					context,
+					a.BkHash,
+					a.Bk,
+					txs,
+					queuedActions,
+					a.IsOrphan
+				).Result;
+				
+				switch (result)
+				{
+					case BlockVerificationHelper.ResultEnum.Added:
+					case BlockVerificationHelper.ResultEnum.AddedOrphan:
+						context.Commit();
+						break;
+					case BlockVerificationHelper.ResultEnum.Reorganization:
+						TxMempool.Lock(() =>
+						{
+							context.Commit();
+							ApplyToMempool(context, txs);
+						});
+						break;
+					case BlockVerificationHelper.ResultEnum.Rejected:
+						return false;
+				}
+
+				foreach (var _bk in BlockStore.Orphans(context, a.BkHash))
+				{
+					new HandleBlockAction(_bk.Key, _bk.Value, true).Publish();
+				}
+			}
+
+			foreach (var action in queuedActions)
+			{
+				if (action is MessageAction)
+					(action as MessageAction).Message.Publish();
+				else
+					action.Publish();
+			}
+
+			return true;
+		}
+
+		void EvictToMempool(TransactionContext dbTx, byte[] txHash, Types.Transaction tx)
+		{
+			TransactionValidation.PointedTransaction ptx;
+
+			// if orphan, assume not in mempool, add to mempool as orhan
+			if (IsOrphanTx(dbTx, tx, out ptx))
+			{
+				TxMempool.AddOrphan(txHash, tx); //TODO: invalid/unconfirmed? ClearMempoolRecursive? 
+			}
+			else if (IsValidTransaction(dbTx, ptx))
+			{
+				AddToMempool(txHash, ptx);
+				return;
+			}
+			else
+			{
+				ClearMempoolRecursive(txHash);
+				new NewTxMessage(txHash, ptx, TxStateEnum.Invalid).Publish();
+			}
+
+			new NewTxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
+		}
+
+		void ClearMempoolRecursive(byte[] txHash)
+		{
+			foreach (var item in TxMempool.GetDependencies(txHash))
+			{
+				new NewTxMessage(item.Item1, item.Item2, TxStateEnum.Invalid).Publish();
+				ClearMempoolRecursive(item.Item1);
+			}
+		}
+
+		void ApplyToMempool(TransactionContext dbTx, HashDictionary<Tuple<Types.Transaction, bool>> txs)
+		{
+			// unconfirmed txs - into mempool
+			foreach (var item in txs.Where(t => !t.Value.Item2))
+			{
+				EvictToMempool(dbTx, item.Key, item.Value.Item1);
+			}
+
+			// confirmed txs - out of mempool
+			foreach (var item in txs.Where(t => t.Value.Item2))
+			{
+				TxMempool.RemoveOrphan(item.Key);
+			}
+
+			// confirmed txs - out of mempool
+			foreach (var item in txs.Where(t => t.Value.Item2))
+			{
+				// if can't remove - assume tx is unseen. try to unorphan
+				if (!TxMempool.Remove(item.Key))
+				{
+					new HandleOrphansOfTxAction(item.Key).Publish();
+					new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
+				}
+			}
+		}
+
+		bool HandleContract(Types.Contract contract)
+		{
+			using (TransactionContext context = _DBContext.GetTransactionContext())
+			{
+				var contractHash = ContractHelper.Compile(contract.code);
+
+				if (contractHash != null)
+				{
+					ContractStore.Put(context, new Keyed<Types.Contract>(contractHash, contract));
+					context.Commit();
+
+					return true;
+				}
+
+				return false;
+			}
+		}
+
+		public bool IsOrphanTx(TransactionContext dbTx, Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
+		{
+			ptx = null;
+			var outputs = new List<Types.Output>();
+
+			foreach (Types.Outpoint input in tx.inputs)
+			{
+				byte[] newArray = new byte[input.txHash.Length + 1];
+				input.txHash.CopyTo(newArray, 0);
+				newArray[input.txHash.Length] = (byte)input.index;
+
+				if (!UTXOStore.ContainsKey(dbTx, newArray)) //TODO: refactor ContainsKey
+				{
+					if (!TxMempool.ContainsKey(input.txHash))
+					{
+						return true;
+					}
+					else
+					{
+						outputs.Add(TxMempool.Get(input.txHash).pInputs[(int)input.index].Item2);
+					}
+				}
+				else
+				{
+					outputs.Add(UTXOStore.Get(dbTx, newArray).Value);
+				}
+			}
+
+			ptx = TransactionValidation.toPointedTransaction(
+				tx,
+				ListModule.OfSeq<Types.Output>(outputs)
+			);
+
+			return false;
+		}
+
+		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
+		{
+			//For each input, if the referenced output transaction is coinbase (i.e.only 1 input, with hash = 0, n = -1), it must have at least COINBASE_MATURITY (100) confirmations; else reject.
+			//Verify crypto signatures for each input; reject if any are bad
+
+
+			//Using the referenced output transactions to get input values, check that each input value, as well as the sum, are in legal money range
+			//Reject if the sum of input values < sum of output values
+
+
+			//for (var i = 0; i < ptx.pInputs.Length; i++)
+			//{
+			//	if (!TransactionValidation.validateAtIndex(ptx, i))
+			//		return false;
+			//}
+
+			return true;
+		}
+
+		public TransactionContext GetDBTransaction()
+		{
+			return _DBContext.GetTransactionContext();
 		}
 
 		public void InitBlockTimestamps()
@@ -117,107 +347,16 @@ namespace BlockChain
 			}
 		}
 
-		public TransactionContext GetDBTransaction()
+		public bool IsTipOld
 		{
-			return _DBContext.GetTransactionContext();
-		}
-
-		public AddBk.Result HandleNewBlock(Types.Block block, bool handleOrphan = false) //TODO: use Keyed type
-		{
-			var doActions = new List<Action>();
-			var undoActions = new List<Action>();
-
-			AddBk.Result result;
-
-			lock (_lockObject)
+			get
 			{
-				using (TransactionContext context = _DBContext.GetTransactionContext())
-				{
-					result = new AddBk(
-						this,
-						context,
-						new Keyed<Types.Block>(Merkle.blockHeaderHasher.Invoke(block.header), block),
-						doActions,
-						undoActions,
-						_OrphansActions
-					).Start(handleOrphan);
-
-					if (result != AddBk.Result.Rejected)
-					{
-						BlockChainTrace.Information("Block " + block.header.blockNumber + " " + result);
-
-					//	TxMempool.Lock(() =>
-					//	{
-							context.Commit();
-							foreach (Action action in doActions)
-								action();
-					//	});
-					}
-					else
-					{
-						foreach (Action action in undoActions)
-							action();
-					}
-				}
-			}
-
-			while (_OrphansActions.TryPop(out block))
-			{
-				BlockChainTrace.Information("Start with orphan bk: " + block.header.blockNumber);
-				HandleNewBlock(block, true);
-			}
-
-			return result;
-		}
-
-		public AddTx.Result HandleNewTransaction(Types.Transaction transaction) //TODO: use Keyed type
-		{
-			var doActions = new List<Action>();
-			var undoActions = new List<Action>();
-
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				var result = new AddTx(
-					this,
-					context,
-					new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction),
-					doActions,
-					undoActions
-				).Start();
-
-				if (result != AddTx.Result.Rejected)
-				{
-					context.Commit(); //TODO: don't need to commit if added to mempool
-					foreach (Action action in doActions)
-						action();
-				}
-				else
-				{
-					foreach (Action action in undoActions)
-						action();
-				}
-
-				return result;
+				return Tip == null ? true : DateTime.Now - DateTime.FromBinary(Tip.Value.header.timestamp) > OLD_TIP_TIME_SPAN;
 			}
 		}
 
-		public bool HandleNewContract(Types.Contract contract)
-		{
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				var contractHash = ContractHelper.Compile(contract.code);
-
-				if (contractHash != null)
-				{
-					ContractStore.Put(context, new Keyed<Types.Contract>(contractHash, contract));
-					context.Commit();
-
-					return true;
-				}
-
-				return false;
-			}
-		}
+		//TODO: refactor
+		public Keyed<Types.Block> Tip { get; set; }
 
 		public Types.Transaction GetTransaction(byte[] key) //TODO: make concurrent
 		{
@@ -275,29 +414,7 @@ namespace BlockChain
 			return values;
 		}
 
-		//public List<Tuple<Types.Outpoint,Types.Output>> GetUTXOSet()
-		//{
-		//	var values = new List<Tuple<Types.Outpoint, Types.Output>>();
-
-		//	using (TransactionContext context = _DBContext.GetTransactionContext())
-		//	{
-		//		foreach (var item in _UTXOStore.All(context))
-		//		{
-		//			byte[] txHash = new byte[item.Key.Length - 1];
-		//			Array.Copy(item.Key, txHash, txHash.Length);
-
-		//			uint index = item.Key[item.Key.Length - 1];
-
-		//			var outpoint = new Types.Outpoint(txHash, index);
-
-		//			values.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, item.Value));
-		//		}
-		//	}
-
-		//	return values;
-		//}
-
-		//demo
+		////demo
 		public Types.Block MineAllInMempool()
 		{
 			var transactions = TxMempool.GetAll();
@@ -335,7 +452,7 @@ namespace BlockChain
 				t => TransactionValidation.unpoint(t)))
           	);
 
-			if (HandleNewBlock(newBlock) == AddBk.Result.Added)
+			if (HandleBlock(newBlock))
 			{
 				return newBlock;
 			}
@@ -345,30 +462,6 @@ namespace BlockChain
 				//	throw new Exception();
 				return null;
 			}
-
-
 		}
-
-
-		//private Double GetDifficultyRecursive(TransactionContext context, Types.Block block)
-		//{
-		//	Double result = block.header.pdiff;
-
-		//	if (block.header.parent == null || block.header.parent.Length == 0)
-		//	{
-		//		return result;
-		//	}
-
-		//	Types.Block parentBlock = _BlockStore.Get(context, block.header.parent).Value;
-
-		//	if (parentBlock == null)
-		//	{
-		//		throw new Exception("Missing parent block");
-		//	}
-
-		//	return result + GetDifficultyRecursive(context, parentBlock);
-		//}
 	}
-
-	
 }

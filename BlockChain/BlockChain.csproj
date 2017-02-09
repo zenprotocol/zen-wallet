@@ -37,9 +37,8 @@
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
     <Reference Include="DBreeze">
-      <HintPath>..\packages\DBreeze.1.80.0\lib\net45\DBreeze.dll</HintPath>
+      <HintPath>..\packages\DBreeze.1.82.0\lib\net45\DBreeze.dll</HintPath>
     </Reference>
-    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -59,8 +58,9 @@
     <Compile Include="Store\ContractStore.cs" />
     <Compile Include="Data\BlockTimestamps.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="TxAddedMessage.cs" />
-    <Compile Include="BkAddedMessage.cs" />
+    <Compile Include="Data\BlockChainMessage.cs" />
+    <Compile Include="Data\Action.cs" />
+    <Compile Include="Data\TxStateEnum.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -79,10 +79,6 @@
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
-      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
-      <Name>Infrastructure.Testing</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
