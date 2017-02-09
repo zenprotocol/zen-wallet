@@ -4,6 +4,7 @@ using System.Threading;
 using Infrastructure.Testing;
 using BlockChain;
 using System;
+using BlockChain.Data;
 
 namespace Wallet.core
 {
@@ -25,7 +26,7 @@ namespace Wallet.core
 			_WalletManager.Dispose();
 
 			// init the blockchain while wallet's out
-			_BlockChain.HandleNewBlock(_GenesisBlock);
+			_BlockChain.HandleBlock(_GenesisBlock);
 
 			// new unsynced wallet
 			_WalletManager = new WalletManager(_BlockChain, WALLET_DB);
@@ -77,7 +78,7 @@ namespace Wallet.core
 
 			_WalletManager.OnItems += onItems;
 			  
-			Assert.That(_BlockChain.HandleNewTransaction(_NewTx), Is.EqualTo(AddTx.Result.Added));
+			Assert.That(_BlockChain.HandleTransaction(_NewTx), Is.True);
 			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
 			_WalletManager.OnItems -= onItems;
 		}
@@ -101,19 +102,43 @@ namespace Wallet.core
 			_WalletManager.OnItems += onItems;
 				//	does a new row get inserted into wallets txs table here!?!?!?!?!?!?!?!
 
-			_BlockChain.HandleNewBlock(_GenesisBlock.Child().AddTx(_NewTx));
+			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_NewTx));
 			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
 
 			_WalletManager.OnItems -= onItems;
 		}
 
-
 		[Test(), Order(5)]
+		public void ShouldNotSeeInvalidatedTx()
+		{
+			//var block = _BlockChain.Tip.Value.Child().AddTx(_NewTx);
+			//TODO: should the block be rejected?
+			//Assert.That(_BlockChain.HandleBlock(block), Is.EqualTo(AddBk.Result.Rejected));
+
+			var walletMessageEvent = new AutoResetEvent(false);
+
+			Action<TxDeltaItemsEventArgs> onItems = a =>
+			{
+				walletMessageEvent.Set();
+			};
+
+			_WalletManager.OnItems += onItems;
+
+			var block = _GenesisBlock.Child();
+
+			Assert.That(_BlockChain.HandleBlock(block.Child().AddTx(_NewTx)), Is.True); //TODO: assert: orphan
+			Assert.That(_BlockChain.HandleBlock(block), Is.True);
+
+			Assert.That(walletMessageEvent.WaitOne(3000), Is.False);
+			_WalletManager.OnItems -= onItems;
+		}
+
+		[Test(), Order(6)]
 		public void ShouldSeeInvalidatedTx()
 		{
 			//var block = _BlockChain.Tip.Value.Child().AddTx(_NewTx);
 			//TODO: should the block be rejected?
-			//Assert.That(_BlockChain.HandleNewBlock(block), Is.EqualTo(AddBk.Result.Rejected));
+			//Assert.That(_BlockChain.HandleBlock(block), Is.EqualTo(AddBk.Result.Rejected));
 
 			var walletMessageEvent = new AutoResetEvent(false);
 
@@ -131,8 +156,8 @@ namespace Wallet.core
 			_WalletManager.OnItems += onItems;
 
 			var block = _GenesisBlock.Child();
-			Assert.That(_BlockChain.HandleNewBlock(block), Is.EqualTo(AddBk.Result.Added));
-			Assert.That(_BlockChain.HandleNewBlock(block.Child()), Is.EqualTo(AddBk.Result.Added));
+			Assert.That(_BlockChain.HandleBlock(block), Is.True);
+			Assert.That(_BlockChain.HandleBlock(block.Child()), Is.True);
 
 			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
 			_WalletManager.OnItems -= onItems;

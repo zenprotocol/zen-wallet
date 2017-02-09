@@ -33,20 +33,20 @@
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.2-beta1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Sodium">
-      <HintPath>..\packages\libsodium-net.0.10.0-beta3\lib\Net40\Sodium.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.6.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="MsgPack">
       <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
     </Reference>
+    <Reference Include="Sodium">
+      <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.2-beta2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="DBreeze">
-      <HintPath>..\packages\DBreeze.1.80.0\lib\net45\DBreeze.dll</HintPath>
+      <HintPath>..\packages\DBreeze.1.82.0\lib\net45\DBreeze.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
