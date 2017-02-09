@@ -70,6 +70,7 @@ type Nonce = byte[]
 type BlockHeader = {
     version: uint32;
     parent: Hash;
+    blockNumber: uint32;
     txMerkleRoot: Hash;
     witnessMerkleRoot: Hash;
     contractMerkleRoot: Hash;

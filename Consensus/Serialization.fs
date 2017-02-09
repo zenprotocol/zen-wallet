@@ -255,9 +255,10 @@ type BlockHeaderSerializer(ownerContext) =
     override __.PackToCore(packer: Packer, bh: BlockHeader) =
         use body = new System.IO.MemoryStream()
         use bodyPacker = Packer.Create(body)
-        bodyPacker.PackArrayHeader(6)
+        bodyPacker.PackArrayHeader(7)
          .Pack<uint32>(bh.version)
          .Pack<Hash>(bh.parent)
+         .Pack<uint32>(bh.blockNumber)
          .Pack<Hash list>(merkleData bh)
          .Pack<int64>(bh.timestamp)
          .Pack<uint32>(bh.pdiff)
@@ -276,7 +277,7 @@ type BlockHeaderSerializer(ownerContext) =
         if not <| bodyUnpacker.IsArrayHeader then
             raise <| new SerializationException("Block header is not an array")
         use subtreeReader = bodyUnpacker.ReadSubtree()
-        if subtreeReader.ItemsCount <> 6L then
+        if subtreeReader.ItemsCount <> 7L then
             raise <| SerializationException("Wrong number of items in block header")
         subtreeReader.Read() |> ignore
         let version = subtreeReader.Unpack<uint32>()
@@ -284,6 +285,8 @@ type BlockHeaderSerializer(ownerContext) =
         let parent = subtreeReader.Unpack<Hash>(ownerContext)
 //        if not <| subtreeReader.IsArrayHeader then
 //            raise <| SerializationException("merkle roots not in array")
+        subtreeReader.Read() |> ignore
+        let blockNumber = subtreeReader.Unpack<uint32>(ownerContext)
         subtreeReader.Read() |> ignore
         let mData = subtreeReader.Unpack<Hash list>(ownerContext)
         if mData.Length < 3 then
@@ -301,6 +304,7 @@ type BlockHeaderSerializer(ownerContext) =
         {
             version=version;
             parent=parent;
+            blockNumber=blockNumber;
             txMerkleRoot=txMR;
             witnessMerkleRoot=wMR;
             contractMerkleRoot=cMR;
