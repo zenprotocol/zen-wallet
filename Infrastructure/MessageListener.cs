@@ -54,18 +54,11 @@ namespace Infrastructure
 			{
 				try
 				{
-					while (true)
+					while (!cancellationSource.IsCancellationRequested)
 					{
 						T message;
 
-						if (cancellationSource.IsCancellationRequested)
-						{
-							_MessageQueue.TryTake(out message);
-						}
-						else
-						{
-							message = _MessageQueue.Take(cancellationSource.Token);
-						}
+						message = _MessageQueue.Take(cancellationSource.Token);
 
 						continueEvent.WaitOne();
 
@@ -131,8 +124,6 @@ namespace Infrastructure
 			if(cancellationSource.IsCancellationRequested)
 				return;
 			cancellationSource.Cancel();
-
-		//	thread.Join();
 		}
 
 		#endregion	
