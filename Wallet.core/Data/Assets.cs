@@ -4,6 +4,7 @@ using BlockChain.Data;
 using Consensus;
 using System.Linq;
 using Wallet.core.Data;
+using BlockChain.Data;
 
 namespace Wallet.core
 {

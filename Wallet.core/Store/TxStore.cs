@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BlockChain;
 using BlockChain.Data;
 using BlockChain.Store;
 using Consensus;
@@ -6,12 +7,7 @@ using Store;
 
 namespace Wallet.core
 {
-	public enum TxStateEnum
-	{
-		Confirmed = 1,
-		Unconfirmed = 2,
-		Invalid = 3,
-	}
+	//TODO: extend Types.Transaction to contain TxStateEnum, serialize+store using MsgPackStore
 
 	public class TxBalancesStore : ConsensusTypeStore<Types.Transaction>
 	{

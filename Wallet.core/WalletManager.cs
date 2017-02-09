@@ -21,9 +21,7 @@ namespace Wallet.core
 		private List<Key> _Keys;
 
 		//TODO: merge, consider not using thread loops - * watchout from dbreeze threading limitation
-		private EventLoopMessageListener<TxAddedMessage> _BlockChainTxListener;
-		private EventLoopMessageListener<TxInvalidatedMessage> _BlockChainTxInvalidatedListener;
-		private EventLoopMessageListener<BkAddedMessage> _BlockChainBkListener;
+		private EventLoopMessageListener<BlockChainMessage> _BlockChainListener;
 
 		public TxDeltaItemsEventArgs TxDeltaList { get; private set; }
 
@@ -41,24 +39,21 @@ namespace Wallet.core
 
 			TxDeltaList = new TxDeltaItemsEventArgs();
 
-			_BlockChainTxListener = new EventLoopMessageListener<TxAddedMessage>(OnTxAddedMessage);
-			_BlockChainTxInvalidatedListener = new EventLoopMessageListener<TxInvalidatedMessage>(OnTxInvalidatedMessage);
-			_BlockChainBkListener = new EventLoopMessageListener<BkAddedMessage>(OnBkAddedMessage);
-
-			OwnResource(MessageProducer<TxAddedMessage>.Instance.AddMessageListener(_BlockChainTxListener));
-			OwnResource(MessageProducer<TxInvalidatedMessage>.Instance.AddMessageListener(_BlockChainTxInvalidatedListener));
-			OwnResource(MessageProducer<BkAddedMessage>.Instance.AddMessageListener(_BlockChainBkListener));
+			_BlockChainListener = new EventLoopMessageListener<BlockChainMessage>(OnBlockChainMessage);
+			OwnResource(MessageProducer<BlockChainMessage>.Instance.AddMessageListener(_BlockChainListener));
+			OwnResource(_DBContext);
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				_Keys = _KeyStore.List(dbTx);
 				_TxBalancesStore.All(dbTx).ToList().ForEach(t =>
 				{
-					TxDeltaList.Add(new TxDelta(_TxBalancesStore.TxState(dbTx, t.Key), t.Value, _TxBalancesStore.Balances(dbTx, t.Key)));
+					var state = _TxBalancesStore.TxState(dbTx, t.Key);
+
+					if (state != TxStateEnum.Invalid)
+						TxDeltaList.Add(new TxDelta(state, t.Value, _TxBalancesStore.Balances(dbTx, t.Key)));
 				});
 			}
-
-			OwnResource(_DBContext); //TODO
 		}
 
 		/// <summary>
@@ -66,9 +61,7 @@ namespace Wallet.core
 		/// </summary>
 		public void Import(Key key)
 		{
-			_BlockChainTxListener.Pause();
-			_BlockChainBkListener.Pause();
-			_BlockChainTxInvalidatedListener.Pause();
+			_BlockChainListener.Pause();
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
@@ -103,30 +96,29 @@ namespace Wallet.core
 			if (OnReset != null)
 				OnReset(new ResetEventArgs() { TxDeltaList = TxDeltaList });
 
-			_BlockChainBkListener.Continue();
-			_BlockChainTxListener.Continue();
-			_BlockChainTxInvalidatedListener.Continue();
+			_BlockChainListener.Continue();
 		}
 
-		private void OnBkAddedMessage(BkAddedMessage m)
+		private void OnBlockChainMessage(BlockChainMessage m)
 		{
-			var txs = new List<TransactionValidation.PointedTransaction>();
-
-			using (var dbTx = _BlockChain.GetDBTransaction())
-			{
-				m.Bk.transactions.ToList().ForEach(tx => txs.Add(_BlockChain.GetPointedTransaction(dbTx, tx)));
-			}
-
 			var deltas = new TxDeltaItemsEventArgs();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				txs.ForEach(tx =>
+				if (m is NewTxMessage)
 				{
-					HandleTx(dbTx, tx, deltas, TxStateEnum.Confirmed);
-				});
+					HandleTx(dbTx, (m as NewTxMessage).Tx, deltas, (m as NewTxMessage).State);
+					dbTx.Commit();
+				}
+				else if (m is NewBlockMessage)
+				{
+					(m as NewBlockMessage).PointedTransactions.ForEach(tx =>
+					{
+						HandleTx(dbTx, tx, deltas, TxStateEnum.Confirmed);
+					});
 
-				dbTx.Commit();
+					dbTx.Commit();
+				}
 			}
 
 			if (deltas.Count > 0)
@@ -135,42 +127,6 @@ namespace Wallet.core
 
 				if (OnItems != null)
 					OnItems(deltas);
-			}
-		}
-
-		private void OnTxInvalidatedMessage(TxInvalidatedMessage m)
-		{
-			var deltas = new TxDeltaItemsEventArgs();
-
-			using (var dbTx = _DBContext.GetTransactionContext())
-			{
-				HandleTx(dbTx, m.Tx, deltas, TxStateEnum.Invalid);
-				dbTx.Commit();
-
-				if (deltas.Count > 0)
-				{
-
-					if (OnItems != null)
-						OnItems(deltas);
-				}
-			}
-		}
-
-		private void OnTxAddedMessage(TxAddedMessage m)
-		{
-			var deltas = new TxDeltaItemsEventArgs();
-
-			using (var dbTx = _DBContext.GetTransactionContext())
-			{
-				HandleTx(dbTx, m.Tx, deltas, TxStateEnum.Unconfirmed);
-				dbTx.Commit();
-
-				if (deltas.Count > 0)
-				{
-
-					if (OnItems != null)
-						OnItems(deltas);
-				}
 			}
 		}
 
@@ -390,7 +346,7 @@ namespace Wallet.core
 		/// <param name="tx">Tx.</param>
 		public bool Transmit(Types.Transaction tx)
 		{
-			return _BlockChain.HandleNewTransaction(tx) == AddTx.Result.Added;
+			return _BlockChain.HandleTransaction(tx);
 		}
 
 		/// <summary>
