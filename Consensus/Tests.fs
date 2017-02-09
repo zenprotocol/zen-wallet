@@ -111,6 +111,7 @@ let bheader:BlockHeader =
     {
     version=0u;
     parent=zhash;
+    blockNumber=0u;
     txMerkleRoot=randomhash;
     witnessMerkleRoot=randomhash';
     contractMerkleRoot=randomtxhash';
