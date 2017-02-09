@@ -119,7 +119,7 @@ namespace BlockChain
 			if (IsOrphan())
 			{
 				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
-				BlockChainTrace.Information("added as orphan");
+				BlockChainTrace.Information("Bk added as orphan");
 				Result = ResultEnum.AddedOrphan;
 				return;
 			}
@@ -138,12 +138,6 @@ namespace BlockChain
 
 			var pointedTransactions = new List<TransactionValidation.PointedTransaction>();
 
-			if (!IsTransactionsValid(pointedTransactions))
-			{
-				Result = ResultEnum.Rejected;
-				return;
-			}
-
 			if (handleBranch) // make a branch block main
 			{
 				ExtendMain(queuedActions, totalWork, pointedTransactions);
@@ -152,7 +146,11 @@ namespace BlockChain
 			{
 				if (IsNewGreatestWork(totalWork))
 				{
-
+					if (!IsTransactionsValid(pointedTransactions))
+					{
+						Result = ResultEnum.Rejected;
+						return;
+					}
 
 					BlockChainTrace.Information($"block {bk.header.blockNumber} extends a branch with new difficulty.");
 
@@ -455,7 +453,7 @@ namespace BlockChain
 			var itr = GetBlock(tip);
 			var list = new List<Keyed<Types.Block>>();
 
-			while (!itr.Key.SequenceEqual(fork.Key))
+			while (itr.Value.header.parent.Length > 0 && !itr.Key.SequenceEqual(fork.Key))
 			{
 				list.Add(itr);
 				itr = GetBlock(itr.Value.header.parent);

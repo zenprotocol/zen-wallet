@@ -5,6 +5,7 @@ using Infrastructure.Testing;
 using BlockChain;
 using System;
 using BlockChain.Data;
+using System.Linq;
 
 namespace Wallet.core
 {
@@ -119,7 +120,8 @@ namespace Wallet.core
 
 			Action<TxDeltaItemsEventArgs> onItems = a =>
 			{
-				walletMessageEvent.Set();
+				if (a.Count(t => t.TxState == TxStateEnum.Unconfirmed) > 0)
+					walletMessageEvent.Set();
 			};
 
 			_WalletManager.OnItems += onItems;

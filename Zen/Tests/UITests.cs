@@ -24,9 +24,9 @@ namespace Zen
 				Directory.Delete(App.DefaultBlockChainDB, true);
 			}
 
-			if (Directory.Exists(App.WalletDB))
+			if (Directory.Exists(App.DefaultWalletDB))
 			{
-				Directory.Delete(App.WalletDB, true);
+				Directory.Delete(App.DefaultWalletDB, true);
 			}
 		}
 
@@ -34,7 +34,7 @@ namespace Zen
 		public void CanAquireGenesisOutputsAfterGensis()
 		{
 			App app = new App();
-			app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 
@@ -67,7 +67,7 @@ namespace Zen
 		public void CanAquireGenesisOutputsBeforeGenesis()
 		{
 			App app = new App();
-			app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 
@@ -101,7 +101,7 @@ namespace Zen
 		public async Task CanSendAmounts()
 		{
 			App app = new App();
-			app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 
@@ -138,7 +138,7 @@ namespace Zen
 		public async Task ShouldInvalidate()
 		{
 			App app = new App();
-			app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 			app.Init();
@@ -194,7 +194,7 @@ namespace Zen
 		public async Task ShouldUndoInvalidation()
 		{
 			App app = new App();
-			app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 			app.AddGenesisBlock();
