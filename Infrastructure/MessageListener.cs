@@ -54,9 +54,18 @@ namespace Infrastructure
 			{
 				try
 				{
-					while (!cancellationSource.IsCancellationRequested)
+					while (true)
 					{
-						var message = _MessageQueue.Take(cancellationSource.Token);
+						T message;
+
+						if (cancellationSource.IsCancellationRequested)
+						{
+							_MessageQueue.TryTake(out message);
+						}
+						else
+						{
+							message = _MessageQueue.Take(cancellationSource.Token);
+						}
 
 						continueEvent.WaitOne();
 
@@ -64,7 +73,7 @@ namespace Infrastructure
 						{
 							try
 							{
-								InfrastructureTrace.Information("99i8");
+								InfrastructureTrace.Information("processMessage: " + message.GetType());
 								processMessage(message);
 							}
 							catch (Exception ex)
@@ -122,10 +131,11 @@ namespace Infrastructure
 			if(cancellationSource.IsCancellationRequested)
 				return;
 			cancellationSource.Cancel();
-			thread.Join();
+
+		//	thread.Join();
 		}
 
-		#endregion
+		#endregion	
 
 	}
 }
