@@ -45,23 +45,20 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 			message.IfPayloadIs<Types.Block>(bk =>
 			{
-				var result = _BlockChain.HandleNewBlock(bk);
-
-				switch (result)
+				if (_BlockChain.HandleBlock(bk))
 				{
-					case BlockChain.AddBk.Result.AddedOrphan:
-						node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
-							new InventoryVector(InventoryType.MSG_BLOCK, bk.header.parent)
-						}));
-						break;
-					case BlockChain.AddBk.Result.Rejected:
-						node.SendMessageAsync(new RejectPayload()
-						{
-							Hash = Consensus.Merkle.blockHeaderHasher.Invoke(bk.header),
-							Code = RejectCode.INVALID,
-							Message = "bk"
-						});
-						break;
+					node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
+						new InventoryVector(InventoryType.MSG_BLOCK, bk.header.parent)
+					}));
+				}
+				else
+				{
+					node.SendMessageAsync(new RejectPayload()
+					{
+						Hash = Consensus.Merkle.blockHeaderHasher.Invoke(bk.header),
+						Code = RejectCode.INVALID,
+						Message = "bk"
+					});
 				}
 			});
 
