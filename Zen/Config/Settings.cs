@@ -7,17 +7,9 @@ namespace Zen
 {
 	public class Settings
 	{
-		//public enum AppModeEnum
-		//{
-		//	GUI,
-		//	Console,
-		//}
-
-//		public AppModeEnum? Mode { get; set; }
 		public List<Tuple<string, string>> GenesisOutputs { get; set; }
 		public bool InitGenesisBlock { get; set; }
-		public String BlockChainDB { get; set; }
-		public String WalletDB { get; set; }
+		public String DBSuffix { get; set; }
 		public List<String> Seeds { get; set; }
 		public List<String> Keys { get; set; }
 		public String NetworkProfile { get; set; }
@@ -27,7 +19,14 @@ namespace Zen
 		public int? Port { get; set; }
 		public bool SaveNetworkProfile { get; set; }
 		public bool SaveSettings { get; set; }
-		public EndpointOptions EndpointOptions { get; set; }
+
+		public bool UseInternalIp { get; set; }
+		public bool DisableNetworking { get; set; }
+		public IPAddress ExternalAddress { get; set; }
+
+		public bool AsLocalhost { get; set; }
+		public bool ConnectToLocalhost { get; set; }
+		public IPAddress ConnectToSeed { get; set; }
 
 		public Settings() {
 			Seeds = new List<string>();
@@ -59,9 +58,9 @@ namespace Zen
 			}
 		}
 
-		public void SpecifyIp(String ip)
-		{
-			EndpointOptions.SpecifiedAddress = String.IsNullOrEmpty(ip) ? null : IPAddress.Parse(ip);
-		}
+		//public void SpecifyExternalAddress(String ip)
+		//{
+		//	ExternalAddress = String.IsNullOrEmpty(ip) ? null : IPAddress.Parse(ip);
+		//}
 	}
 }
