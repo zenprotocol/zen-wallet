@@ -1,6 +1,5 @@
 *.userprefs
 packages
 .vs
-
 bin
 obj
