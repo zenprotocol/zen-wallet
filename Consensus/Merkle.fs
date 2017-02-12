@@ -9,8 +9,8 @@ open Consensus.Serialization
 
 open Consensus.Tree
 
-// TODO: Make thread-safe
-let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
+// doneTODO: Make thread-safe
+//let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
 
 type Hashable =
     public
@@ -41,6 +41,7 @@ let tag : Hashable -> byte[] =
 let innerHash : byte[] -> byte[] =
     fun bs ->
     let res = Array.zeroCreate 32
+    let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
     sha3.BlockUpdate(bs,0,Array.length bs)
     sha3.DoFinal(res, 0) |> ignore
     res
@@ -48,6 +49,7 @@ let innerHash : byte[] -> byte[] =
 let innerHashList : seq<byte[]> -> byte[] =
     fun bseq ->
     let res = Array.zeroCreate 32
+    let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256)
     Seq.iter (fun bs -> sha3.BlockUpdate(bs,0,Array.length bs)) bseq
     sha3.DoFinal(res,0) |> ignore
     res
@@ -112,27 +114,18 @@ let bytesToBits (bs:byte[]) =
     ba.CopyTo(ret,0)
     ret
 
-
-type Digest = {digest: byte[]; isDefault: bool}
-
-let leafHash cTW (wrapper:'T->Hashable) defaultHashes = 
-    let typeTag = tag << wrapper <| Unchecked.defaultof<'T>
-    let hasher = fun (x:'T) b ->
-        innerHashList [cTW; typeTag; serialize x; bitsToBytes b]
-    function
-    | {data = None; location={height=h}} -> {digest=defaultHashes h; isDefault=true}
-    | {data = Some x; location={loc=b}} -> {digest=hasher x b; isDefault=false}
-
-let branchHash defaultHashes = fun branchData dL dR ->
-    match branchData.location ,dL, dR with
-    | {height=h}, {isDefault=true}, {isDefault=true} ->
-        {digest = defaultHashes h; isDefault=true}
-    | {height=h;loc=b}, _, _ ->
-        {
-            digest = innerHashList [dL.digest;dR.digest;bitsToBytes b;toBytes h];
-            isDefault=false;
-        }
-
-let merkleRoot cTW wrapper =
+let merkleRoot cTW hasher items =
     let defaultHashes = defaultHash cTW
-    cata (leafHash cTW wrapper defaultHashes) (branchHash defaultHashes)                                                 
+    let leaves = List.map hasher items
+    let rec recursiveRoot innerList height = 
+        match List.length innerList with
+        | 1 -> innerList.Head
+        | n ->
+            let pairs =
+                if n%2 = 0 then
+                    List.chunkBySize 2 innerList
+                else
+                    List.chunkBySize 2 (innerList @ [defaultHashes height])  // this stinks
+            let nextList = List.map (fun p -> innerHashList p) pairs
+            recursiveRoot nextList (height+1)
+    recursiveRoot leaves 0

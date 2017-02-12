@@ -66,6 +66,16 @@ let matchingSpends ispends ospends =
     let oMap = spendMap ospends
     List.forall2 (=) <| Map.toList iMap <| Map.toList oMap
 
+let spendTransferLimit spends (limit:uint64) =
+    let incSpendMap (smap:Map<Hash,bigint>) spend =
+        let v = match smap.TryFind(spend.asset) with
+                | None -> bigint spend.amount
+                | Some v -> v + bigint spend.amount
+        smap.Add (spend.asset, v)
+    let spendMap = List.fold incSpendMap Map.empty<Hash,bigint>
+    let m = spendMap spends
+    List.forall (fun (_,v) -> v < bigint limit) <| Map.toList m
+
 type PointedInput = Outpoint * Output
 
 type PointedTransaction = {version: uint32; pInputs: PointedInput list; witnesses: Witness list; outputs: Output list; contract: ExtendedContract option}
@@ -96,18 +106,21 @@ let spendMap =
         smap.Add (spend.asset, v)
     List.fold incSpendMap Map.empty<Hash,uint64> 
 
-let sumMap (ml:Map<'K,uint64>) (mr:Map<'K,_>) =
-    let incMap (m:Map<'K,_>) (k,v) =
+let sumMap (ml:Map<'K,bigint>) (mr:Map<'K,bigint>) =
+    let incMap (m:Map<'K,bigint>) (k,v) =
         let newV = match m.TryFind(k) with
                    | None -> v
                    | Some oldV -> oldV + v
         m.Add (k,newV)
     List.fold incMap ml (Map.toList mr)
 
-let isNotLessThan (ml:Map<'K,uint64>) (mr:Map<'K,_>) =
+let mapToBigInt (m:Map<'K,uint64>) =
+    Map.map (fun _ (v:uint64) -> bigint v) m
+
+let isNotLessThan (ml:Map<'K,bigint>) (mr:Map<'K,bigint>) =
     mr |>
     Map.forall (fun k v ->
-        if v = 0UL then
+        if v = 0I then
              true
         else
             (ml.TryFind k) |>
@@ -115,8 +128,11 @@ let isNotLessThan (ml:Map<'K,uint64>) (mr:Map<'K,_>) =
             ((=) (Some true))
         )
 
-
-let CoinbaseValidate ptx feeMap claimableSacMap reward =
+// nb generating a POINTED transaction for the coinbase is done differently
+let validateCoinbase ptx feeMap claimableSacMap (reward:uint64) =
+   let bfm = mapToBigInt feeMap
+   let bcsm = mapToBigInt claimableSacMap
+   let breward = bigint reward
    let allCoinbase = lazy (
        (ptx.pInputs, ptx.witnesses) ||>
        List.forall2 (fun inp wit ->
@@ -128,11 +144,11 @@ let CoinbaseValidate ptx feeMap claimableSacMap reward =
    let inputSpendMap = lazy (
        ptx.pInputs |> List.map (fun (_,{spend=spend}) -> spend) |> spendMap
    )
-   let claimableMap = feeMap |> sumMap <| claimableSacMap |> sumMap <| Map [(zhash,reward)]
+   let claimableMap = bfm |> sumMap <| bcsm |> sumMap <| Map [(zhash,breward)]
    match allCoinbase, inputSpendMap with
    | Lazy false, _ -> false
    | Lazy true, Lazy inputSpendMap ->
-       claimableMap |> isNotLessThan <| inputSpendMap
+       claimableMap |> isNotLessThan <| (mapToBigInt inputSpendMap)
 
 type SigHashOutputType =
     | SigHashAll
@@ -202,7 +218,7 @@ let goodOutputVersions {version=version; pInputs=pInputs} =
     not <| List.exists (fun (_,{lock=lock}) -> lockVersion lock > version) pInputs
 
 let validatePKLockAtIndex ptx index pkHash =
-    match PKWitness.TryMake ptx.witnesses.[index] with
+    match Option.bind (PKWitness.TryMake) (List.tryItem index ptx.witnesses) with
     | None -> false
     | Some (PKWitness (publicKey=publicKey; edSignature=edSignature; hashtype=hashtype)) ->
          if innerHash publicKey <> pkHash then false
@@ -217,6 +233,7 @@ let pkWitnessAtIndex tx index hashtype privkey =
     PKWitness (publicKey=Sodium.PublicKeyAuth.ExtractEd25519PublicKeyFromEd25519SecretKey privkey, edSignature = signatureAtIndex tx index hashtype privkey, hashtype=hashtype)
 
 let validateAtIndex ptx index =
+    if index >= ptx.pInputs.Length then false else
     let olock =
         match ptx.pInputs.[index] with
         | (_,{lock=lock}) -> lock
