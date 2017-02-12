@@ -73,6 +73,7 @@
     <Compile Include="Tests.fs" />
     <Compile Include="MerkleTests.fs" />
     <Compile Include="SparseMerkleTreeTests.fs" />
+    <Compile Include="TransactionTests.fs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(FSharpTargetsPath)" />
