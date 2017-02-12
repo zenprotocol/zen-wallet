@@ -10,23 +10,6 @@ using System.Net;
 
 namespace NBitcoinDerive
 {
-	public class EndpointOptions {
-		public enum EndpointOptionsEnum {
-			#if DEBUG
-			LocalhostClient,
-			LocalhostServer,
-			NoNetworking,
-			#endif
-		}
-
-		public EndpointOptionsEnum EndpointOption { get; set; }
-		public IPAddress SpecifiedAddress { get; set; }
-	}
-
-	//public interface INodeManager {
-	//	void SendTransaction (byte[] address, UInt64 amount);
-	//}
-
 	public class NodeManager : ResourceOwner//, INodeManager
 	{
 		private Server _Server = null;
@@ -34,18 +17,18 @@ namespace NBitcoinDerive
 		private Network _Network;
 		private NodeConnectionParameters _NodeConnectionParameters;
 
-		#if DEBUG
-		public 
-		#else
+#if DEBUG
+		public
+#else
 		private
-		#endif 
+#endif
 		NATManager _NATManager;
 
-		#if DEBUG
-		public 
-		#else
+#if DEBUG
+		public
+#else
 		private
-		#endif
+#endif
 		NodesGroup _NodesGroup;
 
 		public NodeManager(BlockChain.BlockChain blockChain)
@@ -57,66 +40,58 @@ namespace NBitcoinDerive
 			AddressManager addressManager = new AddressManager();
 
 			_NodeConnectionParameters = new NodeConnectionParameters();
-			var addressManagerBehavior = new AddressManagerBehavior (addressManager);
+			var addressManagerBehavior = new AddressManagerBehavior(addressManager);
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
 			_NATManager = new NATManager(_Network.DefaultPort);
 		}
 
-		public void Connect(EndpointOptions endpointOptions)
+		public void Connect()
 		{
-			IPAddress ipAddress = null;
-
-			if (endpointOptions != null)
+			_NATManager.Init().ContinueWith(t =>
 			{
-				if (endpointOptions.SpecifiedAddress != null)
+				if (_NATManager.DeviceFound &&
+					_NATManager.Mapped.Value &&
+					_NATManager.ExternalIPVerified.Value)
 				{
-					ipAddress = endpointOptions.SpecifiedAddress;
+					Connect(_NATManager.ExternalIPAddress);
 				}
-#if DEBUG
-				if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.NoNetworking)
+				else
 				{
+					Connect(null);
 				}
-				else if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.LocalhostServer)
-				{
-					_Network.DefaultPort = 9999;
-					_Network.PeersToFind = 0;
-					_Network.MaximumNodeConnection = 0;
-					Connect(_NATManager.InternalIPAddress);
-				}
-				else if (endpointOptions.EndpointOption == EndpointOptions.EndpointOptionsEnum.LocalhostClient)
-				{
-					//TODO: 
-					if (_NATManager.InternalIPAddress != null)
-					{
-						_Network.DefaultPort = 9999;
-						_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
-						_Network.PeersToFind = 1;
-						_Network.MaximumNodeConnection = 1;
-					}
-					Connect(_NATManager.InternalIPAddress);
-				}
-#endif
-			}
-			else
-			{
-				_NATManager.Init().ContinueWith(t =>
-				{
-					if (_NATManager.DeviceFound &&
-						_NATManager.Mapped.Value &&
-						_NATManager.ExternalIPVerified.Value)
-					{
-						Connect(_NATManager.ExternalIPAddress);
-					}
-					else
-					{
-						Connect();
-					}
-				});
-			}
+			});
 		}
 
-		private void Connect(IPAddress ipAddress = null)
+#if DEBUG
+		public void ConnectToLocalhost()
+		{
+			_Network.DefaultPort = 9999;
+			_Network.PeersToFind = 1;
+			_Network.MaximumNodeConnection = 1;
+			_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
+			Connect(null);
+		}
+
+		public void AsLocalhost()
+		{
+			_Network.DefaultPort = 9999;
+			_Network.PeersToFind = 0;
+			_Network.MaximumNodeConnection = 0;
+			Connect(_NATManager.InternalIPAddress); 
+		}
+
+		public void ConnectToSeed(IPAddress ipAddress)
+		{
+			_Network.DefaultPort = 9999;
+			_Network.PeersToFind = 1;
+			_Network.MaximumNodeConnection = 1;
+			_Network.Seeds.Add(ipAddress.ToString());
+			Connect(null);
+		}
+#endif
+
+		public void Connect(IPAddress ipAddress)
 		{
 			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior(_BlockChain);
 
