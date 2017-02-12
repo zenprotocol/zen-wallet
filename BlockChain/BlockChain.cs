@@ -60,6 +60,8 @@ namespace BlockChain
 
 		void HandleOrphansOfTransaction(HandleOrphansOfTxAction a)
 		{
+			BlockChainTrace.Information("Tx orphans check ");
+
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
 				foreach (var tx in TxMempool.GetOrphansOf(a.TxHash))
@@ -104,7 +106,7 @@ namespace BlockChain
 
 				if (IsOrphanTx(context, tx, out ptx))
 				{
-					BlockChainTrace.Information("Added as orphan");
+					BlockChainTrace.Information("Tx added as orphan");
 					TxMempool.AddOrphan(txHash, tx);
 					return true;
 				}
@@ -163,16 +165,26 @@ namespace BlockChain
 				
 				switch (result)
 				{
-					case BlockVerificationHelper.ResultEnum.Added:
 					case BlockVerificationHelper.ResultEnum.AddedOrphan:
 						context.Commit();
 						break;
+					case BlockVerificationHelper.ResultEnum.Added:
 					case BlockVerificationHelper.ResultEnum.Reorganization:
-						TxMempool.Lock(() =>
+						if (txs.Count > 0)
+						{
+							TxMempool.Lock(() =>
+							{
+								if (result != BlockVerificationHelper.ResultEnum.Reorganization)
+								{
+									context.Commit();
+								}
+								ApplyToMempool(context, txs);
+							});
+						}
+						else
 						{
 							context.Commit();
-							ApplyToMempool(context, txs);
-						});
+						}
 						break;
 					case BlockVerificationHelper.ResultEnum.Rejected:
 						return false;

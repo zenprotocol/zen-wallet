@@ -168,15 +168,14 @@ namespace Zen
 					case "Back":
 						menu("main");
 						break;
-					case "Localhost Client":
-						app.Settings.EndpointOptions.EndpointOption =
-								NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.LocalhostClient;
-//						app.Start();
-						break;
-					case "Localhost Server":
-						app.Settings.EndpointOptions.EndpointOption =
-							   NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.LocalhostServer;
-//						app.Start();
+
+//					case "Localhost Client":
+//						app.Settings.EndpointOption = Settings.EndpointOptionsEnum.LocalhostClient;
+////						app.Start();
+//						break;
+//					case "Localhost Server":
+//						app.Settings.EndpointOption = Settings.EndpointOptionsEnum.LocalhostServer;
+////						app.Start();
 						break;
 				}
 			};
