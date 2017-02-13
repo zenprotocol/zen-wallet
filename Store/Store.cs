@@ -23,6 +23,11 @@ namespace Store
 			Put(transactionContext, new Keyed<T>[] { item });
 		}
 
+		public void Put(TransactionContext transactionContext, byte[] key, T item) //TODO: use Keyed?
+		{
+			Put(transactionContext, new Keyed<T>[] { new Keyed<T>(key, item) });
+		}
+
 		private void Put(TransactionContext transactionContext, byte[] key, byte[] value)
 		{
 			Put(transactionContext, new Tuple<byte[],byte[]>[] { new Tuple<byte[], byte[]>(key, value) });

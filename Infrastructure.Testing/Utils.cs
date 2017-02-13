@@ -47,5 +47,22 @@ namespace Infrastructure.Testing
 				Types.OutputLock.NewPKLock(address),
 				new Types.Spend(asset, amount));
 		}
+
+		public static Types.Output GetContractOutput(byte[] contractHash, byte[] data, byte[] asset, ulong amount)
+		{
+			return new Types.Output(
+				Types.OutputLock.NewContractLock(contractHash, data),
+				new Types.Spend(asset, amount));
+		}
+
+		public static Types.Output GetContractSacrificeLock(byte[] contractHash, ulong zenAmount)
+		{
+			return new Types.Output(
+				Types.OutputLock.NewContractSacrificeLock(
+					new Types.LockCore(0, ListModule.OfSeq(new byte[][] { contractHash }))
+				),
+				new Types.Spend(Consensus.Tests.zhash, zenAmount)
+			);
+		}
 	}
 }
