@@ -318,6 +318,8 @@ namespace BlockChain
               		_BlockChain.ACS.Get(_DbTx, purged).Value);
 			}
 
+			_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
+
 			_BlockChain.ACS.DeactivateContracts(_DbTx, _Bk.header.blockNumber, out purgedList);
 
 			ValidateACS();
@@ -525,17 +527,23 @@ namespace BlockChain
 				{
 					var blockUndoData = _BlockChain.BlockStore.GetUndoData(_DbTx, key);
 
-					blockUndoData.AddedUTXO.ForEach(u =>
+					if (blockUndoData != null)
 					{
-						_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
-					});
+						blockUndoData.AddedUTXO.ForEach(u =>
+						{
+							_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
+						});
 
-					blockUndoData.RemovedUTXO.ForEach(u =>
-					{
-						_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
-					});
+						blockUndoData.RemovedUTXO.ForEach(u =>
+						{
+							_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
+						});
 
-					//TODO: undo ASC
+						foreach (var item in blockUndoData.ACSDeltas)
+						{
+							_BlockChain.ACS.Add(_DbTx, item.Value);
+						}
+					}
 				}
 			}
 
