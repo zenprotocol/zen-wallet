@@ -28,4 +28,11 @@ namespace BlockChain.Data
 		{
 		}
 	}
+
+	public class HashSet : HashSet<byte[]>
+	{
+		public HashSet() : base(new ByteArrayComparer())
+		{
+		}
+	}
 }

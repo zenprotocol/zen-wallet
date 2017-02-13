@@ -16,9 +16,11 @@ namespace BlockChain
 		readonly DBContext _DBContext;
 
 		public TxMempool TxMempool { get; set; }
+		public ContractsMempool ContractsMempool { get; set; }
 		public UTXOStore UTXOStore { get; set; }
 		public BlockStore BlockStore { get; set; }
-		public ContractStore ContractStore { get; set; }
+	//	public ContractStore ContractStore { get; set; }
+		public ActiveContractSet ACS { get; set; }
 		public BlockNumberDifficulties BlockNumberDifficulties { get; set; }
 		public ChainTip ChainTip { get; set; }
 		public BlockTimestamps Timestamps { get; set; }
@@ -30,7 +32,9 @@ namespace BlockChain
 			TxMempool = new TxMempool();
 			UTXOStore = new UTXOStore();
 			BlockStore = new BlockStore();
-			ContractStore = new ContractStore();
+		//	ContractStore = new ContractStore();
+			ACS = new ActiveContractSet();
+			ContractsMempool = new ContractsMempool();
 			BlockNumberDifficulties = new BlockNumberDifficulties();
 			ChainTip = new ChainTip();
 			Timestamps = new BlockTimestamps();
@@ -114,6 +118,10 @@ namespace BlockChain
 				//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
 				//TODO: 7. Apply fee rules. If fails, reject
 				//TODO: 8. Validate each input. If fails, reject
+
+				if (!IsContractGeneratedTransactionValid(context, ptx))
+					return false;
+
 				if (!IsValidTransaction(context, ptx))
 				{
 					BlockChainTrace.Information("invalid inputs");
@@ -219,11 +227,18 @@ namespace BlockChain
 			else if (IsValidTransaction(dbTx, ptx))
 			{
 				AddToMempool(txHash, ptx);
+
+				byte[] contractHash;
+				if (IsContractActivatingTx(ptx, out contractHash))
+				{
+					//ContractsMempool.Add(contractHash);
+				}
 				return;
 			}
 			else
 			{
 				ClearMempoolRecursive(txHash);
+				ClearContractsRecursive(txHash);
 				new NewTxMessage(txHash, ptx, TxStateEnum.Invalid).Publish();
 			}
 
@@ -236,6 +251,17 @@ namespace BlockChain
 			{
 				new NewTxMessage(item.Item1, item.Item2, TxStateEnum.Invalid).Publish();
 				ClearMempoolRecursive(item.Item1);
+			}
+		}
+
+		void ClearContractsRecursive(byte[] txHash)
+		{
+			foreach (var item in TxMempool.GetDependenciesOfContract(txHash))
+			{
+				//ContractsMempool.RemoveTx(txHash);
+
+				//new NewTxMessage(item.Item1, item.Item2, TxStateEnum.Invalid).Publish();
+				//ClearMempoolRecursive(item.Item1);
 			}
 		}
 
@@ -262,25 +288,22 @@ namespace BlockChain
 					new HandleOrphansOfTxAction(item.Key).Publish();
 					new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
 				}
+
+				ContractsMempool.RemoveTx(item.Key);
 			}
 		}
 
-		bool HandleContract(Types.Contract contract)
+		public bool IsContractActivatingTx(TransactionValidation.PointedTransaction ptx, out byte[] contractHash)
 		{
-			using (TransactionContext context = _DBContext.GetTransactionContext())
-			{
-				var contractHash = ContractHelper.Compile(contract.code);
-
-				if (contractHash != null)
-				{
-					ContractStore.Put(context, new Keyed<Types.Contract>(contractHash, contract));
-					context.Commit();
-
-					return true;
-				}
-
-				return false;
-			}
+			contractHash = null;
+			//foreach (var output in ptx.outputs)
+			//{
+			//	if (output.@lock.IsContractSacrificeLock)
+			//	{
+			//		return true;
+			//	}
+			//}
+			return false;
 		}
 
 		public bool IsOrphanTx(TransactionContext dbTx, Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
@@ -334,6 +357,86 @@ namespace BlockChain
 			//	if (!TransactionValidation.validateAtIndex(ptx, i))
 			//		return false;
 			//}
+
+			return true;
+		}
+
+		public bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
+		{
+			byte[] contractHash = null;
+
+			foreach (var input in ptx.pInputs)
+			{
+				if (input.Item2.@lock.IsContractLock)
+				{
+					if (contractHash == null)
+						contractHash = ((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash;
+					else if (!contractHash.SequenceEqual(((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash))
+					{
+						BlockChainTrace.Information("Unexpected contactHash");
+						return false;
+					}
+				}
+			}
+
+			if (contractHash != null)
+			{
+				if (ACS.IsActive(dbTx, contractHash, Tip.Value.header.blockNumber))
+				{
+
+					/// 
+					/// 
+					/// 
+					/// 
+					/// 
+					/// TODO: cache
+
+					var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
+
+					using (var context = _DBContext.GetTransactionContext())
+					{
+						foreach (var item in UTXOStore.All(context, null, false))
+						{
+							byte[] txHash = new byte[item.Key.Length - 1];
+							Array.Copy(item.Key, txHash, txHash.Length);
+							var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
+
+							utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
+						}
+					}
+
+
+					var args = new ContractArgs()
+					{
+						context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
+						//		inputs = inputs,
+						witnesses = new List<byte[]>(),
+						outputs = ptx.outputs.ToList(),
+						option = Types.ExtendedContract.NewContract(null)
+					};
+
+					/// 
+					/// 
+					/// 
+					/// 
+					/// 
+
+
+					Types.Transaction tx;
+					if (!ContractHelper.Execute(contractHash, out tx, args))
+					{
+						BlockChainTrace.Information("Contract execution failed");
+						return false;
+					}
+
+					return TransactionValidation.unpoint(ptx).Equals(tx);
+				}
+				else
+				{
+					BlockChainTrace.Information("Contract not active");
+					return false;
+				}
+			}
 
 			return true;
 		}
