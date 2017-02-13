@@ -48,6 +48,9 @@ type Outpoint = {txHash: Hash; index: uint32}
 
 type Witness = byte[]
 
+//TODO: remove
+type ContractContext = { contractId: byte[]; utxo: Map<Outpoint, Output> }
+
 type Contract = {code: byte[]; bounds: byte[]; hint: byte[]}
 
 type ExtendedContract =
