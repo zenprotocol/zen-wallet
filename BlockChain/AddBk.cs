@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using BlockChain.Data;
-using System.Linq;
 
 namespace BlockChain
 {
@@ -247,22 +246,18 @@ namespace BlockChain
 				_BlockChain.BlockStore.TxStore.Put(_DbTx, new Keyed<Types.Transaction>(txHash, transaction));
 
 				var i = 0;
-				foreach (var input in transaction.inputs)
+				foreach (var input in ptx.pInputs)
 				{
-					var outpoint = new Types.Outpoint(input.txHash, input.index);
-					var output = _BlockChain.UTXOStore.Get(_DbTx,
-						GetOutputKey(transaction.inputs[i].txHash, (int)transaction.inputs[i].index)
-					);
-
-					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(transaction.inputs[i].txHash, (int)transaction.inputs[i].index));
+					//TODO: refactoring is needed.
+					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(input.Item1.txHash, (int)input.Item1.index));
 
 					//TODO: if added, and now removed - just remove from 'added' //if (blockUndoData.AddedUTXO.Contains
-					blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, output.Value));
+					blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(input.Item1, input.Item2));
 					i++;
 				}
 
 				i = 0;
-				foreach(var output in transaction.outputs)
+				foreach(var output in ptx.outputs)
 				{
 					BlockChainTrace.Information($"new utxo, amount {output.spend.amount}");
 
@@ -308,9 +303,8 @@ namespace BlockChain
 
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
 					{
-						_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(transaction.inputs[i].txHash, (int)transaction.inputs[i].index), output));
-						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(
-							new Types.Outpoint(txHash, (uint)i), output));
+						_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(txHash, i), output));
+						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, (uint)i), output));
 					}
 					i++;
 				}
