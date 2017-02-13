@@ -28,9 +28,8 @@ namespace BlockChain
 			var nonOrphanTx = Utils.GetTx().AddInput(_GenesisTx, 0, _Key.Private).Sign(_Key.Private);
 
 			Assert.That(_BlockChain.HandleTransaction(nonOrphanTx), Is.True);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(nonOrphanTx)), Is.False);
+			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(nonOrphanTx)), Is.True);
 		}
-
 
 		[Test(), Order(2)]
 		public void ShouldNotAddToMempoolOrphanTx()
@@ -41,11 +40,26 @@ namespace BlockChain
 			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(orphanTx)), Is.False);
 		}
 
-
 		[Test(), Order(3)]
 		public void ShouldRejectBlock()
 		{
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_GenesisTx)), Is.False);
+		}
+
+		[Test(), Order(4)]
+		public void ShouldValidateInterdependentTxs()
+		{
+			var key1 = Key.Create();
+			var tx1 = Utils.GetTx().AddOutput(key1.Address, Consensus.Tests.zhash, 10);
+
+			var key2 = Key.Create();
+			var tx2 = Utils.GetTx().AddInput(tx1, 0, key1.Private).AddOutput(key2.Address, Consensus.Tests.zhash, 11);
+
+			var tx3 = Utils.GetTx().AddInput(tx2, 0, key2.Private);
+
+			var bk = _GenesisBlock.Child().AddTx(tx1).AddTx(tx2).AddTx(tx3);
+
+			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
 		}
 	}
 }
