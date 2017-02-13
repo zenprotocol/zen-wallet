@@ -18,10 +18,15 @@ namespace BlockChain
 		private readonly string LAST_BLOCK = "last-block";
 		public ActiveContractSet() : base("contract-set") { }
 
-		public void Add(TransactionContext dbTx, byte[] contractHash, ulong extention)
+		//public void Add(TransactionContext dbTx, byte[] contractHash, ulong extention)
+		//{
+		//	dbTx.Transaction.Insert<byte[], ulong>(LAST_BLOCK, contractHash, extention);
+		//	//Put(dbTx, new Keyed<ActiveContractSetItem>(acsItem.Hash, acsItem));
+		//}
+
+		public void Add(TransactionContext dbTx, ACSItem item)
 		{
-			dbTx.Transaction.Insert<byte[], ulong>(LAST_BLOCK, contractHash, extention);
-			//Put(dbTx, new Keyed<ActiveContractSetItem>(acsItem.Hash, acsItem));
+			Put(dbTx, new Keyed<ACSItem>(item.Hash, item));
 		}
 
 		public bool IsActive(TransactionContext dbTx, byte[] contractHash, ulong height)

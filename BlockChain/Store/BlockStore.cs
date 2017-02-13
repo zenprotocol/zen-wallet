@@ -101,7 +101,7 @@ namespace BlockChain.Store
 			byte[] block)
 		{
 			var rec = BlockUndo.Get(transactionContext, block);
-			return rec.Value;
+			return rec == null ? null : rec.Value;
 		}
 
 		public Keyed<Types.Block> GetBlock(TransactionContext transactionContext, byte[] key)
