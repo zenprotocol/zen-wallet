@@ -141,6 +141,21 @@ namespace BlockChain.Data
 			}
 		}
 
+		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetDependenciesOfContract(byte[] contractHash)
+		{
+			//foreach (var item in _Transactions)
+			//{
+			//	foreach (var input in item.Value.pInputs)
+			//	{
+			//		if (!input.Item2.@lock.IsContractSacrificeLock || !((Types.OutputLock.IsContractSacrificeLock)input.Item2.@lock).contractHash.SequenceEqual(contractHash))
+			//			continue;
+
+			//		yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
+			//	}
+			//}
+			return null;
+		}
+
 		public IEnumerable<Tuple<byte[], Types.Transaction>> GetOrphansOf(byte[] txHash)
 		{
 			foreach (var item in _OrphanTransactions)
