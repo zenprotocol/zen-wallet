@@ -4,20 +4,11 @@ using System.Linq;
 using Store;
 using System.Collections.Generic;
 using Microsoft.FSharp.Collections;
+using BlockChain.Data;
 
 namespace BlockChain.Store
 {
-	public class BlockUndoData
-	{
-		public List<Tuple<Types.Outpoint, Types.Output>> AddedUTXO { get; set; }
-		public List<Tuple<Types.Outpoint, Types.Output>> RemovedUTXO { get; set; }
-
-		public BlockUndoData()
-		{
-			AddedUTXO = new List<Tuple<Types.Outpoint, Types.Output>>();
-			RemovedUTXO = new List<Tuple<Types.Outpoint, Types.Output>>();
-		}
-	}
+	
 
 	public enum LocationEnum
 	{
