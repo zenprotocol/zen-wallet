@@ -1,13 +1,12 @@
-﻿using NUnit.Framework;
+﻿using System;
+using Infrastructure.Testing;
+using NUnit.Framework;
 
 namespace BlockChain
 {
-	public class ContractTests : BlockChainContractTestsBase
+	public class ACSTests : BlockChainContractTestsBase
 	{
-		//byte[] compiledContract;
-		//Types.Transaction contractCreatedTransaction;
-		//List<Types.Output> outputs = new List<Types.Output>();
-		//	List<Types.Outpoint> inputs = new List<Types.Outpoint>();
+		byte[] compiledContract;
 
 		string contractFsCode = @"
 module Test
@@ -19,45 +18,94 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		public void Setup()
 		{
 			OneTimeSetUp();
+
+			compiledContract = GetCompliedContract(contractFsCode);
+
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 		}
 
-
-		public void ShouldActivateContract()
+		private void AddToACS(UInt32 lastBlock)
 		{
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				_BlockChain.ACS.Add(dbTx, new ACSItem()
+				{
+					Hash = compiledContract,
+					LastBlock = lastBlock,
+					KalapasPerBlock = (ulong)contractFsCode.Length * 1000
+				});
+				dbTx.Commit();
+			}
+
 		}
 
+		[Test]
 		public void ShouldExtendContract()
 		{
-			//Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
+			ACSItem acsItem = null;
+			AddToACS(_GenesisBlock.header.blockNumber + 1);
 
-			//var compiledContract = GetCompliedContract(contractFsCode);
+			ulong blocsToExtend = 2;
 
-			//AddToActiveContactsSet(compiledContract);
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				acsItem = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+			}
 
-			//var output = Utils.GetContractOutput(contractHash, null, null, null);
-			//var tx = Utils.GetTx().AddOutput(output);
-			//var bk = _GenesisBlock.Child().AddTx(tx);
+			var output = Utils.GetContractSacrificeLock(compiledContract, acsItem.KalapasPerBlock * blocsToExtend);
+			var tx = Utils.GetTx().AddOutput(output);
+			var bk = _GenesisBlock.Child().AddTx(tx);
 
-			//Assert.That(_BlockChain.HandleBlock(bk), "Should add block", Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), "Should add block", Is.True);
 
-			//using (var dbTx = _BlockChain.GetDBTransaction())
-			//{
-			//	Assert.That(_BlockChain.ActiveContractSet.IsActive(dbTx, contractHash, ), Is.True);
-			//}
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(_BlockChain.ACS.IsActive(dbTx, compiledContract, bk.header.blockNumber), "Contract should be active", Is.True);
+			}
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				var acsItemChanged = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+
+				Assert.That(acsItemChanged.LastBlock - acsItem.LastBlock, Is.EqualTo(blocsToExtend), "Contract should be extended");
+			}
 		}
 
 		[Test]
-		public void ShouldExtendMempoolContract()
+		public void ShouldNotExtendInactiveContract()
 		{
+			ACSItem acsItem = null;
+			AddToACS(_GenesisBlock.header.blockNumber + 1);
 
+			ulong blocsToExtend = 2;
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				acsItem = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+			}
+
+			var output = Utils.GetContractSacrificeLock(compiledContract, acsItem.KalapasPerBlock * blocsToExtend);
+			var tx = Utils.GetTx().AddOutput(output);
+			var bk = _GenesisBlock.Child().Child().AddTx(tx);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(_BlockChain.ACS.IsActive(dbTx, compiledContract, bk.header.blockNumber), Is.False);
+			}
+
+			Assert.That(_BlockChain.HandleBlock(bk), "Should add block", Is.True);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(_BlockChain.ACS.IsActive(dbTx, compiledContract, bk.header.blockNumber), Is.False);
+			}
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				var acsItemChanged = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+
+				Assert.That(acsItemChanged.LastBlock, Is.EqualTo(acsItem.LastBlock));
+			}
 		}
-
-		[Test]
-		public void ShouldNotExtendInvalidContract()
-		{
-
-		}
-
-		//TODO: test peer banning
 	}
 }
