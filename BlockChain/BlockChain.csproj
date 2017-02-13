@@ -43,11 +43,9 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BlockChain.cs" />
-    <Compile Include="AddTx.cs" />
     <Compile Include="Store\BlockNumberDifficulties.cs" />
     <Compile Include="Store\BlockStore.cs" />
     <Compile Include="Data\HashDictionary.cs" />
-    <Compile Include="Store\TxMempool.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Store\UTXOStore.cs" />
     <Compile Include="BlockChainTrace.cs" />
@@ -55,12 +53,15 @@
     <Compile Include="AddBk.cs" />
     <Compile Include="Store\ChainTip.cs" />
     <Compile Include="ContractHelper.cs" />
-    <Compile Include="Store\ContractStore.cs" />
     <Compile Include="Data\BlockTimestamps.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Data\BlockChainMessage.cs" />
     <Compile Include="Data\Action.cs" />
     <Compile Include="Data\TxStateEnum.cs" />
+    <Compile Include="Store\ActiveContractSet.cs" />
+    <Compile Include="Data\TxMempool.cs" />
+    <Compile Include="Data\ContractsMempool.cs" />
+    <Compile Include="Data\BlockUndoData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
