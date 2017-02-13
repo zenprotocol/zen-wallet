@@ -6,24 +6,34 @@ using System.Reflection;
 using System.Text;
 using Consensus;
 using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 
 namespace BlockChain
 {
+	public class ContractArgs
+	{
+		public Types.ContractContext context { get; set; }
+	//	public List<Types.Outpoint> inputs { get; set; }
+		public List<byte[]> witnesses { get; set; }
+		public List<Types.Output> outputs { get; set; }
+		public Types.ExtendedContract option { get; set; }
+	}
+
 	public class ContractHelper
 	{
-		private const string _OutputPath = "contracts";
-		private const string DEPENCENCY_FLAG = " -r ";
+		const string _OutputPath = "contracts";
+		const string DEPENCENCY_OPTION = " -r ";
 
-		private static readonly string[] _Dependencies = new string[] {
+		static readonly string[] _Dependencies = new string[] {
 				"/home/user/repo/zen-wallet/Consensus/bin/Debug/Consensus.dll",
 				"/usr/lib/cli/nunit.framework-2.6.3/nunit.framework.dll",
 				"/home/user/repo/zen-wallet/Consensus/bin/Debug/MsgPack.dll",
 				"/home/user/repo/zen-wallet/Consensus/bin/Debug/BouncyCastle.Crypto.dll"
 			}; //TODO
 
-		private static string _CompilerPath = "/usr/lib/cli/fsharp/"; //TODO
+		static string _CompilerPath = "/usr/lib/mono/4.5/"; //TODO
 
-		public static bool Execute(byte[] contractHash, out Types.Transaction transaction, List<Types.Output> outputsList)
+		public static bool Execute(byte[] contractHash, out Types.Transaction transaction, ContractArgs contractArgs)
 		{
 			try
 			{
@@ -32,40 +42,48 @@ namespace BlockChain
 				var type = module.GetTypes()[0];
 				var method = type.GetMethod("run");
 
-				var args = new object[] { //TODO
-				//	new Types.ContractContext(1999),
-					ListModule.OfSeq<Types.Output>(outputsList)
+				var args = new object[] {
+					contractArgs.context,
+				//	ListModule.OfSeq(contractArgs.inputs),
+					ListModule.OfSeq(contractArgs.witnesses),
+					ListModule.OfSeq(contractArgs.outputs),
+					contractArgs.option
 				};
 
-				var result = (Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>) method.Invoke(null, args);
+				var result =
+					(Tuple<IEnumerable<Types.Outpoint>, FSharpList<byte[]>, FSharpList<Types.Output>, Types.ExtendedContract>) 
+					method.Invoke(null, args);
 
-				transaction = new Types.Transaction(
-					Consensus.Tests.tx.version,
-					result.Item1,
-					Consensus.Tests.tx.witnesses,
+				transaction =
+					new Types.Transaction(
+					Tests.tx.version,
+					ListModule.OfSeq(result.Item1),
 					result.Item2,
-					Consensus.Tests.tx.contract
+					result.Item3,
+					new FSharpOption<Types.ExtendedContract>(result.Item4)
 				);
 
 				return true;
 			}
-			catch // (Exception e)
+			catch (Exception e)
 			{
+				BlockChainTrace.Error("Error executing contract", e);
 			}
 			transaction = null;
 			return false;
 		}
 
-		public static byte[] Compile(byte[] fsSourceCodeBytes)
+		public static bool Compile(byte[] fsSourceCodeBytes, out byte[] contractHash)
 		{
-			return Compile(Encoding.ASCII.GetString(fsSourceCodeBytes));
+			return Compile(Encoding.ASCII.GetString(fsSourceCodeBytes), out contractHash);
 		}
 
-		public static byte[] Compile(String fsSourceCodeText)
+		public static bool Compile(String fsSourceCodeText, out byte[] contractHash)
 		{
 			var tempSourceFile = Path.ChangeExtension(Path.GetTempFileName(), ".fs");
-			var hash = GetHash(fsSourceCodeText);
 			var process = new Process();
+
+			contractHash = GetHash(fsSourceCodeText);
 
 			File.WriteAllText(tempSourceFile, fsSourceCodeText);
 
@@ -77,10 +95,10 @@ namespace BlockChain
 			if (IsRunningOnMono())
 			{
 				process.StartInfo.FileName = "mono";
-				process.StartInfo.Arguments = $@"
-					{ Path.Combine(_CompilerPath, "fsc.exe") }
-					-o { GetFileName(hash) }
-					-a {tempSourceFile}{DEPENCENCY_FLAG + string.Join(DEPENCENCY_FLAG, _Dependencies)}";
+				process.StartInfo.Arguments = $"{ Path.Combine(_CompilerPath, "fsc.exe") } -o { GetFileName(contractHash) } -a {tempSourceFile}{DEPENCENCY_OPTION + string.Join(DEPENCENCY_OPTION, _Dependencies)}";
+
+			//	Console.WriteLine();
+			//	Console.WriteLine(process.StartInfo.Arguments);
 			}
 			else
 			{
@@ -89,16 +107,18 @@ namespace BlockChain
 
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.RedirectStandardOutput = true;
-			//process.OutputDataReceived += (sender, args1) =>
-			//{
-			//	Console.WriteLine(args1.Data);
-			//};
+
+			process.OutputDataReceived += (sender, args1) =>
+			{
+				BlockChainTrace.Information(args1.Data);
+			};
+
 			process.Start();
 			process.BeginOutputReadLine();
 			process.WaitForExit();
 			File.Delete(tempSourceFile);
 
-			return process.ExitCode == 0 ? hash : null;
+			return process.ExitCode == 0;
 		}
 
 		private static byte[] GetHash(string value)
