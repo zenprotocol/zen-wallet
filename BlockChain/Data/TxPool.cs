@@ -152,7 +152,7 @@ namespace BlockChain.Data
 			_OrphanTransactions.Add(txHash, tx);
 		}
 
-		public void MoveToInactiveContractGeneratedTxs(byte[] txHash)
+		void MoveToICTxs(byte[] txHash)
 		{
 			lock (Transactions) //TODO: use a single HashDictionary with a 'location' enum?
 			{
@@ -165,11 +165,25 @@ namespace BlockChain.Data
 			}
 		}
 
+		public void InactivateContractGenerateTxs(byte[] contractHash)
+		{
+			var toInactivate = new List<byte[]>();
+			foreach (var tx in Transactions)
+			{
+				byte[] txContractHash = null;
+				if (BlockChain.IsContractGeneratedTx(tx.Value, out txContractHash) && contractHash.SequenceEqual(txContractHash))
+					toInactivate.Add(tx.Key);
+			}
+
+			toInactivate.ForEach(MoveToICTxs);
+		}
+
 		void MoveToOrphansPool(byte[] txHash, Pool pool = null)
 		{
-			if (pool == null)
+			if (pool != null)
 			{
 				_OrphanTransactions.Add(txHash, TransactionValidation.unpoint(pool[txHash]));
+				pool.Remove(txHash);
 			}
 			else
 			{
