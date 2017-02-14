@@ -284,7 +284,7 @@ namespace BlockChain
 					new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
 				}
 
-				ContractsMempool.RemoveTx(item.Key);
+				ContractsMempool.RemoveRef(item.Key, dbTx, ACS, Tip.Value.header.blockNumber, TxMempool);
 			}
 		}
 
@@ -356,9 +356,9 @@ namespace BlockChain
 			return true;
 		}
 
-		public bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
+		public static bool IsContractGeneratedTx(TransactionValidation.PointedTransaction ptx, out byte[] contractHash)
 		{
-			byte[] contractHash = null;
+			contractHash = null;
 
 			foreach (var input in ptx.pInputs)
 			{
@@ -366,15 +366,24 @@ namespace BlockChain
 				{
 					if (contractHash == null)
 						contractHash = ((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash;
+
 					else if (!contractHash.SequenceEqual(((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash))
 					{
 						BlockChainTrace.Information("Unexpected contactHash");
 						return false;
 					}
 				}
+				else return false;
 			}
 
-			if (contractHash != null)
+			return true; //contractHash != null
+		}
+
+		public bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
+		{
+			byte[] contractHash = null;
+
+			if (IsContractGeneratedTx(ptx, out contractHash))
 			{
 				if (ACS.IsActive(dbTx, contractHash, Tip.Value.header.blockNumber))
 				{
@@ -527,9 +536,7 @@ namespace BlockChain
 		////demo
 		public Types.Block MineAllInMempool()
 		{
-			var transactions = TxMempool.GetAll();
-
-			if (transactions.Count == 0)
+			if (TxMempool.Transactions.Count == 0)
 			{
 				return null;
 			}
@@ -558,8 +565,8 @@ namespace BlockChain
 				nonce
 			);
 
-			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(transactions.Select(
-				t => TransactionValidation.unpoint(t)))
+			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(TxMempool.Transactions.Select(
+				t => TransactionValidation.unpoint(t.Value)))
           	);
 
 			if (HandleBlock(newBlock))
