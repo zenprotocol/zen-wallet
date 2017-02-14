@@ -126,7 +126,15 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		[Test]
 		public void ShouldNotExtendInactiveContract()
 		{
+			ACSItem acsItem = null;
+			AddToACS(_GenesisBlock.header.blockNumber + 1);
+
 			ulong blocksToExtend = 2;
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				acsItem = new ActiveContractSet().Get(dbTx, compiledContract).Value;
+			}
 
 			var output = Utils.GetContractSacrificeLock(compiledContract, acsItem.KalapasPerBlock * blocksToExtend);
 			var tx = Utils.GetTx().AddOutput(output);
@@ -217,8 +225,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract).Value;
-				Assert.That(acsItemChanged.LastBlock, Is.EqualTo(acsItem.LastBlock));
+				Assert.That(new ActiveContractSet().Get(dbTx, compiledContract), Is.Null);
 			}
 		}
 
