@@ -126,37 +126,36 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		[Test]
 		public void ShouldNotExtendInactiveContract()
 		{
-			ACSItem acsItem = null;
-			AddToACS(_GenesisBlock.header.blockNumber + 1);
-
 			ulong blocksToExtend = 2;
-
-			using (var dbTx = _BlockChain.GetDBTransaction())
-			{
-				acsItem = new ActiveContractSet().Get(dbTx, compiledContract).Value;
-			}
 
 			var output = Utils.GetContractSacrificeLock(compiledContract, acsItem.KalapasPerBlock * blocksToExtend);
 			var tx = Utils.GetTx().AddOutput(output);
-			var bk = _GenesisBlock.Child().Child().AddTx(tx);
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False);
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.True, "Should be active");
 			}
 
-			Assert.That(_BlockChain.HandleBlock(bk), Is.True, "Should add block");
+			var bk = _GenesisBlock.Child();
+			_BlockChain.HandleBlock(bk);
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False);
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False, "Should be inactive");
+			}
+
+			_BlockChain.HandleBlock(bk.Child().AddTx(tx));
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False, "Should be inactive");
 			}
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract).Value;
+				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract);
 
-				Assert.That(acsItemChanged.LastBlock, Is.EqualTo(acsItem.LastBlock));
+				Assert.That(new ActiveContractSet().Get(dbTx, compiledContract), Is.Null);
 			}
 		}
 
