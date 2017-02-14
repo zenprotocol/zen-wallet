@@ -271,7 +271,11 @@ namespace BlockChain
 			// confirmed txs - out of mempool
 			foreach (var item in txs.Where(t => t.Value.Item2))
 			{
-				pool.RemoveOrphan(item.Key);
+				if (pool.ContainsKey(item.Key))
+				{
+					BlockChainTrace.Information("same tx removed from mempool");
+					pool.Remove(item.Key);
+				}
 			}
 
 			// confirmed txs - out of mempool

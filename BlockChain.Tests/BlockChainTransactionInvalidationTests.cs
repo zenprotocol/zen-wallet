@@ -16,24 +16,44 @@ namespace BlockChain
 		}
 
 		[Test]
-		public void ShouldEvictFromMempoolOnNewBlock()
+		public void ShouldRemoveSameTxFromMempool()
 		{
 			var key = Key.Create();
 
 			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
-			_GenesisBlock = _GenesisBlock.AddTx(genesisTx);
+			var bk = _GenesisBlock.AddTx(genesisTx);
 
-			var txToBeEvictedFromMempool = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			//TODO: key.Address
+			var tx = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			var txHash = Merkle.transactionHasher.Invoke(tx);
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
-			Assert.That(_BlockChain.HandleTransaction(txToBeEvictedFromMempool), Is.True);
-			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(txToBeEvictedFromMempool)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
+			Assert.That(_BlockChain.HandleTransaction(tx), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(txHash), Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(tx)), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(txHash), Is.False);
+		}
 
-			var txConflicting = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(txConflicting)), Is.True);
+		[Test]
+		public void ShouldRemoveFromMempoolOnNewBlock()
+		{
+			var key = Key.Create();
+
+			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
+			var bk = _GenesisBlock.AddTx(genesisTx);
+
+			//TODO: key.Address
+			var tx = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			var txInvalidating = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			var txHash = Merkle.transactionHasher.Invoke(tx);
+
+			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
+			Assert.That(_BlockChain.HandleTransaction(tx), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(txHash), Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(txInvalidating)), Is.True);
 
 			System.Threading.Thread.Sleep(1000);
-			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(txToBeEvictedFromMempool)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(txHash), Is.False);
 		}
 
 		[Test]
