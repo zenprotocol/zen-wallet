@@ -219,12 +219,7 @@ namespace BlockChain
 		{
 			TransactionValidation.PointedTransaction ptx;
 
-			// if orphan, assume not in mempool, add to mempool as orhan
-			if (IsOrphanTx(dbTx, tx, out ptx))
-			{
-				TxMempool.AddOrphan(txHash, tx); //TODO: invalid/unconfirmed? ClearMempoolRecursive? 
-			}
-			else if (IsValidTransaction(dbTx, ptx))
+			if (!IsOrphanTx(dbTx, tx, out ptx) && IsValidTransaction(dbTx, ptx))
 			{
 				AddToMempool(txHash, ptx);
 
