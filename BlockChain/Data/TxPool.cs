@@ -12,11 +12,12 @@ namespace BlockChain.Data
 	{
 	}
 
-	public class TxMempool
+	public class TxPool
 	{
 		public readonly Pool Transactions = new Pool();
 		private readonly Pool _ICTxs = new Pool();
 		private readonly HashDictionary<Types.Transaction> _OrphanTransactions = new HashDictionary<Types.Transaction>();
+		public readonly ContractPool ContractPool = new ContractPool();
 
 		private object _Lock = new Object();
 
@@ -37,8 +38,13 @@ namespace BlockChain.Data
 		{
 			if (Transactions.ContainsKey(key))
 			{
-				Transactions.Remove(key);
-				return true;
+				foreach (var dep in GetDependencies(key))
+				{
+					if (!Remove(dep.Item1))
+						throw new Exception();
+				}
+
+				return Transactions.Remove(key);
 			}
 			else
 			{
@@ -87,11 +93,11 @@ namespace BlockChain.Data
 		{
 			foreach (var item in Transactions)
 			{
-				foreach (var _outpoint in item.Value.pInputs.Select(t => t.Item1))
+				foreach (var memOutpoint in item.Value.pInputs.Select(t => t.Item1))
 				{
-					foreach (var outpoint in tx.inputs)
+					foreach (var txOutpoint in tx.inputs)
 					{
-						if (outpoint.Equals(_outpoint))
+						if (memOutpoint.Equals(txOutpoint))
 						{
 							yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
 						}
@@ -152,7 +158,7 @@ namespace BlockChain.Data
 			_OrphanTransactions.Add(txHash, tx);
 		}
 
-		void MoveToICTxs(byte[] txHash)
+		void MoveToICTxs(TransactionContext dbTx, byte[] txHash)
 		{
 			lock (Transactions) //TODO: use a single HashDictionary with a 'location' enum?
 			{
@@ -161,11 +167,11 @@ namespace BlockChain.Data
 				Transactions.Remove(txHash);
 				_ICTxs.Add(txHash, ptx);
 
-				MoveToOrphansPool(txHash);
+				MoveToOrphanPool(dbTx, txHash);
 			}
 		}
 
-		public void InactivateContractGenerateTxs(byte[] contractHash)
+		public void InactivateContractGeneratedTxs(TransactionContext dbTx, byte[] contractHash)
 		{
 			var toInactivate = new List<byte[]>();
 			foreach (var tx in Transactions)
@@ -175,26 +181,31 @@ namespace BlockChain.Data
 					toInactivate.Add(tx.Key);
 			}
 
-			toInactivate.ForEach(MoveToICTxs);
+			toInactivate.ForEach(t => MoveToICTxs(dbTx, t));
 		}
 
-		void MoveToOrphansPool(byte[] txHash, Pool pool = null)
+		void MoveToOrphanPool(TransactionContext dbTx, byte[] txHash, Pool pool = null)
 		{
 			if (pool != null)
 			{
 				_OrphanTransactions.Add(txHash, TransactionValidation.unpoint(pool[txHash]));
 				pool.Remove(txHash);
+
+				if (pool == Transactions)
+				{
+					ContractPool.RemoveRef(txHash, dbTx, this);
+				}
 			}
 			else
 			{
 				foreach (var tx in GetDependencies(txHash, Transactions))
 				{
-					MoveToOrphansPool(tx.Item1, Transactions);
+					MoveToOrphanPool(dbTx, tx.Item1, Transactions);
 				}
 
 				foreach (var tx in GetDependencies(txHash, _ICTxs))
 				{
-					MoveToOrphansPool(tx.Item1, _ICTxs);
+					MoveToOrphanPool(dbTx, tx.Item1, _ICTxs);
 				}
 			}
 		}

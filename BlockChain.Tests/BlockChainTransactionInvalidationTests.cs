@@ -35,7 +35,7 @@ namespace BlockChain
 		}
 
 		[Test]
-		public void ShouldRemoveFromMempoolOnNewBlock()
+		public void ShouldRemoveInvalidatedTxFromMempoolOnNewBlock()
 		{
 			var key = Key.Create();
 
@@ -43,16 +43,15 @@ namespace BlockChain
 			var bk = _GenesisBlock.AddTx(genesisTx);
 
 			//TODO: key.Address
-			var tx = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var txInvalidating = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var txHash = Merkle.transactionHasher.Invoke(tx);
+			var txInvalidated  = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			var txInvalidating = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2);
+			var txHash = Merkle.transactionHasher.Invoke(txInvalidated);
 
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
-			Assert.That(_BlockChain.HandleTransaction(tx), Is.True);
+			Assert.That(_BlockChain.HandleTransaction(txInvalidated), Is.True);
 			Assert.That(_BlockChain.pool.ContainsKey(txHash), Is.True);
 			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(txInvalidating)), Is.True);
 
-			System.Threading.Thread.Sleep(1000);
 			Assert.That(_BlockChain.pool.ContainsKey(txHash), Is.False);
 		}
 
