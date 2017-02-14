@@ -38,14 +38,21 @@ namespace BlockChain
 
 		public IEnumerable<byte[]> GetExpiringList(TransactionContext dbTx, uint blockNumber)
 		{
-			return All(dbTx).Where(t => t.Value.LastBlock >= blockNumber).Select(t=>t.Key);
+#if DEBUG
+			All(dbTx).Where(t => t.Value.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}"));
+#endif
+
+			return All(dbTx).Where(t => t.Value.LastBlock == blockNumber).Select(t=>t.Key);
 		}
 
 		public void DeactivateContracts(TransactionContext dbTx, uint blockNumber, IEnumerable<byte[]> list)
 		{
 			foreach (byte[] contractHash in list)
 			{
-				Remove(dbTx, contractHash);
+				if (IsActive(dbTx, contractHash))
+					Remove(dbTx, contractHash);
+				else
+					throw new Exception();
 			}
 		}
 	}
