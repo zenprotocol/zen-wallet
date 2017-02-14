@@ -88,7 +88,7 @@ namespace Wallet.core
 					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, tx.Key.Value, balances));
 				}
 
-				_BlockChain.TxMempool.GetAll().ForEach(ptx => HandleTx(dbTx, ptx, TxDeltaList, TxStateEnum.Unconfirmed));
+				_BlockChain.pool.Transactions.ToList().ForEach(ptx => HandleTx(dbTx, ptx.Value, TxDeltaList, TxStateEnum.Unconfirmed));
 
 				dbTx.Commit();
 			}
@@ -306,11 +306,11 @@ namespace Wallet.core
 					{
 						case TxStateEnum.Confirmed:
 							canSpend = _BlockChain.UTXOStore.ContainsKey(context, outputKey) &&
-								!_BlockChain.TxMempool.ContainsOutpoint(matchingAsset.Outpoint);
+								!_BlockChain.pool.ContainsOutpoint(matchingAsset.Outpoint);
 							break;
 						case TxStateEnum.Unconfirmed:
-							canSpend = !_BlockChain.TxMempool.ContainsOutpoint(matchingAsset.Outpoint) &&
-								_BlockChain.TxMempool.ContainsKey(matchingAsset.Outpoint.txHash);
+							canSpend = !_BlockChain.pool.ContainsOutpoint(matchingAsset.Outpoint) &&
+								_BlockChain.pool.ContainsKey(matchingAsset.Outpoint.txHash);
 							break;
 					}
 

@@ -166,7 +166,7 @@ namespace Wallet.core
 			Assert.That(_WalletManager.Sign(key1.Address, Tests.zhash, spendAmount, out txNew), Is.True);
 			Assert.That(_WalletManager.Transmit(txNew), Is.True);
 
-			var mempoolPtx = _BlockChain.TxMempool.GetAll()[0];
+			var mempoolPtx = _BlockChain.pool.Transactions.ToList()[0].Value;
 			var _tx = TransactionValidation.unpoint(mempoolPtx);
 			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_tx));
 			Thread.Sleep(1000);
