@@ -276,6 +276,12 @@ namespace BlockChain
 					BlockChainTrace.Information("same tx removed from mempool");
 					pool.Remove(item.Key);
 				}
+
+				pool.GetTransactionsInConflict(item.Value.Item1).ToList().ForEach(t =>
+				{
+					BlockChainTrace.Information("invalidated tx removed from mempool");
+					pool.Remove(t.Item1);
+				});
 			}
 
 			// confirmed txs - out of mempool
