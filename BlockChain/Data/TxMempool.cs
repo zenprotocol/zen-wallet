@@ -8,13 +8,15 @@ using System;
 
 namespace BlockChain.Data
 {
+	public class Pool : HashDictionary<TransactionValidation.PointedTransaction>
+	{
+	}
+
 	public class TxMempool
 	{
-		private readonly HashDictionary<TransactionValidation.PointedTransaction> _Transactions;
-		//private readonly List<Types.Outpoint> _TransactionOutpoints;
-
-		private readonly HashDictionary<Types.Transaction> _OrphanTransactions;
-		//private readonly Dictionary<Types.Outpoint, Keyed<Types.Transaction>> _OrphanTransactionsOutpoints;
+		public readonly Pool Transactions = new Pool();
+		private readonly Pool _ICTxs = new Pool();
+		private readonly HashDictionary<Types.Transaction> _OrphanTransactions = new HashDictionary<Types.Transaction>();
 
 		private object _Lock = new Object();
 
@@ -26,44 +28,22 @@ namespace BlockChain.Data
 			}
 		}
 
-		//demo
-		public List<TransactionValidation.PointedTransaction> GetAll()
-		{
-			var result = new List<TransactionValidation.PointedTransaction>();
-
-			foreach (var item in _Transactions)
-			{
-				result.Add(item.Value);
-			}
-
-			return result;
-		}
-
-		public TxMempool()
-		{
-			_Transactions = new HashDictionary<TransactionValidation.PointedTransaction>();
-			//_TransactionOutpoints = new List<Types.Outpoint>();
-
-			_OrphanTransactions = new HashDictionary<Types.Transaction>();
-		//	_OrphanTransactionsOutpoints = new Dictionary<Types.Outpoint, Keyed<Types.Transaction>>();
-		}
-
 		public bool ContainsKey(byte[] key)
 		{
-			return _Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
+			return Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
 		}
 
 		public bool Remove(byte[] key)
 		{
-			if (_Transactions.ContainsKey(key))
+			if (Transactions.ContainsKey(key))
 			{
-				_Transactions.Remove(key);
+				Transactions.Remove(key);
 				return true;
 			}
 			else
 			{
 				return false;
-				_OrphanTransactions.Remove(key);
+				//_OrphanTransactions.Remove(key);
 			}
 		}
 
@@ -74,7 +54,7 @@ namespace BlockChain.Data
 
 		public TransactionValidation.PointedTransaction Get(byte[] key)
 		{
-			return _Transactions[key];
+			return Transactions[key];
 		}
 
 		public bool ContainsInputs(Types.Transaction tx)
@@ -92,7 +72,7 @@ namespace BlockChain.Data
 
 		public bool ContainsOutpoint(Types.Outpoint outpoint)
 		{
-			foreach (var item in _Transactions)
+			foreach (var item in Transactions)
 			{
 				if (item.Value.pInputs.Select(t => t.Item1).Contains(outpoint))
 				{
@@ -101,21 +81,11 @@ namespace BlockChain.Data
 			}
 
 			return false;
-					
-			//return _TransactionOutpoints.Contains(outpoint);
 		}
-
-		//internal void ValidateOrphansOf(byte[] key)
-		//{
-		//	foreach (var item in GetOrphansOf(key))
-		//	{
-
-		//	}
-		//}
 
 		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetTransactionsInConflict(Types.Transaction tx)
 		{
-			foreach (var item in _Transactions)
+			foreach (var item in Transactions)
 			{
 				foreach (var _outpoint in item.Value.pInputs.Select(t => t.Item1))
 				{
@@ -132,7 +102,12 @@ namespace BlockChain.Data
 
 		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetDependencies(byte[] txHash)
 		{
-			foreach (var item in _Transactions)
+			return GetDependencies(txHash, Transactions);
+		}
+
+		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetDependencies(byte[] txHash, Pool pool)
+		{
+			foreach (var item in pool)
 			{
 				if (item.Value.pInputs.Count(t => t.Item1.txHash.SequenceEqual(txHash)) > 0)
 				{
@@ -169,18 +144,45 @@ namespace BlockChain.Data
 
 		public void Add(byte[] key, TransactionValidation.PointedTransaction transaction)
 		{
-			_Transactions.Add(key, transaction);
-		//	_TransactionOutpoints.AddRange(transaction.pInputs.Select(t => t.Item1));
+			Transactions.Add(key, transaction);
 		}
 
 		public void AddOrphan(byte[] txHash, Types.Transaction tx)
 		{
 			_OrphanTransactions.Add(txHash, tx);
+		}
 
-			//foreach (Types.Outpoint input in transaction.Value.inputs)
-			//{
-			//	_OrphanTransactionsOutpoints.Add(input, transaction);
-			//}
+		public void MoveToInactiveContractGeneratedTxs(byte[] txHash)
+		{
+			lock (Transactions) //TODO: use a single HashDictionary with a 'location' enum?
+			{
+				var ptx = Transactions[txHash];
+
+				Transactions.Remove(txHash);
+				_ICTxs.Add(txHash, ptx);
+
+				MoveToOrphansPool(txHash);
+			}
+		}
+
+		void MoveToOrphansPool(byte[] txHash, Pool pool = null)
+		{
+			if (pool == null)
+			{
+				_OrphanTransactions.Add(txHash, TransactionValidation.unpoint(pool[txHash]));
+			}
+			else
+			{
+				foreach (var tx in GetDependencies(txHash, Transactions))
+				{
+					MoveToOrphansPool(tx.Item1, Transactions);
+				}
+
+				foreach (var tx in GetDependencies(txHash, _ICTxs))
+				{
+					MoveToOrphansPool(tx.Item1, _ICTxs);
+				}
+			}
 		}
 	}
 }
