@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Store;
+using System.Linq;
+using Consensus;
+using System.Collections.Generic;
 
 namespace BlockChain.Data
 {
@@ -8,30 +11,43 @@ namespace BlockChain.Data
 		public string AssemblyFile { get; set; }
 		public byte[] CostFn { get; set; }
 		public ulong Cost { get; set; }
-		public HashSet LastBlock { get; set; }
+		public int Refs { get; set; }
 	}
 
 	public class ContractsMempool
 	{
-		private readonly HashDictionary<ContractsMempoolItem> _Contracts = new HashDictionary<ContractsMempoolItem>();
+		readonly HashDictionary<ContractsMempoolItem> _Contracts = new HashDictionary<ContractsMempoolItem>();
+		readonly HashDictionary<byte[]> _Txs = new HashDictionary<byte[]>();
 
-		public void Add(ContractsMempoolItem item)
+		public void RemoveRef(byte[] txHash, TransactionContext dbTx, ActiveContractSet acs, ulong height, TxMempool txMempool)
 		{
-			_Contracts[item.Hash] = item;
-		}
-
-		public void RemoveTx(byte[] txHash)
-		{
-			foreach (var item in _Contracts)
+			lock (_Txs)
 			{
-				if (item.Value.LastBlock.Contains(txHash))
-				{
-					item.Value.LastBlock.Remove(txHash);
-				}
+				if (!_Txs.ContainsKey(txHash))
+					return;
 
-				if (item.Value.LastBlock.Count == 0)
+				var contractHash = _Txs[txHash];
+				var contract = _Contracts[contractHash];
+
+				_Txs.Remove(txHash);
+				contract.Refs--;
+
+				if (contract.Refs == 0)
 				{
-					_Contracts.Remove(item.Key); //TODO: messing with iterator?
+					_Contracts.Remove(contractHash);
+
+					if (acs.IsActive(dbTx, contractHash, height))
+						return;
+
+					var toInactivate = new List<byte[]>();
+					foreach (var tx in txMempool.Transactions)
+					{
+						byte[] txContractHash = null;
+						if (BlockChain.IsContractGeneratedTx(tx.Value, out txContractHash) && contractHash.SequenceEqual(txContractHash))
+							toInactivate.Add(tx.Key);
+					}
+
+					toInactivate.ForEach(txMempool.MoveToInactiveContractGeneratedTxs);
 				}
 			}
 		}
