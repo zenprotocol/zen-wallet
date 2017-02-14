@@ -27,13 +27,13 @@ namespace BlockChain
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 			Assert.That(_BlockChain.HandleTransaction(txToBeEvictedFromMempool), Is.True);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(txToBeEvictedFromMempool)), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(txToBeEvictedFromMempool)), Is.True);
 
 			var txConflicting = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(txConflicting)), Is.True);
 
 			System.Threading.Thread.Sleep(1000);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(txToBeEvictedFromMempool)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(txToBeEvictedFromMempool)), Is.False);
 		}
 
 		[Test]
@@ -69,8 +69,8 @@ namespace BlockChain
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1_withoutconflict), Is.False);
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.True);
 
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withconflict)), Is.False);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withoutconflict)), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withconflict)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withoutconflict)), Is.True);
 		}
 
 		[Test]
@@ -94,9 +94,9 @@ namespace BlockChain
 			TestDelegate x = delegate
 			{
 				Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1), Is.True);
-				Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.False);
+				Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.False);
 				Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.False);
-				Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
+				Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
 			};
 
 			x();
@@ -109,9 +109,9 @@ namespace BlockChain
 			Assert.That(_BlockChain.HandleBlock(branch.Child()), Is.True); // reorganize
 
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1), Is.False);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.True);
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.True);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
 		}
 
 		[Test]
@@ -149,8 +149,8 @@ namespace BlockChain
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1_withoutconflict), Is.False);
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.True);
 
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withconflict)), Is.False);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withoutconflict)), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withconflict)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx1_withoutconflict)), Is.True);
 		}
 
 		[Test]
@@ -177,8 +177,8 @@ namespace BlockChain
 			//TODO: ???????
 			Assert.That(_BlockChain.HandleBlock(branch.Child().AddTx(genesisTx)), Is.False); // should undo reorganization
 
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.False);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx1)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(tx2)), Is.False);
 
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1), Is.True);
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.False);
