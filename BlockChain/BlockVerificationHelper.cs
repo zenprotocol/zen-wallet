@@ -369,13 +369,21 @@ namespace BlockChain
 		bool IsTransactionValid(Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
 		{
 			if (_BlockChain.IsOrphanTx(_DbTx, tx, out ptx))
+			{
+				BlockChainTrace.Information("tx invalid - orphan");
 				return false;
+			}
 
 			if (!_BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx))
+			{
+				BlockChainTrace.Information("tx invalid - contract");
 				return false;
-
+			}
 			if (!_BlockChain.IsValidTransaction(_DbTx, ptx))
+			{
+				BlockChainTrace.Information("tx invalid - universal");
 				return false;
+			}
 
 			return true;
 		}
