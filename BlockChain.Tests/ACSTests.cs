@@ -31,13 +31,63 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		{
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				_BlockChain.ACS.Add(dbTx, new ACSItem()
+				new ActiveContractSet().Add(dbTx, new ACSItem()
 				{
 					Hash = compiledContract,
 					LastBlock = lastBlock,
 					KalapasPerBlock = (ulong)contractFsCode.Length * 1000
 				});
 				dbTx.Commit();
+			}
+		}
+
+		[Test]
+		public void ShouldExpireAfterOneBlock()
+		{
+			AddToACS(_GenesisBlock.header.blockNumber + 1);
+
+			var bk = _GenesisBlock;
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.True, "Contract should be active");
+			}
+
+			bk = bk.Child();
+			_BlockChain.HandleBlock(bk);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False, "Contract should not be active");
+			}
+		}
+
+		[Test]
+		public void ShouldExpireAfterTwoBlocks()
+		{
+			AddToACS(_GenesisBlock.header.blockNumber + 2);
+
+			var bk = _GenesisBlock;
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.True, "Contract should be active");
+			}
+
+			bk = bk.Child();
+			_BlockChain.HandleBlock(bk);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.True, "Contract should remain active");
+			}
+
+			bk = bk.Child();
+			_BlockChain.HandleBlock(bk);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False, "Contract should not be active");
 			}
 		}
 
@@ -51,23 +101,23 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				acsItem = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+				acsItem = new ActiveContractSet().Get(dbTx, compiledContract).Value;
 			}
 
 			var output = Utils.GetContractSacrificeLock(compiledContract, acsItem.KalapasPerBlock * blocksToExtend);
 			var tx = Utils.GetTx().AddOutput(output);
 			var bk = _GenesisBlock.Child().AddTx(tx);
 
-			Assert.That(_BlockChain.HandleBlock(bk), "Should add block", Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), Is.True, "Should add block");
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(_BlockChain.ACS.IsActive(dbTx, compiledContract, bk.header.blockNumber), "Contract should be active", Is.True);
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.True, "Contract should be active");
 			}
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				var acsItemChanged = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract).Value;
 
 				Assert.That(acsItemChanged.LastBlock - acsItem.LastBlock, Is.EqualTo(blocksToExtend), "Contract should be extended");
 			}
@@ -83,7 +133,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				acsItem = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+				acsItem = new ActiveContractSet().Get(dbTx, compiledContract).Value;
 			}
 
 			var output = Utils.GetContractSacrificeLock(compiledContract, acsItem.KalapasPerBlock * blocksToExtend);
@@ -92,19 +142,19 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(_BlockChain.ACS.IsActive(dbTx, compiledContract, bk.header.blockNumber), Is.False);
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False);
 			}
 
-			Assert.That(_BlockChain.HandleBlock(bk), "Should add block", Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), Is.True, "Should add block");
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(_BlockChain.ACS.IsActive(dbTx, compiledContract, bk.header.blockNumber), Is.False);
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False);
 			}
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				var acsItemChanged = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract).Value;
 
 				Assert.That(acsItemChanged.LastBlock, Is.EqualTo(acsItem.LastBlock));
 			}
@@ -140,7 +190,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				acsItem = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+				acsItem = new ActiveContractSet().Get(dbTx, compiledContract).Value;
 			}
 
 			var output = Utils.GetContractSacrificeLock(compiledContract, acsItem.KalapasPerBlock * blocksToExtend);
@@ -151,12 +201,12 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(_BlockChain.ACS.IsActive(dbTx, compiledContract, bk.header.blockNumber), "Contract should be active", Is.True);
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), "Contract should be active", Is.True);
 			}
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				var acsItemChanged = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract).Value;
 
 				Assert.That(acsItemChanged.LastBlock - acsItem.LastBlock, Is.EqualTo(blocksToExtend), "Contract should be extended");
 			}
@@ -168,7 +218,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				var acsItemChanged = _BlockChain.ACS.Get(dbTx, compiledContract).Value;
+				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract).Value;
 				Assert.That(acsItemChanged.LastBlock, Is.EqualTo(acsItem.LastBlock));
 			}
 		}
