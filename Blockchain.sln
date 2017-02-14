@@ -19,13 +19,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "Wallet\GUI.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.core", "Wallet.core\Wallet.core.csproj", "{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Console", "Infrastructure.Console\Infrastructure.Console.csproj", "{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen", "Zen\Zen.csproj", "{1F030257-FBB4-4538-BBD8-4B241FD73B13}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.CLRCLI", "Zen.CLRCLI\Zen.CLRCLI.csproj", "{29BB24E8-D6C7-403E-8B7C-DC65765E342B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain.Tests", "BlockChain.Tests\BlockChain.Tests.csproj", "{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}"
+EndProject
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "Infrastructure.Console", "Infrastructure.Console\Infrastructure.Console.csproj", "{66890233-5489-4AA6-9FAC-402019819F9A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,10 +73,6 @@ Global
 		{D3641686-BDB9-4399-8B53-10897DD26337}.Debug|x86.Build.0 = Debug|Any CPU
 		{D3641686-BDB9-4399-8B53-10897DD26337}.Release|x86.ActiveCfg = Release|Any CPU
 		{D3641686-BDB9-4399-8B53-10897DD26337}.Release|x86.Build.0 = Release|Any CPU
-		{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}.Debug|x86.Build.0 = Debug|Any CPU
-		{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}.Release|x86.ActiveCfg = Release|Any CPU
-		{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}.Release|x86.Build.0 = Release|Any CPU
 		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Debug|x86.ActiveCfg = Debug|x86
 		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Debug|x86.Build.0 = Debug|x86
 		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Release|x86.ActiveCfg = Release|x86
@@ -85,5 +81,9 @@ Global
 		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.Build.0 = Debug|Any CPU
 		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.ActiveCfg = Release|Any CPU
 		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.Build.0 = Release|Any CPU
+		{66890233-5489-4AA6-9FAC-402019819F9A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{66890233-5489-4AA6-9FAC-402019819F9A}.Debug|x86.Build.0 = Debug|Any CPU
+		{66890233-5489-4AA6-9FAC-402019819F9A}.Release|x86.ActiveCfg = Release|Any CPU
+		{66890233-5489-4AA6-9FAC-402019819F9A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
