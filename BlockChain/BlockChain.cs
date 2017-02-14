@@ -15,12 +15,12 @@ namespace BlockChain
 		readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
 		readonly DBContext _DBContext;
 
-		public TxMempool TxMempool { get; set; }
-		public ContractsMempool ContractsMempool { get; set; }
+		public TxPool pool { get; set; }
+	//	public ContractPool ContractsMempool { get; set; }
 		public UTXOStore UTXOStore { get; set; }
 		public BlockStore BlockStore { get; set; }
 	//	public ContractStore ContractStore { get; set; }
-		public ActiveContractSet ACS { get; set; }
+	//	public ActiveContractSet ACS { get; set; }
 		public BlockNumberDifficulties BlockNumberDifficulties { get; set; }
 		public ChainTip ChainTip { get; set; }
 		public BlockTimestamps Timestamps { get; set; }
@@ -29,12 +29,12 @@ namespace BlockChain
 		public BlockChain(string dbName, byte[] genesisBlockHash)
 		{
 			_DBContext = new DBContext(dbName);
-			TxMempool = new TxMempool();
+			pool = new TxPool();
 			UTXOStore = new UTXOStore();
 			BlockStore = new BlockStore();
 		//	ContractStore = new ContractStore();
-			ACS = new ActiveContractSet();
-			ContractsMempool = new ContractsMempool();
+		//	ACS = new ActiveContractSet();
+		//	ContractsMempool = new ContractPool();
 			BlockNumberDifficulties = new BlockNumberDifficulties();
 			ChainTip = new ChainTip();
 			Timestamps = new BlockTimestamps();
@@ -68,7 +68,7 @@ namespace BlockChain
 
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				foreach (var tx in TxMempool.GetOrphansOf(a.TxHash))
+				foreach (var tx in pool.GetOrphansOf(a.TxHash))
 				{
 					TransactionValidation.PointedTransaction ptx;
 					if (!IsOrphanTx(context, tx.Item2, out ptx) && IsValidTransaction(context, ptx))
@@ -90,7 +90,7 @@ namespace BlockChain
 				TransactionValidation.PointedTransaction ptx;
 				var txHash = Merkle.transactionHasher.Invoke(tx);
 
-				if (TxMempool.ContainsKey(txHash))
+				if (pool.ContainsKey(txHash))
 				{
 					BlockChainTrace.Information("Tx already in mempool");
 					return false;
@@ -102,7 +102,7 @@ namespace BlockChain
 					return false;
 				}
 
-				if (TxMempool.ContainsInputs(tx))
+				if (pool.ContainsInputs(tx))
 				{
 					BlockChainTrace.Information("Mempool contains spending input");
 					return false;
@@ -111,7 +111,7 @@ namespace BlockChain
 				if (IsOrphanTx(context, tx, out ptx))
 				{
 					BlockChainTrace.Information("Tx added as orphan");
-					TxMempool.AddOrphan(txHash, tx);
+					pool.AddOrphan(txHash, tx);
 					return true;
 				}
 
@@ -136,8 +136,8 @@ namespace BlockChain
 		void AddToMempool(byte[] txHash, TransactionValidation.PointedTransaction ptx)
 		{
 			BlockChainTrace.Information("Transaction added to mempool");
-			TxMempool.Lock(delegate {
-				TxMempool.Add(txHash, ptx);
+			pool.Lock(delegate {
+				pool.Add(txHash, ptx);
 			});
 			new NewTxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
 			new HandleOrphansOfTxAction(txHash).Publish();
@@ -180,7 +180,7 @@ namespace BlockChain
 					case BlockVerificationHelper.ResultEnum.Reorganization:
 						if (txs.Count > 0)
 						{
-							TxMempool.Lock(() =>
+							pool.Lock(() =>
 							{
 								if (result != BlockVerificationHelper.ResultEnum.Reorganization)
 								{
@@ -242,7 +242,7 @@ namespace BlockChain
 
 		void ClearMempoolRecursive(byte[] txHash)
 		{
-			foreach (var item in TxMempool.GetDependencies(txHash))
+			foreach (var item in pool.GetDependencies(txHash))
 			{
 				new NewTxMessage(item.Item1, item.Item2, TxStateEnum.Invalid).Publish();
 				ClearMempoolRecursive(item.Item1);
@@ -251,7 +251,7 @@ namespace BlockChain
 
 		void ClearContractsRecursive(byte[] txHash)
 		{
-			foreach (var item in TxMempool.GetDependenciesOfContract(txHash))
+			foreach (var item in pool.GetDependenciesOfContract(txHash))
 			{
 				//ContractsMempool.RemoveTx(txHash);
 
@@ -271,20 +271,20 @@ namespace BlockChain
 			// confirmed txs - out of mempool
 			foreach (var item in txs.Where(t => t.Value.Item2))
 			{
-				TxMempool.RemoveOrphan(item.Key);
+				pool.RemoveOrphan(item.Key);
 			}
 
 			// confirmed txs - out of mempool
 			foreach (var item in txs.Where(t => t.Value.Item2))
 			{
 				// if can't remove - assume tx is unseen. try to unorphan
-				if (!TxMempool.Remove(item.Key))
+				if (!pool.Remove(item.Key))
 				{
 					new HandleOrphansOfTxAction(item.Key).Publish();
 					new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
 				}
 
-				ContractsMempool.RemoveRef(item.Key, dbTx, ACS, Tip.Value.header.blockNumber, TxMempool);
+				pool.ContractPool.RemoveRef(item.Key, dbTx, pool);
 			}
 		}
 
@@ -314,13 +314,13 @@ namespace BlockChain
 
 				if (!UTXOStore.ContainsKey(dbTx, newArray)) //TODO: refactor ContainsKey
 				{
-					if (!TxMempool.ContainsKey(input.txHash))
+					if (!pool.ContainsKey(input.txHash))
 					{
 						return true;
 					}
 					else
 					{
-						outputs.Add(TxMempool.Get(input.txHash).pInputs[(int)input.index].Item2);
+						outputs.Add(pool.Get(input.txHash).pInputs[(int)input.index].Item2);
 					}
 				}
 				else
@@ -376,7 +376,7 @@ namespace BlockChain
 				else return false;
 			}
 
-			return true; //contractHash != null
+			return contractHash != null;
 		}
 
 		public bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
@@ -385,7 +385,7 @@ namespace BlockChain
 
 			if (IsContractGeneratedTx(ptx, out contractHash))
 			{
-				if (ACS.IsActive(dbTx, contractHash, Tip.Value.header.blockNumber))
+				if (new ActiveContractSet().IsActive(dbTx, contractHash))
 				{
 
 					/// 
@@ -479,9 +479,9 @@ namespace BlockChain
 
 		public Types.Transaction GetTransaction(byte[] key) //TODO: make concurrent
 		{
-			if (TxMempool.ContainsKey(key))
+			if (pool.ContainsKey(key))
 			{
-				return TransactionValidation.unpoint(TxMempool.Get(key));
+				return TransactionValidation.unpoint(pool.Get(key));
 			}
 			else
 			{
@@ -536,7 +536,7 @@ namespace BlockChain
 		////demo
 		public Types.Block MineAllInMempool()
 		{
-			if (TxMempool.Transactions.Count == 0)
+			if (pool.Transactions.Count == 0)
 			{
 				return null;
 			}
@@ -565,7 +565,7 @@ namespace BlockChain
 				nonce
 			);
 
-			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(TxMempool.Transactions.Select(
+			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(pool.Transactions.Select(
 				t => TransactionValidation.unpoint(t.Value)))
           	);
 

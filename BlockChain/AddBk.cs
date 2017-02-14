@@ -287,17 +287,17 @@ namespace BlockChain
 						}
 
 						// is contract active (with current block as tip)
-						if (_BlockChain.ACS.IsActive(_DbTx, contractHash, _Bk.header.blockNumber))
+						if (new ActiveContractSet().IsActive(_DbTx, contractHash))
 						{
 							// snapshot only if first time (not snapshoted before)
 							if (!blockUndoData.ACSDeltas.ContainsKey(contractHash))
 							{
 								blockUndoData.ACSDeltas.Add(contractHash,
-									  _BlockChain.ACS.Get(_DbTx, contractHash).Value);
+									  new ActiveContractSet().Get(_DbTx, contractHash).Value);
 							}
 
 							// extend
-							_BlockChain.ACS.Extend(_DbTx, contractHash, output.spend.amount);
+							new ActiveContractSet().Extend(_DbTx, contractHash, output.spend.amount);
 						}
 					}
 
@@ -310,17 +310,17 @@ namespace BlockChain
 				}
 			}
 
-			var purgedList = _BlockChain.ACS.GetExpiringList(_DbTx, _Bk.header.blockNumber);
+			var expiringContracts = new ActiveContractSet().GetExpiringList(_DbTx, _Bk.header.blockNumber);
 
-			foreach (var purged in purgedList)
+			foreach (var contractHash in expiringContracts)
 			{
-				blockUndoData.ACSDeltas.Add(purged,
-              		_BlockChain.ACS.Get(_DbTx, purged).Value);
+				blockUndoData.ACSDeltas.Add(contractHash,
+				                            new ActiveContractSet().Get(_DbTx, contractHash).Value);
 			}
 
 			_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
 
-			_BlockChain.ACS.DeactivateContracts(_DbTx, _Bk.header.blockNumber, out purgedList);
+			new ActiveContractSet().DeactivateContracts(_DbTx, _Bk.header.blockNumber, expiringContracts);
 
 			ValidateACS();
 
@@ -541,7 +541,7 @@ namespace BlockChain
 
 						foreach (var item in blockUndoData.ACSDeltas)
 						{
-							_BlockChain.ACS.Add(_DbTx, item.Value);
+							new ActiveContractSet().Add(_DbTx, item.Value);
 						}
 					}
 				}
