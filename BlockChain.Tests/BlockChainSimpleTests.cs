@@ -12,7 +12,7 @@ namespace BlockChain
 		Key _Key;
 		Types.Transaction _GenesisTx;
 
-		[Test(), Order(1)]
+		[Order(1)]
 		public void ShouldAddGenesisWithTx()
 		{
 			_Key = Key.Create();
@@ -22,31 +22,31 @@ namespace BlockChain
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 		}
 
-		[Test(), Order(2)]
+		[Order(2)]
 		public void ShouldAddToMempool()
 		{
 			var nonOrphanTx = Utils.GetTx().AddInput(_GenesisTx, 0, _Key.Private).Sign(_Key.Private);
 
 			Assert.That(_BlockChain.HandleTransaction(nonOrphanTx), Is.True);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(nonOrphanTx)), Is.True);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(nonOrphanTx)), Is.True);
 		}
 
-		[Test(), Order(2)]
+		[Order(2)]
 		public void ShouldNotAddToMempoolOrphanTx()
 		{
 			var orphanTx = Utils.GetTx().AddInput(Utils.GetTx(), 0, _Key.Private).Sign(_Key.Private);
 
 			Assert.That(_BlockChain.HandleTransaction(orphanTx), Is.True);
-			Assert.That(_BlockChain.TxMempool.ContainsKey(Merkle.transactionHasher.Invoke(orphanTx)), Is.False);
+			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(orphanTx)), Is.False);
 		}
 
-		[Test(), Order(3)]
+		[Order(3)]
 		public void ShouldRejectBlock()
 		{
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_GenesisTx)), Is.False);
 		}
 
-		[Test(), Order(4)]
+		[Order(4)]
 		public void ShouldValidateInterdependentTxs()
 		{
 			var key1 = Key.Create();
