@@ -50,7 +50,7 @@
     <Compile Include="Store\UTXOStore.cs" />
     <Compile Include="BlockChainTrace.cs" />
     <Compile Include="Store\ConsensusTypeStore.cs" />
-    <Compile Include="AddBk.cs" />
+    <Compile Include="BlockVerificationHelper.cs" />
     <Compile Include="Store\ChainTip.cs" />
     <Compile Include="ContractHelper.cs" />
     <Compile Include="Data\BlockTimestamps.cs" />
