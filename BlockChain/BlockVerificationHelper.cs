@@ -163,17 +163,19 @@ namespace BlockChain
 					//append new chain
 					foreach (var _bk in newMainChain)
 					{
-						BlockChainTrace.Information("try add block to new main chain: " + _bk.Value.header.blockNumber);
-
-						if (new BlockVerificationHelper(
+						var action = new BlockVerificationHelper(
 							blockChain,
 							dbTx,
 							_bk.Key,
 							_bk.Value,
 							txs,
-							queuedActions, 
-							false, 
-							true).Result == ResultEnum.Rejected)
+							queuedActions,
+							false,
+							true);
+						
+						BlockChainTrace.Information($"new main chain block {_bk.Value.header.blockNumber} {action.Result}");
+
+						if (action.Result == ResultEnum.Rejected)
 						{
 							blockChain.ChainTip.Context(dbTx).Value = originalTip.Key;
 							blockChain.Tip = originalTip;
@@ -250,8 +252,8 @@ namespace BlockChain
 				{
 					//TODO: refactoring is needed.
 					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(input.Item1.txHash, (int)input.Item1.index));
+					BlockChainTrace.Information($"utxo spent, amount {input.Item2.spend.amount}");
 
-					//TODO: if added, and now removed - just remove from 'added' //if (blockUndoData.AddedUTXO.Contains
 					blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(input.Item1, input.Item2));
 					i++;
 				}
@@ -528,30 +530,23 @@ namespace BlockChain
 		{
 			_BlockChain.BlockStore.SetLocation(_DbTx, key, LocationEnum.Branch);
 
-			//undo utxos
-			foreach (var tx in _BlockChain.BlockStore.Transactions(_DbTx, key))
+			var blockUndoData = _BlockChain.BlockStore.GetUndoData(_DbTx, key);
+
+			if (blockUndoData != null)
 			{
-				for (var i = 0; i < tx.Value.outputs.Length; i++)
+				blockUndoData.AddedUTXO.ForEach(u =>
 				{
-					var blockUndoData = _BlockChain.BlockStore.GetUndoData(_DbTx, key);
+					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
+				});
 
-					if (blockUndoData != null)
-					{
-						blockUndoData.AddedUTXO.ForEach(u =>
-						{
-							_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
-						});
+				blockUndoData.RemovedUTXO.ForEach(u =>
+				{
+					_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
+				});
 
-						blockUndoData.RemovedUTXO.ForEach(u =>
-						{
-							_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
-						});
-
-						foreach (var item in blockUndoData.ACSDeltas)
-						{
-							new ActiveContractSet().Add(_DbTx, item.Value);
-						}
-					}
+				foreach (var item in blockUndoData.ACSDeltas)
+				{
+					new ActiveContractSet().Add(_DbTx, item.Value);
 				}
 			}
 
