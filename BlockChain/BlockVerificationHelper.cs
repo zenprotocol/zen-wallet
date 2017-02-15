@@ -21,7 +21,7 @@ namespace BlockChain
 		public enum ResultEnum
 		{
 			Added,
-			Reorganization,
+			//Reorganization,
 			AddedOrphan,
 			Rejected
 		}
