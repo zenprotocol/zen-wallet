@@ -268,7 +268,7 @@ namespace BlockChain
 				EvictToMempool(dbTx, item.Key, item.Value.Item1);
 			}
 
-			// confirmed txs - out of mempool
+			// confirmed txs
 			foreach (var item in txs.Where(t => t.Value.Item2))
 			{
 				if (pool.ContainsKey(item.Key))
@@ -276,25 +276,23 @@ namespace BlockChain
 					BlockChainTrace.Information("same tx removed from txpool");
 					pool.Remove(item.Key);
 				}
+				else
+				{
+					// if can't remove - assume tx is unseen. try to unorphan
+					new HandleOrphansOfTxAction(item.Key).Publish();
+				}
 
 				pool.GetTransactionsInConflict(item.Value.Item1).ToList().ForEach(t =>
 				{
 					BlockChainTrace.Information("invalidated tx removed from txpool");
-					pool.Remove(t.Item1);
+					var removed = new List<byte[]>();
+					pool.Remove(t.Item1, removed);
+					removed.ForEach(txHash => new MessageAction(new NewTxMessage(txHash, TxStateEnum.Invalid)).Publish());
 				});
-			}
-
-			// confirmed txs - out of mempool
-			foreach (var item in txs.Where(t => t.Value.Item2))
-			{
-				// if can't remove - assume tx is unseen. try to unorphan
-				if (!pool.Remove(item.Key))
-				{
-					new HandleOrphansOfTxAction(item.Key).Publish();
-					new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
-				}
 
 				pool.ContractPool.RemoveRef(item.Key, dbTx, pool);
+
+				new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
 			}
 		}
 
