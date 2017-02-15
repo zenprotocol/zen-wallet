@@ -2,6 +2,7 @@
 using System.Linq;
 using Consensus;
 using System.Collections.Generic;
+using System;
 
 namespace BlockChain.Data
 {
@@ -42,6 +43,17 @@ namespace BlockChain.Data
 					txMempool.InactivateContractGeneratedTxs(dbTx, contractHash);
 				}
 			}
+		}
+
+		internal void LookForActivated(TransactionContext dbTx)
+		{
+			//foreach (var contract in _Contracts)
+			//{
+			//	if (new ActiveContractSet().IsActive(dbTx, contract.Key))
+			//	{
+			//		BlockChain.IsContractGeneratedTransactionValid(dbTx, 
+			//	}
+			//}
 		}
 	}
 }
