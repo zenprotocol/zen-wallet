@@ -251,7 +251,7 @@ namespace BlockChain
 
 		void ClearContractsRecursive(byte[] txHash)
 		{
-			foreach (var item in pool.GetDependenciesOfContract(txHash))
+			foreach (var item in pool.GetDependencies(txHash, pool.ICTxs))
 			{
 				//ContractsMempool.RemoveTx(txHash);
 
