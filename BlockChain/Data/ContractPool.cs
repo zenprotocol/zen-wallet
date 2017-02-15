@@ -44,16 +44,5 @@ namespace BlockChain.Data
 				}
 			}
 		}
-
-		internal void LookForActivated(TransactionContext dbTx)
-		{
-			//foreach (var contract in _Contracts)
-			//{
-			//	if (new ActiveContractSet().IsActive(dbTx, contract.Key))
-			//	{
-			//		BlockChain.IsContractGeneratedTransactionValid(dbTx, 
-			//	}
-			//}
-		}
 	}
 }

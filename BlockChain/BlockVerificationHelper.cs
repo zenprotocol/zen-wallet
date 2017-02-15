@@ -376,7 +376,9 @@ namespace BlockChain
 				return false;
 			}
 
-			if (!_BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx))
+			byte[] contractHash;
+			if (BlockChain.IsContractGeneratedTx(ptx, out contractHash) && 
+			    !BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx, contractHash))
 			{
 				BlockChainTrace.Information("tx invalid - contract");
 				return false;

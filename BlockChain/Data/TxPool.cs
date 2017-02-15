@@ -149,15 +149,12 @@ namespace BlockChain.Data
 
 		void MoveToICTxs(TransactionContext dbTx, byte[] txHash)
 		{
-			lock (Transactions) //TODO: use a single HashDictionary with a 'location' enum?
-			{
-				var ptx = Transactions[txHash];
+			var ptx = Transactions[txHash];
 
-				Transactions.Remove(txHash);
-				ICTxs.Add(txHash, ptx);
+			Transactions.Remove(txHash);
+			ICTxs.Add(txHash, ptx);
 
-				MoveToOrphanPool(dbTx, txHash);
-			}
+			MoveToOrphanPool(dbTx, txHash);
 		}
 
 		public void InactivateContractGeneratedTxs(TransactionContext dbTx, byte[] contractHash)
@@ -195,6 +192,22 @@ namespace BlockChain.Data
 				foreach (var tx in GetDependencies(txHash, ICTxs))
 				{
 					MoveToOrphanPool(dbTx, tx.Item1, ICTxs);
+				}
+			}
+		}
+
+		public void RevalidateICTxs(TransactionContext dbTx)
+		{
+			foreach (var ptx in ICTxs)
+			{
+				byte[] contractHash;
+				BlockChain.IsContractGeneratedTx(ptx.Value, out contractHash);
+				if (BlockChain.IsContractGeneratedTransactionValid(dbTx, ptx.Value, contractHash))
+				{
+					ICTxs.Remove(ptx.Key);
+					Transactions.Add(ptx.Key, ptx.Value);
+					new MessageAction(new NewTxMessage(ptx.Key, TxStateEnum.Unconfirmed)).Publish();
+					new HandleOrphansOfTxAction(ptx.Key).Publish();
 				}
 			}
 		}
