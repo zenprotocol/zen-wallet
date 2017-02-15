@@ -216,37 +216,6 @@ namespace BlockChain
 			return true;
 		}
 
-		void EvictToMempool(TransactionContext dbTx, byte[] txHash, Types.Transaction tx)
-		{
-			TransactionValidation.PointedTransaction ptx;
-
-			if (!IsOrphanTx(dbTx, tx, out ptx) && IsValidTransaction(dbTx, ptx))
-			{
-				AddToMempool(txHash, ptx);
-
-				byte[] contractHash;
-				if (IsContractActivatingTx(ptx, out contractHash))
-				{
-					//ContractsMempool.Add(contractHash);
-				}
-				return;
-			}
-			else
-			{
-				var removed = new List<byte[]>();
-				pool.Remove(dbTx, txHash, removed);
-				removed.ForEach(t =>
-				{
-					BlockChainTrace.Information("invalidated tx removed from txpool");
-					new MessageAction(new NewTxMessage(t, TxStateEnum.Invalid)).Publish();
-				});
-
-				new NewTxMessage(txHash, ptx, TxStateEnum.Invalid).Publish();
-			}
-
-			new NewTxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
-		}
-
 		void ClearContractsRecursive(byte[] txHash)
 		{
 			foreach (var item in pool.GetDependencies(txHash, pool.ICTxs))
@@ -263,7 +232,31 @@ namespace BlockChain
 			// unconfirmed txs - into mempool
 			foreach (var item in txs.Where(t => !t.Value.Item2))
 			{
-				EvictToMempool(dbTx, item.Key, item.Value.Item1);
+				TransactionValidation.PointedTransaction ptx;
+				if (!IsOrphanTx(dbTx, item.Value.Item1, out ptx) && IsValidTransaction(dbTx, ptx))
+				{
+					AddToMempool(item.Key, ptx);
+
+					byte[] contractHash;
+					if (IsContractActivatingTx(ptx, out contractHash))
+					{
+						//ContractsMempool.Add(contractHash);
+					}
+				}
+				else
+				{
+					var removed = new List<byte[]>();
+					pool.Remove(dbTx, item.Key, removed);
+					removed.ForEach(t =>
+					{
+						BlockChainTrace.Information("invalidated tx removed from txpool");
+						new MessageAction(new NewTxMessage(t, TxStateEnum.Invalid)).Publish();
+					});
+
+					new NewTxMessage(item.Key, ptx, TxStateEnum.Invalid).Publish();
+				}
+
+				new NewTxMessage(item.Key, ptx, TxStateEnum.Unconfirmed).Publish();
 			}
 
 			// confirmed txs
