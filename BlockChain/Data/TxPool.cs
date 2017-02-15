@@ -34,7 +34,7 @@ namespace BlockChain.Data
 			return Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
 		}
 
-		public bool Remove(byte[] key)
+		public bool Remove(byte[] key, List<byte[]> removedList = null)
 		{
 			if (Transactions.ContainsKey(key))
 			{
@@ -42,6 +42,11 @@ namespace BlockChain.Data
 				{
 					if (!Remove(dep.Item1))
 						throw new Exception();
+				}
+
+				if (removedList != null)
+				{
+					removedList.Add(key);
 				}
 
 				return Transactions.Remove(key);
