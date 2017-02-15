@@ -297,6 +297,7 @@ namespace BlockChain
 			}
 
 			pool.RevalidateICTxs(dbTx);
+			pool.InvalidateAllContractGeneratedTxs(dbTx);
 		}
 
 		public bool IsContractActivatingTx(TransactionValidation.PointedTransaction ptx, out byte[] contractHash)
