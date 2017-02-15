@@ -15,7 +15,7 @@ namespace BlockChain.Data
 	public class TxPool
 	{
 		public readonly Pool Transactions = new Pool();
-		private readonly Pool _ICTxs = new Pool();
+		public readonly Pool ICTxs = new Pool();
 		private readonly HashDictionary<Types.Transaction> _OrphanTransactions = new HashDictionary<Types.Transaction>();
 		public readonly ContractPool ContractPool = new ContractPool();
 
@@ -127,21 +127,6 @@ namespace BlockChain.Data
 			}
 		}
 
-		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetDependenciesOfContract(byte[] contractHash)
-		{
-			//foreach (var item in _Transactions)
-			//{
-			//	foreach (var input in item.Value.pInputs)
-			//	{
-			//		if (!input.Item2.@lock.IsContractSacrificeLock || !((Types.OutputLock.IsContractSacrificeLock)input.Item2.@lock).contractHash.SequenceEqual(contractHash))
-			//			continue;
-
-			//		yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
-			//	}
-			//}
-			return null;
-		}
-
 		public IEnumerable<Tuple<byte[], Types.Transaction>> GetOrphansOf(byte[] txHash)
 		{
 			foreach (var item in _OrphanTransactions)
@@ -170,7 +155,7 @@ namespace BlockChain.Data
 				var ptx = Transactions[txHash];
 
 				Transactions.Remove(txHash);
-				_ICTxs.Add(txHash, ptx);
+				ICTxs.Add(txHash, ptx);
 
 				MoveToOrphanPool(dbTx, txHash);
 			}
@@ -208,9 +193,9 @@ namespace BlockChain.Data
 					MoveToOrphanPool(dbTx, tx.Item1, Transactions);
 				}
 
-				foreach (var tx in GetDependencies(txHash, _ICTxs))
+				foreach (var tx in GetDependencies(txHash, ICTxs))
 				{
-					MoveToOrphanPool(dbTx, tx.Item1, _ICTxs);
+					MoveToOrphanPool(dbTx, tx.Item1, ICTxs);
 				}
 			}
 		}
