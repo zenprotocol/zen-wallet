@@ -276,23 +276,22 @@ namespace BlockChain
 				}
 				else
 				{
-					// if can't remove - assume tx is unseen. try to unorphan
+					// assume tx is unseen. try to unorphan
 					new HandleOrphansOfTxAction(item.Key).Publish();
-				}
 
-				pool.GetTransactionsInConflict(item.Value.Item1).ToList().ForEach(t =>
-				{
-					var removed = new List<byte[]>();
-					pool.Remove(dbTx, t.Item1, removed);
-					removed.ForEach(txHash =>
+					pool.GetTransactionsInConflict(item.Value.Item1).ToList().ForEach(t =>
 					{
-						BlockChainTrace.Information("double-spending tx removed from txpool");
-						new MessageAction(new NewTxMessage(txHash, TxStateEnum.Invalid)).Publish();
+						var removed = new List<byte[]>();
+						pool.Remove(dbTx, t.Item1, removed);
+						removed.ForEach(txHash =>
+						{
+							BlockChainTrace.Information("double-spending tx removed from txpool");
+							new MessageAction(new NewTxMessage(txHash, TxStateEnum.Invalid)).Publish();
+						});
 					});
-				});
 
-				pool.ContractPool.RemoveRef(item.Key, dbTx, pool);
-
+					pool.ContractPool.RemoveRef(item.Key, dbTx, pool);
+				}
 				new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
 			}
 
