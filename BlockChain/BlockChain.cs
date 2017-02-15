@@ -232,21 +232,18 @@ namespace BlockChain
 			}
 			else
 			{
-				ClearMempoolRecursive(txHash);
-				ClearContractsRecursive(txHash);
+				var removed = new List<byte[]>();
+				pool.Remove(dbTx, txHash, removed);
+				removed.ForEach(t =>
+				{
+					BlockChainTrace.Information("invalidated tx removed from txpool");
+					new MessageAction(new NewTxMessage(t, TxStateEnum.Invalid)).Publish();
+				});
+
 				new NewTxMessage(txHash, ptx, TxStateEnum.Invalid).Publish();
 			}
 
 			new NewTxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
-		}
-
-		void ClearMempoolRecursive(byte[] txHash)
-		{
-			foreach (var item in pool.GetDependencies(txHash))
-			{
-				new NewTxMessage(item.Item1, item.Item2, TxStateEnum.Invalid).Publish();
-				ClearMempoolRecursive(item.Item1);
-			}
 		}
 
 		void ClearContractsRecursive(byte[] txHash)
@@ -284,10 +281,13 @@ namespace BlockChain
 
 				pool.GetTransactionsInConflict(item.Value.Item1).ToList().ForEach(t =>
 				{
-					BlockChainTrace.Information("invalidated tx removed from txpool");
 					var removed = new List<byte[]>();
 					pool.Remove(dbTx, t.Item1, removed);
-					removed.ForEach(txHash => new MessageAction(new NewTxMessage(txHash, TxStateEnum.Invalid)).Publish());
+					removed.ForEach(txHash =>
+					{
+						BlockChainTrace.Information("double-spending tx removed from txpool");
+						new MessageAction(new NewTxMessage(txHash, TxStateEnum.Invalid)).Publish();
+					});
 				});
 
 				pool.ContractPool.RemoveRef(item.Key, dbTx, pool);
@@ -405,18 +405,14 @@ namespace BlockChain
 
 					var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
 
-					using (var context = _DBContext.GetTransactionContext())
+					foreach (var item in UTXOStore.All(dbTx, null, false))
 					{
-						foreach (var item in UTXOStore.All(context, null, false))
-						{
-							byte[] txHash = new byte[item.Key.Length - 1];
-							Array.Copy(item.Key, txHash, txHash.Length);
-							var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
+						byte[] txHash = new byte[item.Key.Length - 1];
+						Array.Copy(item.Key, txHash, txHash.Length);
+						var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
 
-							utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
-						}
+						utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
 					}
-
 
 					var args = new ContractArgs()
 					{
