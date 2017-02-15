@@ -273,13 +273,13 @@ namespace BlockChain
 			{
 				if (pool.ContainsKey(item.Key))
 				{
-					BlockChainTrace.Information("same tx removed from mempool");
+					BlockChainTrace.Information("same tx removed from txpool");
 					pool.Remove(item.Key);
 				}
 
 				pool.GetTransactionsInConflict(item.Value.Item1).ToList().ForEach(t =>
 				{
-					BlockChainTrace.Information("invalidated tx removed from mempool");
+					BlockChainTrace.Information("invalidated tx removed from txpool");
 					pool.Remove(t.Item1);
 				});
 			}
