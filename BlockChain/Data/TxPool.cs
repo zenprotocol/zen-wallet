@@ -34,13 +34,13 @@ namespace BlockChain.Data
 			return Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
 		}
 
-		public bool Remove(byte[] key, List<byte[]> removedList = null)
+		public bool Remove(TransactionContext dbTx, byte[] key, List<byte[]> removedList = null)
 		{
 			if (Transactions.ContainsKey(key))
 			{
 				foreach (var dep in GetDependencies(key))
 				{
-					if (!Remove(dep.Item1))
+					if (!Remove(dbTx, dep.Item1, removedList))
 						throw new Exception();
 				}
 
@@ -49,13 +49,12 @@ namespace BlockChain.Data
 					removedList.Add(key);
 				}
 
+				ContractPool.RemoveRef(key, dbTx, this);
+
 				return Transactions.Remove(key);
 			}
-			else
-			{
-				return false;
-				//_OrphanTransactions.Remove(key);
-			}
+
+			return false;
 		}
 
 		public void RemoveOrphan(byte[] key)

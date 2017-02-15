@@ -177,15 +177,15 @@ namespace BlockChain
 						context.Commit();
 						break;
 					case BlockVerificationHelper.ResultEnum.Added:
-					case BlockVerificationHelper.ResultEnum.Reorganization:
+					//case BlockVerificationHelper.ResultEnum.Reorganization:
 						if (txs.Count > 0)
 						{
 							pool.Lock(() =>
 							{
-								if (result != BlockVerificationHelper.ResultEnum.Reorganization)
-								{
-									context.Commit();
-								}
+								//if (result != BlockVerificationHelper.ResultEnum.Reorganization)
+								//{
+								context.Commit();
+								//}
 								ApplyToMempool(context, txs);
 							});
 						}
@@ -274,7 +274,7 @@ namespace BlockChain
 				if (pool.ContainsKey(item.Key))
 				{
 					BlockChainTrace.Information("same tx removed from txpool");
-					pool.Remove(item.Key);
+					pool.Remove(dbTx, item.Key);
 				}
 				else
 				{
@@ -286,7 +286,7 @@ namespace BlockChain
 				{
 					BlockChainTrace.Information("invalidated tx removed from txpool");
 					var removed = new List<byte[]>();
-					pool.Remove(t.Item1, removed);
+					pool.Remove(dbTx, t.Item1, removed);
 					removed.ForEach(txHash => new MessageAction(new NewTxMessage(txHash, TxStateEnum.Invalid)).Publish());
 				});
 
