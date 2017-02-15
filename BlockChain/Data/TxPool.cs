@@ -170,6 +170,19 @@ namespace BlockChain.Data
 			toInactivate.ForEach(t => MoveToICTxs(dbTx, t));
 		}
 
+		public void InvalidateAllContractGeneratedTxs(TransactionContext dbTx)
+		{
+			foreach (var ptx in Transactions)
+			{
+				byte[] contractHash;
+				if (BlockChain.IsContractGeneratedTx(ptx.Value, out contractHash) &&
+					new ActiveContractSet().IsActive(dbTx, contractHash))
+				{
+					MoveToICTxs(dbTx, ptx.Key);
+				}
+			}
+		}
+
 		void MoveToOrphanPool(TransactionContext dbTx, byte[] txHash, Pool pool = null)
 		{
 			if (pool != null)
@@ -201,8 +214,8 @@ namespace BlockChain.Data
 			foreach (var ptx in ICTxs)
 			{
 				byte[] contractHash;
-				BlockChain.IsContractGeneratedTx(ptx.Value, out contractHash);
-				if (BlockChain.IsContractGeneratedTransactionValid(dbTx, ptx.Value, contractHash))
+				if (BlockChain.IsContractGeneratedTx(ptx.Value, out contractHash) &&
+				    BlockChain.IsContractGeneratedTransactionValid(dbTx, ptx.Value, contractHash))
 				{
 					ICTxs.Remove(ptx.Key);
 					Transactions.Add(ptx.Key, ptx.Value);
