@@ -119,7 +119,8 @@ namespace BlockChain
 				//TODO: 7. Apply fee rules. If fails, reject
 				//TODO: 8. Validate each input. If fails, reject
 
-				if (!IsContractGeneratedTransactionValid(context, ptx))
+				byte[] contractHash;
+				if (IsContractGeneratedTx(ptx, out contractHash) && !IsContractGeneratedTransactionValid(context, ptx, contractHash))
 					return false;
 
 				if (!IsValidTransaction(context, ptx))
@@ -294,6 +295,8 @@ namespace BlockChain
 
 				new MessageAction(new NewTxMessage(item.Key, TxStateEnum.Confirmed)).Publish();
 			}
+
+			pool.RevalidateICTxs(dbTx);
 		}
 
 		public bool IsContractActivatingTx(TransactionValidation.PointedTransaction ptx, out byte[] contractHash)
@@ -387,63 +390,58 @@ namespace BlockChain
 			return contractHash != null;
 		}
 
-		public bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
+		public static bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash)
 		{
-			byte[] contractHash = null;
-
-			if (IsContractGeneratedTx(ptx, out contractHash))
+			if (new ActiveContractSet().IsActive(dbTx, contractHash))
 			{
-				if (new ActiveContractSet().IsActive(dbTx, contractHash))
+
+				/// 
+				/// 
+				/// 
+				/// 
+				/// 
+				/// TODO: cache
+
+				var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
+
+				foreach (var item in new UTXOStore().All(dbTx, null, false))
 				{
+					byte[] txHash = new byte[item.Key.Length - 1];
+					Array.Copy(item.Key, txHash, txHash.Length);
+					var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
 
-					/// 
-					/// 
-					/// 
-					/// 
-					/// 
-					/// TODO: cache
-
-					var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
-
-					foreach (var item in UTXOStore.All(dbTx, null, false))
-					{
-						byte[] txHash = new byte[item.Key.Length - 1];
-						Array.Copy(item.Key, txHash, txHash.Length);
-						var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
-
-						utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
-					}
-
-					var args = new ContractArgs()
-					{
-						context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
-						//		inputs = inputs,
-						witnesses = new List<byte[]>(),
-						outputs = ptx.outputs.ToList(),
-						option = Types.ExtendedContract.NewContract(null)
-					};
-
-					/// 
-					/// 
-					/// 
-					/// 
-					/// 
-
-
-					Types.Transaction tx;
-					if (!ContractHelper.Execute(contractHash, out tx, args))
-					{
-						BlockChainTrace.Information("Contract execution failed");
-						return false;
-					}
-
-					return TransactionValidation.unpoint(ptx).Equals(tx);
+					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
 				}
-				else
+
+				var args = new ContractArgs()
 				{
-					BlockChainTrace.Information("Contract not active");
+					context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
+					//		inputs = inputs,
+					witnesses = new List<byte[]>(),
+					outputs = ptx.outputs.ToList(),
+					option = Types.ExtendedContract.NewContract(null)
+				};
+
+				/// 
+				/// 
+				/// 
+				/// 
+				/// 
+
+
+				Types.Transaction tx;
+				if (!ContractHelper.Execute(contractHash, out tx, args))
+				{
+					BlockChainTrace.Information("Contract execution failed");
 					return false;
 				}
+
+				return TransactionValidation.unpoint(ptx).Equals(tx);
+			}
+			else
+			{
+				BlockChainTrace.Information("Contract not active");
+				return false;
 			}
 
 			return true;
