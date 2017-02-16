@@ -7,13 +7,13 @@ using System.Text;
 using Consensus;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
+using System.Linq;
 
 namespace BlockChain
 {
 	public class ContractArgs
 	{
 		public Types.ContractContext context { get; set; }
-	//	public List<Types.Outpoint> inputs { get; set; }
 		public List<byte[]> witnesses { get; set; }
 		public List<Types.Output> outputs { get; set; }
 		public Types.ExtendedContract option { get; set; }
@@ -71,6 +71,20 @@ namespace BlockChain
 			}
 			transaction = null;
 			return false;
+		}
+
+		public static bool IsTxValid(TransactionValidation.PointedTransaction ptx, byte[] contractHash, List<Tuple<Types.Outpoint, Types.Output>> utxos)
+		{
+			var args = new ContractArgs()
+			{
+				context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
+				witnesses = new List<byte[]>(),
+				outputs = ptx.outputs.ToList(),
+				option = Types.ExtendedContract.NewContract(null)
+			};
+
+			Types.Transaction tx;
+			return Execute(contractHash, out tx, args) && TransactionValidation.unpoint(ptx).Equals(tx);
 		}
 
 		public static bool Compile(byte[] fsSourceCodeBytes, out byte[] contractHash)

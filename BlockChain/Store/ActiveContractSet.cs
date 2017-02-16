@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Store;
 using System.Linq;
+using BlockChain.Data;
 
 namespace BlockChain
 {
@@ -23,6 +24,11 @@ namespace BlockChain
 			Put(dbTx, new Keyed<ACSItem>(item.Hash, item));
 		}
 
+		public HashSet Keys(TransactionContext dbTx)
+		{
+			return new HashSet(All(dbTx).Select(t => t.Value.Hash));
+		}
+
 		public bool IsActive(TransactionContext dbTx, byte[] contractHash)
 		{
 			return ContainsKey(dbTx, contractHash);
@@ -36,21 +42,28 @@ namespace BlockChain
 			Put(dbTx, acsItem);
 		}
 
-		public IEnumerable<byte[]> GetExpiringList(TransactionContext dbTx, uint blockNumber)
+		public HashDictionary<ACSItem> GetExpiringList(TransactionContext dbTx, uint blockNumber)
 		{
 #if DEBUG
 			All(dbTx).Where(t => t.Value.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}"));
 #endif
 
-			return All(dbTx).Where(t => t.Value.LastBlock == blockNumber).Select(t=>t.Key);
+			var values = new HashDictionary<ACSItem>();
+
+			foreach (var contract in All(dbTx).Where(t => t.Value.LastBlock == blockNumber))
+			{
+				values[contract.Key] = contract.Value;
+			}
+
+			return values;
 		}
 
-		public void DeactivateContracts(TransactionContext dbTx, uint blockNumber, IEnumerable<byte[]> list)
+		public void DeactivateContracts(TransactionContext dbTx, IEnumerable<byte[]> list)
 		{
-			foreach (byte[] contractHash in list)
+			foreach (var item in list)
 			{
-				if (IsActive(dbTx, contractHash))
-					Remove(dbTx, contractHash);
+				if (IsActive(dbTx, item))
+					Remove(dbTx, item);
 				else
 					throw new Exception();
 			}

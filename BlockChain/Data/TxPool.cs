@@ -1,70 +1,17 @@
-using System.Collections.Generic;
-using BlockChain.Data;
 using Consensus;
 using System.Linq;
-using Store;
-using Infrastructure;
 using System;
+using System.Collections.Generic;
 
 namespace BlockChain.Data
 {
-	public class Pool : HashDictionary<TransactionValidation.PointedTransaction>
+	public class TxPool : TxPoolBase
 	{
-	}
-
-	public class TxPool
-	{
-		public readonly Pool Transactions = new Pool();
-		public readonly Pool ICTxs = new Pool();
-		private readonly HashDictionary<Types.Transaction> _OrphanTransactions = new HashDictionary<Types.Transaction>();
-		public readonly ContractPool ContractPool = new ContractPool();
-
-		private object _Lock = new Object();
-
-		public void Lock(Action action)
+		public new void Add(byte[] txHash, TransactionValidation.PointedTransaction ptx)
 		{
-			lock (_Lock)
-			{
-				action();
-			}
-		}
-
-		public bool ContainsKey(byte[] key)
-		{
-			return Transactions.ContainsKey(key) || _OrphanTransactions.ContainsKey(key);
-		}
-
-		public bool Remove(TransactionContext dbTx, byte[] key, List<byte[]> removedList = null)
-		{
-			if (Transactions.ContainsKey(key))
-			{
-				foreach (var dep in GetDependencies(key))
-				{
-					if (!Remove(dbTx, dep.Item1, removedList))
-						throw new Exception();
-				}
-
-				if (removedList != null)
-				{
-					removedList.Add(key);
-				}
-
-				ContractPool.RemoveRef(key, dbTx, this);
-
-				return Transactions.Remove(key);
-			}
-
-			return false;
-		}
-
-		public void RemoveOrphan(byte[] key)
-		{
-			_OrphanTransactions.Remove(key);
-		}
-
-		public TransactionValidation.PointedTransaction Get(byte[] key)
-		{
-			return Transactions[key];
+			new NewTxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
+			new HandleOrphansOfTxAction(txHash).Publish();
+			base.Add(txHash, ptx);
 		}
 
 		public bool ContainsInputs(Types.Transaction tx)
@@ -82,7 +29,7 @@ namespace BlockChain.Data
 
 		public bool ContainsOutpoint(Types.Outpoint outpoint)
 		{
-			foreach (var item in Transactions)
+			foreach (var item in this)
 			{
 				if (item.Value.pInputs.Select(t => t.Item1).Contains(outpoint))
 				{
@@ -93,134 +40,16 @@ namespace BlockChain.Data
 			return false;
 		}
 
-		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetTransactionsInConflict(Types.Transaction tx)
+		public void MoveToICTxPool(HashSet activeContracts)
 		{
-			foreach (var item in Transactions)
-			{
-				foreach (var memOutpoint in item.Value.pInputs.Select(t => t.Item1))
-				{
-					foreach (var txOutpoint in tx.inputs)
-					{
-						if (memOutpoint.Equals(txOutpoint))
-						{
-							yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
-						}
-					}
-				}
-			}
-		}
-
-		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetDependencies(byte[] txHash)
-		{
-			return GetDependencies(txHash, Transactions);
-		}
-
-		public IEnumerable<Tuple<byte[], TransactionValidation.PointedTransaction>> GetDependencies(byte[] txHash, Pool pool)
-		{
-			foreach (var item in pool)
-			{
-				if (item.Value.pInputs.Count(t => t.Item1.txHash.SequenceEqual(txHash)) > 0)
-				{
-					yield return new Tuple<byte[], TransactionValidation.PointedTransaction>(item.Key, item.Value);
-				}
-			}
-		}
-
-		public IEnumerable<Tuple<byte[], Types.Transaction>> GetOrphansOf(byte[] txHash)
-		{
-			foreach (var item in _OrphanTransactions)
-			{
-				if (item.Value.inputs.Count(t => t.txHash.SequenceEqual(txHash)) > 0)
-				{
-					yield return new Tuple<byte[], Types.Transaction>(item.Key, item.Value);
-				}
-			}
-		}
-
-		public void Add(byte[] key, TransactionValidation.PointedTransaction transaction)
-		{
-			Transactions.Add(key, transaction);
-		}
-
-		public void AddOrphan(byte[] txHash, Types.Transaction tx)
-		{
-			_OrphanTransactions.Add(txHash, tx);
-		}
-
-		void MoveToICTxs(TransactionContext dbTx, byte[] txHash)
-		{
-			var ptx = Transactions[txHash];
-
-			Transactions.Remove(txHash);
-			ICTxs.Add(txHash, ptx);
-
-			MoveToOrphanPool(dbTx, txHash);
-		}
-
-		public void InactivateContractGeneratedTxs(TransactionContext dbTx, byte[] contractHash)
-		{
-			var toInactivate = new List<byte[]>();
-			foreach (var tx in Transactions)
-			{
-				byte[] txContractHash = null;
-				if (BlockChain.IsContractGeneratedTx(tx.Value, out txContractHash) && contractHash.SequenceEqual(txContractHash))
-					toInactivate.Add(tx.Key);
-			}
-
-			toInactivate.ForEach(t => MoveToICTxs(dbTx, t));
-		}
-
-		public void InvalidateAllContractGeneratedTxs(TransactionContext dbTx)
-		{
-			foreach (var ptx in Transactions)
+			foreach (var item in this)
 			{
 				byte[] contractHash;
-				if (BlockChain.IsContractGeneratedTx(ptx.Value, out contractHash) &&
-					new ActiveContractSet().IsActive(dbTx, contractHash))
+				if (BlockChain.IsContractGeneratedTx(item.Value, out contractHash) && !activeContracts.Contains(contractHash))
 				{
-					MoveToICTxs(dbTx, ptx.Key);
-				}
-			}
-		}
-
-		void MoveToOrphanPool(TransactionContext dbTx, byte[] txHash, Pool pool = null)
-		{
-			if (pool != null)
-			{
-				_OrphanTransactions.Add(txHash, TransactionValidation.unpoint(pool[txHash]));
-				pool.Remove(txHash);
-
-				if (pool == Transactions)
-				{
-					ContractPool.RemoveRef(txHash, dbTx, this);
-				}
-			}
-			else
-			{
-				foreach (var tx in GetDependencies(txHash, Transactions))
-				{
-					MoveToOrphanPool(dbTx, tx.Item1, Transactions);
-				}
-
-				foreach (var tx in GetDependencies(txHash, ICTxs))
-				{
-					MoveToOrphanPool(dbTx, tx.Item1, ICTxs);
-				}
-			}
-		}
-
-		public void RevalidateICTxs(TransactionContext dbTx)
-		{
-			foreach (var ptx in ICTxs)
-			{
-				byte[] contractHash;
-				if (BlockChain.IsContractGeneratedTx(ptx.Value, out contractHash) &&
-				    BlockChain.IsContractGeneratedTransactionValid(dbTx, ptx.Value, contractHash))
-				{
-					ICTxs.Remove(ptx.Key);
-					Transactions.Add(ptx.Key, ptx.Value);
-					new MessageAction(new NewTxMessage(ptx.Key, TxStateEnum.Unconfirmed)).Publish();
-					new HandleOrphansOfTxAction(ptx.Key).Publish();
+					BlockChainTrace.Information("inactive contract-generated tx moved to ICTxPool");
+					Remove(item.Key);
+					ICTxPool.Add(item.Key, item.Value);
 				}
 			}
 		}
