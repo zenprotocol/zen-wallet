@@ -28,7 +28,7 @@ namespace BlockChain
 			var nonOrphanTx = Utils.GetTx().AddInput(_GenesisTx, 0, _Key.Private).Sign(_Key.Private);
 
 			Assert.That(_BlockChain.HandleTransaction(nonOrphanTx), Is.True);
-			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(nonOrphanTx)), Is.True);
+			Assert.That(_BlockChain.memPool.TxPool.Contains(Merkle.transactionHasher.Invoke(nonOrphanTx)), Is.True);
 		}
 
 		[Order(2)]
@@ -37,7 +37,7 @@ namespace BlockChain
 			var orphanTx = Utils.GetTx().AddInput(Utils.GetTx(), 0, _Key.Private).Sign(_Key.Private);
 
 			Assert.That(_BlockChain.HandleTransaction(orphanTx), Is.True);
-			Assert.That(_BlockChain.pool.ContainsKey(Merkle.transactionHasher.Invoke(orphanTx)), Is.False);
+			Assert.That(_BlockChain.memPool.TxPool.Contains(Merkle.transactionHasher.Invoke(orphanTx)), Is.False);
 		}
 
 		[Order(3)]
