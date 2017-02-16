@@ -101,7 +101,7 @@ namespace BlockChain
 		private void AssertMempool(Types.Transaction tx, bool contains)
 		{
 		 	var txHash = Merkle.transactionHasher.Invoke(tx);
-			Assert.That(_BlockChain.pool.ContainsKey(txHash), Is.EqualTo(contains));
+			Assert.That(_BlockChain.memPool.TxPool.Contains(txHash), Is.EqualTo(contains));
 		}
 
 		private void AssertUtxoSet(Types.Transaction tx, bool contains)

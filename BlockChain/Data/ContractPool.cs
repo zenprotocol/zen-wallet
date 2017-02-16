@@ -1,47 +1,34 @@
-﻿using Store;
-using System.Linq;
-using Consensus;
-using System.Collections.Generic;
-using System;
-
-namespace BlockChain.Data
+﻿namespace BlockChain.Data
 {
-	public class ContractsPoolItem
+	public class ContractPool : HashDictionary<ContractsPoolItem>
 	{
-		public byte[] Hash { get; set; }
-		public string AssemblyFile { get; set; }
-		public byte[] CostFn { get; set; }
-		public ulong Cost { get; set; }
-		public int Refs { get; set; }
-	}
-
-	public class ContractPool
-	{
-		readonly HashDictionary<ContractsPoolItem> _Contracts = new HashDictionary<ContractsPoolItem>();
 		readonly HashDictionary<byte[]> _Txs = new HashDictionary<byte[]>();
 
-		public void RemoveRef(byte[] txHash, TransactionContext dbTx, TxPool txMempool)
+		public void AddRef(byte[] txHash, ACSItem acsItem)
 		{
-			lock (_Txs)
+			if (!ContainsKey(acsItem.Hash)) this[acsItem.Hash] = ContractsPoolItem.FromACSItem(acsItem);
+
+			var contractsPoolItem = this[acsItem.Hash];
+
+			contractsPoolItem.Refs++;
+
+			_Txs[txHash] = acsItem.Hash;
+		}
+
+		public new void Remove(byte[] txHash)
+		{
+			if (!_Txs.ContainsKey(txHash))
+				return;
+
+			var contractHash = _Txs[txHash];
+			var contract = this[contractHash];
+
+			_Txs.Remove(txHash);
+			contract.Refs--;
+
+			if (contract.Refs == 0)
 			{
-				if (!_Txs.ContainsKey(txHash))
-					return;
-
-				var contractHash = _Txs[txHash];
-				var contract = _Contracts[contractHash];
-
-				_Txs.Remove(txHash);
-				contract.Refs--;
-
-				if (contract.Refs == 0)
-				{
-					_Contracts.Remove(contractHash);
-
-					if (new ActiveContractSet().IsActive(dbTx, contractHash))
-						return;
-
-					txMempool.InactivateContractGeneratedTxs(dbTx, contractHash);
-				}
+				base.Remove(contractHash);
 			}
 		}
 	}

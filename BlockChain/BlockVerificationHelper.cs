@@ -11,38 +11,43 @@ namespace BlockChain
 	public class BlockVerificationHelper
 	{
 		public ResultEnum Result { get; set; }
+		public readonly HashDictionary<Types.Transaction> ConfirmedTxs;
+		public readonly HashDictionary<Types.Transaction> UnfonfirmedTxs;
+		public readonly List<QueueAction> QueuedActions;
+
+		public enum ResultEnum
+		{
+			Added,
+			AddedOrphan,
+			Rejected
+		}
 
 		BlockChain _BlockChain;
 		TransactionContext _DbTx;
 		byte[] _BkHash;
 		Types.Block _Bk;
-		HashDictionary<Tuple<Types.Transaction, bool>> _MempoolTxs;
-
-		public enum ResultEnum
-		{
-			Added,
-			//Reorganization,
-			AddedOrphan,
-			Rejected
-		}
 
 		public BlockVerificationHelper(
 			BlockChain blockChain,
 			TransactionContext dbTx,
 			byte[] bkHash,
 			Types.Block bk,
-			HashDictionary<Tuple<Types.Transaction, bool>> txs,
-			List<QueueAction> queuedActions, 
-			bool handleOrphan = false, 
-			bool handleBranch = false
+			bool handleOrphan = false,
+			bool handleBranch = false,
+			HashDictionary<Types.Transaction> confirmedTxs = null,
+			HashDictionary<Types.Transaction> invalidatedTxs = null,
+			List<QueueAction> queuedActions = null
 		)
 		{
+			ConfirmedTxs = confirmedTxs ?? new HashDictionary<Types.Transaction>();
+			UnfonfirmedTxs = invalidatedTxs ?? new HashDictionary<Types.Transaction>();
+			QueuedActions = queuedActions ?? new List<QueueAction>();
+
 			_BlockChain = blockChain;
 			_DbTx = dbTx;
 			_BkHash = bkHash;
 			_Bk = bk;
-			_MempoolTxs = txs;
-			
+
 			if (!IsValid())
 			{
 				BlockChainTrace.Information("not valid");
@@ -98,7 +103,7 @@ namespace BlockChain
 				else
 				{
 					blockChain.Timestamps.Init(bk.header.timestamp);
-					ExtendMain(queuedActions, 0);
+					ExtendMain(QueuedActions, 0);
 					Result = ResultEnum.Added;
 					return;
 				}
@@ -126,7 +131,7 @@ namespace BlockChain
 
 			if (handleBranch) // make a branch block main
 			{
-				if (!ExtendMain(queuedActions, totalWork))
+				if (!ExtendMain(QueuedActions, totalWork))
 				{
 					Result = ResultEnum.Rejected;
 					return;
@@ -168,12 +173,13 @@ namespace BlockChain
 							dbTx,
 							_bk.Key,
 							_bk.Value,
-							txs,
-							queuedActions,
 							false,
-							true);
+							true,
+							ConfirmedTxs,
+							UnfonfirmedTxs,
+							QueuedActions);
 						
-						BlockChainTrace.Information($"new main chain block {_bk.Value.header.blockNumber} {action.Result}");
+						BlockChainTrace.Information($"reorganization - new main chain block {_bk.Value.header.blockNumber} {action.Result}");
 
 						if (action.Result == ResultEnum.Rejected)
 						{
@@ -198,7 +204,7 @@ namespace BlockChain
 			}
 			else
 			{
-				if (!ExtendMain(queuedActions, totalWork))
+				if (!ExtendMain(QueuedActions, totalWork))
 				{
 					Result = ResultEnum.Rejected;
 					return;
@@ -230,6 +236,7 @@ namespace BlockChain
 
 			var pointedTransactions = new List<TransactionValidation.PointedTransaction>();
 
+			//TODO: lock with mempool
 			foreach (var transaction in _Bk.transactions)
 			{
 				TransactionValidation.PointedTransaction ptx;
@@ -259,7 +266,7 @@ namespace BlockChain
 				}
 
 				i = 0;
-				foreach(var output in ptx.outputs)
+				foreach (var output in ptx.outputs)
 				{
 					BlockChainTrace.Information($"new utxo, amount {output.spend.amount}");
 
@@ -314,15 +321,14 @@ namespace BlockChain
 
 			var expiringContracts = new ActiveContractSet().GetExpiringList(_DbTx, _Bk.header.blockNumber);
 
-			foreach (var contractHash in expiringContracts)
+			foreach (var acsItem in expiringContracts)
 			{
-				blockUndoData.ACSDeltas.Add(contractHash,
-				                            new ActiveContractSet().Get(_DbTx, contractHash).Value);
+				blockUndoData.ACSDeltas.Add(acsItem.Key, acsItem.Value);
 			}
 
 			_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
 
-			new ActiveContractSet().DeactivateContracts(_DbTx, _Bk.header.blockNumber, expiringContracts);
+			new ActiveContractSet().DeactivateContracts(_DbTx, expiringContracts.Select(t=>t.Key));
 
 			ValidateACS();
 
@@ -560,7 +566,11 @@ namespace BlockChain
 			block.transactions.ToList().ForEach(tx =>
 			{
 				var txHash = Merkle.transactionHasher.Invoke(tx);
-				_MempoolTxs[txHash] = new Tuple<Types.Transaction, bool>(tx, confirmed);
+
+				if (confirmed)
+					ConfirmedTxs[txHash] = tx;
+				else
+					UnfonfirmedTxs[txHash] = tx;
 			});
 		}
 	}

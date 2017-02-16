@@ -59,9 +59,14 @@
     <Compile Include="Data\Action.cs" />
     <Compile Include="Data\TxStateEnum.cs" />
     <Compile Include="Store\ActiveContractSet.cs" />
-    <Compile Include="Data\TxPool.cs" />
+    <Compile Include="Data\MemPool.cs" />
     <Compile Include="Data\ContractPool.cs" />
     <Compile Include="Data\BlockUndoData.cs" />
+    <Compile Include="Data\TxPool.cs" />
+    <Compile Include="Data\ICTxPool.cs" />
+    <Compile Include="Data\TxPoolBase.cs" />
+    <Compile Include="Data\OrphanTxPool.cs" />
+    <Compile Include="Data\ContractsPoolItem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
