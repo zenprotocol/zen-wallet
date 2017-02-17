@@ -239,16 +239,15 @@ namespace BlockChain
 			//TODO: lock with mempool
 			foreach (var transaction in _Bk.transactions)
 			{
+				var txHash = Merkle.transactionHasher.Invoke(transaction);
 				TransactionValidation.PointedTransaction ptx;
 
-				if (!IsTransactionValid(transaction, out ptx))
+				if (!IsTransactionValid(transaction, txHash, out ptx))
 				{
 					return false;
 				}
 
 				pointedTransactions.Add(ptx);
-
-				var txHash = Merkle.transactionHasher.Invoke(transaction);
 
 				BlockChainTrace.Information("new tx");
 
@@ -374,11 +373,34 @@ namespace BlockChain
 				_BlockChain.BlockStore.HasChildren(_DbTx, _Bk.header.parent);
 		}
 
-		bool IsTransactionValid(Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
+		bool IsTransactionValid(Types.Transaction tx, byte[] txHash, out TransactionValidation.PointedTransaction ptx)
 		{
-			if (_BlockChain.IsOrphanTx(_DbTx, tx, out ptx))
+			var i = 0;
+			foreach (var output in tx.outputs)
+			{
+				//TODO: refactor
+				byte[] utxoKey = new byte[txHash.Length + 1];
+				txHash.CopyTo(utxoKey, 0);
+				utxoKey[txHash.Length] = (byte)i;
+
+				if (_BlockChain.UTXOStore.ContainsKey(_DbTx, utxoKey))
+				{
+					BlockChainTrace.Information("tx invalid - exists");
+					ptx = null;
+					return false;
+				}
+			}
+				
+			if (_BlockChain.IsOrphanTx(_DbTx, tx))
 			{
 				BlockChainTrace.Information("tx invalid - orphan");
+				ptx = null;
+				return false;
+			}
+
+			if (!_BlockChain.CanConstractPtx(_DbTx, tx, out ptx))
+			{
+				BlockChainTrace.Information("tx invalid reference(s)");
 				return false;
 			}
 
