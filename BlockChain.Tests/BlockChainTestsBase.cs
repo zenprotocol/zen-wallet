@@ -51,12 +51,6 @@ namespace BlockChain
 			}
 		}
 
-		protected void Reset()
-		{
-			_BlockChain.Dispose();
-			_BlockChain = new BlockChain(DB, _GenesisBlockHash);
-		}
-
 		protected LocationEnum Location(Types.Block block)
 		{
 			using (var dbTx = _BlockChain.GetDBTransaction())

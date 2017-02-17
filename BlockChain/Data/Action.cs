@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks.Dataflow;
 using Consensus;
 using Infrastructure;
 
@@ -6,9 +7,11 @@ namespace BlockChain.Data
 {
 	public class QueueAction
 	{
+		public static ITargetBlock<QueueAction> Target; // factor out static
+
 		public void Publish()
 		{
-			MessageProducer<QueueAction>.Instance.PushMessage(this);
+			Target.Post(this);
 		}
 	}
 
@@ -39,6 +42,7 @@ namespace BlockChain.Data
 
 		public HandleOrphansOfTxAction(byte[] txHash) //, TransactionValidation.PointedTransaction pointedTransaction)
 		{
+			BlockChainTrace.Information("action: orphans");
 			TxHash = txHash;
 	//		PointedTransaction = pointedTransaction;
 		}

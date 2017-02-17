@@ -45,5 +45,11 @@ namespace Store
 			_Event.WaitOne();
 			_Engine.Dispose();
 		}
+
+		public void Wait()
+		{
+			_Event.WaitOne();
+		}
+
 	}
 }

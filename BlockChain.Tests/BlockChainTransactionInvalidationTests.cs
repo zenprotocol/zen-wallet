@@ -194,7 +194,7 @@ namespace BlockChain
 
 			Assert.That(_BlockChain.HandleBlock(sideChainBlock), Is.True);
 
-			Reset();
+			_BlockChain.WaitDbTxs();
 
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.True);
 			Assert.That(_BlockChain.memPool.TxPool.Contains(Merkle.transactionHasher.Invoke(tx1)), Is.False);
