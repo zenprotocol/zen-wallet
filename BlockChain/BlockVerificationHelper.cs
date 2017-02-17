@@ -390,18 +390,15 @@ namespace BlockChain
 					return false;
 				}
 			}
-				
-			if (_BlockChain.IsOrphanTx(_DbTx, tx))
-			{
-				BlockChainTrace.Information("tx invalid - orphan");
-				ptx = null;
-				return false;
-			}
 
-			if (!_BlockChain.CanConstractPtx(_DbTx, tx, out ptx))
+			switch (_BlockChain.IsOrphanTx(_DbTx, tx, out ptx))
 			{
-				BlockChainTrace.Information("tx invalid reference(s)");
-				return false;
+				case BlockChain.IsOrphanResult.Orphan:
+					BlockChainTrace.Information("tx invalid - orphan");
+					return false;
+				case BlockChain.IsOrphanResult.Invalid:
+					BlockChainTrace.Information("tx invalid - reference(s)");
+					return false;
 			}
 
 			byte[] contractHash;
