@@ -6,13 +6,12 @@ using Wallet.core.Data;
 
 namespace BlockChain
 {
-	[TestFixture()]
 	public class BlockChainSimpleTests : BlockChainTestsBase
 	{
 		Key _Key;
 		Types.Transaction _GenesisTx;
 
-		[Order(1)]
+		[Test, Order(1)]
 		public void ShouldAddGenesisWithTx()
 		{
 			_Key = Key.Create();
@@ -22,7 +21,7 @@ namespace BlockChain
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 		}
 
-		[Order(2)]
+		[Test, Order(2)]
 		public void ShouldAddToMempool()
 		{
 			var nonOrphanTx = Utils.GetTx().AddInput(_GenesisTx, 0, _Key.Private).Sign(_Key.Private);
@@ -31,7 +30,7 @@ namespace BlockChain
 			Assert.That(_BlockChain.memPool.TxPool.Contains(Merkle.transactionHasher.Invoke(nonOrphanTx)), Is.True);
 		}
 
-		[Order(2)]
+		[Test, Order(2)]
 		public void ShouldNotAddToMempoolOrphanTx()
 		{
 			var orphanTx = Utils.GetTx().AddInput(Utils.GetTx(), 0, _Key.Private).Sign(_Key.Private);
@@ -40,13 +39,13 @@ namespace BlockChain
 			Assert.That(_BlockChain.memPool.TxPool.Contains(Merkle.transactionHasher.Invoke(orphanTx)), Is.False);
 		}
 
-		[Order(3)]
+		[Test, Order(3)]
 		public void ShouldRejectBlock()
 		{
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_GenesisTx)), Is.False);
 		}
 
-		[Order(4)]
+		[Test, Order(4)]
 		public void ShouldValidateInterdependentTxs()
 		{
 			var key1 = Key.Create();

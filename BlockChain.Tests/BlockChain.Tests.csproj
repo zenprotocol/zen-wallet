@@ -48,6 +48,7 @@
     <Compile Include="ContractHelperTests.cs" />
     <Compile Include="BlockChainContractTestsBase.cs" />
     <Compile Include="ACSTests.cs" />
+    <Compile Include="MempoolTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

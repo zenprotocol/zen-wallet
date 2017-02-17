@@ -58,14 +58,14 @@ namespace BlockChain
 
 		void HandleOrphansOfTransaction(HandleOrphansOfTxAction a)
 		{
-			using (TransactionContext context = _DBContext.GetTransactionContext())
+			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				lock (memPool)
 				{
 					foreach (var tx in memPool.OrphanTxPool.GetOrphansOf(a.TxHash))
 					{
 						TransactionValidation.PointedTransaction ptx;
-						if (!IsOrphanTx(context, tx.Item2, out ptx) && IsValidTransaction(context, ptx))
+						if (!IsOrphanTx(dbTx, tx.Item2) && CanConstractPtx(dbTx, tx.Item2, out ptx) && IsValidTransaction(dbTx, ptx))
 						{
 							BlockChainTrace.Information("unorphaned tx added to mempool");
 							memPool.TxPool.Add(tx.Item1, ptx);
@@ -106,11 +106,17 @@ namespace BlockChain
 						return false;
 					}
 
-					if (IsOrphanTx(context, tx, out ptx))
+					if (IsOrphanTx(context, tx))
 					{
 						BlockChainTrace.Information("Tx added as orphan");
 						memPool.OrphanTxPool.Add(txHash, tx);
 						return true;
+					}
+
+					if (!CanConstractPtx(context, tx, out ptx))
+					{
+						BlockChainTrace.Information("Tx contains invalid reference(s)");
+						return false;
 					}
 
 					//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
@@ -218,8 +224,8 @@ namespace BlockChain
 		{
 			foreach (var tx in unconfirmedTxs)
 			{
-				TransactionValidation.PointedTransaction ptx;
-				if (!IsOrphanTx(dbTx, tx.Value, out ptx) && IsValidTransaction(dbTx, ptx))
+				TransactionValidation.PointedTransaction ptx = null;
+				if (!IsOrphanTx(dbTx, tx.Value) && CanConstractPtx(dbTx, tx.Value, out ptx) && IsValidTransaction(dbTx, ptx))
 				{
 					BlockChainTrace.Information("tx evicted to mempool");
 					memPool.TxPool.Add(tx.Key, ptx);
@@ -273,9 +279,28 @@ namespace BlockChain
 			}
 		}
 
-		public bool IsOrphanTx(TransactionContext dbTx, Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
+		public bool IsOrphanTx(TransactionContext dbTx, Types.Transaction tx)
 		{
-			ptx = null;
+			foreach (Types.Outpoint input in tx.inputs)
+			{
+				byte[] newArray = new byte[input.txHash.Length + 1];
+				input.txHash.CopyTo(newArray, 0);
+				newArray[input.txHash.Length] = (byte)input.index;
+
+				if (!UTXOStore.ContainsKey(dbTx, newArray)) //TODO: refactor ContainsKey, refactor byte[] usage
+				{
+					if (!memPool.TxPool.Contains(input.txHash))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		public bool CanConstractPtx(TransactionContext dbTx, Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
+		{
 			var outputs = new List<Types.Output>();
 
 			foreach (Types.Outpoint input in tx.inputs)
@@ -284,20 +309,18 @@ namespace BlockChain
 				input.txHash.CopyTo(newArray, 0);
 				newArray[input.txHash.Length] = (byte)input.index;
 
-				if (!UTXOStore.ContainsKey(dbTx, newArray)) //TODO: refactor ContainsKey
+				if (UTXOStore.ContainsKey(dbTx, newArray)) //TODO: refactor ContainsKey, byte[] usage
 				{
-					if (!memPool.TxPool.Contains(input.txHash))
-					{
-						return true;
-					}
-					else
-					{
-						outputs.Add(memPool.TxPool[input.txHash].pInputs[(int)input.index].Item2);
-					}
+					outputs.Add(UTXOStore.Get(dbTx, newArray).Value);
+				}
+				else if (memPool.TxPool.Contains(input.txHash) && input.index < memPool.TxPool[input.txHash].outputs.Length)
+				{
+					outputs.Add(memPool.TxPool[input.txHash].outputs[(int)input.index]);
 				}
 				else
 				{
-					outputs.Add(UTXOStore.Get(dbTx, newArray).Value);
+					ptx = null;
+					return false;
 				}
 			}
 
@@ -306,7 +329,7 @@ namespace BlockChain
 				ListModule.OfSeq<Types.Output>(outputs)
 			);
 
-			return false;
+			return true;
 		}
 
 		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)

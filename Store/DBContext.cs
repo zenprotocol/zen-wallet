@@ -17,19 +17,26 @@ namespace Store
 
 		public TransactionContext GetTransactionContext()
 		{
-			var t = new TransactionContext(this, _Engine.GetTransaction());
-			_List.Add(t);
-			_Event.Reset();
-			return t;
+			lock (_List)
+			{
+				var t = new TransactionContext(this, _Engine.GetTransaction());
+				_List.Add(t);
+				_Event.Reset();
+
+				return t;
+			}
 		}
 
 		public void Remove(TransactionContext transaction)
 		{
-			_List.Remove(transaction);
-
-			if (_List.Count == 0)
+			lock (_List)
 			{
-				_Event.Set();
+				_List.Remove(transaction);
+
+				if (_List.Count == 0)
+				{
+					_Event.Set();
+				}
 			}
 		}
 
