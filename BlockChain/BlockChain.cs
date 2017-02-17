@@ -238,13 +238,13 @@ namespace BlockChain
 				}
 			}
 
-			foreach (var _action in action.QueuedActions)
+			action.QueuedActions.ForEach(a =>
 			{
-				if (_action is MessageAction)
-					(_action as MessageAction).Message.Publish();
+				if (a is MessageAction)
+					(a as MessageAction).Message.Publish();
 				else
-					_action.Publish();
-			}
+					a.Publish();
+			});
 
 			return true;
 		}
@@ -259,7 +259,7 @@ namespace BlockChain
 				activeContracts.AddRange(memPool.ContractPool.Keys);
 				               
 				EvictTxToMempool(dbTx, unconfirmedTxs);
-				RemoveConfirmedTxFromMempool(dbTx, confirmedTxs);
+				RemoveConfirmedTxFromMempool(confirmedTxs);
 
 				var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
 
@@ -307,7 +307,7 @@ namespace BlockChain
 			}
 		}
 
-		void RemoveConfirmedTxFromMempool(TransactionContext dbTx, HashDictionary<Types.Transaction> confirmedTxs)
+		void RemoveConfirmedTxFromMempool(HashDictionary<Types.Transaction> confirmedTxs)
 		{
 			var spentOutputs = new List<Types.Outpoint>(); //TODO sort - efficiency
 
