@@ -33,12 +33,14 @@ namespace BlockChain.Data
 
 		public NewTxMessage(byte[] txHash, TxStateEnum state)
 		{
+			BlockChainTrace.Information("To wallet : tx has new state: " + state);
 			TxHash = txHash;
 			State = state;
 		}
 
 		public NewTxMessage(byte[] txHash, TransactionValidation.PointedTransaction tx, TxStateEnum state)	
 		{
+			BlockChainTrace.Information("To wallet : tx has new state: " + state);
 			TxHash = txHash;
 			Tx = tx;
 			State = state;

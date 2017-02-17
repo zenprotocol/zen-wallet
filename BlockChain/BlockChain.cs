@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using Microsoft.FSharp.Collections;
 using System.Linq;
 using BlockChain.Data;
+using System.Threading.Tasks.Dataflow;
+using System.Threading.Tasks;
 
 namespace BlockChain
 {
@@ -22,6 +24,22 @@ namespace BlockChain
 		public ChainTip ChainTip { get; set; }
 		public BlockTimestamps Timestamps { get; set; }
 		public byte[] GenesisBlockHash { get; set; }
+
+		public enum IsOrphanResult
+		{
+			NotOrphan,
+			Orphan,
+			Invalid,
+		}
+
+#if DEBUG
+		// for unit tests
+		public void WaitDbTxs()
+		{
+			
+			_DBContext.Wait();
+		}
+#endif
 
 		public BlockChain(string dbName, byte[] genesisBlockHash)
 		{
@@ -44,16 +62,31 @@ namespace BlockChain
 
 			InitBlockTimestamps();
 
-			OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(new EventLoopMessageListener<QueueAction>(ProcessAction)));
+			var buffer = new BufferBlock<QueueAction>();
+			QueueAction.Target = buffer;
+			var consumer = ConsumeAsync(buffer);
+
 			OwnResource(_DBContext);
 		}
 
-		void ProcessAction(QueueAction action)
+		async Task ConsumeAsync(ISourceBlock<QueueAction> source)
 		{
-			if (action is HandleBlockAction) 
-				HandleBlock(action as HandleBlockAction);
-			else if (action is HandleOrphansOfTxAction) 
-				HandleOrphansOfTransaction(action as HandleOrphansOfTxAction);
+			while (await source.OutputAvailableAsync())
+			{
+				QueueAction action = source.Receive();
+
+				try
+				{
+					if (action is HandleBlockAction)
+						HandleBlock(action as HandleBlockAction);
+					else if (action is HandleOrphansOfTxAction)
+						HandleOrphansOfTransaction(action as HandleOrphansOfTxAction);
+				}
+				catch (Exception e)
+				{
+					BlockChainTrace.Error("action consumer", e);
+				}
+			}
 		}
 
 		void HandleOrphansOfTransaction(HandleOrphansOfTxAction a)
@@ -65,17 +98,36 @@ namespace BlockChain
 					memPool.OrphanTxPool.GetOrphansOf(a.TxHash).ToList().ForEach(t =>
 					{
 						TransactionValidation.PointedTransaction ptx;
+						var tx = memPool.OrphanTxPool[t];
 
-						if (CanConstractPtx(dbTx, t.Item2, out ptx) && IsValidTransaction(dbTx, ptx))
+						switch (IsOrphanTx(dbTx, tx, out ptx))
 						{
-							BlockChainTrace.Information("unorphaned tx added to mempool");
-							memPool.TxPool.Add(t.Item1, ptx);
+							case IsOrphanResult.Orphan:
+								return;
+							case IsOrphanResult.Invalid:
+								BlockChainTrace.Information("invalid orphan tx removed from orphans");
+								break;
+							case IsOrphanResult.NotOrphan:
+								if (!memPool.TxPool.ContainsInputs(tx))
+								{
+									if (IsValidTransaction(dbTx, ptx))
+									{
+										BlockChainTrace.Information("unorphaned tx added to mempool");
+										memPool.TxPool.Add(t, ptx);
+									}
+									else
+									{
+										BlockChainTrace.Information("invalid orphan tx removed from orphans");
+									}
+								}
+								else
+								{
+									BlockChainTrace.Information("double spent orphan tx removed from orphans");
+								}
+								break;
 						}
-						else
-						{
-							BlockChainTrace.Information("invalid orphaned tx removed from orphans");
-							memPool.OrphanTxPool.RemoveDependencies(t.Item1);
-						}
+
+						memPool.OrphanTxPool.RemoveDependencies(t);
 					});
 				}
 			}
@@ -112,18 +164,17 @@ namespace BlockChain
 						return false;
 					}
 
-					if (IsOrphanTx(context, tx))
+					switch (IsOrphanTx(context, tx, out ptx))
 					{
-						BlockChainTrace.Information("Tx added as orphan");
-						memPool.OrphanTxPool.Add(txHash, tx);
-						return true;
+						case IsOrphanResult.Orphan:
+							BlockChainTrace.Information("tx added as orphan");
+							memPool.OrphanTxPool.Add(txHash, tx);
+							return true;
+						case IsOrphanResult.Invalid:
+							BlockChainTrace.Information("tx contains invalid reference(s)");
+							return false;
 					}
 
-					if (!CanConstractPtx(context, tx, out ptx))
-					{
-						BlockChainTrace.Information("Tx contains invalid reference(s)");
-						return false;
-					}
 
 					//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
 					//TODO: 7. Apply fee rules. If fails, reject
@@ -231,21 +282,25 @@ namespace BlockChain
 			foreach (var tx in unconfirmedTxs)
 			{
 				TransactionValidation.PointedTransaction ptx = null;
-				if (!IsOrphanTx(dbTx, tx.Value) && CanConstractPtx(dbTx, tx.Value, out ptx) && IsValidTransaction(dbTx, ptx))
-				{
-					BlockChainTrace.Information("tx evicted to mempool");
-					memPool.TxPool.Add(tx.Key, ptx);
 
-					//foreach (var contractHash in GetContractsActivatedBy(ptx))
-					//{
-					//	memPool.ContractPool.AddRef(dbTx, tx.Key, activeContracts);
-					//}
-				}
-				else
+				switch (IsOrphanTx(dbTx, tx.Value, out ptx))
 				{
-					memPool.TxPool.RemoveDependencies(tx.Key);
+					case IsOrphanResult.NotOrphan:
+						if (IsValidTransaction(dbTx, ptx))
+						{
+							BlockChainTrace.Information("tx evicted to mempool");
+							memPool.TxPool.Add(tx.Key, ptx);
 
-					new NewTxMessage(tx.Key, ptx, TxStateEnum.Invalid).Publish();
+							//foreach (var contractHash in GetContractsActivatedBy(ptx))
+							//{
+							//	memPool.ContractPool.AddRef(dbTx, tx.Key, activeContracts);
+							//}
+						}
+						break;
+					case IsOrphanResult.Orphan: // is a double-spend
+						memPool.TxPool.RemoveDependencies(tx.Key);
+						new NewTxMessage(tx.Key, ptx, TxStateEnum.Invalid).Publish();
+						break;
 				}
 
 				new NewTxMessage(tx.Key, ptx, TxStateEnum.Unconfirmed).Publish();
@@ -285,49 +340,40 @@ namespace BlockChain
 			}
 		}
 
-		public bool IsOrphanTx(TransactionContext dbTx, Types.Transaction tx)
+		public IsOrphanResult IsOrphanTx(TransactionContext dbTx, Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
 		{
+			var outputs = new List<Types.Output>();
+
+			ptx = null;
+
 			foreach (Types.Outpoint input in tx.inputs)
 			{
-				byte[] newArray = new byte[input.txHash.Length + 1];
-				input.txHash.CopyTo(newArray, 0);
-				newArray[input.txHash.Length] = (byte)input.index;
+				byte[] output = new byte[input.txHash.Length + 1];
+				input.txHash.CopyTo(output, 0);
+				output[input.txHash.Length] = (byte)input.index;
 
-				if (!UTXOStore.ContainsKey(dbTx, newArray)) //TODO: refactor ContainsKey, refactor byte[] usage
+				if (UTXOStore.ContainsKey(dbTx, output)) //TODO: refactor ContainsKey, byte[] usage
 				{
-					if (!memPool.TxPool.Contains(input.txHash))
+					outputs.Add(UTXOStore.Get(dbTx, output).Value);
+				}
+
+				if (memPool.TxPool.Contains(input.txHash))
+				{
+					if (input.index < memPool.TxPool[input.txHash].outputs.Length)
 					{
-						return true;
+						outputs.Add(memPool.TxPool[input.txHash].outputs[(int)input.index]);
+					}
+					else
+					{
+						BlockChainTrace.Information("can't construct ptx");
+						return IsOrphanResult.Invalid;
 					}
 				}
 			}
 
-			return false;
-		}
-
-		public bool CanConstractPtx(TransactionContext dbTx, Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
-		{
-			var outputs = new List<Types.Output>();
-
-			foreach (Types.Outpoint input in tx.inputs)
+			if (outputs.Count < tx.inputs.Count())
 			{
-				byte[] newArray = new byte[input.txHash.Length + 1];
-				input.txHash.CopyTo(newArray, 0);
-				newArray[input.txHash.Length] = (byte)input.index;
-
-				if (UTXOStore.ContainsKey(dbTx, newArray)) //TODO: refactor ContainsKey, byte[] usage
-				{
-					outputs.Add(UTXOStore.Get(dbTx, newArray).Value);
-				}
-				else if (memPool.TxPool.Contains(input.txHash) && input.index < memPool.TxPool[input.txHash].outputs.Length)
-				{
-					outputs.Add(memPool.TxPool[input.txHash].outputs[(int)input.index]);
-				}
-				else
-				{
-					ptx = null;
-					return false;
-				}
+				return IsOrphanResult.Orphan;
 			}
 
 			ptx = TransactionValidation.toPointedTransaction(
@@ -335,7 +381,7 @@ namespace BlockChain
 				ListModule.OfSeq<Types.Output>(outputs)
 			);
 
-			return true;
+			return IsOrphanResult.NotOrphan;
 		}
 
 		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
