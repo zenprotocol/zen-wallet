@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Infrastructure.Testing;
 using NUnit.Framework;
 using Wallet.core.Data;
@@ -11,13 +11,13 @@ namespace BlockChain
 		public void ShouldRemoveUnorphanInvalidTx()
 		{
 			var tx = Utils.GetTx().Sign();
-			var txInvalidOrpan = Utils.GetTx().AddInput(tx, 0);
+			var txInvalidOrphan = Utils.GetTx().AddInput(tx, 0);
 
-			_BlockChain.HandleTransaction(txInvalidOrpan);
-			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrpan.Key()), Is.True, "should be there");
+			_BlockChain.HandleTransaction(txInvalidOrphan);
+			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrphan.Key()), Is.True, "should be there");
 			_BlockChain.HandleTransaction(tx);
 			System.Threading.Thread.Sleep(50);
-			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrpan.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrphan.Key()), Is.False, "should not be there");
 		}
 
 		[Test]
@@ -25,15 +25,15 @@ namespace BlockChain
 		{
 			var key = new Key();
 			var tx = Utils.GetTx();
-			var txInvalidOrpan = Utils.GetTx().AddInput(tx, 0).AddOutput(key.Address, Consensus.Tests.zhash, 100);
-			var txOrpanDepenent = Utils.GetTx().AddInput(txInvalidOrpan, 0);
+			var txInvalidOrphan = Utils.GetTx().AddInput(tx, 0).AddOutput(key.Address, Consensus.Tests.zhash, 100);
+			var txOrphanDepenent = Utils.GetTx().AddInput(txInvalidOrphan, 0);
 
-			_BlockChain.HandleTransaction(txInvalidOrpan);
-			_BlockChain.HandleTransaction(txOrpanDepenent);
+			_BlockChain.HandleTransaction(txInvalidOrphan);
+			_BlockChain.HandleTransaction(txOrphanDepenent);
 			_BlockChain.HandleTransaction(tx);
 			System.Threading.Thread.Sleep(50);
-			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrpan.Key()), Is.False, "should not be there");
-			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txOrpanDepenent.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrphan.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txOrphanDepenent.Key()), Is.False, "should not be there");
 		}
 
 		[Test]
