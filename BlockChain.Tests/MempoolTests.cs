@@ -10,18 +10,18 @@ namespace BlockChain
 		[Test, Order(1)]
 		public void ShouldRemoveUnorphanInvalidTx()
 		{
-			var tx = Utils.GetTx();
+			var tx = Utils.GetTx().Sign();
 
-			var txOrpan = Utils.GetTx().AddInput(tx, 0, new Key().Address);
+			var txInvalidOrpan = Utils.GetTx().AddInput(tx, 0);
 
-			_BlockChain.HandleTransaction(txOrpan);
-			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txOrpan.Key()), Is.True, "should be there");
+			_BlockChain.HandleTransaction(txInvalidOrpan);
+			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrpan.Key()), Is.True, "should be there");
 
 			_BlockChain.HandleTransaction(tx);
 
-			System.Threading.Thread.Sleep(500);
+			Reset();
 
-			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txOrpan.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txInvalidOrpan.Key()), Is.False, "should not be there");
 		}
 	}
 }

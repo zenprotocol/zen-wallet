@@ -23,17 +23,17 @@ namespace Infrastructure.Testing
 										 tx.contract);
 		}
 
-		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Transaction txRef, int index, byte[] key)
+		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Transaction txRef, int index)
 		{
-			return tx.AddInput(new Types.Outpoint(Merkle.transactionHasher.Invoke(txRef), (uint)index), key);
+			return tx.AddInput(new Types.Outpoint(Merkle.transactionHasher.Invoke(txRef), (uint)index));
 		}
 
-		public static Types.Transaction AddInput(this Types.Transaction tx, byte[] txHash, int index, byte[] key)
+		public static Types.Transaction AddInput(this Types.Transaction tx, byte[] txHash, int index)
 		{
-			return tx.AddInput(new Types.Outpoint(txHash, (uint)index), key);
+			return tx.AddInput(new Types.Outpoint(txHash, (uint)index));
 		}
 
-		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Outpoint outpoint, byte[] key)
+		public static Types.Transaction AddInput(this Types.Transaction tx, Types.Outpoint outpoint)
 		{
 			return new Types.Transaction(tx.version,
 			                             FSharpList<Types.Outpoint>.Cons(outpoint, tx.inputs),
@@ -45,6 +45,11 @@ namespace Infrastructure.Testing
 		public static Types.Transaction Sign(this Types.Transaction tx, params byte[][] keys)
 		{
 			return TransactionValidation.signTx(tx, ListModule.OfSeq(keys));
+		}
+
+		public static byte[] Key(this Types.Transaction tx)
+		{
+			return Merkle.transactionHasher.Invoke(tx);
 		}
 	}
 }

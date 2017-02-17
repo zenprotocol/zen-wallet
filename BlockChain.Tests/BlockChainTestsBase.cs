@@ -22,6 +22,7 @@ namespace BlockChain
 		protected BlockChain _BlockChain;
 		//protected Types.Transaction _GenesisTx;
 		protected Types.Block _GenesisBlock;
+		private byte[] _GenesisBlockHash;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
@@ -32,8 +33,8 @@ namespace BlockChain
 		//	_GenesisTx = Infrastructure.Testing.Utils.GetTx();
 			_GenesisBlock = Infrastructure.Testing.Utils.GetGenesisBlock();
 
-			var key = Merkle.blockHeaderHasher.Invoke(_GenesisBlock.header);
-			_BlockChain = new BlockChain(DB, key);
+			_GenesisBlockHash = Merkle.blockHeaderHasher.Invoke(_GenesisBlock.header);
+			_BlockChain = new BlockChain(DB, _GenesisBlockHash);
 		}
 
 		[OneTimeTearDown]
@@ -48,6 +49,12 @@ namespace BlockChain
 			{
 				Directory.Delete(DB, true);
 			}
+		}
+
+		protected void Reset()
+		{
+			_BlockChain.Dispose();
+			_BlockChain = new BlockChain(DB, _GenesisBlockHash);
 		}
 
 		protected LocationEnum Location(Types.Block block)

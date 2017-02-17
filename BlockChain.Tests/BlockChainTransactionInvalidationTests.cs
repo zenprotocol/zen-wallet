@@ -22,9 +22,9 @@ namespace BlockChain
 
 			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
 			var output1 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var tx1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1);
+			var tx1 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output1).Sign(key.Private);
 			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 2);
-			var tx2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
+			var tx2 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output2).Sign(key.Private);
 
 			var bk = _GenesisBlock.AddTx(genesisTx);
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
@@ -38,9 +38,9 @@ namespace BlockChain
 
 			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
 			var output1 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var tx1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1);
+			var tx1 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output1).Sign(key.Private);
 			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 2);
-			var tx2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
+			var tx2 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output2).Sign(key.Private);
 
 			var bk = _GenesisBlock.AddTx(genesisTx);
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
@@ -57,7 +57,7 @@ namespace BlockChain
 			var bk = _GenesisBlock.AddTx(genesisTx);
 
 			//TODO: key.Address
-			var tx = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			var tx = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private);
 			var txHash = Merkle.transactionHasher.Invoke(tx);
 
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
@@ -76,8 +76,8 @@ namespace BlockChain
 			var bk = _GenesisBlock.AddTx(genesisTx);
 
 			//TODO: key.Address
-			var txInvalidated  = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var txInvalidating = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2);
+			var txInvalidated  = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private);
+			var txInvalidating = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private);
 			var txHash = Merkle.transactionHasher.Invoke(txInvalidated);
 
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
@@ -98,16 +98,16 @@ namespace BlockChain
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 
 			var output1_withconflict = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
-			var tx1_withconflict = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1_withconflict);
+			var tx1_withconflict = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output1_withconflict).Sign(key.Private);
 			var output1_withoutconflict = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
-			var tx1_withoutconflict = Utils.GetTx().AddInput(genesisTx, 1, key.Address).AddOutput(output1_withoutconflict);
+			var tx1_withoutconflict = Utils.GetTx().AddInput(genesisTx, 1).AddOutput(output1_withoutconflict).Sign(key.Private);
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1_withconflict).AddTx(tx1_withoutconflict)), Is.True);
 
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1_withconflict), Is.True);
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output1_withoutconflict), Is.True);
 
 			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
-			var tx2_withconflict = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
+			var tx2_withconflict = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output2).Sign(key.Private);
 			var sideChainBlock = _GenesisBlock.Child().AddTx(tx2_withconflict);
 			Assert.That(_BlockChain.HandleBlock(sideChainBlock), Is.True);
 
@@ -136,10 +136,10 @@ namespace BlockChain
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 
 			var output1 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var tx1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1);
+			var tx1 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output1).Sign(key.Private);
 
 			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 2);
-			var tx2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
+			var tx2 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output2).Sign(key.Private);
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1)), Is.True);
 
@@ -176,10 +176,10 @@ namespace BlockChain
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 
 			var output1 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
-			var tx1 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output1);
+			var tx1 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output1).Sign(key.Private);
 
 			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 5);
-			var tx2 = Utils.GetTx().AddInput(genesisTx, 0, key.Address).AddOutput(output2);
+			var tx2 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output2).Sign(key.Private);
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1)), Is.True);
 
@@ -194,13 +194,7 @@ namespace BlockChain
 
 			Assert.That(_BlockChain.HandleBlock(sideChainBlock), Is.True);
 
-			for (var i = 0; i < 10; i++)
-			{
-				if (_BlockChain.GetUTXOSet(null).Values.Contains(output2))
-					break;
-
-				System.Threading.Thread.Sleep(100);
-			}
+			Reset();
 
 			Assert.That(_BlockChain.GetUTXOSet(null).Values.Contains(output2), Is.True);
 			Assert.That(_BlockChain.memPool.TxPool.Contains(Merkle.transactionHasher.Invoke(tx1)), Is.False);
