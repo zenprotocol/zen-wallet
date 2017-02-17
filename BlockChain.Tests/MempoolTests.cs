@@ -8,7 +8,7 @@ namespace BlockChain
 	public class MempoolTests : BlockChainTestsBase
 	{
 		[Test, Order(1)]
-		public void ShouldUnorphan()
+		public void ShouldRemoveUnorphanInvalidTx()
 		{
 			var tx = Utils.GetTx();
 
@@ -18,7 +18,10 @@ namespace BlockChain
 			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txOrpan.Key()), Is.True, "should be there");
 
 			_BlockChain.HandleTransaction(tx);
-			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txOrpan.Key()), Is.True, "should not be there");
+
+			System.Threading.Thread.Sleep(500);
+
+			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(txOrpan.Key()), Is.False, "should not be there");
 		}
 	}
 }

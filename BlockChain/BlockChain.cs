@@ -62,15 +62,21 @@ namespace BlockChain
 			{
 				lock (memPool)
 				{
-					foreach (var tx in memPool.OrphanTxPool.GetOrphansOf(a.TxHash))
+					memPool.OrphanTxPool.GetOrphansOf(a.TxHash).ToList().ForEach(t =>
 					{
 						TransactionValidation.PointedTransaction ptx;
-						if (!IsOrphanTx(dbTx, tx.Item2) && CanConstractPtx(dbTx, tx.Item2, out ptx) && IsValidTransaction(dbTx, ptx))
+
+						if (CanConstractPtx(dbTx, t.Item2, out ptx) && IsValidTransaction(dbTx, ptx))
 						{
 							BlockChainTrace.Information("unorphaned tx added to mempool");
-							memPool.TxPool.Add(tx.Item1, ptx);
+							memPool.TxPool.Add(t.Item1, ptx);
 						}
-					}
+						else
+						{
+							BlockChainTrace.Information("invalid orphaned tx removed from orphans");
+							memPool.OrphanTxPool.RemoveDependencies(t.Item1);
+						}
+					});
 				}
 			}
 		}
