@@ -115,39 +115,28 @@ namespace NBitcoin.Protocol.Behaviors
 
 			message.IfPayloadIs<Types.Transaction>(tx =>
 			{
-				//if (!_ReceivedTransactions.TryAdd(GetHash(txPayload.Transaction), txPayload.Transaction))
-				//{
-				//	node.SendMessageAsync(new RejectPayload()
-				//	{
-				//		Hash = GetHash(txPayload.Transaction),
-				//		Code = RejectCode.DUPLICATE,
-				//		Message = "tx"
-				//	});
-				//}
-				//else
-				//{
-				//	foreach (var other in Nodes.Where(n => n != node))
-				//	{
-				//		other.SendMessageAsync(new InvPayload(txPayload.Transaction));
-				//	}
-				//}
-
-				if (_BlockChain.HandleTransaction(tx))
+				switch (_BlockChain.HandleTransaction(tx))
 				{
-					foreach (var other in Nodes)
-					{
-						if (other != AttachedNode && other.State == NodeState.HandShaked)
-							other.SendMessageAsync(new InvPayload(tx));
-					}
-				}
-				else
-				{
-					node.SendMessageAsync(new RejectPayload()
-					{
-						Hash = GetHash(tx),
-						Code = RejectCode.INVALID,
-						Message = "tx"
-					});
+					case BlockChain.BlockChain.TxResultEnum.Accepted:
+						foreach (var other in Nodes)
+						{
+							if (other != AttachedNode && other.State == NodeState.HandShaked)
+								other.SendMessageAsync(new InvPayload(tx));
+						}
+						break;
+					case BlockChain.BlockChain.TxResultEnum.Invalid: //todo: TBD ban peer / reject
+						node.SendMessageAsync(new RejectPayload()
+						{
+							Hash = GetHash(tx),
+							Code = RejectCode.INVALID,
+							Message = "tx"
+						});
+						break;
+					case BlockChain.BlockChain.TxResultEnum.OrphanMissingInputs:
+					case BlockChain.BlockChain.TxResultEnum.OrphanIC:
+					case BlockChain.BlockChain.TxResultEnum.DoubleSpend:
+					case BlockChain.BlockChain.TxResultEnum.Known:
+						break;
 				}
 			});
 		}
