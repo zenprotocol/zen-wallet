@@ -50,15 +50,17 @@ namespace NBitcoin.Protocol.Behaviors
 
 	public class BroadcastHub
 	{
-		public BroadcastHub(BlockChain.BlockChain blockChain)
+		public BroadcastHub()
 		{
 			Infrastructure.MessageProducer<BlockChainMessage>.Instance.AddMessageListener(
 				new Infrastructure.MessageListener<BlockChainMessage>(t =>
 				{
-					if (t is NewTxMessage)
+					if (t is TxMessage)
 					{
-						NewTxMessage m = (NewTxMessage)t;
-						BroadcastTransactionAsync(TransactionValidation.unpoint(m.Tx));
+						var m = (TxMessage)t;
+
+						if (m.State == TxStateEnum.Unconfirmed && m.Ptx != null)
+							BroadcastTransactionAsync(TransactionValidation.unpoint(m.Ptx));
 					}
 				})
 			);
@@ -187,11 +189,11 @@ namespace NBitcoin.Protocol.Behaviors
 		ConcurrentDictionary<byte[], TransactionBroadcast> _HashToTransaction = new ConcurrentDictionary<byte[], TransactionBroadcast>(new ByteArrayComparer());
 		ConcurrentDictionary<ulong, TransactionBroadcast> _PingToTransaction = new ConcurrentDictionary<ulong, TransactionBroadcast>();
 
-		public BroadcastHubBehavior(BlockChain.BlockChain blockChain) : this(new BroadcastHub(blockChain))
+		public BroadcastHubBehavior()
 		{
 		}
 
-		private BroadcastHubBehavior(BroadcastHub broadcastHub)
+		BroadcastHubBehavior(BroadcastHub broadcastHub)
 		{
 			_BroadcastHub = broadcastHub;
 
@@ -390,7 +392,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		public override object Clone()
 		{
-			return new BroadcastHubBehavior(_BroadcastHub /*, _BlockChain*/);
+			return new BroadcastHubBehavior(_BroadcastHub);
 		}
 
 		public IEnumerable<TransactionBroadcast> Broadcasts

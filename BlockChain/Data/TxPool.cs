@@ -9,7 +9,7 @@ namespace BlockChain.Data
 	{
 		public new void Add(byte[] txHash, TransactionValidation.PointedTransaction ptx)
 		{
-			new NewTxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
+			new TxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
 			new HandleOrphansOfTxAction(txHash).Publish();
 			base.Add(txHash, ptx);
 		}

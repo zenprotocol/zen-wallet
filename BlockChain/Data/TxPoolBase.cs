@@ -29,7 +29,7 @@ namespace BlockChain.Data
 					if (this[t].pInputs.Select(_t => _t.Item1).Count(_t => spentOutputs.Contains(_t)) > 0)
 					{
 						BlockChainTrace.Information("double-spending tx removed from txpool", t);
-						new TxStateMessage(t, this[t], TxStateEnum.Invalid).Publish();
+						new TxMessage(t, this[t], TxStateEnum.Invalid).Publish();
 						RemoveDependencies(t);
 						ContractPool.Remove(t);
 						OrphanTxPool.RemoveDependencies(t);
