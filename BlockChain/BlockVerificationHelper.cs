@@ -11,8 +11,8 @@ namespace BlockChain
 	public class BlockVerificationHelper
 	{
 		public BkResultEnum Result { get; set; }
-		public readonly HashDictionary<Types.Transaction> ConfirmedTxs;
-		public readonly HashDictionary<Types.Transaction> UnfonfirmedTxs;
+		public readonly HashDictionary<TransactionValidation.PointedTransaction> ConfirmedTxs;
+		public readonly HashDictionary<Types.Transaction> UnconfirmedTxs;
 		public readonly List<QueueAction> QueuedActions;
 
 		public enum BkResultEnum
@@ -34,13 +34,13 @@ namespace BlockChain
 			Types.Block bk,
 			bool handleOrphan = false,
 			bool handleBranch = false,
-			HashDictionary<Types.Transaction> confirmedTxs = null,
+			HashDictionary<TransactionValidation.PointedTransaction> confirmedTxs = null,
 			HashDictionary<Types.Transaction> invalidatedTxs = null,
 			List<QueueAction> queuedActions = null
 		)
 		{
-			ConfirmedTxs = confirmedTxs ?? new HashDictionary<Types.Transaction>();
-			UnfonfirmedTxs = invalidatedTxs ?? new HashDictionary<Types.Transaction>();
+			ConfirmedTxs = confirmedTxs ?? new HashDictionary<TransactionValidation.PointedTransaction>();
+			UnconfirmedTxs = invalidatedTxs ?? new HashDictionary<Types.Transaction>();
 			QueuedActions = queuedActions ?? new List<QueueAction>();
 
 			_BlockChain = blockChain;
@@ -105,6 +105,7 @@ namespace BlockChain
 					blockChain.Timestamps.Init(bk.header.timestamp);
 					ExtendMain(QueuedActions, 0);
 					Result = BkResultEnum.Accepted;
+					BlockChainTrace.Information("accepteed genesis block", _Bk);
 					return;
 				}
 			}
@@ -112,7 +113,7 @@ namespace BlockChain
 			if (IsOrphan())
 			{
 				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
-				BlockChainTrace.Information("Bk added as orphan", _Bk);
+				BlockChainTrace.Information("bk added as orphan", _Bk);
 				Result = BkResultEnum.AcceptedOrphan;
 				return;
 			}
@@ -121,6 +122,7 @@ namespace BlockChain
 
 			if (!IsValidDifficulty() || !IsValidBlockNumber() || !IsValidTimeStamp())
 			{
+				BlockChainTrace.Information("bk rejected", _Bk);
 				Result = BkResultEnum.Rejected;
 				return;
 			}
@@ -133,6 +135,7 @@ namespace BlockChain
 			{
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
+					BlockChainTrace.Information("bk rejected (extend with branch)", _Bk);
 					Result = BkResultEnum.Rejected;
 					return;
 				}
@@ -176,7 +179,7 @@ namespace BlockChain
 							false,
 							true,
 							ConfirmedTxs,
-							UnfonfirmedTxs,
+							UnconfirmedTxs,
 							QueuedActions);
 						
 						BlockChainTrace.Information($"reorganization - new main chain block {_bk.Value.header.blockNumber} {action.Result}", _Bk);
@@ -187,14 +190,10 @@ namespace BlockChain
 							blockChain.Tip = originalTip;
 							blockChain.InitBlockTimestamps();
 
+							BlockChainTrace.Information("bk rejected, should undo reorganization", _Bk);
 							Result = BkResultEnum.Rejected;
 							return;
 						}
-					}
-
-					foreach (var block in newMainChain)
-					{
-						MarkMempoolTxs(block.Value, true);
 					}
 				}
 				else
@@ -206,11 +205,13 @@ namespace BlockChain
 			{
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
+					BlockChainTrace.Information("bk rejected", _Bk);
 					Result = BkResultEnum.Rejected;
 					return;
 				}
 			}
 
+			BlockChainTrace.Information("bk accepted", _Bk);
 			Result = BkResultEnum.Accepted;
 		}
 
@@ -234,7 +235,7 @@ namespace BlockChain
 
 			var blockUndoData = new BlockUndoData();
 
-			var pointedTransactions = new List<TransactionValidation.PointedTransaction>();
+			var confirmedTxs = new HashDictionary<TransactionValidation.PointedTransaction>();
 
 			//TODO: lock with mempool
 			foreach (var transaction in _Bk.transactions)
@@ -247,9 +248,9 @@ namespace BlockChain
 					return false;
 				}
 
-				pointedTransactions.Add(ptx);
+				confirmedTxs[txHash] = ptx;
 
-				BlockChainTrace.Information("saved tx: ", ptx);
+				BlockChainTrace.Information("saved tx", ptx);
 
 				_BlockChain.BlockStore.TxStore.Put(_DbTx, new Keyed<Types.Transaction>(txHash, transaction));
 
@@ -334,9 +335,10 @@ namespace BlockChain
 			_BlockChain.ChainTip.Context(_DbTx).Value = _BkHash;
 			_BlockChain.Tip = new Keyed<Types.Block>(_BkHash, _Bk);
 
-			MarkMempoolTxs(_Bk, true);
+			queuedActions.Add(new MessageAction(new BlockMessage(confirmedTxs, true)));
 
-			queuedActions.Add(new MessageAction(new NewBlockMessage(pointedTransactions, true)));
+			foreach (var item in confirmedTxs)
+				ConfirmedTxs[item.Key] = item.Value;
 
 			return true;
 		}
@@ -596,19 +598,10 @@ namespace BlockChain
 				}
 			}
 
-			MarkMempoolTxs(block, false);
-		}
-
-		void MarkMempoolTxs(Types.Block block, bool confirmed)
-		{
 			block.transactions.ToList().ForEach(tx =>
 			{
 				var txHash = Merkle.transactionHasher.Invoke(tx);
-
-				if (confirmed)
-					ConfirmedTxs[txHash] = tx;
-				else
-					UnfonfirmedTxs[txHash] = tx;
+				UnconfirmedTxs[txHash] = tx;
 			});
 		}
 	}

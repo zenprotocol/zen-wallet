@@ -265,7 +265,7 @@ namespace BlockChain
 						dbTx.Commit();
 						break;
 					case BlockVerificationHelper.BkResultEnum.Accepted:
-						UpdateMempool(dbTx, action.ConfirmedTxs, action.UnfonfirmedTxs);
+						UpdateMempool(dbTx, action.ConfirmedTxs, action.UnconfirmedTxs);
 						break;
 					case BlockVerificationHelper.BkResultEnum.Rejected:
 						return false;
@@ -288,7 +288,7 @@ namespace BlockChain
 			return true;
 		}
 
-		void UpdateMempool(TransactionContext dbTx, HashDictionary<Types.Transaction> confirmedTxs, HashDictionary<Types.Transaction> unconfirmedTxs)
+		void UpdateMempool(TransactionContext dbTx, HashDictionary<TransactionValidation.PointedTransaction> confirmedTxs, HashDictionary<Types.Transaction> unconfirmedTxs)
 		{
 			lock (memPool)
 			{
@@ -335,37 +335,37 @@ namespace BlockChain
 							//	memPool.ContractPool.AddRef(dbTx, tx.Key, activeContracts);
 							//}
 						}
-						new NewTxMessage(tx.Key, ptx, TxStateEnum.Unconfirmed).Publish();
+						new TxMessage(tx.Key, ptx, TxStateEnum.Unconfirmed).Publish();
 						break;
 					case IsTxOrphanResult.Orphan: // is a double-spend
 						memPool.TxPool.RemoveDependencies(tx.Key);
-						new NewTxMessage(tx.Key, TxStateEnum.Invalid).Publish();
+						new TxMessage(tx.Key, null, TxStateEnum.Invalid).Publish();
 						break;
 				}
 			}
 		}
 
-		void RemoveConfirmedTxFromMempool(HashDictionary<Types.Transaction> confirmedTxs)
+		void RemoveConfirmedTxFromMempool(HashDictionary<TransactionValidation.PointedTransaction> confirmedTxs)
 		{
 			var spentOutputs = new List<Types.Outpoint>(); //TODO sort - efficiency
 
-			foreach (var tx in confirmedTxs.Values)
+			foreach (var ptx in confirmedTxs.Values)
 			{
-				spentOutputs.AddRange(tx.inputs);
+				spentOutputs.AddRange(ptx.pInputs.Select(t=>t.Item1));
 			}
 
-			foreach (var tx in confirmedTxs)
+			foreach (var item in confirmedTxs)
 			{
 				// check in ICTxs as well?
-				if (memPool.TxPool.Contains(tx.Key))
+				if (memPool.TxPool.Contains(item.Key))
 				{
-					BlockChainTrace.Information("same tx removed from txpool", tx.Value);
-					memPool.TxPool.Remove(tx.Key);
-					memPool.ContractPool.Remove(tx.Key);
+					BlockChainTrace.Information("same tx removed from txpool", item.Value);
+					memPool.TxPool.Remove(item.Key);
+					memPool.ContractPool.Remove(item.Key);
 				}
 				else
 				{
-					new HandleOrphansOfTxAction(tx.Key).Publish(); // assume tx is unseen. try to unorphan
+					new HandleOrphansOfTxAction(item.Key).Publish(); // assume tx is unseen. try to unorphan
 				}
 
 				// Make list of **keys** in txpool and ictxpool
@@ -374,7 +374,7 @@ namespace BlockChain
 				memPool.TxPool.RemoveDoubleSpends(spentOutputs);
 				memPool.ICTxPool.RemoveDoubleSpends(spentOutputs);
 
-				new MessageAction(new NewTxMessage(tx.Key, TxStateEnum.Confirmed)).Publish();
+				new TxMessage(item.Key, item.Value, TxStateEnum.Confirmed).Publish();
 			}
 		}
 
