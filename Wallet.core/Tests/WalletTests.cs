@@ -79,7 +79,7 @@ namespace Wallet.core
 
 			_WalletManager.OnItems += onItems;
 			  
-			Assert.That(_BlockChain.HandleTransaction(_NewTx), Is.True);
+			Assert.That(_BlockChain.HandleTransaction(_NewTx), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
 			Assert.That(walletMessageEvent.WaitOne(3000), Is.True);
 			_WalletManager.OnItems -= onItems;
 		}

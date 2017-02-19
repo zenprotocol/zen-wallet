@@ -10,15 +10,15 @@ namespace BlockChain
 {
 	public class BlockVerificationHelper
 	{
-		public ResultEnum Result { get; set; }
+		public BkResultEnum Result { get; set; }
 		public readonly HashDictionary<Types.Transaction> ConfirmedTxs;
 		public readonly HashDictionary<Types.Transaction> UnfonfirmedTxs;
 		public readonly List<QueueAction> QueuedActions;
 
-		public enum ResultEnum
+		public enum BkResultEnum
 		{
-			Added,
-			AddedOrphan,
+			Accepted,
+			AcceptedOrphan,
 			Rejected
 		}
 
@@ -51,7 +51,7 @@ namespace BlockChain
 			if (!IsValid())
 			{
 				BlockChainTrace.Information("not valid", bk);
-				Result = ResultEnum.Rejected;
+				Result = BkResultEnum.Rejected;
 				return;
 			}
 
@@ -75,7 +75,7 @@ namespace BlockChain
 				if (reject)
 				{
 					BlockChainTrace.Information("block already in store: " + blockChain.BlockStore.GetLocation(dbTx, bkHash), bkHash);
-					Result = ResultEnum.Rejected;
+					Result = BkResultEnum.Rejected;
 					return;
 				}
 			}
@@ -97,14 +97,14 @@ namespace BlockChain
 				if (!IsGenesisValid())
 				{
 					BlockChainTrace.Information("invalid genesis block", _Bk);
-					Result = ResultEnum.Rejected;
+					Result = BkResultEnum.Rejected;
 					return;
 				}
 				else
 				{
 					blockChain.Timestamps.Init(bk.header.timestamp);
 					ExtendMain(QueuedActions, 0);
-					Result = ResultEnum.Added;
+					Result = BkResultEnum.Accepted;
 					return;
 				}
 			}
@@ -113,7 +113,7 @@ namespace BlockChain
 			{
 				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
 				BlockChainTrace.Information("Bk added as orphan", _Bk);
-				Result = ResultEnum.AddedOrphan;
+				Result = BkResultEnum.AcceptedOrphan;
 				return;
 			}
 
@@ -121,7 +121,7 @@ namespace BlockChain
 
 			if (!IsValidDifficulty() || !IsValidBlockNumber() || !IsValidTimeStamp())
 			{
-				Result = ResultEnum.Rejected;
+				Result = BkResultEnum.Rejected;
 				return;
 			}
 
@@ -133,7 +133,7 @@ namespace BlockChain
 			{
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
-					Result = ResultEnum.Rejected;
+					Result = BkResultEnum.Rejected;
 					return;
 				}
 			}
@@ -181,13 +181,13 @@ namespace BlockChain
 						
 						BlockChainTrace.Information($"reorganization - new main chain block {_bk.Value.header.blockNumber} {action.Result}", _Bk);
 
-						if (action.Result == ResultEnum.Rejected)
+						if (action.Result == BkResultEnum.Rejected)
 						{
 							blockChain.ChainTip.Context(dbTx).Value = originalTip.Key;
 							blockChain.Tip = originalTip;
 							blockChain.InitBlockTimestamps();
 
-							Result = ResultEnum.Rejected;
+							Result = BkResultEnum.Rejected;
 							return;
 						}
 					}
@@ -206,12 +206,12 @@ namespace BlockChain
 			{
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
-					Result = ResultEnum.Rejected;
+					Result = BkResultEnum.Rejected;
 					return;
 				}
 			}
 
-			Result = ResultEnum.Added;
+			Result = BkResultEnum.Accepted;
 		}
 
 		bool ExtendMain(List<QueueAction> queuedActions, double totalWork)
@@ -393,25 +393,44 @@ namespace BlockChain
 
 			switch (_BlockChain.IsOrphanTx(_DbTx, tx, out ptx))
 			{
-				case BlockChain.IsOrphanResult.Orphan:
+				case BlockChain.IsTxOrphanResult.Orphan:
 					BlockChainTrace.Information("tx invalid - orphan", tx);
 					return false;
-				case BlockChain.IsOrphanResult.Invalid:
+				case BlockChain.IsTxOrphanResult.Invalid:
 					BlockChainTrace.Information("tx invalid - reference(s)", tx);
 					return false;
 			}
 
 			byte[] contractHash;
-			if (BlockChain.IsContractGeneratedTx(ptx, out contractHash) && 
-			    !BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx, contractHash))
+			switch (BlockChain.IsContractGeneratedTx(ptx, out contractHash))
 			{
-				BlockChainTrace.Information("tx invalid - contract", ptx);
-				return false;
-			}
-			if (!_BlockChain.IsValidTransaction(_DbTx, ptx))
-			{
-				BlockChainTrace.Information("tx invalid - universal", ptx);
-				return false;
+				case BlockChain.IsContractGeneratedTxResult.NotContractGenerated:
+					if (!_BlockChain.IsValidTransaction(_DbTx, ptx))
+					{
+						BlockChainTrace.Information("tx invalid - universal", ptx);
+						return false;
+					}
+					break;
+				case BlockChain.IsContractGeneratedTxResult.ContractGenerated:
+					if (!new ActiveContractSet().IsActive(_DbTx, contractHash))
+					{
+						BlockChainTrace.Information("tx invalid - contract not active", tx);
+						return false;
+					}
+					if (!_BlockChain.IsValidTransaction(_DbTx, ptx))
+					{
+						BlockChainTrace.Information("tx invalid - universal", ptx);
+						return false;
+					}
+					if (!BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx, contractHash))
+					{
+						BlockChainTrace.Information("tx invalid - invalid contract", ptx);
+						return false;
+					}
+					break;
+				case BlockChain.IsContractGeneratedTxResult.Invalid:
+					BlockChainTrace.Information("tx invalid - input locks", tx);
+					return false;
 			}
 
 			return true;

@@ -62,7 +62,7 @@ namespace Zen
 
 			if (_WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx))
 			{
-				return _WalletManager.Transmit(tx);
+				return _WalletManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
 			else
 			{

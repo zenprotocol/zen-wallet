@@ -45,7 +45,8 @@ namespace BlockChain.Data
 			foreach (var item in this)
 			{
 				byte[] contractHash;
-				if (BlockChain.IsContractGeneratedTx(item.Value, out contractHash) && !activeContracts.Contains(contractHash))
+				if (BlockChain.IsContractGeneratedTx(item.Value, out contractHash) == BlockChain.IsContractGeneratedTxResult.ContractGenerated && 
+				    !activeContracts.Contains(contractHash))
 				{
 					BlockChainTrace.Information("inactive contract-generated tx moved to ICTxPool", contractHash);
 					Remove(item.Key);
