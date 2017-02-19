@@ -344,7 +344,7 @@ namespace Wallet.core
 		/// </summary>
 		/// <returns>The spend.</returns>
 		/// <param name="tx">Tx.</param>
-		public bool Transmit(Types.Transaction tx)
+		public BlockChain.BlockChain.TxResultEnum Transmit(Types.Transaction tx)
 		{
 			return _BlockChain.HandleTransaction(tx);
 		}

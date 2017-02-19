@@ -25,13 +25,15 @@ namespace Wallet
 
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
 			{
-				if (App.Instance.Wallet.Transmit(Tx))
+				var result = App.Instance.Wallet.Transmit(Tx);
+
+				if (result == BlockChain.BlockChain.TxResultEnum.Accepted)
 				{
 					FindParent<SendDialog>().Close();
 				}
 				else
 				{
-					new MessageBox("Rejected").ShowDialog();
+					new MessageBox("Rejected, reason: " + result).ShowDialog();
 				}
 			};
 

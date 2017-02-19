@@ -61,7 +61,7 @@ namespace BlockChain
 			var txHash = Merkle.transactionHasher.Invoke(tx);
 
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
-			Assert.That(_BlockChain.HandleTransaction(tx), Is.True);
+			Assert.That(_BlockChain.HandleTransaction(tx), Is.EqualTo(BlockChain.TxResultEnum.Accepted));
 			Assert.That(_BlockChain.memPool.TxPool.Contains(txHash), Is.True);
 			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(tx)), Is.True);
 			Assert.That(_BlockChain.memPool.TxPool.Contains(txHash), Is.False);
@@ -81,7 +81,7 @@ namespace BlockChain
 			var txHash = Merkle.transactionHasher.Invoke(txInvalidated);
 
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
-			Assert.That(_BlockChain.HandleTransaction(txInvalidated), Is.True);
+			Assert.That(_BlockChain.HandleTransaction(txInvalidated), Is.EqualTo(BlockChain.TxResultEnum.Accepted));
 			Assert.That(_BlockChain.memPool.TxPool.Contains(txHash), Is.True);
 			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(txInvalidating)), Is.True);
 
