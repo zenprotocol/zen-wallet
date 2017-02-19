@@ -3,6 +3,9 @@ using NUnit.Framework;
 using Infrastructure.Testing;
 using System.Linq;
 using Wallet.core.Data;
+using BlockChain.Data;
+using System;
+using System.Collections.Generic;
 
 namespace BlockChain
 {
@@ -53,11 +56,11 @@ namespace BlockChain
 		{
 			var key = Key.Create();
 
-			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
-			var bk = _GenesisBlock.AddTx(genesisTx);
+			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100).Tag("genesisTx");
+			var bk = _GenesisBlock.AddTx(genesisTx).Tag("genesisBk");
 
 			//TODO: key.Address
-			var tx = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private);
+			var tx = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private).Tag("tx");
 			var txHash = Merkle.transactionHasher.Invoke(tx);
 
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
@@ -67,24 +70,29 @@ namespace BlockChain
 			Assert.That(_BlockChain.memPool.TxPool.Contains(txHash), Is.False);
 		}
 
+
 		[Test]
 		public void ShouldRemoveInvalidatedTxFromMempoolOnNewBlock()
 		{
 			var key = Key.Create();
 
-			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
+			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100).Tag("genesisTx");
 			var bk = _GenesisBlock.AddTx(genesisTx);
 
 			//TODO: key.Address
-			var txInvalidated  = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private);
-			var txInvalidating = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private);
+			var txInvalidated  = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private).Tag("txInvalidated");
+			var txInvalidating = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private).Tag("txInvalidating");
+
 			var txHash = Merkle.transactionHasher.Invoke(txInvalidated);
 
 			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
+			Assert.That(LastTxState(genesisTx), Is.EqualTo(TxStateEnum.Confirmed));
 			Assert.That(_BlockChain.HandleTransaction(txInvalidated), Is.EqualTo(BlockChain.TxResultEnum.Accepted));
+			Assert.That(LastTxState(txInvalidated), Is.EqualTo(TxStateEnum.Unconfirmed));
 			Assert.That(_BlockChain.memPool.TxPool.Contains(txHash), Is.True);
 			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(txInvalidating)), Is.True);
-
+			Assert.That(LastTxState(txInvalidating), Is.EqualTo(TxStateEnum.Confirmed));
+			Assert.That(LastTxState(txInvalidated), Is.EqualTo(TxStateEnum.Invalid));
 			Assert.That(_BlockChain.memPool.TxPool.Contains(txHash), Is.False);
 		}
 
@@ -130,16 +138,16 @@ namespace BlockChain
 		{
 			var key = Key.Create();
 
-			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100);
+			var genesisTx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100).Tag("genesisTx");
 			_GenesisBlock = _GenesisBlock.AddTx(genesisTx);
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
 
 			var output1 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			var tx1 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output1).Sign(key.Private);
+			var tx1 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output1).Sign(key.Private).Tag("tx1");
 
 			var output2 = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 2);
-			var tx2 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output2).Sign(key.Private);
+			var tx2 = Utils.GetTx().AddInput(genesisTx, 0).AddOutput(output2).Sign(key.Private).Tag("tx2");
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1)), Is.True);
 

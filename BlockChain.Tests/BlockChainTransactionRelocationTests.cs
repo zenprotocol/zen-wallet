@@ -28,17 +28,17 @@ namespace BlockChain
 		{
 			base.OneTimeSetUp();
 
-			block1_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			block2_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			block3_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			block4_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
-			block5_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1);
+			block1_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Tag("block1_tx");
+			block2_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Tag("block2_tx");
+			block3_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Tag("block3_tx");
+			block4_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Tag("block4_tx");
+			block5_tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Tag("block5_tx");
 
-			block1 = _GenesisBlock.Child().AddTx(block1_tx);
-			block2 = _GenesisBlock.Child().AddTx(block2_tx);
-			block3 = block2.Child().AddTx(block3_tx);
-			block4 = block1.Child().AddTx(block4_tx);
-			block5 = block4.Child().AddTx(block5_tx);
+			block1 = _GenesisBlock.Child().AddTx(block1_tx).Tag("block1");
+			block2 = _GenesisBlock.Child().AddTx(block2_tx).Tag("block2");
+			block3 = block2.Child().AddTx(block3_tx).Tag("block3");
+			block4 = block1.Child().AddTx(block4_tx).Tag("block4");
+			block5 = block4.Child().AddTx(block5_tx).Tag("block5");
 		}
 
 		[Test, Order(1)]
