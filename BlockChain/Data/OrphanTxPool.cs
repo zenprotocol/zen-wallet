@@ -14,11 +14,11 @@ namespace BlockChain.Data
 		{
 			if (ContainsKey(txHash))
 			{
-				BlockChainTrace.Information("orphan tx removed from orphan pool");
+				BlockChainTrace.Information("orphan tx removed from orphan pool", txHash);
 				Remove(txHash);
 				foreach (var dep in GetOrphansOf(txHash).ToList())
 				{
-					BlockChainTrace.Information("orphan tx dependency removed from orphan pool");
+					BlockChainTrace.Information("orphan tx dependency removed from orphan pool", txHash);
 					RemoveDependencies(dep);
 				}
 			}

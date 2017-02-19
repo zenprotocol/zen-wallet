@@ -24,9 +24,9 @@ namespace BlockChain
 		public void ShouldRemoveUnorphanInvalidTxWithDependencies()
 		{
 			var key = new Key();
-			var tx = Utils.GetTx();
-			var txInvalidOrphan = Utils.GetTx().AddInput(tx, 0).AddOutput(key.Address, Consensus.Tests.zhash, 100);
-			var txOrphanDepenent = Utils.GetTx().AddInput(txInvalidOrphan, 0);
+			var tx = Utils.GetTx().Tag("tx");
+			var txInvalidOrphan = Utils.GetTx().AddInput(tx, 0).AddOutput(key.Address, Consensus.Tests.zhash, 100).Tag("txInvalidOrphan");
+			var txOrphanDepenent = Utils.GetTx().AddInput(txInvalidOrphan, 0).Tag("txOrphanDepenent");
 
 			_BlockChain.HandleTransaction(txInvalidOrphan);
 			_BlockChain.HandleTransaction(txOrphanDepenent);
@@ -50,6 +50,51 @@ namespace BlockChain
 			System.Threading.Thread.Sleep(50);
 			Assert.That(_BlockChain.memPool.OrphanTxPool.ContainsKey(tx1.Key()) &&
 			            _BlockChain.memPool.OrphanTxPool.ContainsKey(tx2.Key()), Is.False, "both should not be there");
+		}
+	
+		[Test]
+		public void ShouldInvalidateDoubleSpendOnNewBlock()
+		{
+			var key = Key.Create();
+			var tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100).Sign(key.Private);
+			var tx1 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private);
+			var tx2 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private);
+
+			BlockChainTrace.SetTag(tx, "tx");
+			BlockChainTrace.SetTag(tx1, "tx1");
+			BlockChainTrace.SetTag(tx2, "tx2");
+
+			_BlockChain.HandleTransaction(tx);
+			_BlockChain.HandleTransaction(tx2);
+			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).AddTx(tx1));
+
+			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx1.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx2.Key()), Is.False, "should not be there");
+		}
+
+		[Test]
+		public void ShouldInvalidateDoubleSpendOnNewBlockWithDependencies()
+		{
+			var key = Key.Create();
+			var tx = Utils.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100).Sign(key.Private);
+			var tx1 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private);
+			var tx2 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private);
+			var tx3 = Utils.GetTx().AddInput(tx2, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private);
+
+			BlockChainTrace.SetTag(tx, "tx");
+			BlockChainTrace.SetTag(tx1, "tx1");
+			BlockChainTrace.SetTag(tx2, "tx2");
+
+			_BlockChain.HandleTransaction(tx);
+			_BlockChain.HandleTransaction(tx1);
+			_BlockChain.HandleTransaction(tx3);
+
+			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).AddTx(tx1));
+
+			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx1.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx2.Key()), Is.False, "should not be there");
+			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx3.Key()), Is.False, "should not be there");
 		}
 	}
 }

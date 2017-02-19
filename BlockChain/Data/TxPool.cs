@@ -47,7 +47,7 @@ namespace BlockChain.Data
 				byte[] contractHash;
 				if (BlockChain.IsContractGeneratedTx(item.Value, out contractHash) && !activeContracts.Contains(contractHash))
 				{
-					BlockChainTrace.Information("inactive contract-generated tx moved to ICTxPool");
+					BlockChainTrace.Information("inactive contract-generated tx moved to ICTxPool", contractHash);
 					Remove(item.Key);
 					ICTxPool.Add(item.Key, item.Value);
 				}
