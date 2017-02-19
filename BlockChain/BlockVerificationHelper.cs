@@ -50,7 +50,7 @@ namespace BlockChain
 
 			if (!IsValid())
 			{
-				BlockChainTrace.Information("not valid");
+				BlockChainTrace.Information("not valid", bk);
 				Result = ResultEnum.Rejected;
 				return;
 			}
@@ -74,7 +74,7 @@ namespace BlockChain
 
 				if (reject)
 				{
-					BlockChainTrace.Information("block already in store: " + blockChain.BlockStore.GetLocation(dbTx, bkHash));
+					BlockChainTrace.Information("block already in store: " + blockChain.BlockStore.GetLocation(dbTx, bkHash), bkHash);
 					Result = ResultEnum.Rejected;
 					return;
 				}
@@ -96,7 +96,7 @@ namespace BlockChain
 			{
 				if (!IsGenesisValid())
 				{
-					BlockChainTrace.Information("invalid genesis block");
+					BlockChainTrace.Information("invalid genesis block", _Bk);
 					Result = ResultEnum.Rejected;
 					return;
 				}
@@ -112,7 +112,7 @@ namespace BlockChain
 			if (IsOrphan())
 			{
 				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
-				BlockChainTrace.Information("Bk added as orphan");
+				BlockChainTrace.Information("Bk added as orphan", _Bk);
 				Result = ResultEnum.AddedOrphan;
 				return;
 			}
@@ -147,7 +147,7 @@ namespace BlockChain
 					//	return;
 					//}
 
-					BlockChainTrace.Information($"block {bk.header.blockNumber} extends a branch with new difficulty.");
+					BlockChainTrace.Information($"block {bk.header.blockNumber} extends a branch with new difficulty.", _Bk);
 
 					var originalTip = blockChain.Tip;
 
@@ -161,7 +161,7 @@ namespace BlockChain
 
 					foreach (var block in oldMainChain)
 					{
-						BlockChainTrace.Information("undo block in old main chain: " + block.Value.header.blockNumber);
+						BlockChainTrace.Information("undo block in old main chain: " + block.Value.header.blockNumber, block.Value);
 						UndoBlock(block.Value, block.Key);
 					}
 
@@ -179,7 +179,7 @@ namespace BlockChain
 							UnfonfirmedTxs,
 							QueuedActions);
 						
-						BlockChainTrace.Information($"reorganization - new main chain block {_bk.Value.header.blockNumber} {action.Result}");
+						BlockChainTrace.Information($"reorganization - new main chain block {_bk.Value.header.blockNumber} {action.Result}", _Bk);
 
 						if (action.Result == ResultEnum.Rejected)
 						{
@@ -249,7 +249,7 @@ namespace BlockChain
 
 				pointedTransactions.Add(ptx);
 
-				BlockChainTrace.Information("new tx");
+				BlockChainTrace.Information("saved tx: ", ptx);
 
 				_BlockChain.BlockStore.TxStore.Put(_DbTx, new Keyed<Types.Transaction>(txHash, transaction));
 
@@ -258,8 +258,8 @@ namespace BlockChain
 				{
 					//TODO: refactoring is needed.
 					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(input.Item1.txHash, (int)input.Item1.index));
-					BlockChainTrace.Information($"utxo spent, amount {input.Item2.spend.amount}");
-
+					BlockChainTrace.Information($"utxo spent, amount {input.Item2.spend.amount}", ptx);
+					BlockChainTrace.Information($" of", input.Item1.txHash);
 					blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(input.Item1, input.Item2));
 					i++;
 				}
@@ -267,7 +267,7 @@ namespace BlockChain
 				i = 0;
 				foreach (var output in ptx.outputs)
 				{
-					BlockChainTrace.Information($"new utxo, amount {output.spend.amount}");
+					BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", ptx);
 
 					// extending a contract?
 					if (output.@lock.IsContractSacrificeLock)
@@ -385,7 +385,7 @@ namespace BlockChain
 
 				if (_BlockChain.UTXOStore.ContainsKey(_DbTx, utxoKey))
 				{
-					BlockChainTrace.Information("tx invalid - exists");
+					BlockChainTrace.Information("tx invalid - exists", tx);
 					ptx = null;
 					return false;
 				}
@@ -394,10 +394,10 @@ namespace BlockChain
 			switch (_BlockChain.IsOrphanTx(_DbTx, tx, out ptx))
 			{
 				case BlockChain.IsOrphanResult.Orphan:
-					BlockChainTrace.Information("tx invalid - orphan");
+					BlockChainTrace.Information("tx invalid - orphan", tx);
 					return false;
 				case BlockChain.IsOrphanResult.Invalid:
-					BlockChainTrace.Information("tx invalid - reference(s)");
+					BlockChainTrace.Information("tx invalid - reference(s)", tx);
 					return false;
 			}
 
@@ -405,12 +405,12 @@ namespace BlockChain
 			if (BlockChain.IsContractGeneratedTx(ptx, out contractHash) && 
 			    !BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx, contractHash))
 			{
-				BlockChainTrace.Information("tx invalid - contract");
+				BlockChainTrace.Information("tx invalid - contract", ptx);
 				return false;
 			}
 			if (!_BlockChain.IsValidTransaction(_DbTx, ptx))
 			{
-				BlockChainTrace.Information("tx invalid - universal");
+				BlockChainTrace.Information("tx invalid - universal", ptx);
 				return false;
 			}
 
@@ -422,7 +422,7 @@ namespace BlockChain
 			var result = _Bk.header.timestamp > _BlockChain.Timestamps.Median();
 
 			if (!result)
-				BlockChainTrace.Information("invalid timestamp");
+				BlockChainTrace.Information("invalid timestamp", _Bk);
 			
 			return result;
 		}
@@ -449,7 +449,7 @@ namespace BlockChain
 #if TRACE
 			if (blockDifficulty != expectedDifficulty)
 			{
-				BlockChainTrace.Information($"expecting difficulty {expectedDifficulty}, found {blockDifficulty}");
+				BlockChainTrace.Information($"expecting difficulty {expectedDifficulty}, found {blockDifficulty}", _Bk);
 			}
 #endif
 
@@ -463,7 +463,7 @@ namespace BlockChain
 #if TRACE
 			if (parentBlock.header.blockNumber >= _Bk.header.blockNumber)
 			{
-				BlockChainTrace.Information($"expecting block-number greater than {parentBlock.header.blockNumber}, found {_Bk.header.blockNumber}");
+				BlockChainTrace.Information($"expecting block-number greater than {parentBlock.header.blockNumber}, found {_Bk.header.blockNumber}", _Bk);
 			}
 #endif
 			return parentBlock.header.blockNumber < _Bk.header.blockNumber;

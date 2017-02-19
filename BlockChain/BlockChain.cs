@@ -105,24 +105,24 @@ namespace BlockChain
 							case IsOrphanResult.Orphan:
 								return;
 							case IsOrphanResult.Invalid:
-								BlockChainTrace.Information("invalid orphan tx removed from orphans");
+								BlockChainTrace.Information("invalid orphan tx removed from orphans", tx);
 								break;
 							case IsOrphanResult.NotOrphan:
 								if (!memPool.TxPool.ContainsInputs(tx))
 								{
 									if (IsValidTransaction(dbTx, ptx))
 									{
-										BlockChainTrace.Information("unorphaned tx added to mempool");
+										BlockChainTrace.Information("unorphaned tx added to mempool", tx);
 										memPool.TxPool.Add(t, ptx);
 									}
 									else
 									{
-										BlockChainTrace.Information("invalid orphan tx removed from orphans");
+										BlockChainTrace.Information("invalid orphan tx removed from orphans", tx);
 									}
 								}
 								else
 								{
-									BlockChainTrace.Information("double spent orphan tx removed from orphans");
+									BlockChainTrace.Information("double spent orphan tx removed from orphans", tx);
 								}
 								break;
 						}
@@ -148,30 +148,30 @@ namespace BlockChain
 				{
 					if (memPool.TxPool.Contains(txHash))
 					{
-						BlockChainTrace.Information("Tx already in mempool");
+						BlockChainTrace.Information("Tx already in mempool", txHash);
 						return false;
 					}
 
 					if (BlockStore.TxStore.ContainsKey(context, txHash))
 					{
-						BlockChainTrace.Information("Tx already in store");
+						BlockChainTrace.Information("Tx already in store", txHash);
 						return false;
 					}
 
 					if (memPool.TxPool.ContainsInputs(tx))
 					{
-						BlockChainTrace.Information("Mempool contains spending input");
+						BlockChainTrace.Information("Mempool contains spending input", tx);
 						return false;
 					}
 
 					switch (IsOrphanTx(context, tx, out ptx))
 					{
 						case IsOrphanResult.Orphan:
-							BlockChainTrace.Information("tx added as orphan");
+							BlockChainTrace.Information("tx added as orphan", tx);
 							memPool.OrphanTxPool.Add(txHash, tx);
 							return true;
 						case IsOrphanResult.Invalid:
-							BlockChainTrace.Information("tx contains invalid reference(s)");
+							BlockChainTrace.Information("tx contains invalid reference(s)", tx);
 							return false;
 					}
 
@@ -186,11 +186,11 @@ namespace BlockChain
 
 					if (!IsValidTransaction(context, ptx))
 					{
-						BlockChainTrace.Information("invalid inputs");
+						BlockChainTrace.Information("invalid inputs", ptx);
 						return false;
 					}
 
-					BlockChainTrace.Information("new tx added to mempool");
+					BlockChainTrace.Information("tx added to mempool", ptx);
 					memPool.TxPool.Add(txHash, ptx);
 				}
 				return true;
@@ -238,10 +238,10 @@ namespace BlockChain
 				}
 			}
 
-			action.QueuedActions.ForEach(a =>
+			action.QueuedActions.ForEach(t =>
 			{
-				if (a is MessageAction)
-					(a as MessageAction).Message.Publish();
+				if (t is MessageAction)
+					(t as MessageAction).Message.Publish();
 				else
 					a.Publish();
 			});
@@ -288,7 +288,7 @@ namespace BlockChain
 					case IsOrphanResult.NotOrphan:
 						if (IsValidTransaction(dbTx, ptx))
 						{
-							BlockChainTrace.Information("tx evicted to mempool");
+							BlockChainTrace.Information("tx evicted to mempool", ptx);
 							memPool.TxPool.Add(tx.Key, ptx);
 
 							//foreach (var contractHash in GetContractsActivatedBy(ptx))
@@ -321,7 +321,7 @@ namespace BlockChain
 				// check in ICTxs as well?
 				if (memPool.TxPool.Contains(tx.Key))
 				{
-					BlockChainTrace.Information("same tx removed from txpool");
+					BlockChainTrace.Information("same tx removed from txpool", tx.Value);
 					memPool.TxPool.Remove(tx.Key);
 					memPool.ContractPool.Remove(tx.Key);
 				}
@@ -355,9 +355,7 @@ namespace BlockChain
 				if (UTXOStore.ContainsKey(dbTx, output)) //TODO: refactor ContainsKey, byte[] usage
 				{
 					outputs.Add(UTXOStore.Get(dbTx, output).Value);
-				}
-
-				if (memPool.TxPool.Contains(input.txHash))
+				} else if (memPool.TxPool.Contains(input.txHash))
 				{
 					if (input.index < memPool.TxPool[input.txHash].outputs.Length)
 					{
@@ -365,7 +363,7 @@ namespace BlockChain
 					}
 					else
 					{
-						BlockChainTrace.Information("can't construct ptx");
+						BlockChainTrace.Information("can't construct ptx", tx);
 						return IsOrphanResult.Invalid;
 					}
 				}
@@ -416,7 +414,7 @@ namespace BlockChain
 
 					else if (!contractHash.SequenceEqual(((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash))
 					{
-						BlockChainTrace.Information("Unexpected contactHash");
+						BlockChainTrace.Information("Unexpected contactHash", contractHash);
 						return false;
 					}
 				}
@@ -472,7 +470,7 @@ namespace BlockChain
 				Types.Transaction tx;
 				if (!ContractHelper.Execute(contractHash, out tx, args))
 				{
-					BlockChainTrace.Information("Contract execution failed");
+					BlockChainTrace.Information("Contract execution failed", contractHash);
 					return false;
 				}
 
@@ -480,7 +478,7 @@ namespace BlockChain
 			}
 			else
 			{
-				BlockChainTrace.Information("Contract not active");
+				BlockChainTrace.Information("Contract not active", contractHash);
 				return false;
 			}
 

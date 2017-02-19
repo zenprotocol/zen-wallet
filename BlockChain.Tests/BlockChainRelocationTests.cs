@@ -79,9 +79,9 @@ namespace BlockChain
 		[Test, Order(3)]
 		public void ShouldUndoReorganize()
 		{
-			var branch = _GenesisBlock.Child();
-			var branchExtend = branch.Child();
-			var branchExtendInvalid = branchExtend.Child().AddTx(tx);
+			var branch = _GenesisBlock.Child().Tag("branch");
+			var branchExtend = branch.Child().Tag("branchExtend");
+			var branchExtendInvalid = branchExtend.Child().AddTx(tx).Tag("branchExtendInvalid");
 
 			Assert.That(_BlockChain.HandleBlock(branchExtendInvalid), Is.True); //TODO: assert: orphan
 			Assert.That(_BlockChain.HandleBlock(branchExtend), Is.True); //TODO: assert: orphan

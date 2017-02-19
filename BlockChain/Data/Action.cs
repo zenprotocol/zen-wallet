@@ -25,26 +25,13 @@ namespace BlockChain.Data
 		}
 	}
 
-	//public class QueueAction<TMessage> : QueueAction where TMessage : BlockChainMessage
-	//{
-	//	public TMessage Message { get; set; }
-
-	//	public QueueAction(TMessage message)
-	//	{
-	//		Message = message;
-	//	}
-	//}
-
 	public class HandleOrphansOfTxAction : QueueAction
 	{
 		public byte[] TxHash { get; set; }
-	//	public TransactionValidation.PointedTransaction PointedTransaction { get; set; }
 
-		public HandleOrphansOfTxAction(byte[] txHash) //, TransactionValidation.PointedTransaction pointedTransaction)
+		public HandleOrphansOfTxAction(byte[] txHash)
 		{
-			BlockChainTrace.Information("action: orphans");
 			TxHash = txHash;
-	//		PointedTransaction = pointedTransaction;
 		}
 	}
 

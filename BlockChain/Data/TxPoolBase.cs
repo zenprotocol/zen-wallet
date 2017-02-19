@@ -29,7 +29,7 @@ namespace BlockChain.Data
 				{
 					if (this[t].pInputs.Select(_t => _t.Item1).Count(_t => spentOutputs.Contains(_t)) > 0)
 					{
-						BlockChainTrace.Information("double-spending tx removed from txpool");
+						BlockChainTrace.Information("double-spending tx removed from txpool", t);
 						RemoveDependencies(t);
 						ContractPool.Remove(t);
 						OrphanTxPool.RemoveDependencies(t);
@@ -43,11 +43,11 @@ namespace BlockChain.Data
 		{
 			if (Contains(txHash))
 			{
-				BlockChainTrace.Information("invalidated tx removed from txpool");
 				new MessageAction(new NewTxMessage(txHash, TxStateEnum.Invalid)).Publish();
 				Remove(txHash);
-				foreach (var dep in GetDependencies(txHash))
+				foreach (var dep in GetDependencies(txHash)) //todo use toList()
 				{
+					BlockChainTrace.Information("dep tx removed from txpool", dep);
 					RemoveDependencies(dep);
 				}
 			}
