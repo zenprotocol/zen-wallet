@@ -135,7 +135,6 @@ namespace BlockChain
 			{
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
-					BlockChainTrace.Information("bk rejected (extend with branch)", _Bk);
 					Result = BkResultEnum.Rejected;
 					return;
 				}
@@ -182,7 +181,7 @@ namespace BlockChain
 							UnconfirmedTxs,
 							QueuedActions);
 						
-						BlockChainTrace.Information($"reorganization - new main chain block {_bk.Value.header.blockNumber} {action.Result}", _Bk);
+						BlockChainTrace.Information($"new main chain bk {_bk.Value.header.blockNumber} {action.Result}", _bk.Value);
 
 						if (action.Result == BkResultEnum.Rejected)
 						{
@@ -190,7 +189,7 @@ namespace BlockChain
 							blockChain.Tip = originalTip;
 							blockChain.InitBlockTimestamps();
 
-							BlockChainTrace.Information("bk rejected, should undo reorganization", _Bk);
+							BlockChainTrace.Information("undo reorganization", _bk.Value);
 							Result = BkResultEnum.Rejected;
 							return;
 						}
