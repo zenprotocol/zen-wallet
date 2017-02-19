@@ -36,7 +36,6 @@ namespace BlockChain
 		// for unit tests
 		public void WaitDbTxs()
 		{
-			
 			_DBContext.Wait();
 		}
 #endif
@@ -73,7 +72,7 @@ namespace BlockChain
 		{
 			while (await source.OutputAvailableAsync())
 			{
-				QueueAction action = source.Receive();
+				var action = source.Receive();
 
 				try
 				{
@@ -296,14 +295,13 @@ namespace BlockChain
 							//	memPool.ContractPool.AddRef(dbTx, tx.Key, activeContracts);
 							//}
 						}
+						new NewTxMessage(tx.Key, ptx, TxStateEnum.Unconfirmed).Publish();
 						break;
 					case IsOrphanResult.Orphan: // is a double-spend
 						memPool.TxPool.RemoveDependencies(tx.Key);
-						new NewTxMessage(tx.Key, ptx, TxStateEnum.Invalid).Publish();
+						new NewTxMessage(tx.Key, TxStateEnum.Invalid).Publish();
 						break;
 				}
-
-				new NewTxMessage(tx.Key, ptx, TxStateEnum.Unconfirmed).Publish();
 			}
 		}
 
