@@ -35,7 +35,7 @@ namespace Wallet.core.Data
 			}
 		}
 
-		public Key()
+		Key()
 		{
 		}
 

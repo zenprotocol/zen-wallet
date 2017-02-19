@@ -31,7 +31,7 @@ namespace BlockChain
 		[Test]
 		public void ShouldRemoveUnorphanInvalidTxWithDependencies()
 		{
-			var key = new Key();
+			var key = Key.Create();
 			var tx = Utils.GetTx().Tag("tx");
 			var txInvalidOrphan = Utils.GetTx().AddInput(tx, 0).AddOutput(key.Address, Consensus.Tests.zhash, 100).Tag("Invalid Orphan");
 			var txOrphanDepenent = Utils.GetTx().AddInput(txInvalidOrphan, 0).Tag("Orphan Depenent");
@@ -49,7 +49,7 @@ namespace BlockChain
 		[Test]
 		public void ShouldNotUnorphanDoubleSpend()
 		{
-			var key = new Key();
+			var key = Key.Create();
 			var tx = Utils.GetTx().AddOutput(key.Address, Consensus.Tests.zhash, 100).Tag("tx");
 			var tx1 = Utils.GetTx().AddInput(tx, 0).AddOutput(key.Address, Consensus.Tests.zhash, 1).Tag("tx1");
 			var tx2 = Utils.GetTx().AddInput(tx, 0).AddOutput(key.Address, Consensus.Tests.zhash, 2).Tag("tx2");
