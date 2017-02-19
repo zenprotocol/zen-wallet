@@ -14,6 +14,7 @@ namespace Wallet.core
 {
 	public class WalletManager : ResourceOwner
 	{
+		private HashDictionary<TransactionValidation.PointedTransaction> _TxCache = new HashDictionary<TransactionValidation.PointedTransaction>();
 		private DBContext _DBContext;
 		private BlockChain.BlockChain _BlockChain;
 		private TxBalancesStore _TxBalancesStore;
@@ -88,7 +89,7 @@ namespace Wallet.core
 					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, tx.Key.Value, balances));
 				}
 
-				_BlockChain.memPool.TxPool.ToList().ForEach(ptx => HandleTx(dbTx, ptx.Value, TxDeltaList, TxStateEnum.Unconfirmed));
+				_BlockChain.memPool.TxPool.ToList().ForEach(t => HandleTx(dbTx, t.Key, t.Value, TxDeltaList, TxStateEnum.Unconfirmed));
 
 				dbTx.Commit();
 			}
@@ -105,17 +106,18 @@ namespace Wallet.core
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				if (m is NewTxMessage)
+				if (m is TxMessage)
 				{
-					HandleTx(dbTx, (m as NewTxMessage).Tx, deltas, (m as NewTxMessage).State);
+					var newTxStateMessage = m as TxMessage;
+					HandleTx(dbTx, newTxStateMessage.TxHash, newTxStateMessage.Ptx, deltas, newTxStateMessage.State);
 					dbTx.Commit();
 				}
-				else if (m is NewBlockMessage)
+				else if (m is BlockMessage)
 				{
-					(m as NewBlockMessage).PointedTransactions.ForEach(tx =>
+					foreach (var item in (m as BlockMessage).PointedTransactions)
 					{
-						HandleTx(dbTx, tx, deltas, TxStateEnum.Confirmed);
-					});
+						HandleTx(dbTx, item.Key, item.Value, deltas, TxStateEnum.Confirmed);
+					}
 
 					dbTx.Commit();
 				}
@@ -130,18 +132,32 @@ namespace Wallet.core
 			}
 		}
 
-		private void HandleTx(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, TxDeltaItemsEventArgs deltas, TxStateEnum txState)
+		private void HandleTx(TransactionContext dbTx, byte[] txHash, TransactionValidation.PointedTransaction ptx, TxDeltaItemsEventArgs deltas, TxStateEnum txState)
 		{
+			var isValid = txState != TxStateEnum.Invalid;
+
 			var _deltas = new AssetDeltas();
 
-			ptx.outputs.Where(IsMatch).ToList().ForEach(o => AddOutput(_deltas, o));
+			if (!isValid && ptx == null)
+			{
+				if (_TxCache.ContainsKey(txHash))
+					ptx = _TxCache[txHash];
+				else
+					return;
+			}
+			else
+			{
+				_TxCache[txHash] = ptx;
+			}
+
+			ptx.outputs.Where(IsMatch).ToList().ForEach(o => AddOutput(_deltas, o, !isValid));
 			ptx.pInputs.ToList().ForEach(pInput =>
 			{
 				var key = GetKey(pInput.Item2);
 
 				if (key != null)
 				{
-					AddOutput(_deltas, pInput.Item2, true);
+					AddOutput(_deltas, pInput.Item2, isValid);
 					_KeyStore.Used(dbTx, key, true);
 				}
 			});
@@ -160,9 +176,7 @@ namespace Wallet.core
 					_TxBalancesStore.Put(dbTx, keyedTx, _deltas, txState);
 				}
 
-				//dbTx.Commit();
-
-				deltas.Add(new TxDelta(txState, TransactionValidation.unpoint(ptx), _deltas));
+				deltas.Add(new TxDelta(txState, tx, _deltas));
 			}
 		}
 

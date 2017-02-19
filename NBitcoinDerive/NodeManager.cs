@@ -93,7 +93,7 @@ namespace NBitcoinDerive
 
 		public void Connect(IPAddress ipAddress)
 		{
-			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior(_BlockChain);
+			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior();
 
 			Miner miner = new Miner(_BlockChain);
 
