@@ -16,7 +16,7 @@ namespace BlockChain
 		const string DB = "temp";
 		byte[] _GenesisBlockHash;
 		IDisposable _TxMessagesListenerScope;
-		Stack<BlockChainMessage> _BlockChainMessage = new Stack<BlockChainMessage>();
+		HashDictionary<TxStateEnum> _TxStates = new HashDictionary<TxStateEnum>();
 
 		protected BlockChain _BlockChain;
 		protected Types.Block _GenesisBlock;
@@ -28,7 +28,7 @@ namespace BlockChain
 			Dispose();
 
 			_TxMessagesListenerScope = MessageProducer<BlockChainMessage>.Instance.AddMessageListener(
-				new MessageListener<BlockChainMessage>(m => _BlockChainMessage.Push(m)));
+				new MessageListener<BlockChainMessage>(OnBlockChainMessage));
 
 			_GenesisBlock = Infrastructure.Testing.Utils.GetGenesisBlock();
 			_GenesisBlockHash = Merkle.blockHeaderHasher.Invoke(_GenesisBlock.header);
@@ -52,6 +52,15 @@ namespace BlockChain
 			}
 		}
 
+		void OnBlockChainMessage(BlockChainMessage m)
+		{
+			if (m is TxMessage)
+			{
+				TxMessage txMessage = (TxMessage)m;
+				_TxStates[txMessage.TxHash] = ((TxMessage)m).State;
+			}
+		}
+
 		protected LocationEnum Location(Types.Block block)
 		{
 			using (var dbTx = _BlockChain.GetDBTransaction())
@@ -61,25 +70,10 @@ namespace BlockChain
 			}
 		}
 
-		protected TxStateEnum? LastTxState(Types.Transaction tx)
+		protected TxStateEnum? TxState(Types.Transaction tx)
 		{
-			if (_BlockChainMessage.Count == 0)
-				return null;
-			
-			var message = _BlockChainMessage.Pop();
-
-			if (message is TxMessage)
-			{
-				var newTxStateMessage = (TxMessage)message;
-
-				if (newTxStateMessage.TxHash.SequenceEqual(Merkle.transactionHasher.Invoke(tx)))
-					return newTxStateMessage.State;
-			}
-			else if (message is BlockMessage)
-			{
-				return LastTxState(tx);
-			}
-
+			var key = Merkle.transactionHasher.Invoke(tx);
+			if (_TxStates.ContainsKey(key)) return _TxStates[key];
 			return null;
 		}
 	}

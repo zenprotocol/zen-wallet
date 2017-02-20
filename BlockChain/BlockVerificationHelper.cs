@@ -163,7 +163,6 @@ namespace BlockChain
 
 					foreach (var block in oldMainChain)
 					{
-						BlockChainTrace.Information("undo block in old main chain: " + block.Value.header.blockNumber, block.Value);
 						UndoBlock(block.Value, block.Key);
 					}
 
@@ -267,8 +266,6 @@ namespace BlockChain
 				i = 0;
 				foreach (var output in ptx.outputs)
 				{
-					BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", ptx);
-
 					// extending a contract?
 					if (output.@lock.IsContractSacrificeLock)
 					{
@@ -311,6 +308,7 @@ namespace BlockChain
 
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
 					{
+						BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", ptx);
 						_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(txHash, i), output));
 						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, (uint)i), output));
 					}
@@ -575,6 +573,8 @@ namespace BlockChain
 
 		void UndoBlock(Types.Block block, byte[] key)
 		{
+			BlockChainTrace.Information("bk undo", block);
+
 			_BlockChain.BlockStore.SetLocation(_DbTx, key, LocationEnum.Branch);
 
 			var blockUndoData = _BlockChain.BlockStore.GetUndoData(_DbTx, key);
@@ -583,11 +583,13 @@ namespace BlockChain
 			{
 				blockUndoData.AddedUTXO.ForEach(u =>
 				{
+					BlockChainTrace.Information($"undo block: utxo removed, amount {u.Item2.spend.amount}", block);
 					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
 				});
 
 				blockUndoData.RemovedUTXO.ForEach(u =>
 				{
+					BlockChainTrace.Information($"undo block: new utxo, amount {u.Item2.spend.amount}", block);
 					_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
 				});
 
