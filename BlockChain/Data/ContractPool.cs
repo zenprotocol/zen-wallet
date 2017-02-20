@@ -6,6 +6,9 @@
 
 		public void AddRef(byte[] txHash, ACSItem acsItem)
 		{
+			BlockChainTrace.Information("contract ref added", acsItem.Hash);
+			BlockChainTrace.Information(" by", txHash);
+
 			if (!ContainsKey(acsItem.Hash)) this[acsItem.Hash] = ContractsPoolItem.FromACSItem(acsItem);
 
 			var contractsPoolItem = this[acsItem.Hash];
@@ -16,7 +19,7 @@
 		}
 
 		public new void Remove(byte[] txHash)
-		{
+		{			
 			if (!_Txs.ContainsKey(txHash))
 				return;
 
@@ -28,6 +31,8 @@
 
 			if (contract.Refs == 0)
 			{
+				BlockChainTrace.Information("contract ref removed", contractHash);
+				BlockChainTrace.Information(" to", txHash);
 				base.Remove(contractHash);
 			}
 		}
