@@ -1,4 +1,5 @@
 using System;
+using BlockChain.Data;
 using Infrastructure.Testing;
 using NUnit.Framework;
 using Wallet.core.Data;
@@ -98,6 +99,54 @@ namespace BlockChain
 			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx1.Key()), Is.False, "should not be there");
 			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx2.Key()), Is.False, "should not be there");
 			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx3.Key()), Is.False, "should not be there");
+		}
+
+		[Test]
+		public void ShouldEvict()
+		{
+			var key = Key.Create();
+			var tx = Utils
+				.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100)
+				.Sign(key.Private).Tag("tx");
+			var tx1 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private).Tag("tx1");
+			var tx2 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private).Tag("tx2");
+
+			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("genesis"));
+			Assert.That(TxState(tx), Is.EqualTo(TxStateEnum.Confirmed));
+			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1).Tag("main"));
+			Assert.That(TxState(tx1), Is.EqualTo(TxStateEnum.Confirmed));
+			var branch = _GenesisBlock.Child().Tag("branch");
+			_BlockChain.HandleBlock(branch.Child().Tag("branch orphan"));
+			_BlockChain.HandleBlock(branch.AddTx(tx2).Tag("branch child"));
+			System.Threading.Thread.Sleep(100);
+			Assert.That(TxState(tx2), Is.EqualTo(TxStateEnum.Confirmed));
+			Assert.That(TxState(tx1), Is.EqualTo(TxStateEnum.Invalid));
+			Assert.That(_BlockChain.memPool.TxPool.ContainsKey(tx1.Key()), Is.False);
+		}
+
+		[Test]
+		public void ShouldNotEvictDoubleSpend()
+		{
+			var key = Key.Create();
+			var tx = Utils
+				.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100)
+				.Sign(key.Private).Tag("tx");
+			var cannotEvict = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private)
+			                     .Tag("cannotEvict");
+			var invalidatingTx = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private)
+			                         .Tag("invalidatingTx");
+
+			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("genesis"));
+			Assert.That(TxState(tx), Is.EqualTo(TxStateEnum.Confirmed));
+			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(cannotEvict).Tag("main"));
+			Assert.That(TxState(cannotEvict), Is.EqualTo(TxStateEnum.Confirmed));
+			var branch = _GenesisBlock.Child().Tag("branch");
+			_BlockChain.HandleBlock(branch.Child().AddTx(invalidatingTx).Tag("branch orphan"));
+			_BlockChain.HandleBlock(branch.Tag("branch child"));
+			System.Threading.Thread.Sleep(100);
+			Assert.That(TxState(cannotEvict), Is.EqualTo(TxStateEnum.Invalid));
+			Assert.That(TxState(invalidatingTx), Is.EqualTo(TxStateEnum.Confirmed));
+			Assert.That(_BlockChain.memPool.TxPool.Count, Is.EqualTo(0));
 		}
 	}
 }
