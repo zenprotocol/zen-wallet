@@ -31,6 +31,11 @@ namespace BlockChain
 			tags[key] = value;
 		}
 
+		public static string GetTag(byte[] key)
+		{
+			return tags[key];
+		}
+
 		internal static void Information(string info, Consensus.TransactionValidation.PointedTransaction ptx)
 		{
 			Information(info, Consensus.TransactionValidation.unpoint(ptx));

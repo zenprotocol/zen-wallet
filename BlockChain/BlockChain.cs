@@ -210,7 +210,9 @@ namespace BlockChain
 						case IsContractGeneratedTxResult.ContractGenerated:
 							if (!new ActiveContractSet().IsActive(dbTx, contractHash))
 							{
-								BlockChainTrace.Information("tx invalid - contract not active", tx);
+								BlockChainTrace.Information("tx added to ICTx mempool", tx);
+								BlockChainTrace.Information(" of contract", contractHash);
+								memPool.TxPool.ICTxPool.Add(txHash, ptx);
 								return TxResultEnum.OrphanIC;
 							}
 							if (!IsValidTransaction(dbTx, ptx))
@@ -302,7 +304,7 @@ namespace BlockChain
 
 				var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
 
-				foreach (var item in new UTXOStore().All(dbTx, null, false))
+				foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
 				{
 					byte[] txHash = new byte[item.Key.Length - 1];
 					Array.Copy(item.Key, txHash, txHash.Length);
@@ -450,17 +452,14 @@ namespace BlockChain
 				{
 					if (contractHash == null)
 						contractHash = ((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash;
+					else if (!contractHash.SequenceEqual(((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash))
+						return IsContractGeneratedTxResult.Invalid;
 
 					else if (!contractHash.SequenceEqual(((Types.OutputLock.ContractLock)input.Item2.@lock).contractHash))
 					{
 						BlockChainTrace.Information("Unexpected contactHash", contractHash);
 						return IsContractGeneratedTxResult.Invalid;
 					}
-				}
-				else
-				{
-					if (contractHash != null)
-						return IsContractGeneratedTxResult.Invalid;
 				}
 			}
 
@@ -482,7 +481,7 @@ namespace BlockChain
 
 			var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
 
-			foreach (var item in new UTXOStore().All(dbTx, null, false))
+			foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
 			{
 				byte[] txHash = new byte[item.Key.Length - 1];
 				Array.Copy(item.Key, txHash, txHash.Length);
@@ -497,7 +496,7 @@ namespace BlockChain
 				//		inputs = inputs,
 				witnesses = new List<byte[]>(),
 				outputs = ptx.outputs.ToList(),
-				option = Types.ExtendedContract.NewContract(null)
+				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { }, new byte[] { }, new byte[] { }))
 			};
 
 			/// 

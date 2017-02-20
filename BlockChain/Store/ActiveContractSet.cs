@@ -44,8 +44,8 @@ namespace BlockChain
 
 		public HashDictionary<ACSItem> GetExpiringList(TransactionContext dbTx, uint blockNumber)
 		{
-#if DEBUG
-			All(dbTx).Where(t => t.Value.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}"));
+#if TRACE
+			All(dbTx).Where(t => t.Value.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}", t.Key));
 #endif
 
 			var values = new HashDictionary<ACSItem>();
