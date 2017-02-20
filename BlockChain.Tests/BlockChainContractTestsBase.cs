@@ -19,6 +19,7 @@ namespace BlockChain
 			return compiledContract;
 		}
 
+
 		protected Types.Transaction ExecuteContract(byte[] compiledContract)
 		{
 			var output = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 10);
@@ -51,6 +52,20 @@ namespace BlockChain
 			}), "Should execute", Is.True);
 
 			return contractCreatedTransaction;
+		}
+
+		protected void AddToACS(byte[] compiledContract, string contractFsCode, UInt32 lastBlock)
+		{
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				new ActiveContractSet().Add(dbTx, new ACSItem()
+				{
+					Hash = compiledContract,
+					LastBlock = lastBlock,
+					KalapasPerBlock = (ulong)contractFsCode.Length * 1000
+				});
+				dbTx.Commit();
+			}
 		}
 	}
 }

@@ -27,24 +27,10 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx)), Is.True);
 		}
 
-		void AddToACS(UInt32 lastBlock)
-		{
-			using (var dbTx = _BlockChain.GetDBTransaction())
-			{
-				new ActiveContractSet().Add(dbTx, new ACSItem()
-				{
-					Hash = compiledContract,
-					LastBlock = lastBlock,
-					KalapasPerBlock = (ulong)contractFsCode.Length * 1000
-				});
-				dbTx.Commit();
-			}
-		}
-
 		[Test]
 		public void ShouldExpireAfterOneBlock()
 		{
-			AddToACS(_GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
 
 			var bk = _GenesisBlock;
 
@@ -65,7 +51,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		[Test]
 		public void ShouldExpireAfterTwoBlocks()
 		{
-			AddToACS(_GenesisBlock.header.blockNumber + 2);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 2);
 
 			var bk = _GenesisBlock;
 
@@ -95,7 +81,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		public void ShouldExtendContract()
 		{
 			ACSItem acsItem = null;
-			AddToACS(_GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
 
 			ulong blocksToExtend = 2;
 
@@ -127,7 +113,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		public void ShouldNotExtendInactiveContract()
 		{
 			ACSItem acsItem = null;
-			AddToACS(_GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
 
 			ulong blocksToExtend = 2;
 
@@ -161,7 +147,6 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				var acsItemChanged = new ActiveContractSet().Get(dbTx, compiledContract);
 
 				Assert.That(new ActiveContractSet().Get(dbTx, compiledContract), Is.Null);
 			}
@@ -170,7 +155,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		[Test]
 		public void ShouldAcceptTxGenereatedByActiveContract()
 		{
-			AddToACS(_GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
 
 			var tx = ExecuteContract(compiledContract);
 
@@ -180,7 +165,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		[Test]
 		public void ShouldRejectTxGenereatedByInactiveContract()
 		{
-			AddToACS(_GenesisBlock.header.blockNumber);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber);
 
 			var tx = ExecuteContract(compiledContract);
 
@@ -191,7 +176,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 		public void ShouldUndoExtendOnReorder()
 		{
 			ACSItem acsItem = null;
-			AddToACS(_GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
 
 			ulong blocksToExtend = 20;
 
