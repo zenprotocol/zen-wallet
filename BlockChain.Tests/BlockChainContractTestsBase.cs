@@ -5,6 +5,7 @@ using Infrastructure.Testing;
 using Microsoft.FSharp.Collections;
 using NUnit.Framework;
 using Wallet.core.Data;
+using System.Linq;
 
 namespace BlockChain
 {
@@ -19,7 +20,6 @@ namespace BlockChain
 			return compiledContract;
 		}
 
-
 		protected Types.Transaction ExecuteContract(byte[] compiledContract)
 		{
 			var output = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 10);
@@ -32,7 +32,7 @@ namespace BlockChain
 
 			using (var context = _BlockChain.GetDBTransaction())
 			{
-				foreach (var item in _BlockChain.UTXOStore.All(context, null, false))
+				foreach (var item in _BlockChain.UTXOStore.All(context, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
 				{
 					byte[] txHash = new byte[item.Key.Length - 1];
 					Array.Copy(item.Key, txHash, txHash.Length);

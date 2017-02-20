@@ -80,7 +80,7 @@ namespace BlockChain
 				context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
 				witnesses = new List<byte[]>(),
 				outputs = ptx.outputs.ToList(),
-				option = Types.ExtendedContract.NewContract(null)
+				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { }, new byte[] { }, new byte[] { }))
 			};
 
 			Types.Transaction tx;

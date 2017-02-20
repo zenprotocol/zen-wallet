@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Consensus;
 
@@ -10,16 +11,17 @@ namespace BlockChain.Data
 
 		public void Purge(HashSet activeContracts, List<Tuple<Types.Outpoint, Types.Output>> utxos)
 		{
-			foreach (var item in this)
+			foreach (var key in Keys.ToList())
 			{
-				var contractHash = ((Types.OutputLock.ContractLock)item.Value.pInputs.Head.Item2.@lock).contractHash;
+				var tx = this[key];
+				var contractHash = ((Types.OutputLock.ContractLock)tx.pInputs.Head.Item2.@lock).contractHash;
 
-				if (activeContracts.Contains(contractHash) && ContractHelper.IsTxValid(item.Value, contractHash, utxos))
+				if (activeContracts.Contains(contractHash) && ContractHelper.IsTxValid(tx, contractHash, utxos))
 				{
-					Remove(item.Key);
-					TxPool.Add(item.Key, item.Value);
-					new TxMessage(item.Key, item.Value, TxStateEnum.Unconfirmed).Publish();
-					new HandleOrphansOfTxAction(item.Key).Publish();
+					Remove(key);
+					TxPool.Add(key, tx);
+					new TxMessage(key, tx, TxStateEnum.Unconfirmed).Publish();
+					new HandleOrphansOfTxAction(key).Publish();
 					// todo check if ptx **activates a contract** and update contractpool if it does
 				}
 			}
