@@ -148,5 +148,27 @@ namespace BlockChain
 			Assert.That(TxState(invalidatingTx), Is.EqualTo(TxStateEnum.Confirmed));
 			Assert.That(_BlockChain.memPool.TxPool.Count, Is.EqualTo(0));
 		}
+
+		[Test]
+		public void ShouldRemoveConfirmedFromMempoolWithDependencies()
+		{
+			var key = Key.Create();
+			var tx = Utils
+				.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100)
+				.Sign(key.Private).Tag("tx");
+			var mempoolTx = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private)
+								 .Tag("mempoolTx");
+
+			var contractHash = new byte[] { };
+			BlockChainTrace.SetTag(contractHash, "mock contract");
+			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("genesis"));
+			_BlockChain.HandleTransaction(mempoolTx);
+			_BlockChain.memPool.ContractPool.AddRef(mempoolTx.Key(), new ACSItem() { Hash = contractHash });
+			Assert.That(_BlockChain.memPool.TxPool.Count, Is.EqualTo(1));
+			Assert.That(_BlockChain.memPool.ContractPool.Count, Is.EqualTo(1));
+			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(mempoolTx).Tag("genesis"));
+			Assert.That(_BlockChain.memPool.TxPool.Count, Is.EqualTo(0));
+			Assert.That(_BlockChain.memPool.ContractPool.Count, Is.EqualTo(0));
+		}
 	}
 }
