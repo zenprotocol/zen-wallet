@@ -1,9 +1,3 @@
-using Store;
-using System.Linq;
-using Consensus;
-using System.Collections.Generic;
-using System;
-
 namespace BlockChain.Data
 {
 	public class ContractsPoolItem
@@ -26,5 +20,4 @@ namespace BlockChain.Data
 			};
 		}
 	}
-	
 }

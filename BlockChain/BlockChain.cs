@@ -325,19 +325,20 @@ namespace BlockChain
 				switch (IsOrphanTx(dbTx, tx.Value, out ptx))
 				{
 					case IsTxOrphanResult.NotOrphan:
-						if (IsValidTransaction(dbTx, ptx))
+						if (!memPool.TxPool.ContainsInputs(TransactionValidation.unpoint(ptx)))
 						{
 							BlockChainTrace.Information("tx evicted to mempool", ptx);
 							memPool.TxPool.Add(tx.Key, ptx);
-
-							//foreach (var contractHash in GetContractsActivatedBy(ptx))
-							//{
-							//	memPool.ContractPool.AddRef(dbTx, tx.Key, activeContracts);
-							//}
+							new TxMessage(tx.Key, ptx, TxStateEnum.Unconfirmed).Publish();
 						}
-						new TxMessage(tx.Key, ptx, TxStateEnum.Unconfirmed).Publish();
+						else
+						{
+							BlockChainTrace.Information("double spent tx not evicted to mempool", ptx);
+							new TxMessage(tx.Key, ptx, TxStateEnum.Invalid).Publish();
+						}
 						break;
 					case IsTxOrphanResult.Orphan: // is a double-spend
+						BlockChainTrace.Information("double spent tx not evicted to mempool", tx.Key);
 						memPool.TxPool.RemoveDependencies(tx.Key);
 						new TxMessage(tx.Key, null, TxStateEnum.Invalid).Publish();
 						break;
