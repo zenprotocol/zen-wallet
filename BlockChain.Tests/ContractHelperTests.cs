@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using Infrastructure.Testing;
-using System.Text;
+using System.Linq;
 using Consensus;
 using Wallet.core.Data;
 using System.Collections.Generic;
@@ -64,5 +64,31 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { },new byte[] { },new byte[] { }))
 			}), "Should execute", Is.True);
 		}
+
+		[Test, Order(3)]
+		public void ShouldPassVerification()
+		{
+			var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
+
+			using (var context = _BlockChain.GetDBTransaction())
+			{
+				foreach (var item in _BlockChain.UTXOStore.All(context, null, false))
+				{
+					byte[] txHash = new byte[item.Key.Length - 1];
+					Array.Copy(item.Key, txHash, txHash.Length);
+					var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
+
+					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
+				}
+			}
+
+			var ptx = TransactionValidation.toPointedTransaction(contractCreatedTransaction, ListModule.OfSeq(utxos.Select(t=>t.Item2)));
+			byte[] _contractHash;
+			Assert.That(BlockChain.IsContractGeneratedTx(ptx, out _contractHash), Is.EqualTo(BlockChain.IsContractGeneratedTxResult.ContractGenerated));
+			using (var context = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(BlockChain.IsContractGeneratedTransactionValid(context, ptx, _contractHash), Is.True);
+			}
+        }
 	}
 }

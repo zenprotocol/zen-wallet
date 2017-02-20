@@ -3,10 +3,11 @@ using BlockChain.Data;
 using Infrastructure.Testing;
 using NUnit.Framework;
 using Wallet.core.Data;
+using System.Linq;
 
 namespace BlockChain
 {
-	public class MempoolTests : BlockChainTestsBase
+	public class MempoolTests : BlockChainContractTestsBase
 	{
 		[SetUp]
 		public void SetUp()
@@ -102,7 +103,7 @@ namespace BlockChain
 		}
 
 		[Test]
-		public void ShouldEvict()
+		public void ShouldEvictWithDependencies()
 		{
 			var key = Key.Create();
 			var tx = Utils
@@ -111,6 +112,9 @@ namespace BlockChain
 			var tx1 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private).Tag("tx1");
 			var tx2 = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private).Tag("tx2");
 
+			var contractHash = new byte[] { };
+			BlockChainTrace.SetTag(contractHash, "mock contract");
+			_BlockChain.memPool.ContractPool.AddRef(tx1.Key(), new ACSItem() { Hash = contractHash });
 			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("genesis"));
 			Assert.That(TxState(tx), Is.EqualTo(TxStateEnum.Confirmed));
 			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx1).Tag("main"));
@@ -132,9 +136,9 @@ namespace BlockChain
 				.GetTx().AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100)
 				.Sign(key.Private).Tag("tx");
 			var cannotEvict = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private)
-			                     .Tag("cannotEvict");
+								 .Tag("cannotEvict");
 			var invalidatingTx = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private)
-			                         .Tag("invalidatingTx");
+									 .Tag("invalidatingTx");
 
 			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("genesis"));
 			Assert.That(TxState(tx), Is.EqualTo(TxStateEnum.Confirmed));
@@ -148,6 +152,125 @@ namespace BlockChain
 			Assert.That(TxState(invalidatingTx), Is.EqualTo(TxStateEnum.Confirmed));
 			Assert.That(_BlockChain.memPool.TxPool.Count, Is.EqualTo(0));
 		}
+
+		[Test]
+		public void ShouldBeICTx()
+		{
+			var key = Key.Create();
+
+			string contractFsCode = @"
+module Test
+open Consensus.Types
+let run (context : ContractContext, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+";
+
+			var contractHash = GetCompliedContract(contractFsCode);
+			BlockChainTrace.SetTag(contractHash, "contract");
+			//			AddToACS(contractHash, contractFsCode, _GenesisBlock.header.blockNumber + 2);
+
+			var contractOutput1 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 11);
+
+			var tx = Utils
+				.GetTx()
+				.AddOutput(contractOutput1)
+				.AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100)
+				.Sign(key.Private).Tag("tx");
+
+			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("genesis"));
+
+			var contractGeneratedTx = ExecuteContract(contractHash).Tag("contractGeneratedTx");
+			_BlockChain.HandleTransaction(contractGeneratedTx);
+
+			Assert.That(_BlockChain.memPool.TxPool.Count(), Is.EqualTo(0));
+			Assert.That(_BlockChain.memPool.ICTxPool.Count(), Is.EqualTo(1));
+		}
+
+		[Test]
+		public void ShouldMoveToICTxPoolWhenExpiring()
+		{
+			var key = Key.Create();
+
+			string contractFsCode = @"
+module Test
+open Consensus.Types
+let run (context : ContractContext, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+";
+
+			var contractHash = GetCompliedContract(contractFsCode);
+			BlockChainTrace.SetTag(contractHash, "contract");
+			AddToACS(contractHash, contractFsCode, _GenesisBlock.header.blockNumber + 1);
+
+			var contractOutput1 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 11);
+
+			var tx = Utils
+				.GetTx()
+				.AddOutput(contractOutput1)
+				.AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100)
+				.Sign(key.Private).Tag("tx");
+
+			var genesis = _GenesisBlock.AddTx(tx).Tag("genesis");
+			_BlockChain.HandleBlock(genesis);
+
+			var contractGeneratedTx = ExecuteContract(contractHash).Tag("contractGeneratedTx");
+			_BlockChain.HandleTransaction(contractGeneratedTx);
+
+			Assert.That(_BlockChain.memPool.TxPool.Count(), Is.EqualTo(1));
+			Assert.That(_BlockChain.memPool.ICTxPool.Count(), Is.EqualTo(0));
+			_BlockChain.HandleBlock(genesis.Child().Tag("child"));
+			Assert.That(_BlockChain.memPool.TxPool.Count(), Is.EqualTo(0));
+			Assert.That(_BlockChain.memPool.ICTxPool.Count(), Is.EqualTo(1));
+		}
+
+//		[Test]
+//		public void _ShouldNotEvictDoubleSpendWithDependencies()
+//		{
+//			var key = Key.Create();
+
+//			string contractFsCode = @"
+//module Test
+//open Consensus.Types
+//let run (context : ContractContext, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+//";
+
+//			var contractHash = GetCompliedContract(contractFsCode);
+//			BlockChainTrace.SetTag(contractHash, "contract");
+//		//	AddToACS(contractHash, contractFsCode, _GenesisBlock.header.blockNumber + 2);
+
+//			var contractOutput1 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 11);
+//			var contractOutput2 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 12);
+//			var contractOutput3 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 13);
+
+//			var tx = Utils
+//				.GetTx()
+//				.AddOutput(contractOutput1)
+//				.AddOutput(contractOutput2)
+//				.AddOutput(contractOutput3)
+//				.AddOutput(Key.Create().Address, Consensus.Tests.zhash, 100)
+//				.Sign(key.Private).Tag("tx");
+//			var cannotEvict = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 1).Sign(key.Private)
+//			                     .Tag("cannotEvict");
+//			var invalidatingTx = Utils.GetTx().AddInput(tx, 0).AddOutput(Key.Create().Address, Consensus.Tests.zhash, 2).Sign(key.Private)
+//			                         .Tag("invalidatingTx");
+
+//			_BlockChain.memPool.ContractPool.AddRef(cannotEvict.Key(), new ACSItem() { Hash = contractHash });
+//			_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("genesis"));
+//			Assert.That(TxState(tx), Is.EqualTo(TxStateEnum.Confirmed));
+//			_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(cannotEvict).Tag("main"));
+//			Assert.That(TxState(cannotEvict), Is.EqualTo(TxStateEnum.Confirmed));
+
+//			var contractGeneratedTx = ExecuteContract(contractHash).Tag("contractGeneratedTx");
+//			_BlockChain.HandleTransaction(contractGeneratedTx);
+
+//			var branch = _GenesisBlock.Child().Tag("branch");
+//			_BlockChain.HandleBlock(branch.Child().AddTx(invalidatingTx).Tag("branch orphan"));
+//			_BlockChain.HandleBlock(branch.Tag("branch child"));
+//			System.Threading.Thread.Sleep(200);
+//			Assert.That(TxState(cannotEvict), Is.EqualTo(TxStateEnum.Invalid));
+//			Assert.That(TxState(invalidatingTx), Is.EqualTo(TxStateEnum.Confirmed));
+
+//			Assert.That(_BlockChain.memPool.TxPool.Count, Is.EqualTo(0));
+//			Assert.That(_BlockChain.memPool.ContractPool.Count, Is.EqualTo(0));
+//		}
 
 		[Test]
 		public void ShouldRemoveConfirmedFromMempoolWithDependencies()

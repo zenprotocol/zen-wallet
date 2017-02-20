@@ -105,7 +105,7 @@ namespace BlockChain
 					blockChain.Timestamps.Init(bk.header.timestamp);
 					ExtendMain(QueuedActions, 0);
 					Result = BkResultEnum.Accepted;
-					BlockChainTrace.Information("accepteed genesis block", _Bk);
+					BlockChainTrace.Information("accepted genesis block", _Bk);
 					return;
 				}
 			}
@@ -113,7 +113,7 @@ namespace BlockChain
 			if (IsOrphan())
 			{
 				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
-				BlockChainTrace.Information("bk added as orphan", _Bk);
+				BlockChainTrace.Information("block added as orphan", _Bk);
 				Result = BkResultEnum.AcceptedOrphan;
 				return;
 			}
@@ -122,7 +122,7 @@ namespace BlockChain
 
 			if (!IsValidDifficulty() || !IsValidBlockNumber() || !IsValidTimeStamp())
 			{
-				BlockChainTrace.Information("bk rejected", _Bk);
+				BlockChainTrace.Information("block rejected", _Bk);
 				Result = BkResultEnum.Rejected;
 				return;
 			}
@@ -203,13 +203,13 @@ namespace BlockChain
 			{
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
-					BlockChainTrace.Information("bk rejected", _Bk);
+					BlockChainTrace.Information("block rejected", _Bk);
 					Result = BkResultEnum.Rejected;
 					return;
 				}
 			}
 
-			BlockChainTrace.Information("bk accepted", _Bk);
+			BlockChainTrace.Information("block accepted", _Bk);
 			Result = BkResultEnum.Accepted;
 		}
 
@@ -573,7 +573,7 @@ namespace BlockChain
 
 		void UndoBlock(Types.Block block, byte[] key)
 		{
-			BlockChainTrace.Information("bk undo", block);
+			BlockChainTrace.Information("block undo", block);
 
 			_BlockChain.BlockStore.SetLocation(_DbTx, key, LocationEnum.Branch);
 

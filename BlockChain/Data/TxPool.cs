@@ -42,9 +42,10 @@ namespace BlockChain.Data
 
 		public void MoveToICTxPool(HashSet activeContracts)
 		{
-			foreach (var item in this)
+			foreach (var item in this.ToList())
 			{
 				byte[] contractHash;
+
 				if (BlockChain.IsContractGeneratedTx(item.Value, out contractHash) == BlockChain.IsContractGeneratedTxResult.ContractGenerated && 
 				    !activeContracts.Contains(contractHash))
 				{
