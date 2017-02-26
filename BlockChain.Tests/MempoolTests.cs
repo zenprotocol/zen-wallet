@@ -1,6 +1,5 @@
 using System;
 using BlockChain.Data;
-using Infrastructure.Testing;
 using NUnit.Framework;
 using Wallet.core.Data;
 using System.Linq;

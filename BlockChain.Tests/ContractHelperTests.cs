@@ -1,6 +1,5 @@
 ﻿using System;
 using NUnit.Framework;
-using Infrastructure.Testing;
 using System.Linq;
 using Consensus;
 using Wallet.core.Data;

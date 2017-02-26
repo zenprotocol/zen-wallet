@@ -67,10 +67,6 @@
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.Console\Infrastructure.Console.csproj">
-      <Project>{E68F4BCB-98B7-4EA9-97E2-5758D00B604A}</Project>
-      <Name>Infrastructure.Console</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>NBitcoinDerive</Name>
@@ -78,10 +74,6 @@
     <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
       <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
       <Name>Infrastructure.Testing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NodeTester\NodeTester.csproj">
-      <Project>{7469FE62-A886-460D-8439-8048AF6514A1}</Project>
-      <Name>NodeTester</Name>
     </ProjectReference>
     <ProjectReference Include="..\BlockChain\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
@@ -102,6 +94,10 @@
     <ProjectReference Include="..\Zen.CLRCLI\Zen.CLRCLI.csproj">
       <Project>{29BB24E8-D6C7-403E-8B7C-DC65765E342B}</Project>
       <Name>Zen.CLRCLI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain.Tests\BlockChain.Tests.csproj">
+      <Project>{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}</Project>
+      <Name>BlockChain.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

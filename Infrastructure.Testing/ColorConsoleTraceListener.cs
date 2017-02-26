@@ -48,6 +48,7 @@ namespace Infrastructure.Testing
 		{
 			WriteColor(message, ConsoleColor.Gray);
 		}
+
 		public override void WriteLine(string message)
 		{
 			WriteColor(message + Environment.NewLine, ConsoleColor.Gray);
