@@ -49,7 +49,9 @@
     <Compile Include="BlockChainContractTestsBase.cs" />
     <Compile Include="ACSTests.cs" />
     <Compile Include="MempoolTests.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="BlockExtensions.cs" />
+    <Compile Include="TransactionExtensions.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -59,10 +61,6 @@
     <ProjectReference Include="..\BlockChain\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
-      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
-      <Name>Infrastructure.Testing</Name>
     </ProjectReference>
     <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>

@@ -1,6 +1,5 @@
 using BlockChain.Store;
 using NUnit.Framework;
-using Infrastructure.Testing;
 
 namespace BlockChain
 {

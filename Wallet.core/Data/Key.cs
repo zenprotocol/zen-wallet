@@ -35,7 +35,10 @@ namespace Wallet.core.Data
 			}
 		}
 
-		Key()
+		/// <summary>
+		/// Public parameterless ctor is needed by MsgPack
+		/// </summary>
+		public Key()
 		{
 		}
 

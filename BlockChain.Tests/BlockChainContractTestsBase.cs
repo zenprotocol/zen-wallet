@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Consensus;
-using Infrastructure.Testing;
 using Microsoft.FSharp.Collections;
 using NUnit.Framework;
 using Wallet.core.Data;

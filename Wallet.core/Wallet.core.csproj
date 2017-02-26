@@ -33,9 +33,6 @@
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.6.0\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="MsgPack">
       <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
     </Reference>
@@ -65,14 +62,11 @@
     <Compile Include="Data\AssetTypes.cs" />
     <Compile Include="Store\UTXOStore.cs" />
     <Compile Include="Store\BalanceStore.cs" />
-    <Compile Include="Tests\WalletTests.cs" />
     <Compile Include="Store\TxStore_.cs" />
     <Compile Include="Store\Tests\TxStoreTests.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Data\UpdateInfo.cs" />
     <Compile Include="vpod.cs" />
-    <Compile Include="Tests\WalletTestsBase.cs" />
-    <Compile Include="Tests\WalletSpendTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
@@ -91,17 +85,11 @@
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>NBitcoinDerive</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
-      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
-      <Name>Infrastructure.Testing</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Tests\" />
     <Folder Include="Store\Tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

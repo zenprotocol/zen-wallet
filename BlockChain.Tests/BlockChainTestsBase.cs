@@ -30,7 +30,7 @@ namespace BlockChain
 			_TxMessagesListenerScope = MessageProducer<BlockChainMessage>.Instance.AddMessageListener(
 				new MessageListener<BlockChainMessage>(OnBlockChainMessage));
 
-			_GenesisBlock = Infrastructure.Testing.Utils.GetGenesisBlock();
+			_GenesisBlock = Utils.GetGenesisBlock();
 			_GenesisBlockHash = Merkle.blockHeaderHasher.Invoke(_GenesisBlock.header);
 			_BlockChain = new BlockChain(DB, _GenesisBlockHash);
 		}
