@@ -4,8 +4,6 @@ using Store;
 using System.Linq;
 using System.IO;
 using System.Reflection;
-using BlockChain.Tests;
-using Infrastructure.Testing;
 using Consensus;
 
 namespace BlockChain.Store

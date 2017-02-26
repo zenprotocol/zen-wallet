@@ -1,7 +1,6 @@
 using System;
 using Consensus;
 using Store;
-using Infrastructure.Testing;
 using NUnit.Framework;
 
 namespace BlockChain

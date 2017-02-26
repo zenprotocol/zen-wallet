@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
-using Infrastructure.Testing;
 using Consensus;
+using BlockChain;
 
 namespace Zen
 {

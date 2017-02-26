@@ -1,5 +1,4 @@
 ﻿using System;
-using Infrastructure.Testing;
 using NUnit.Framework;
 
 namespace BlockChain

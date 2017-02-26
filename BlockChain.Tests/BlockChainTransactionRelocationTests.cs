@@ -3,7 +3,6 @@ using BlockChain.Store;
 using Store;
 using NUnit.Framework;
 using BlockChain.Data;
-using Infrastructure.Testing;
 using Wallet.core.Data;
 
 namespace BlockChain

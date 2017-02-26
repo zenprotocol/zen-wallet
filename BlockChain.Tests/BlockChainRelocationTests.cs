@@ -1,22 +1,9 @@
 using Consensus;
 using BlockChain.Store;
-using Store;
 using NUnit.Framework;
-using BlockChain.Data;
-using Infrastructure.Testing;
 
 namespace BlockChain
 {
-	//public static class TagHelper
-	//{
-	//	public static HashDictionary<string> values = new HashDictionary<string>();
-
-	//	public static string GetValue(byte[] key)
-	//	{
-	//		return values[key];
-	//	}
-	//}
-
 	[TestFixture()]
 	public class BlockChainRelocationTests : BlockChainTestsBase
 	{
@@ -29,24 +16,9 @@ namespace BlockChain
 		public new void OneTimeSetUp()
 		{
 			base.OneTimeSetUp();
-			block1 = _GenesisBlock.Child().AddTx(tx);
-			block2 = _GenesisBlock.Child().AddTx(tx);
-			block3 = block2.Child();
-
-			//_GenesisBlock.SetTag("g");
-			//block1.SetTag("1");
-			//block2.SetTag("2");
-			//block3.SetTag("3");
-
-			//TagHelper.values[_GenesisBlock.Key] = "g";
-			//TagHelper.values[block1.Key] = "1";
-			//TagHelper.values[block2.Key] = "2";
-			//TagHelper.values[block3.Key] = "3";
-
-			//System.Console.WriteLine("g: " + (int)_GenesisBlock.Key[0]);
-			//System.Console.WriteLine("1: " + (int)block1.Key[0]);
-			//System.Console.WriteLine("2: " + (int)block2.Key[0]);
-			//System.Console.WriteLine("3: " + (int)block3.Key[0]);
+			block1 = _GenesisBlock.Child().AddTx(tx).Tag("block1");
+			block2 = _GenesisBlock.Child().AddTx(tx).Tag("block2");
+			block3 = block2.Child().Tag("block3");
 		}
 
 		[Test, Order(1)]
