@@ -263,6 +263,8 @@ namespace BlockChain
 					i++;
 				}
 
+				var contractSacrifices = new HashDictionary<ulong>();
+
 				i = 0;
 				foreach (var output in ptx.outputs)
 				{
@@ -277,33 +279,23 @@ namespace BlockChain
 						if (contractLock.IsHighVLock)
 							continue; // not current version
 
-						byte[] contractHash = null;
+						byte[] contractKey = null;
 
-						if (contractLock.Item.lockData.Length > 0)
+						if (contractLock.Item.lockData[0].Length > 0)
 						{
-							contractHash = contractLock.Item.lockData[0]; // lock-level indicated contract
+							contractKey = contractLock.Item.lockData[0]; // output-lock-level indicated contract
 						}
 						else if (transaction.contract.Value != null)
 						{
 							if (transaction.contract.Value.IsHighVContract)
 								continue; // not current version
 
-							contractHash = Merkle.hashHasher.Invoke(((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code); // tx-level indicated contract
+							contractKey = ((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code;
 						}
 
-						// is contract active (with current block as tip)
-						if (new ActiveContractSet().IsActive(_DbTx, contractHash))
-						{
-							// snapshot only if first time (not snapshoted before)
-							if (!blockUndoData.ACSDeltas.ContainsKey(contractHash))
-							{
-								blockUndoData.ACSDeltas.Add(contractHash,
-									  new ActiveContractSet().Get(_DbTx, contractHash).Value);
-							}
-
-							// extend
-							new ActiveContractSet().Extend(_DbTx, contractHash, output.spend.amount);
-						}
+						contractSacrifices[contractKey] =
+							(contractSacrifices.ContainsKey(contractKey) ? contractSacrifices[contractKey] : 0) +
+							output.spend.amount;
 					}
 
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
@@ -313,6 +305,25 @@ namespace BlockChain
 						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, (uint)i), output));
 					}
 					i++;
+				}
+
+				foreach (var item in contractSacrifices)
+				{
+					if (new ActiveContractSet().IsActive(_DbTx, item.Key))
+					{
+						// snapshot only if first time (not snapshoted before)
+						if (!blockUndoData.ACSDeltas.ContainsKey(item.Key))
+						{
+							blockUndoData.ACSDeltas.Add(item.Key,
+								  new ActiveContractSet().Get(_DbTx, item.Key).Value);
+						}
+
+						new ActiveContractSet().Extend(_DbTx, item.Key, item.Value);
+					}
+					else
+					{
+						new ActiveContractSet().Activate(_DbTx, item.Key, item.Value);
+					}
 				}
 			}
 
