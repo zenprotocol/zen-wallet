@@ -63,7 +63,7 @@ namespace Zen
 		}
 
 
-		[Test(), Order(1)]
+		[Test(), Order(2)]
 		public void CanAquireGenesisOutputsBeforeGenesis()
 		{
 			App app = new App();
@@ -97,7 +97,7 @@ namespace Zen
 			app.GUI();
 		}
 
-		[Test(), Order(2)]
+		[Test(), Order(3)]
 		public async Task CanSendAmounts()
 		{
 			App app = new App();
@@ -134,7 +134,7 @@ namespace Zen
 		//	Thread.Sleep(6000);
 		}
 
-		[Test(), Order(2)]
+		[Test(), Order(4)]
 		public async Task ShouldInvalidate()
 		{
 			App app = new App();
@@ -190,7 +190,7 @@ namespace Zen
 			app.GUI();
 		}
 
-		[Test(), Order(2)]
+		[Test(), Order(5)]
 		public async Task ShouldUndoInvalidation()
 		{
 			App app = new App();
