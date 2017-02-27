@@ -87,19 +87,33 @@ namespace BlockChain
 			return Execute(contractHash, out tx, args) && TransactionValidation.unpoint(ptx).Equals(tx);
 		}
 
-		public static bool Compile(byte[] fsSourceCodeBytes, out byte[] contractHash)
+		public static bool Compile(byte[] fsharpCode, out byte[] contractHash)
 		{
-			return Compile(Encoding.ASCII.GetString(fsSourceCodeBytes), out contractHash);
+			return Compile(Encoding.ASCII.GetString(fsharpCode), out contractHash);
 		}
 
-		public static bool Compile(String fsSourceCodeText, out byte[] contractHash)
+//		public async static Task<bool> Extract(byte[] fstarCode, StrongBox<byte[]> fsharpCode)
+		public static bool Extract(byte[] fstarCode, out byte[] fsharpCode)
+		{
+			//	await Task.Delay(1000);
+			var fsharpCodeExtracted = @"
+module Test
+open Consensus.Types
+let run (context : ContractContext, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+";
+			fsharpCode = Encoding.ASCII.GetBytes(fsharpCodeExtracted);
+
+			return true;
+		}
+
+		public static bool Compile(String fsharpCode, out byte[] contractHash)
 		{
 			var tempSourceFile = Path.ChangeExtension(Path.GetTempFileName(), ".fs");
 			var process = new Process();
 
-			contractHash = GetHash(fsSourceCodeText);
+			contractHash = GetHash(fsharpCode);
 
-			File.WriteAllText(tempSourceFile, fsSourceCodeText);
+			File.WriteAllText(tempSourceFile, fsharpCode);
 
 			if (!Directory.Exists(_OutputPath))
 			{

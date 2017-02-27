@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using NUnit.Framework;
 
 namespace BlockChain
@@ -213,14 +214,67 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 			}
 		}
 
-			//var tx = ExecuteContract(compiledContract);
+		//var tx = ExecuteContract(compiledContract);
 
-			//var child = _GenesisBlock.Child();
-			//var orphan = child.Child().AddTx(tx);
+		//var child = _GenesisBlock.Child();
+		//var orphan = child.Child().AddTx(tx);
 
-			//Assert.That(_BlockChain.HandleBlock(orphan), Is.True);
-			//Assert.That(_BlockChain.HandleBlock(child), Is.True); // cause an undo
+		//Assert.That(_BlockChain.HandleBlock(orphan), Is.True);
+		//Assert.That(_BlockChain.HandleBlock(child), Is.True); // cause an undo
 
+		[Test]
+		public void ShouldNotActivateUnderSacrificedContract()
+		{
+			var kalapasPerBlock = (ulong)contractFsCode.Length * 1000;
+			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, kalapasPerBlock)).SetContract(
+				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractFsCode), new byte[] { }, new byte[] { }));
 
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False);
+			}
+		}
+
+		[Test]
+		public void ShouldNotActivateHighVersionContract()
+		{
+			var highVContract = Consensus.Types.ExtendedContract.NewHighVContract(10, new byte[] { });
+			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, 10)).SetContract(highVContract);
+
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.False);
+			}
+		}
+
+		//cannot specify non-zen amount in SacrificeLock
+		//[Test]
+		//public void ShouldNotActivateNonZenSacrificedContract()
+		//{
+		//}
+
+		[Test]
+		public void ShouldActivateContractOfSameTx()
+		{
+			var kalapasPerBlock = (ulong)contractFsCode.Length * 1000 * 2;
+			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, kalapasPerBlock)).SetContract(
+				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractFsCode), new byte[] { }, new byte[] { }));
+
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
+
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.True);
+			}
+		}
+
+		//[Test]
+		//public void ShouldActivateReferencesContract()
+		//{
+		//}
 	}
 }

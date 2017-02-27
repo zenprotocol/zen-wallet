@@ -42,6 +42,37 @@ namespace BlockChain
 			Put(dbTx, acsItem);
 		}
 
+		public bool Activate(TransactionContext dbTx, byte[] contractCode, ulong kalapas)
+		{
+			byte[] fsharpCode;
+			ContractHelper.Extract(contractCode, out fsharpCode);
+			//	var fsharpCode = new StrongBox<byte[]>();
+			//	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
+
+			byte[] contractHash;
+			if (ContractHelper.Compile(contractCode, out contractHash))
+			{
+				var kalapasPerBlock = (ulong)fsharpCode.Length * 1000;
+
+				if (kalapas < kalapasPerBlock)
+				{
+					return false;
+				}
+
+				Add(dbTx, new ACSItem()
+				{
+					Hash = contractHash,
+					KalapasPerBlock = kalapasPerBlock,
+					LastBlock = Convert.ToUInt32(kalapas / kalapasPerBlock)
+				});
+
+				return true;
+			}
+			//	}, TaskContinuationOptions.OnlyOnRanToCompletion).Wait();
+
+			return false;
+		}
+
 		public HashDictionary<ACSItem> GetExpiringList(TransactionContext dbTx, uint blockNumber)
 		{
 #if TRACE
