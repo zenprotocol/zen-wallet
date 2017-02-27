@@ -159,17 +159,30 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			var tx = ExecuteContract(compiledContract);
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.False);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
 		}
 
 		[Test]
-		public void ShouldRejectTxGenereatedByInactiveContract()
+		public void ShouldAcceptTxGenereatedByActiveContract2()
 		{
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber);
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 2);
 
 			var tx = ExecuteContract(compiledContract);
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.False);
+			var bk = _GenesisBlock.Child();
+			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(tx)), Is.True);
+		}
+
+		[Test]
+		public void ShouldBeOrphanOfInactiveContract()
+		{
+			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber);
+			BlockChainTrace.SetTag(compiledContract, "contract");
+			var tx = ExecuteContract(compiledContract).Tag("tx");
+
+			_BlockChain.HandleBlock(_GenesisBlock.Child());
+			Assert.That(_BlockChain.HandleTransaction(tx), Is.EqualTo(BlockChain.TxResultEnum.OrphanIC));
 		}
 
 		[Test]
