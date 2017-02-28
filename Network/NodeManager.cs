@@ -14,7 +14,7 @@ namespace Network
 	{
 		private Server _Server = null;
 		private BlockChain.BlockChain _BlockChain = null;
-		private Network _Network;
+		private NetworkInfo _Network;
 		private NodeConnectionParameters _NodeConnectionParameters;
 
 #if DEBUG
@@ -35,7 +35,7 @@ namespace Network
 		{
 			_BlockChain = blockChain;
 			//OwnResource (_BlockChain);
-			_Network = JsonLoader<Network.Network>.Instance.Value;
+			_Network = JsonLoader<NetworkInfo>.Instance.Value;
 
 			AddressManager addressManager = new AddressManager();
 

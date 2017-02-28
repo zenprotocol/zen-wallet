@@ -18,7 +18,7 @@ namespace Network
 			}
 		}
 
-		public Server(IPAddress externalAddress, Network network, NodeConnectionParameters nodeConnectionParameters)
+		public Server(IPAddress externalAddress, NetworkInfo network, NodeConnectionParameters nodeConnectionParameters)
 		{
 			_Server = new NodeServer(network, internalPort: network.DefaultPort);
 			OwnResource(_Server);

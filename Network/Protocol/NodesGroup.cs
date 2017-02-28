@@ -28,11 +28,11 @@ namespace NBitcoin.Protocol
 
 		NodeRequirement _Requirements;
 		CancellationTokenSource _Disconnect;
-		Network _Network;
+		NetworkInfo _Network;
 		object cs;
 
 		public NodesGroup(
-			Network network,
+			NetworkInfo network,
 			NodeConnectionParameters connectionParameters = null,
 			NodeRequirement requirements = null)
 		{
