@@ -109,18 +109,14 @@ namespace BlockChain
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				int i = 0;
+				uint i = 0;
 				foreach (var output in tx.outputs)
 				{
-					byte[] outputKey = new byte[txHash.Length + 1];
-					txHash.CopyTo(outputKey, 0);
-					outputKey[txHash.Length] = (byte)i;
-
-					Assert.That(_BlockChain.UTXOStore.ContainsKey(dbTx, outputKey), Is.EqualTo(contains));
+					Assert.That(_BlockChain.UTXOStore.ContainsKey(dbTx, txHash, i), Is.EqualTo(contains));
 
 					if (contains)
 					{
-						Assert.That(_BlockChain.UTXOStore.Get(dbTx, outputKey).Value, Is.EqualTo(output));
+						Assert.That(_BlockChain.UTXOStore.Get(dbTx, txHash, i).Value, Is.EqualTo(output));
 					}
 
 					i++;

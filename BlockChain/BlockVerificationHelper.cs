@@ -146,7 +146,7 @@ namespace BlockChain
 					//if (!IsTransactionsValid(pointedTransactions))
 					//{
 					//	Result = ResultEnum.Rejected;
-					//	return;
+					//	return;2
 					//}
 
 					BlockChainTrace.Information($"block {bk.header.blockNumber} extends a branch with new difficulty.", _Bk);
@@ -250,13 +250,13 @@ namespace BlockChain
 
 				BlockChainTrace.Information("saved tx", ptx);
 
-				_BlockChain.BlockStore.TxStore.Put(_DbTx, new Keyed<Types.Transaction>(txHash, transaction));
+				_BlockChain.BlockStore.TxStore.Put(_DbTx, txHash, transaction);
 
-				var i = 0;
+				uint i = 0;
 				foreach (var input in ptx.pInputs)
 				{
 					//TODO: refactoring is needed.
-					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(input.Item1.txHash, (int)input.Item1.index));
+					_BlockChain.UTXOStore.Remove(_DbTx, input.Item1);
 					BlockChainTrace.Information($"utxo spent, amount {input.Item2.spend.amount}", ptx);
 					BlockChainTrace.Information($" of", input.Item1.txHash);
 					blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(input.Item1, input.Item2));
@@ -301,7 +301,7 @@ namespace BlockChain
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
 					{
 						BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", ptx);
-						_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(txHash, i), output));
+						_BlockChain.UTXOStore.Put(_DbTx, txHash, i, output);
 						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, (uint)i), output));
 					}
 					i++;
@@ -385,15 +385,10 @@ namespace BlockChain
 
 		bool IsTransactionValid(Types.Transaction tx, byte[] txHash, out TransactionValidation.PointedTransaction ptx)
 		{
-			var i = 0;
+			uint i = 0;
 			foreach (var output in tx.outputs)
 			{
-				//TODO: refactor
-				byte[] utxoKey = new byte[txHash.Length + 1];
-				txHash.CopyTo(utxoKey, 0);
-				utxoKey[txHash.Length] = (byte)i;
-
-				if (_BlockChain.UTXOStore.ContainsKey(_DbTx, utxoKey))
+				if (_BlockChain.UTXOStore.ContainsKey(_DbTx, txHash, i))
 				{
 					BlockChainTrace.Information("tx invalid - exists", tx);
 					ptx = null;
@@ -509,19 +504,19 @@ namespace BlockChain
 			return true;
 		}
 
-		byte[] GetOutputKey(Types.Transaction transaction, int index) //TODO: convert to outpoint
-		{
-			return GetOutputKey(Merkle.transactionHasher.Invoke(transaction), index);
-		}
+		//byte[] GetOutputKey(Types.Transaction transaction, int index) //TODO: convert to outpoint
+		//{
+		//	return GetOutputKey(Merkle.transactionHasher.Invoke(transaction), index);
+		//}
 
-		byte[] GetOutputKey(byte[] txHash, int index) //TODO: convert to outpoint
-		{
-			byte[] outputKey = new byte[txHash.Length + 1];
-			txHash.CopyTo(outputKey, 0);
-			outputKey[txHash.Length] = (byte)index;
+		//byte[] GetOutputKey(byte[] txHash, int index) //TODO: convert to outpoint
+		//{
+		//	byte[] outputKey = new byte[txHash.Length + 1];
+		//	txHash.CopyTo(outputKey, 0);
+		//	outputKey[txHash.Length] = (byte)index;
 
-			return outputKey;
-		}
+		//	return outputKey;
+		//}
 
 		double TotalWork()
 		{
@@ -595,13 +590,13 @@ namespace BlockChain
 				blockUndoData.AddedUTXO.ForEach(u =>
 				{
 					BlockChainTrace.Information($"undo block: utxo removed, amount {u.Item2.spend.amount}", block);
-					_BlockChain.UTXOStore.Remove(_DbTx, GetOutputKey(u.Item1.txHash, (int)u.Item1.index));
+					_BlockChain.UTXOStore.Remove(_DbTx, u.Item1.txHash, u.Item1.index);
 				});
 
 				blockUndoData.RemovedUTXO.ForEach(u =>
 				{
 					BlockChainTrace.Information($"undo block: new utxo, amount {u.Item2.spend.amount}", block);
-					_BlockChain.UTXOStore.Put(_DbTx, new Keyed<Types.Output>(GetOutputKey(u.Item1.txHash, (int)u.Item1.index), u.Item2));
+					_BlockChain.UTXOStore.Put(_DbTx, u.Item1.txHash, u.Item1.index, u.Item2);
 				});
 
 				foreach (var item in blockUndoData.ACSDeltas)
