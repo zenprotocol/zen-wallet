@@ -1,8 +1,6 @@
 using System;
 using Infrastructure;
-using Infrastructure.TestingGtk;
 using Wallet.core;
-using NBitcoinDerive;
 
 namespace Wallet
 {

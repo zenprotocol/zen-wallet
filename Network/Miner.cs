@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading;
 using NBitcoin.Protocol.Behaviors;
 using Infrastructure;
 using Consensus;
 using NBitcoin.Protocol;
 
-namespace NBitcoinDerive
+namespace Network
 {
 	public class Miner : ResourceOwner
 	{

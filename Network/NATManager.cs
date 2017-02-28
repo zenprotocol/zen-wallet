@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Open.Nat;
@@ -9,7 +9,7 @@ using Infrastructure;
 using NBitcoin;
 using NBitcoin.Protocol;
 
-namespace NBitcoinDerive
+namespace Network
 {
 	public class NATManager
 	{

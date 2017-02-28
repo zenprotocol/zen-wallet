@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using Infrastructure;
 using System.Threading.Tasks;
-using NBitcoinDerive;
+using Network;
 using NBitcoin.Protocol;
 using System.Collections.Generic;
 using NBitcoin;
 using NBitcoin.Protocol.Behaviors;
 using System.Net;
 
-namespace NBitcoinDerive
+namespace Network
 {
 	public class NodeManager : ResourceOwner//, INodeManager
 	{
@@ -35,7 +35,7 @@ namespace NBitcoinDerive
 		{
 			_BlockChain = blockChain;
 			//OwnResource (_BlockChain);
-			_Network = JsonLoader<NBitcoinDerive.Network>.Instance.Value;
+			_Network = JsonLoader<Network.Network>.Instance.Value;
 
 			AddressManager addressManager = new AddressManager();
 

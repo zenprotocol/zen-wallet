@@ -4,7 +4,7 @@ using NBitcoin.Protocol.Behaviors;
 using System.Net;
 using Infrastructure;
 
-namespace NBitcoinDerive
+namespace Network
 {
 	public class Server : ResourceOwner
 	{
