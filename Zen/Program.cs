@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using NDesk.Options;
-using Infrastructure;
-using NBitcoinDerive;
-using System.Threading;
 using System.Net;
 
 namespace Zen

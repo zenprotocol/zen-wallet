@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Net;
 using MsgPack;
 using MsgPack.Serialization;
 using NBitcoin.Protocol;
 
-namespace NBitcoinDerive.Serialization
+namespace Network.Serialization
 {
 	public class IPEndPointSerializer : MessagePackSerializer<IPEndPoint>
 	{
