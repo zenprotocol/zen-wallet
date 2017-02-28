@@ -216,7 +216,7 @@
     </ProjectReference>
     <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
-      <Name>NBitcoinDerive</Name>
+      <Name>Network</Name>
     </ProjectReference>
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
