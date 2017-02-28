@@ -21,7 +21,7 @@ namespace BlockChain
 
 		public void Add(TransactionContext dbTx, ACSItem item)
 		{
-			Put(dbTx, new Keyed<ACSItem>(item.Hash, item));
+			Put(dbTx, item.Hash, item);
 		}
 
 		public HashSet Keys(TransactionContext dbTx)
@@ -39,7 +39,7 @@ namespace BlockChain
 			var acsItem = Get(dbTx, contractHash);
 			acsItem.Value.LastBlock += (uint)(kalapas / acsItem.Value.KalapasPerBlock);
 
-			Put(dbTx, acsItem);
+			Add(dbTx, acsItem.Value);
 		}
 
 		public bool Activate(TransactionContext dbTx, byte[] contractCode, ulong kalapas)
@@ -81,7 +81,7 @@ namespace BlockChain
 
 			var values = new HashDictionary<ACSItem>();
 
-			foreach (var contract in All(dbTx).Where(t => t.Value.LastBlock == blockNumber))
+			foreach (var contract in All(dbTx).Where(t => t.Value.LastBlock <= blockNumber))
 			{
 				values[contract.Key] = contract.Value;
 			}

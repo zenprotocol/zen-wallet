@@ -3,13 +3,7 @@ using System.Collections.Generic;
 
 namespace Store
 {
-	//TODO: memory management
-	//https://docs.google.com/document/d/1IFkXoX3Tc2zHNAQN9EmGSXZGbQabMrWmpmVxFsLxLsw/pub
-	//calling GC.Collect
-	//calling table.Close
-
-	//public abstract class Store<TWrapper, TItem> where TWrapper : StoredItem<TItem>
-	public abstract class Store<T> //where T : class
+	public abstract class Store<TKey, TValue> //where T : class
 	{
 		protected readonly string _TableName;
 
@@ -18,54 +12,31 @@ namespace Store
 			_TableName = tableName;
 		}
 
-		public void Put(TransactionContext transactionContext, Keyed<T> item) //TODO: use Keyed?
+		public void Put(TransactionContext transactionContext, TKey key, TValue item) //TODO: use Keyed?
 		{
-			Put(transactionContext, new Keyed<T>[] { item });
+			var _key = Pack(key);
+			Trace.Write(_TableName, _key);
+			transactionContext.Transaction.Insert<byte[], byte[]>(_TableName, _key, Pack(item));
 		}
 
-		public void Put(TransactionContext transactionContext, byte[] key, T item) //TODO: use Keyed?
+		public bool ContainsKey(TransactionContext transactionContext, TKey key)
 		{
-			Put(transactionContext, new Keyed<T>[] { new Keyed<T>(key, item) });
+			var _key = Pack(key);
+			Trace.KeyLookup(_TableName, _key);
+			return transactionContext.Transaction.Select<byte[], byte[]>(_TableName, _key).Exists;
 		}
 
-		private void Put(TransactionContext transactionContext, byte[] key, byte[] value)
+		public Keyed<TKey, TValue> Get(TransactionContext transactionContext, TKey key)
 		{
-			Put(transactionContext, new Tuple<byte[],byte[]>[] { new Tuple<byte[], byte[]>(key, value) });
+			var _key = Pack(key);
+			Trace.Read(_TableName, _key);
+			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, _key);
+			return row.Exists ? new Keyed<TKey, TValue>(Unpack<TKey>(row.Key), Unpack<TValue>(row.Value)) : null;
 		}
 
-		private void Put(TransactionContext transactionContext, Keyed<T>[] items)
+		public void Remove(TransactionContext transactionContext, TKey key)
 		{
-			foreach (Keyed<T> item in items) {
-				Trace.Write(_TableName, item.Key);
-				transactionContext.Transaction.Insert<byte[], byte[]> (_TableName, item.Key, Pack(item.Value));
-			}
-		}
-
-		public void Put(TransactionContext transactionContext, Tuple<byte[], byte[]>[] items)
-		{
-			foreach (Tuple<byte[], byte[]> item in items)
-			{
-				Trace.Write(_TableName, item.Item1);
-				transactionContext.Transaction.Insert<byte[], byte[]>(_TableName, item.Item1, item.Item2);
-			}
-		}
-
-		public bool ContainsKey(TransactionContext transactionContext, byte[] key)
-		{
-			Trace.KeyLookup(_TableName, key);
-			return transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key).Exists;
-		}
-
-		public Keyed<T> Get(TransactionContext transactionContext, byte[] key)
-		{
-			Trace.Read(_TableName, key);
-			var row = transactionContext.Transaction.Select<byte[], byte[]>(_TableName, key);
-			return row.Exists ? new Keyed<T>(key, Unpack(row.Value, row.Key)) : null;
-		}
-
-		public void Remove(TransactionContext transactionContext, byte[] key)
-		{
-			transactionContext.Transaction.RemoveKey<byte[]>(_TableName, key);
+			transactionContext.Transaction.RemoveKey(_TableName, Pack(key));
 		}
 
 		public void Count(TransactionContext transactionContext)
@@ -80,7 +51,7 @@ namespace Store
 		//	}
 		//}
 
-		public IEnumerable<Keyed<T>> All(TransactionContext transactionContext, Func<T, bool> predicate = null, bool syncronized = false)
+		public IEnumerable<Keyed<TKey, TValue>> All(TransactionContext transactionContext, Func<TValue, bool> predicate = null, bool syncronized = false)
 		{
 			if (syncronized)
 			{
@@ -90,11 +61,12 @@ namespace Store
 
 			foreach (var row in transactionContext.Transaction.SelectForward<byte[], byte[]>(_TableName))
 			{
-				var value = Unpack(row.Value, row.Key);
+				var key = Unpack<TKey>(row.Key);
+				var value = Unpack<TValue>(row.Value);
 
 				if (predicate == null || predicate(value))
 				{
-					yield return new Keyed<T>(row.Key, value);
+					yield return new Keyed<TKey, TValue>(key, value);
 				}
 			}
 		}
@@ -107,7 +79,23 @@ namespace Store
 			}
 		}
 
-		protected abstract byte[] Pack(T item);
-		protected abstract T Unpack(byte[] data, byte[] key);
+		protected abstract byte[] Pack<T>(T value);
+		protected abstract T Unpack<T>(byte[] data);
+	}
+
+
+	//TODO: memory management
+	//https://docs.google.com/document/d/1IFkXoX3Tc2zHNAQN9EmGSXZGbQabMrWmpmVxFsLxLsw/pub
+	//calling GC.Collect
+	//calling table.Close
+
+	//public abstract class Store<TWrapper, TItem> where TWrapper : StoredItem<TItem>
+	public abstract class Store<T> : Store<byte[], T> //where T : class
+	{
+	//	protected readonly string _TableName;
+
+		protected Store(string tableName) : base(tableName)
+		{
+		}
 	}
 }

@@ -27,7 +27,7 @@ namespace Wallet.core
 			dbTx.Transaction.RemoveAllKeys(INDEXES, true);
 		}
 
-		public IEnumerable<Keyed<Types.Transaction>> All(TransactionContext dbTx)
+		public IEnumerable<Keyed<byte[], Types.Transaction>> All(TransactionContext dbTx)
 		{
 			foreach (var index in dbTx.Transaction.SelectForward<int, byte[]>(INDEXES))
 			{
@@ -35,7 +35,7 @@ namespace Wallet.core
 			}
 		}
 
-		public void Put(TransactionContext dbTx, Keyed<Types.Transaction> item, AssetDeltas assetBalances, TxStateEnum txState)
+		public void Put(TransactionContext dbTx, byte[] txHash, Types.Transaction tx, AssetDeltas assetBalances, TxStateEnum txState)
 		{
 			//	dbTx.Transaction.SynchronizeTables(INDEXES);
 
@@ -50,14 +50,14 @@ namespace Wallet.core
 
 				identity++;
 
-				dbTx.Transaction.Insert<int, byte[]>(INDEXES, identity, item.Key);
+				dbTx.Transaction.Insert<int, byte[]>(INDEXES, identity, txHash);
 			//}
 
-			Put(dbTx, item);
+			Put(dbTx, txHash, tx);
 
-			dbTx.Transaction.Insert<byte[], int>(STATES, item.Key, (int)txState);
+			dbTx.Transaction.Insert<byte[], int>(STATES, txHash, (int)txState);
 
-			var table = dbTx.Transaction.InsertTable<byte[]>(BALANCES, item.Key, 0);
+			var table = dbTx.Transaction.InsertTable<byte[]>(BALANCES, txHash, 0);
 
 			foreach (var asset in assetBalances)
 			{

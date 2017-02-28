@@ -306,11 +306,7 @@ namespace BlockChain
 
 				foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
 				{
-					byte[] txHash = new byte[item.Key.Length - 1];
-					Array.Copy(item.Key, txHash, txHash.Length);
-					var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
-
-					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
+					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
 				}
 
 				memPool.ICTxPool.Purge(activeContracts, utxos);
@@ -389,13 +385,9 @@ namespace BlockChain
 
 			foreach (Types.Outpoint input in tx.inputs)
 			{
-				byte[] output = new byte[input.txHash.Length + 1];
-				input.txHash.CopyTo(output, 0);
-				output[input.txHash.Length] = (byte)input.index;
-
-				if (UTXOStore.ContainsKey(dbTx, output)) //TODO: refactor ContainsKey, byte[] usage
+				if (UTXOStore.ContainsKey(dbTx, input))
 				{
-					outputs.Add(UTXOStore.Get(dbTx, output).Value);
+					outputs.Add(UTXOStore.Get(dbTx, input).Value);
 				} else if (memPool.TxPool.Contains(input.txHash))
 				{
 					if (input.index < memPool.TxPool[input.txHash].outputs.Length)
@@ -483,11 +475,7 @@ namespace BlockChain
 
 			foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
 			{
-				byte[] txHash = new byte[item.Key.Length - 1];
-				Array.Copy(item.Key, txHash, txHash.Length);
-				var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
-
-				utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
+				utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
 			}
 
 			var args = new ContractArgs()
@@ -580,23 +568,16 @@ namespace BlockChain
 		}
 
 		// TODO: use linq, return enumerator, remove predicate
-		public Dictionary<Keyed<Types.Transaction>, Types.Output> GetUTXOSet(Func<Types.Output, bool> predicate)
+		public Dictionary<Keyed<byte[], Types.Transaction>, Types.Output> GetUTXOSet(Func<Types.Output, bool> predicate)
 		{
 			var outputs = new HashDictionary<Types.Output>();
-			var values = new Dictionary<Keyed<Types.Transaction>, Types.Output>();
+			var values = new Dictionary<Keyed<byte[], Types.Transaction>, Types.Output>();
 
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
 				foreach (var output in UTXOStore.All(context, predicate, true))
 				{
-					byte[] txHash = new byte[output.Key.Length - 1];
-					Array.Copy(output.Key, txHash, txHash.Length);
-					outputs[txHash] = output.Value;
-				}
-
-				foreach (var output in outputs)
-				{
-					var tx = BlockStore.TxStore.Get(context, output.Key);
+					var tx = BlockStore.TxStore.Get(context, output.Key.txHash);
 					values[tx] = output.Value;
 				}
 			}

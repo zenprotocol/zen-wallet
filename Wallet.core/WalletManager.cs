@@ -80,13 +80,13 @@ namespace Wallet.core
 				dbTx.Transaction.SynchronizeTables(TxBalancesStore.INDEXES);
 				_TxBalancesStore.Reset(dbTx);
 
-				foreach (var tx in utxoSetTxs)
+				foreach (var item in utxoSetTxs)
 				{
 					var balances = new AssetDeltas();
 
-					tx.Key.Value.outputs.Where(IsMatch).ToList().ForEach(o => AddOutput(balances, o));
-					_TxBalancesStore.Put(dbTx, tx.Key, balances, TxStateEnum.Confirmed);
-					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, tx.Key.Value, balances));
+					item.Key.Value.outputs.Where(IsMatch).ToList().ForEach(o => AddOutput(balances, o));
+					_TxBalancesStore.Put(dbTx, item.Key.Key, item.Key.Value, balances, TxStateEnum.Confirmed);
+					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, item.Key.Value, balances));
 				}
 
 				_BlockChain.memPool.TxPool.ToList().ForEach(t => HandleTx(dbTx, t.Key, t.Value, TxDeltaList, TxStateEnum.Unconfirmed));
@@ -173,7 +173,7 @@ namespace Wallet.core
 				}
 				else
 				{
-					_TxBalancesStore.Put(dbTx, keyedTx, _deltas, txState);
+					_TxBalancesStore.Put(dbTx, keyedTx.Key, keyedTx.Value, _deltas, txState);
 				}
 
 				deltas.Add(new TxDelta(txState, tx, _deltas));
@@ -311,15 +311,12 @@ namespace Wallet.core
 			{
 				foreach (Asset matchingAsset in matchingAssets)
 				{
-					byte[] outputKey = new byte[matchingAsset.Outpoint.txHash.Length + 1];
-					matchingAsset.Outpoint.txHash.CopyTo(outputKey, 0);
-					outputKey[matchingAsset.Outpoint.txHash.Length] = (byte)matchingAsset.Outpoint.index;
-
 					bool canSpend = false;
 					switch (matchingAsset.TxState)
 					{
 						case TxStateEnum.Confirmed:
-							canSpend = _BlockChain.UTXOStore.ContainsKey(context, outputKey) &&
+							canSpend = _BlockChain.UTXOStore.ContainsKey(
+								context, matchingAsset.Outpoint.txHash, matchingAsset.Outpoint.index) &&
 								!_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint);
 							break;
 						case TxStateEnum.Unconfirmed:
