@@ -20,11 +20,11 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 			OneTimeSetUp();
 
 			compiledContract = GetCompliedContract(contractFsCode);
-
+			BlockChainTrace.SetTag(compiledContract, "Contract");
 			var contractLockOutput = Utils.GetContractOutput(compiledContract, null, Consensus.Tests.zhash, 100);
-			var tx = Utils.GetTx().AddOutput(contractLockOutput);
+			var tx = Utils.GetTx().AddOutput(contractLockOutput).Tag("Tx");
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("Genesis")), Is.True);
 		}
 
 		[Test]

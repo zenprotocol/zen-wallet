@@ -2,29 +2,32 @@ using System;
 
 namespace Store
 {
-	public class Keyed<T>
+	public class Keyed<TKey, TValue>
 	{
-		public T Value { get; protected set; }
-		public byte[] Key { get; protected set; }
+		public TValue Value { get; protected set; }
+		public TKey Key { get; protected set; }
 
 		public Keyed()
 		{ 
 		}
 
-		public Keyed(byte[] key, T value)
+		public Keyed(TKey key, TValue value)
 		{
 			Key = key;
 			Value = value;
 		}
 	}
 
-	//public class StoredItem<T> : Keyed<T>
-	//{
-	//	public byte[] Data { get; private set; }
+	public class Keyed<TValue> : Keyed<byte[], TValue>
+	{
+		public Keyed()
+		{
+		}
 
-	//	public StoredItem(byte[] key, T value, byte[] data) : base(key, value)
-	//	{
-	//		Data = data;
-	//	}
-	//}
+		public Keyed(byte[] key, TValue value)
+		{
+			Key = key;
+			Value = value;
+		}
+	}
 }

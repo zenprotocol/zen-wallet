@@ -28,7 +28,7 @@ namespace Wallet.core.Store
 				return false;
 			}
 
-			Put(context, new Keyed<Key>(key.Private, key));
+			Put(context, key.Private, key);
 
 			return true;
 		}
@@ -44,7 +44,7 @@ namespace Wallet.core.Store
 
 			if (list.Count == 0) {
 				var _key = Key.Create();
-				Put(context, new Keyed<Key>(_key.Private, _key));
+				Put(context, _key.Private, _key);
 
 				key = _key;
 				return true;
@@ -87,7 +87,7 @@ namespace Wallet.core.Store
 				key.Change = isChange.Value;
 			}
 
-			Put(context, new Keyed<Key>(key.Private, key));
+			Put(context, key.Private, key);
 		}
 	}
 }

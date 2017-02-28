@@ -27,7 +27,7 @@ namespace BlockChain.Store
 		private const string BLOCK_TRANSACTIONS = "bk-transactions";
 		private const string TRANSACTIONS = "transactions";
 		private const string BLOCK_UNDO = "block_undo";
-		public Store<Types.Transaction> TxStore { get; private set; }
+		public ConsensusTypeStore<Types.Transaction> TxStore { get; private set; }
 		public ConsensusTypeStore<BlockUndoData> BlockUndo { get; private set; }
 
 		public BlockStore() : base(BLOCK_HEADERS)
@@ -42,7 +42,7 @@ namespace BlockChain.Store
 			LocationEnum location,
 			double totalWork)
 		{
-			base.Put(transactionContext, new Keyed<Types.BlockHeader>(block.Key, block.Value.header));
+			base.Put(transactionContext, block.Key, block.Value.header);
 
 			//children
 			var children = new HashSet<byte[]>();
@@ -73,7 +73,7 @@ namespace BlockChain.Store
 
 				if (!TxStore.ContainsKey(transactionContext, txHash))
 				{
-					TxStore.Put(transactionContext, new Keyed<Types.Transaction>(txHash, tx));
+					TxStore.Put(transactionContext, txHash, tx);
 					//transactionContext.Transaction.Insert<byte[], double>(TX_BLOCKNUMBER, block.Key, totalWork);
 				}
 			}
@@ -93,7 +93,7 @@ namespace BlockChain.Store
 			byte[] block,
 			BlockUndoData blockUndoData)
 		{
-			BlockUndo.Put(transactionContext, new Keyed<BlockUndoData>(block, blockUndoData));
+			BlockUndo.Put(transactionContext, block, blockUndoData);
 		}
 
 		public BlockUndoData GetUndoData(
@@ -150,7 +150,7 @@ namespace BlockChain.Store
 			}
 		}
 
-		public IEnumerable<Keyed<Types.Transaction>> Transactions(TransactionContext transactionContext, byte[] block)
+		public IEnumerable<Keyed<byte[], Types.Transaction>> Transactions(TransactionContext transactionContext, byte[] block)
 		{
 			foreach (var txHash in transactionContext.Transaction.SelectHashSet<byte[], byte[]>(BLOCK_TRANSACTIONS, block, 0))
 			{

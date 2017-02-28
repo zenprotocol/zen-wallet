@@ -33,11 +33,7 @@ namespace BlockChain
 			{
 				foreach (var item in _BlockChain.UTXOStore.All(context, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
 				{
-					byte[] txHash = new byte[item.Key.Length - 1];
-					Array.Copy(item.Key, txHash, txHash.Length);
-					var index = Convert.ToUInt32(item.Key[item.Key.Length - 1]);
-
-					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, index), item.Value));
+					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
 				}
 			}
 

@@ -4,7 +4,7 @@ using Store;
 
 namespace Store
 {
-	public class MsgPackStore<T> : Store<T> //where T : class
+	public class MsgPackStore<TKey, TValue> : Store<TKey, TValue> //where T : class
 	{
 		protected SerializationContext _Context;
 
@@ -18,14 +18,21 @@ namespace Store
 			_Context = context;
 		}
 
-		protected override T Unpack(byte[] data, byte[] key)
+		protected override byte[] Pack<T>(T value)
+		{
+			return _Context.GetSerializer<T>().PackSingleObject(value);
+		}
+
+		protected override T Unpack<T>(byte[] data)
 		{
 			return _Context.GetSerializer<T>().UnpackSingleObject(data);
 		}
+	}
 
-		protected override byte[] Pack(T item)
+	public class MsgPackStore<TValue> : MsgPackStore<byte[], TValue>
+	{
+		public MsgPackStore(String tableName) : base(tableName)
 		{
-			return _Context.GetSerializer<T>().PackSingleObject(item);
 		}
 	}
 }
