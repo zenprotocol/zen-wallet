@@ -1,17 +1,14 @@
 using System;
 using Infrastructure;
-using NBitcoinDerive;
 using Wallet.core;
 using System.Collections.Generic;
-using System.Net;
 using Store;
 using Consensus;
 using Microsoft.FSharp.Collections;
 using Wallet.core.Data;
 using System.Threading;
-using Infrastructure.TestingGtk;
-using System.IO;
 using BlockChain.Data;
+using Network;
 
 namespace Zen
 {
@@ -58,8 +55,6 @@ namespace Zen
 		{
 			var key = Key.Create();
 
-//			Console.WriteLine(key.AddressAsString);
-
 			if (_WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx))
 			{
 				return _WalletManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
@@ -68,6 +63,18 @@ namespace Zen
 			{
 				return false;
 			}
+		}
+
+		internal bool Sign(ulong amount, out Types.Transaction tx)
+		{
+			var key = Key.Create();
+
+			return _WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx);
+		}
+
+		internal bool Transmit(Types.Transaction tx)
+		{
+			return _WalletManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal long AssetMount()

@@ -1,4 +1,4 @@
-﻿#if !NOSOCKET
+#if !NOSOCKET
 using NBitcoin.Crypto;
 using NBitcoin.Protocol.Behaviors;
 using System;
@@ -9,7 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using NBitcoinDerive;
+using Network;
 
 namespace NBitcoin.Protocol
 {

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Linq;
 using Infrastructure;
@@ -34,7 +34,7 @@ namespace Zen
 		public void CanAquireGenesisOutputsAfterGensis()
 		{
 			App app = new App();
-		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 
@@ -67,7 +67,7 @@ namespace Zen
 		public void CanAquireGenesisOutputsBeforeGenesis()
 		{
 			App app = new App();
-		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 
@@ -101,7 +101,7 @@ namespace Zen
 		public async Task CanSendAmounts()
 		{
 			App app = new App();
-		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 
@@ -138,9 +138,9 @@ namespace Zen
 		public async Task ShouldInvalidate()
 		{
 			App app = new App();
-		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+			//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 			app.Init();
 			app.AddGenesisBlock();
 			
@@ -153,15 +153,19 @@ namespace Zen
 
 			Task.Run(() =>
 			{
-				Types.Transaction tx;
+				Types.Transaction tx1;
+				Types.Transaction tx2;
 				Thread.Sleep(1000);
-				Assert.That(app.Spend(2, out tx), Is.True);
+				Assert.That(app.Sign(2, out tx1), Is.True);
+				Assert.That(app.Sign(3, out tx2), Is.True);
+				tx1.Tag("tx1");
+				tx2.Tag("tx2");
 				Thread.Sleep(1000);
 
-				var block = app.GenesisBlock.Value.Child().AddTx(tx);
+				var block = app.GenesisBlock.Value.Child().AddTx(tx1);
 				app.AddBlock(block);
 
-				block = app.GenesisBlock.Value.Child();
+				block = app.GenesisBlock.Value.Child().AddTx(tx2);
 				app.AddBlock(block);
 
 				block = block.Child();
@@ -194,7 +198,7 @@ namespace Zen
 		public async Task ShouldUndoInvalidation()
 		{
 			App app = new App();
-		//	app.Settings.EndpointOptions.EndpointOption = NBitcoinDerive.EndpointOptions.EndpointOptionsEnum.NoNetworking;
+		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			app.Init();
 			app.AddGenesisBlock();

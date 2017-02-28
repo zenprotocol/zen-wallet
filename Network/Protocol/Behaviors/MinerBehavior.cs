@@ -1,4 +1,4 @@
-﻿#if !NOSOCKET
+#if !NOSOCKET
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using NBitcoin;
 using System.Threading;
 using Consensus;
-using NBitcoinDerive;
+using Network;
 
 namespace NBitcoin.Protocol.Behaviors
 {

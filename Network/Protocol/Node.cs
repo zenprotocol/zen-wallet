@@ -1,4 +1,4 @@
-﻿#if !NOSOCKET
+#if !NOSOCKET
 using NBitcoin.Protocol.Behaviors;
 using NBitcoin.Protocol.Filters;
 using System;
@@ -14,8 +14,8 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using NBitcoinDerive.Serialization;
-using NBitcoinDerive;
+using Network.Serialization;
+using Network;
 
 namespace NBitcoin.Protocol
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -8,7 +8,7 @@ using System.Linq;
 using Infrastructure;
 using NBitcoin.Protocol;
 
-namespace NBitcoinDerive.Serialization
+namespace Network.Serialization
 {
 	//TODO: add version
 	public class WireSerialization : Singleton<WireSerialization>
