@@ -106,7 +106,7 @@
     <Compile Include="NATManager.cs" />
     <Compile Include="NodeManager.cs" />
     <Compile Include="Server.cs" />
-    <Compile Include="Config\Network.cs" />
+    <Compile Include="Config\NetworkInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Protocol\" />

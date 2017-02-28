@@ -20,8 +20,8 @@ namespace NBitcoin.Protocol
 	public delegate void NodeServerMessageEventHandler(NodeServer sender, IncomingMessage message);
 	public class NodeServer : IDisposable
 	{
-		private readonly Network _Network;
-		public Network Network
+		private readonly NetworkInfo _Network;
+		public NetworkInfo Network
 		{
 			get
 			{
@@ -46,7 +46,7 @@ namespace NBitcoin.Protocol
 			set;
 		}
 
-		public NodeServer(Network network, ProtocolVersion version = ProtocolVersion.PROTOCOL_VERSION, int internalPort = -1)
+		public NodeServer(NetworkInfo network, ProtocolVersion version = ProtocolVersion.PROTOCOL_VERSION, int internalPort = -1)
 		{
 			AllowLocalPeers = true;
 			InboundNodeConnectionParameters = new NodeConnectionParameters();

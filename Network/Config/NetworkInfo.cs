@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Network
 {
-	public class Network
+	public class NetworkInfo
 	{
 //		public String IPAddressOverride { get; set; }
 		public List<String> Seeds { get; set; }
@@ -13,7 +13,7 @@ namespace Network
 		public int PeersToFind;
 		public int MaximumNodeConnection;
 
-		public Network() {
+		public NetworkInfo() {
 			Seeds = new List<string> ();
 		}
 
