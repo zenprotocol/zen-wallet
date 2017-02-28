@@ -492,7 +492,7 @@ namespace NBitcoin.Protocol
 		/// <param name="parameters">The parameters used by the found node</param>
 		/// <param name="connectedAddresses">The already connected addresses, the new address will be select outside of existing groups</param>
 		/// <returns></returns>
-		public static Node Connect(Network network, AddressManager addrman, NodeConnectionParameters parameters = null, IPAddress[] connectedAddresses = null)
+		public static Node Connect(NetworkInfo network, AddressManager addrman, NodeConnectionParameters parameters = null, IPAddress[] connectedAddresses = null)
 		{
 			parameters = parameters ?? new NodeConnectionParameters();
 			AddressManagerBehavior.SetAddrman(parameters, addrman);
@@ -506,7 +506,7 @@ namespace NBitcoin.Protocol
 		/// <param name="parameters">The parameters used by the found node, use AddressManagerBehavior.GetAddrman for finding peers</param>
 		/// <param name="connectedAddresses">The already connected addresses, the new address will be select outside of existing groups</param>
 		/// <returns></returns>
-		public static Node Connect(Network network, NodeConnectionParameters parameters = null, IPAddress[] connectedAddresses = null)
+		public static Node Connect(NetworkInfo network, NodeConnectionParameters parameters = null, IPAddress[] connectedAddresses = null)
 		{
 			connectedAddresses = connectedAddresses ?? new IPAddress[0];
 			parameters = parameters ?? new NodeConnectionParameters();
@@ -561,13 +561,13 @@ namespace NBitcoin.Protocol
 		/// <param name="network"></param>
 		/// <param name="parameters"></param>
 		/// <returns></returns>
-		public static Node ConnectToLocal(Network network,
+		public static Node ConnectToLocal(NetworkInfo network,
 								NodeConnectionParameters parameters)
 		{
 			return Connect(network, Utils.ParseIpEndpoint("localhost", network.DefaultPort), parameters);
 		}
 
-		public static Node ConnectToLocal(Network network,
+		public static Node ConnectToLocal(NetworkInfo network,
 								ProtocolVersion myVersion = ProtocolVersion.PROTOCOL_VERSION,
 								bool isRelay = true,
 								CancellationToken cancellation = default(CancellationToken))
@@ -580,13 +580,13 @@ namespace NBitcoin.Protocol
 			});
 		}
 
-		public static Node Connect(Network network,
+		public static Node Connect(NetworkInfo network,
 								 string endpoint, NodeConnectionParameters parameters)
 		{
 			return Connect(network, Utils.ParseIpEndpoint(endpoint, network.DefaultPort), parameters);
 		}
 
-		public static Node Connect(Network network,
+		public static Node Connect(NetworkInfo network,
 								 string endpoint,
 								 ProtocolVersion myVersion = ProtocolVersion.PROTOCOL_VERSION,
 								bool isRelay = true,
@@ -595,14 +595,14 @@ namespace NBitcoin.Protocol
 			return Connect(network, Utils.ParseIpEndpoint(endpoint, network.DefaultPort), myVersion, isRelay, cancellation);
 		}
 
-		public static Node Connect(Network network,
+		public static Node Connect(NetworkInfo network,
 							 NetworkAddress endpoint,
 							 NodeConnectionParameters parameters)
 		{
 			return new Node(endpoint, network, parameters);
 		}
 
-		public static Node Connect(Network network,
+		public static Node Connect(NetworkInfo network,
 							 IPEndPoint endpoint,
 							 NodeConnectionParameters parameters)
 		{
@@ -615,7 +615,7 @@ namespace NBitcoin.Protocol
 			return new Node(peer, network, parameters);
 		}
 
-		public static Node Connect(Network network,
+		public static Node Connect(NetworkInfo network,
 								 IPEndPoint endpoint,
 								 ProtocolVersion myVersion = ProtocolVersion.PROTOCOL_VERSION,
 								bool isRelay = true,
@@ -630,7 +630,7 @@ namespace NBitcoin.Protocol
 			});
 		}
 
-		internal Node(NetworkAddress peer, Network network, NodeConnectionParameters parameters)
+		internal Node(NetworkAddress peer, NetworkInfo network, NodeConnectionParameters parameters)
 		{
 			parameters = parameters ?? new NodeConnectionParameters();
 			var addrman = AddressManagerBehavior.GetAddrman(parameters);
@@ -700,7 +700,7 @@ namespace NBitcoin.Protocol
 				_Connection.BeginListen();
 			}
 		}
-		internal Node(NetworkAddress peer, Network network, NodeConnectionParameters parameters, Socket socket, VersionPayload peerVersion)
+		internal Node(NetworkAddress peer, NetworkInfo network, NodeConnectionParameters parameters, Socket socket, VersionPayload peerVersion)
 		{
 			_RemoteSocketAddress = ((IPEndPoint)socket.RemoteEndPoint).Address;
 			_RemoteSocketPort = ((IPEndPoint)socket.RemoteEndPoint).Port;
@@ -1115,7 +1115,7 @@ namespace NBitcoin.Protocol
 		}
 
 
-		public Network Network
+		public NetworkInfo Network
 		{
 			get;
 			set;

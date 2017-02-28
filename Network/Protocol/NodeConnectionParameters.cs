@@ -141,7 +141,7 @@ namespace NBitcoin.Protocol
 			set;
 		}
 
-		public VersionPayload CreateVersion(IPEndPoint peer, Network network)
+		public VersionPayload CreateVersion(IPEndPoint peer, NetworkInfo network)
 		{
 			VersionPayload version = new VersionPayload()
 			{

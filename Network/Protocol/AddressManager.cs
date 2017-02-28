@@ -1013,7 +1013,7 @@ namespace NBitcoin.Protocol
 			set { peerToFind = value; }
 		}
 
-		internal void DiscoverPeers(Network network, NodeConnectionParameters parameters)
+		internal void DiscoverPeers(NetworkInfo network, NodeConnectionParameters parameters)
 		{
 			TraceCorrelation traceCorrelation = new TraceCorrelation(NodeServerTrace.Trace, "Discovering nodes");
 			int found = 0;
@@ -1094,7 +1094,7 @@ namespace NBitcoin.Protocol
 			}
 		}
 
-		//private static void PopulateTableWithDNSNodes(Network network, List<NetworkAddress> peers)
+		//private static void PopulateTableWithDNSNodes(NetworkInfo network, List<NetworkAddress> peers)
 		//{
 		//	peers.AddRange(network.DNSSeeds
 		//		.SelectMany(d =>
@@ -1112,7 +1112,7 @@ namespace NBitcoin.Protocol
 		//		.ToArray());
 		//}
 
-		private static void PopulateTableWithHardNodes(Network network, List<NetworkAddress> peers)
+		private static void PopulateTableWithHardNodes(NetworkInfo network, List<NetworkAddress> peers)
 		{
 			peers.AddRange(network.Seeds.Select(v => new NetworkAddress(IPAddress.Parse(v), network.DefaultPort)));
 		}
