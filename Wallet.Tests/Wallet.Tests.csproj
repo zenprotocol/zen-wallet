@@ -30,11 +30,13 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="WalletSpendTests.cs" />
     <Compile Include="WalletTests.cs" />
     <Compile Include="WalletTestsBase.cs" />
+    <Compile Include="AssetTagsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BlockChain.Tests\BlockChain.Tests.csproj">

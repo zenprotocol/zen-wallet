@@ -24,7 +24,7 @@ namespace Wallet
 				deltas.ForEach(u => u.AssetDeltas.ToList().ForEach(b => view.AddLogEntryItem(new LogEntryItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-					AssetsHelper.Find(b.Key),
+					App.Instance.Wallet.AssetsMetadata[b.Key],
 					DateTime.Now,
 					Guid.NewGuid().ToString("N"),
 					Guid.NewGuid().ToString("N"),

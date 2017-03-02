@@ -12,6 +12,11 @@ namespace Infrastructure
 			_Trace.TraceEvent(TraceEventType.Information, 0, info);
 		}
 
+		internal static void Warning(string info)
+		{
+			_Trace.TraceEvent(TraceEventType.Warning, 0, info);
+		}
+
 		internal static void Error(string msg, Exception ex)
 		{
 			_Trace.TraceEvent(TraceEventType.Error, 0, msg + " " + Utils.ExceptionToString(ex));

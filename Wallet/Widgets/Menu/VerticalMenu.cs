@@ -1,7 +1,6 @@
-﻿using System;
-using Gtk;
-using System.Collections.Generic;
+﻿using Gtk;
 using Wallet.core;
+using System.Linq;
 
 namespace Wallet
 {
@@ -12,12 +11,22 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class VerticalMenu : MenuBase, IVerticalMenu
 	{
+		AssetsMetadata AssetsMetadata = App.Instance.Wallet.AssetsMetadata;
+
 		public VerticalMenu ()
 		{
-			this.Build ();
+			Build ();
 
-			foreach (String key in AssetsHelper.AssetTypes.Keys) {
-				AddButton(key, AssetsHelper.AssetTypes[key]);
+			AssetsMetadata.AssetChanged += a =>
+			{
+				Application.Invoke(delegate
+				{
+					AddButton(a, AssetsMetadata[a]);
+				});
+			};
+
+			foreach (var item in AssetsMetadata) {
+				AddButton(item.Key, item.Value);
 			}
 
 			MainAreaController.Instance.VerticalMenuView = this;
@@ -27,7 +36,7 @@ namespace Wallet
 			
 		public override MenuButton Selection { 
 			set {
-				WalletController.Instance.Asset = AssetsHelper.AssetTypes[value.Name];
+				WalletController.Instance.Asset = AssetsMetadata[value.Hash];
 			}
 		}
 
@@ -37,11 +46,23 @@ namespace Wallet
 			} 
 		}
 
-		private void AddButton(String key, AssetType assetType) {
-			vboxContainer.PackStart(new MenuButton () { 
-				Name = key, 
-				Caption = assetType.Caption 
-			}, true, true, 0);
+		void AddButton(byte[] hash, AssetType assetType) {
+			foreach (var child in vboxContainer.Children)
+			{
+				var buttonChild = (MenuButton)child;
+				if (buttonChild.Hash.SequenceEqual(hash))
+					vboxContainer.Remove(buttonChild);
+			}
+
+			var menuButton = new MenuButton()
+			{
+				Hash = hash,
+				ImageFileName = assetType.Image,
+				Caption = assetType.Caption
+			};
+
+			vboxContainer.PackStart(menuButton, true, true, 0);
+			menuButton.Show();
 		}
 	}
 }

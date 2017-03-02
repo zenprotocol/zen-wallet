@@ -83,12 +83,11 @@
       <widget class="Gtk.EventBox" id="eventbox">
         <property name="MemberName" />
         <child>
-          <widget class="Gtk.VBox" id="vbox9">
+          <widget class="Gtk.HBox" id="hbox1">
             <property name="MemberName" />
-            <property name="Homogeneous">True</property>
             <property name="Spacing">6</property>
             <child>
-              <widget class="Gtk.HBox" id="hbox1">
+              <widget class="Gtk.VBox" id="vbox1">
                 <property name="MemberName" />
                 <property name="Spacing">6</property>
                 <child>

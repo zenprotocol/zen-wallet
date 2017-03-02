@@ -25,6 +25,7 @@ namespace Wallet.core
 		private EventLoopMessageListener<BlockChainMessage> _BlockChainListener;
 
 		public TxDeltaItemsEventArgs TxDeltaList { get; private set; }
+		public AssetsMetadata AssetsMetadata { get; private set; }
 
 		public event Action<ResetEventArgs> OnReset;
 		public event Action<TxDeltaItemsEventArgs> OnItems;
@@ -39,6 +40,7 @@ namespace Wallet.core
 			_TxBalancesStore = new TxBalancesStore();
 
 			TxDeltaList = new TxDeltaItemsEventArgs();
+			AssetsMetadata = new AssetsMetadata();
 
 			_BlockChainListener = new EventLoopMessageListener<BlockChainMessage>(OnBlockChainMessage);
 			OwnResource(MessageProducer<BlockChainMessage>.Instance.AddMessageListener(_BlockChainListener));

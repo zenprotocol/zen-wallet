@@ -18,68 +18,132 @@ namespace Wallet.core
 		public string version;
 	}
 
-	public class AssetsHelper : HashDictionary<AssetType>
+	public class AssetsMetadata : HashDictionary<AssetType>
 	{
+		const int DEFAULT_SIZE = 64;
+
 		public event Action<byte[]> AssetChanged;
-		readonly JsonLoader<Dictionary<string, AssetMetadata>> _MetadataCacheloader = JsonLoader<Dictionary<string, AssetMetadata>>.Instance;
+
+		readonly JsonLoader<Dictionary<string, AssetMetadata>> _CacheLoader = JsonLoader<Dictionary<string, AssetMetadata>>.Instance;
+		readonly JsonLoader<Dictionary<string, Uri>> _AssetsLoader = JsonLoader<Dictionary<string, Uri>>.Instance;
 		readonly HttpClient _HttpClient = new HttpClient();
 
-		public AssetsHelper() {
-			var loader = JsonLoader<Dictionary<string, Uri>>.Instance;
-
-			loader.FileName = ConfigurationManager.AppSettings.Get("assetsFile");
-			_MetadataCacheloader.FileName = "assetsCache.json";
-
-			if (loader.IsNew)
+		string Config(string key) { return ConfigurationManager.AppSettings.Get(key); }
+		string StringifyHash(byte[] hash) { return BitConverter.ToString(hash)/*.Replace("-", string.Empty)*/; }
+		string LocalImage(string hash, string imageUrl) { return PathCombine(_CacheDirectory, hash, "" + DEFAULT_SIZE + Path.GetExtension(imageUrl)); }
+		byte[] ParseHash(string hash) { return Array.ConvertAll<string, byte>(hash.Split('-'), s => Convert.ToByte(s, 16)); }
+		string PathCombine(params string[] values)
+		{
+			var value =Path.Combine(values);
+			if (!Directory.Exists(Path.GetDirectoryName(value)))
 			{
-				var zenJson = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "zen.json");
-				loader.Value[BitConverter.ToString(Consensus.Tests.zhash)/*.Replace("-", string.Empty)*/] = new Uri(zenJson);
-				loader.Save();
+				Directory.CreateDirectory(Path.GetDirectoryName(value));
 			}
+			return value;
+		}
+
+		readonly string _Directory;
+		readonly string _CacheDirectory;
+
+		public AssetsMetadata() {
+			_Directory = PathCombine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), Config("assetsDir"));
+			_CacheDirectory = PathCombine(_Directory, "cache");
+			_AssetsLoader.FileName = PathCombine(_Directory, Config("assetsFile"));
+			_CacheLoader.FileName = PathCombine(_CacheDirectory, "metadata.json");
 
 			Add(new byte[] { }, new AssetTypeAll());
+			Add(Consensus.Tests.zhash, new AssetType("Zen", null));
 
-			foreach (var item in loader.Value)
+			foreach (var item in _AssetsLoader.Value)
 			{
-				//tasks.Add(
-				ProcessURLAsync(item.Key, item.Value);
-				//);
-			}
+				if (_CacheLoader.Value.ContainsKey(item.Key))
+				{
+					var metaData = _CacheLoader.Value[item.Key];
+					Add(ParseHash(item.Key), new AssetType(metaData.name, LocalImage(item.Key, metaData.imageUrl)));
+				}
 
-			//Task.WaitAll(tasks.ToArray());
+				ProcessURLAsync(item.Key, item.Value);
+			}
+		}
+
+		public void Add(byte[] hash, Uri uri)
+		{
+			var _hash = StringifyHash(hash);
+			_AssetsLoader.Value[_hash] = uri;
+			_AssetsLoader.Save();
+
+			if (!uri.IsFile)
+			{
+				ProcessURLAsync(_hash, uri);
+			}
 		}
 
 		async Task ProcessURLAsync(string hash, Uri uri)
 		{
 			string value;
 
-			if (uri.IsFile)
+			WalletTrace.Information($"Loading asset metadata from web: {uri.AbsoluteUri}");
+			value = await _HttpClient.GetStringAsync(uri.AbsoluteUri);
+
+			var remoteJson = JsonConvert.DeserializeObject<AssetMetadata>(value);
+			var currentVersion = _CacheLoader.Value.ContainsKey(hash) ? new Version(_CacheLoader.Value[hash].version) : new Version();
+			var remoteVersion = remoteJson.version == null ? new Version() : new Version(remoteJson.version);
+
+			if (remoteVersion > currentVersion)
 			{
-				value = File.ReadAllText(uri.AbsolutePath);
+				WalletTrace.Information($"Updateing asset metadata: {remoteJson.name}");
+
+				lock (_CacheLoader)
+				{
+					_CacheLoader.Value[hash] = remoteJson;
+					_CacheLoader.Save();
+				}
+
+				var _hash = ParseHash(hash);
+
+				WalletTrace.Information($"New asset metadata: {remoteJson.name}");
+				Update(_hash, remoteJson.name, null);
+
+				if (!string.IsNullOrEmpty(remoteJson.imageUrl))
+				{
+					ProcessImageAsync(hash, remoteJson);
+				}
 			}
 			else
 			{
-				value = await _HttpClient.GetStringAsync(uri.AbsoluteUri);
+				WalletTrace.Information($"Asset metadata is alreay up to date: {remoteJson.name}");
 			}
+		}
 
-			var remoteJson = JsonConvert.DeserializeObject<AssetMetadata>(value);
-			var currentVersion = _MetadataCacheloader.Value.ContainsKey(hash) ? new Version(_MetadataCacheloader.Value[hash].version) : new Version();
-			var remoteVersion = new Version(remoteJson.version);
+		async Task ProcessImageAsync(string hash, AssetMetadata metadata)
+		{
+			var imageFile = LocalImage(hash, metadata.imageUrl);
 
-			if (!uri.IsFile && remoteVersion > currentVersion)
+			using (var response = await _HttpClient.GetAsync(metadata.imageUrl))
 			{
-				lock (_MetadataCacheloader)
+				response.EnsureSuccessStatusCode();
+
+				using (var inputStream = await response.Content.ReadAsStreamAsync())
 				{
-					_MetadataCacheloader.Value[hash] = remoteJson;
-				//	_MetadataCacheloader.Save();
+					using (var fileStream = File.Create(imageFile))
+					{
+						inputStream.CopyTo(fileStream);
+					}
 				}
 			}
 
-			var _hash = Array.ConvertAll<string, byte>(hash.Split('-'), s => Convert.ToByte(s, 16));
-			Add(_hash, new AssetType(remoteJson.name, null));
+			WalletTrace.Information($"Image downloaded for asset: {metadata.name}");
+			Update(ParseHash(hash), metadata.name, imageFile);
+		}
+
+		void Update(byte[] hash, string name, string image)
+		{
+			this[hash] = new AssetType(name, image);
 
 			if (AssetChanged != null)
-				AssetChanged(_hash);
+			{
+				AssetChanged(hash);
+			}
 		}
 	}
 }

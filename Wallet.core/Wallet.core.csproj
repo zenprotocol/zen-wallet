@@ -29,9 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="Consensus">
-      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core" />
     <Reference Include="MsgPack">
       <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
@@ -45,6 +42,9 @@
     <Reference Include="DBreeze">
       <HintPath>..\packages\DBreeze.1.82.0\lib\net45\DBreeze.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -52,21 +52,17 @@
     <Compile Include="SendStub.cs" />
     <Compile Include="Store\KeyStore.cs" />
     <Compile Include="Data\Key.cs" />
-    <Compile Include="AssetsManager.cs" />
     <Compile Include="WalletManager.cs" />
     <Compile Include="Data\Assets.cs" />
-    <Compile Include="TransactionSpendData.cs" />
     <Compile Include="WalletTrace.cs" />
-    <Compile Include="Data\AssetsHelper.cs" />
     <Compile Include="Data\AssetType.cs" />
-    <Compile Include="Data\AssetTypes.cs" />
     <Compile Include="Store\UTXOStore.cs" />
     <Compile Include="Store\BalanceStore.cs" />
     <Compile Include="Store\TxStore_.cs" />
     <Compile Include="Store\Tests\TxStoreTests.cs" />
     <Compile Include="Store\TxStore.cs" />
     <Compile Include="Data\UpdateInfo.cs" />
-    <Compile Include="vpod.cs" />
+    <Compile Include="Data\AssetsMetadata.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
@@ -84,6 +80,10 @@
     <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Consensus\Consensus.fsproj">
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -6,9 +6,9 @@ namespace Wallet
 	{
 		private global::Gtk.EventBox eventbox;
 
-		private global::Gtk.VBox vbox9;
-
 		private global::Gtk.HBox hbox1;
+
+		private global::Gtk.VBox vbox1;
 
 		protected virtual void Build()
 		{
@@ -20,18 +20,17 @@ namespace Wallet
 			this.eventbox = new global::Gtk.EventBox();
 			this.eventbox.Name = "eventbox";
 			// Container child eventbox.Gtk.Container+ContainerChild
-			this.vbox9 = new global::Gtk.VBox();
-			this.vbox9.Name = "vbox9";
-			this.vbox9.Homogeneous = true;
-			this.vbox9.Spacing = 6;
-			// Container child vbox9.Gtk.Box+BoxChild
 			this.hbox1 = new global::Gtk.HBox();
 			this.hbox1.Name = "hbox1";
 			this.hbox1.Spacing = 6;
-			this.vbox9.Add(this.hbox1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox9[this.hbox1]));
+			// Container child hbox1.Gtk.Box+BoxChild
+			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1.Name = "vbox1";
+			this.vbox1.Spacing = 6;
+			this.hbox1.Add(this.vbox1);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.vbox1]));
 			w1.Position = 0;
-			this.eventbox.Add(this.vbox9);
+			this.eventbox.Add(this.hbox1);
 			this.Add(this.eventbox);
 			if ((this.Child != null))
 			{
