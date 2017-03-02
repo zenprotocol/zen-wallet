@@ -1,7 +1,6 @@
 ﻿using System;
 using Wallet.Domain;
 using Wallet.core;
-using BlockChain.Data;
 using Infrastructure;
 using System.Linq;
 
@@ -9,16 +8,7 @@ namespace Wallet
 {
 	public class WalletController : Singleton<WalletController>
 	{
-		private ActionBarView _actionBarView;
-		public ActionBarView ActionBarView {
-			get {
-				return _actionBarView;
-			}
-			set {
-				_actionBarView = value;
-			//	ActionBarView.Asset = CurrencyEnum.Zen;
-			}
-		}
+		public ActionBarView ActionBarView { get; set; }
 
 		public SendStub SendStub = new SendStub ();
 
@@ -31,7 +21,7 @@ namespace Wallet
 
 		public IWalletView WalletView { get; set; }
 
-		private AssetType asset = AssetsHelper.AssetTypes["zen"];
+		private AssetType asset = App.Instance.Wallet.AssetsMetadata[Consensus.Tests.zhash];
 
 		public AssetType Asset { 
 			set {
@@ -56,7 +46,7 @@ namespace Wallet
 				deltas.ForEach(u => u.AssetDeltas.ToList().ForEach(b => view.AddTransactionItem(new TransactionItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-					AssetsHelper.Find(b.Key),
+					App.Instance.Wallet.AssetsMetadata[b.Key],
 					DateTime.Now,
 					Guid.NewGuid().ToString("N"),
 					Guid.NewGuid().ToString("N"),

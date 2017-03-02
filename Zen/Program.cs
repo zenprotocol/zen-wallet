@@ -14,8 +14,8 @@ namespace Zen
 			bool headless = false;
 			bool tui = false;
 
-			var p = new OptionSet () {
-				{ "headless", "start in headless mode", 
+			var p = new OptionSet() {
+				{ "headless", "start in headless mode",
 					v => headless = true },
 				{ "t|tui", "show TUI",
 					v => tui = true },
@@ -38,7 +38,9 @@ namespace Zen
 				//	v => app.Settings.Connections = int.Parse(v) },
 				//{ "port=", "default network port", 
 				//	v => app.Settings.Port = int.Parse(v) },
-				
+
+				{ "d|disable-network", "disable networking",
+					v => app.Settings.DisableNetworking = true },
 				{ "connect=", "connect to seed's ip address",
 					v => app.Settings.ConnectToSeed = IPAddress.Parse(v) },
 				{ "external-ip=", "use external ip address", 

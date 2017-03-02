@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Wallet.core
 {
@@ -12,6 +13,10 @@ namespace Wallet.core
 			Image = image;
 		}
 
+		public AssetType()
+		{
+		}
+
 		public override string ToString()
 		{
 			return Caption;
@@ -20,8 +25,7 @@ namespace Wallet.core
 
 	public class AssetTypeAll : AssetType
 	{
-		public AssetTypeAll() : base("All", "All") {}
+		public AssetTypeAll() : base("All", null) {}
 	}
-
 }
 

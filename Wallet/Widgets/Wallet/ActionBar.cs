@@ -58,7 +58,8 @@ namespace Wallet
 		public AssetType Asset {
 			set {
 				labelCurrency.Text = value.Caption;
-				image2.Pixbuf = Utils.ToPixbuf(Constants.Images.AssetLogo(value.Image));
+				if (value.Image != null)
+					image2.Pixbuf = Utils.ToPixbuf(Constants.Images.AssetLogo(value.Image));
 			}
 		}
 	}
