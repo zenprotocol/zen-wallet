@@ -105,7 +105,7 @@ namespace Zen
 		public readonly static string DefaultBlockChainDB = "blockchain_db";
 		public readonly static string DefaultWalletDB = "wallet_db";
 
-		public event Action<Network> OnInitProfile;
+		public event Action<NetworkInfo> OnInitProfile;
 		public event Action<Settings> OnInitSettings;
 		//private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
 		private ManualResetEventSlim stoppedEvent = new ManualResetEventSlim();
@@ -269,32 +269,32 @@ namespace Zen
 				file += ".json";
 			}
 
-			JsonLoader<Network>.Instance.FileName = file;
+			JsonLoader<NetworkInfo>.Instance.FileName = file;
 
 			foreach (String seed in Settings.Seeds) {
-				if (!JsonLoader<Network>.Instance.Value.Seeds.Contains (seed)) {
-					JsonLoader<Network>.Instance.Value.Seeds.Add (seed); 
+				if (!JsonLoader<NetworkInfo>.Instance.Value.Seeds.Contains (seed)) {
+					JsonLoader<NetworkInfo>.Instance.Value.Seeds.Add (seed); 
 				}
 			}
 
 			if (Settings.PeersToFind.HasValue) {
-				JsonLoader<Network>.Instance.Value.PeersToFind = Settings.PeersToFind.Value;
+				JsonLoader<NetworkInfo>.Instance.Value.PeersToFind = Settings.PeersToFind.Value;
 			}
 
 			if (Settings.Connections.HasValue) {
-				JsonLoader<Network>.Instance.Value.MaximumNodeConnection = Settings.Connections.Value;
+				JsonLoader<NetworkInfo>.Instance.Value.MaximumNodeConnection = Settings.Connections.Value;
 			}
 
 			if (Settings.Port.HasValue) {
-				JsonLoader<Network>.Instance.Value.DefaultPort = Settings.Port.Value;
+				JsonLoader<NetworkInfo>.Instance.Value.DefaultPort = Settings.Port.Value;
 			}
 
 			if (Settings.SaveNetworkProfile) {
-				JsonLoader<Network>.Instance.Save ();
+				JsonLoader<NetworkInfo>.Instance.Save ();
 			}
 
 			if (OnInitProfile != null) {
-				OnInitProfile (JsonLoader<Network>.Instance.Value);
+				OnInitProfile (JsonLoader<NetworkInfo>.Instance.Value);
 			}
 		}
 
