@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -57,7 +59,8 @@ namespace Infrastructure
 				try {
 					_Value = JsonConvert.DeserializeObject<T> (File.ReadAllText (_FileName));
 					_Corrupt = false;
-				} catch (Exception e) {
+				} catch {
+					InfrastructureTrace.Warning($"File corrupt: {_FileName}");
 					_Corrupt = true;
 				}
 			}
@@ -71,7 +74,8 @@ namespace Infrastructure
 		}
 
 		public void Save() {
-			File.WriteAllText (_FileName, JsonConvert.SerializeObject (_Value));
+			File.WriteAllText(_FileName, JsonConvert.SerializeObject(_Value, Formatting.Indented));
+			                   
 			_Corrupt = false;
 			_IsNew = false;
 
