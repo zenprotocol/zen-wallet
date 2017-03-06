@@ -56,7 +56,7 @@ namespace Wallet.core
 					switch (state)
 					{
 						case TxStateEnum.Confirmed:
-							TxDeltaList.Add(new TxDelta(state, t.Value, _TxBalancesStore.Balances(dbTx, t.Key)));
+							TxDeltaList.Add(new TxDelta(state, t.Key, t.Value, _TxBalancesStore.Balances(dbTx, t.Key), _TxBalancesStore.Time(dbTx, t.Key)));
 							break;
 						case TxStateEnum.Unconfirmed:
 							_TxBalancesStore.Remove(dbTx, t.Key);
@@ -114,7 +114,7 @@ namespace Wallet.core
 						_TxBalancesStore.SetBalances(dbTx, item.Key, balances);
 					}
 
-					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, txs[item.Key], balances));
+					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, item.Key, txs[item.Key], balances));
 				}
 
 				_BlockChain.memPool.TxPool.ToList().ForEach(t => HandleTx(dbTx, t.Key, t.Value, TxDeltaList, TxStateEnum.Unconfirmed));
@@ -192,18 +192,17 @@ namespace Wallet.core
 			if (_deltas.Count > 0)
 			{
 				var tx = TransactionValidation.unpoint(ptx);
-				var keyedTx = new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(tx), tx);
 
-				if (_TxBalancesStore.ContainsKey(dbTx, keyedTx.Key))
+				if (_TxBalancesStore.ContainsKey(dbTx, txHash))
 				{
-					_TxBalancesStore.SetTxState(dbTx, keyedTx.Key, txState);
+					_TxBalancesStore.SetTxState(dbTx, txHash, txState);
 				}
 				else
 				{
-					_TxBalancesStore.Put(dbTx, keyedTx.Key, keyedTx.Value, _deltas, txState);
+					_TxBalancesStore.Put(dbTx, txHash, tx, _deltas, txState);
 				}
 
-				deltas.Add(new TxDelta(txState, tx, _deltas));
+				deltas.Add(new TxDelta(txState, txHash, tx, _deltas));
 			}
 		}
 

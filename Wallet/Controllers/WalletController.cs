@@ -47,9 +47,9 @@ namespace Wallet
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					App.Instance.Wallet.AssetsMetadata[b.Key],
-					DateTime.Now,
+					u.Time,
 					Guid.NewGuid().ToString("N"),
-					Guid.NewGuid().ToString("N"),
+					BitConverter.ToString(u.TxHash),
 					0,
 					u.TxState
 				))));
