@@ -76,5 +76,22 @@ namespace BlockChain
 			if (_TxStates.ContainsKey(key)) return _TxStates[key];
 			return null;
 		}
+
+		protected bool CheckUTXOCOntains(Types.Output output)
+		{
+			HashDictionary<List<Types.Output>> txOutputs;
+			HashDictionary<Types.Transaction> txs;
+			_BlockChain.GetUTXOSet(null, out txOutputs, out txs);
+			           
+			foreach (var item in txOutputs)
+			{
+				if (item.Value.Contains(output))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
 	}
 }
