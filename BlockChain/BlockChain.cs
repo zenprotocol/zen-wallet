@@ -568,21 +568,24 @@ namespace BlockChain
 		}
 
 		// TODO: use linq, return enumerator, remove predicate
-		public Dictionary<Keyed<byte[], Types.Transaction>, Types.Output> GetUTXOSet(Func<Types.Output, bool> predicate)
+		public void GetUTXOSet(Func<Types.Output, bool> predicate, out HashDictionary<List<Types.Output>> txOutputs, out HashDictionary<Types.Transaction> txs)
 		{
-			var outputs = new HashDictionary<Types.Output>();
-			var values = new Dictionary<Keyed<byte[], Types.Transaction>, Types.Output>();
+			txOutputs = new HashDictionary<List<Types.Output>>();
+			txs = new HashDictionary<Types.Transaction>();
 
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				foreach (var output in UTXOStore.All(context, predicate, true))
+				foreach (var item in UTXOStore.All(context, predicate, true))
 				{
-					var tx = BlockStore.TxStore.Get(context, output.Key.txHash);
-					values[tx] = output.Value;
+					if (!txOutputs.ContainsKey(item.Key.txHash))
+					{
+						txOutputs[item.Key.txHash] = new List<Types.Output>();
+					}
+
+					txOutputs[item.Key.txHash].Add(item.Value);
+					txs[item.Key.txHash] = BlockStore.TxStore.Get(context, item.Key.txHash).Value;
 				}
 			}
-
-			return values;
 		}
 
 		////demo
