@@ -82,13 +82,14 @@ namespace Wallet.core
 				dbTx.Transaction.SynchronizeTables(TxBalancesStore.INDEXES);
 				_TxBalancesStore.Reset(dbTx);
 
-				foreach (var item in utxoSetTxs)
+				foreach (var item in utxoSetTxs.Where(o => IsMatch(o.Value)))
 				{
 					var balances = new AssetDeltas();
 
-					item.Key.Value.outputs.Where(IsMatch).ToList().ForEach(o => AddOutput(balances, o));
-					_TxBalancesStore.Put(dbTx, item.Key.Key, item.Key.Value, balances, TxStateEnum.Confirmed);
-					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, item.Key.Value, balances));
+					AddOutput(balances, item.Value);
+					var tx = item.Key;
+					_TxBalancesStore.Put(dbTx, tx.Key, tx.Value, balances, TxStateEnum.Confirmed);
+					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, tx.Value, balances));
 				}
 
 				_BlockChain.memPool.TxPool.ToList().ForEach(t => HandleTx(dbTx, t.Key, t.Value, TxDeltaList, TxStateEnum.Unconfirmed));
