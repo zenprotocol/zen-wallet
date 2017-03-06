@@ -53,18 +53,20 @@ namespace Wallet.core
 				{
 					var state = _TxBalancesStore.TxState(dbTx, t.Key);
 
-					if (state != TxStateEnum.Invalid)
+					switch (state)
 					{
-						switch (_BlockChain.HandleTransaction(t.Value))
-						{
-							case BlockChain.BlockChain.TxResultEnum.Accepted:
-							case BlockChain.BlockChain.TxResultEnum.Known:
-								TxDeltaList.Add(new TxDelta(state, t.Value, _TxBalancesStore.Balances(dbTx, t.Key)));
-								break;
-							default:
-								_TxBalancesStore.Remove(dbTx, t.Key);
-								break;
-						}
+						case TxStateEnum.Confirmed:
+							TxDeltaList.Add(new TxDelta(state, t.Value, _TxBalancesStore.Balances(dbTx, t.Key)));
+							break;
+						case TxStateEnum.Unconfirmed:
+							_TxBalancesStore.Remove(dbTx, t.Key);
+							_BlockChain.HandleTransaction(t.Value);
+							break;
+						case TxStateEnum.Invalid:
+							_TxBalancesStore.Remove(dbTx, t.Key);
+							break;
+						default:
+							throw new ArgumentOutOfRangeException();
 					}
 				});
 			}
@@ -354,6 +356,8 @@ namespace Wallet.core
 								_BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash);
 							break;
 					}
+
+					WalletTrace.Verbose($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
 
 					if (canSpend)
 					{
