@@ -148,10 +148,8 @@ namespace Wallet
 
 			LogSummaryRow logSummaryRow = (LogSummaryRow) logSummaryStore.GetValue (storeIter, 0);
 
-			Decimal value = 0;//(logEntryItem.Direction ==  DirectionEnum.Recieved ? 1 : -1) * logEntryItem.Amount;
-
-			logSummaryRow[value > 0 ? 1 : 0] += value;
-			logSummaryRow[2] += value;
+			logSummaryRow[logEntryItem.Direction == DirectionEnum.Recieved ? 1 : 0] += logEntryItem.Amount;
+			logSummaryRow[2] += (logEntryItem.Direction == DirectionEnum.Recieved ? 1 : -1) * logEntryItem.Amount;
 
 			logSummaryStore.SetValue (storeIter, 0, logSummaryRow);
 		}
