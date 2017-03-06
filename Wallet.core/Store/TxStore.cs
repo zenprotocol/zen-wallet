@@ -57,6 +57,11 @@ namespace Wallet.core
 
 			dbTx.Transaction.Insert<byte[], int>(STATES, txHash, (int)txState);
 
+			SetBalances(dbTx, txHash, assetBalances);
+		}
+
+		public void SetBalances(TransactionContext dbTx, byte[] txHash, AssetDeltas assetBalances)
+		{
 			var table = dbTx.Transaction.InsertTable<byte[]>(BALANCES, txHash, 0);
 
 			foreach (var asset in assetBalances)

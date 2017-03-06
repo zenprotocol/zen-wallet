@@ -54,7 +54,18 @@ namespace Wallet.core
 					var state = _TxBalancesStore.TxState(dbTx, t.Key);
 
 					if (state != TxStateEnum.Invalid)
-						TxDeltaList.Add(new TxDelta(state, t.Value, _TxBalancesStore.Balances(dbTx, t.Key)));
+					{
+						switch (_BlockChain.HandleTransaction(t.Value))
+						{
+							case BlockChain.BlockChain.TxResultEnum.Accepted:
+							case BlockChain.BlockChain.TxResultEnum.Known:
+								TxDeltaList.Add(new TxDelta(state, t.Value, _TxBalancesStore.Balances(dbTx, t.Key)));
+								break;
+							default:
+								_TxBalancesStore.Remove(dbTx, t.Key);
+								break;
+						}
+					}
 				});
 			}
 		}
@@ -74,22 +85,36 @@ namespace Wallet.core
 
 			_Keys.Add(key);
 
-			var utxoSetTxs = _BlockChain.GetUTXOSet(IsMatch); // TODO: use linq, return enumerator, remove predicate
+			HashDictionary<List<Types.Output>> txOutputs;
+			HashDictionary<Types.Transaction> txs;
+			_BlockChain.GetUTXOSet(IsMatch, out txOutputs, out txs); // TODO: use linq, return enumerator, remove predicate
 
 			TxDeltaList.Clear();
+
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				dbTx.Transaction.SynchronizeTables(TxBalancesStore.INDEXES);
 				_TxBalancesStore.Reset(dbTx);
 
-				foreach (var item in utxoSetTxs.Where(o => IsMatch(o.Value)))
+				foreach (var item in txOutputs)
 				{
 					var balances = new AssetDeltas();
 
-					AddOutput(balances, item.Value);
-					var tx = item.Key;
-					_TxBalancesStore.Put(dbTx, tx.Key, tx.Value, balances, TxStateEnum.Confirmed);
-					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, tx.Value, balances));
+					foreach (var output in item.Value)
+					{
+						AddOutput(balances, output);
+					}
+
+					if (!_TxBalancesStore.ContainsKey(dbTx, item.Key))
+					{
+						_TxBalancesStore.Put(dbTx, item.Key, txs[item.Key], balances, TxStateEnum.Confirmed);
+					}
+					else
+					{
+						_TxBalancesStore.SetBalances(dbTx, item.Key, balances);
+					}
+
+					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, txs[item.Key], balances));
 				}
 
 				_BlockChain.memPool.TxPool.ToList().ForEach(t => HandleTx(dbTx, t.Key, t.Value, TxDeltaList, TxStateEnum.Unconfirmed));
@@ -278,6 +303,8 @@ namespace Wallet.core
 		private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, out Assets assets)
 		{
 			var matchingAssets = new Assets();
+
+			var spendableOutputs = new List<Types.Output>();
 
 			_TxBalancesStore.All(dbTx).ToList().ForEach(t =>
 			{
