@@ -125,7 +125,6 @@
     <Compile Include="Widgets\Wallet\Transactions.cs" />
     <Compile Include="Domain\TransactionItem.cs" />
     <Compile Include="Widgets\Contract\Contract.cs" />
-    <Compile Include="Controllers\EventBus.cs" />
     <Compile Include="gtk-gui\Wallet.Contract.cs" />
     <Compile Include="Controllers\ContractController.cs" />
     <Compile Include="Controllers\MainAreaController.cs" />
@@ -157,7 +156,6 @@
     <Compile Include="Domain\AssetType.cs" />
     <Compile Include="Widgets\Portfolio\Portfolio.cs" />
     <Compile Include="gtk-gui\Wallet.Portfolio.cs" />
-    <Compile Include="Controllers\AssetsManager.cs" />
     <Compile Include="Widgets\Menu\TextButton.cs" />
     <Compile Include="Widgets\Portfolio\PortfolioItem.cs" />
     <Compile Include="gtk-gui\Wallet.PortfolioItem.cs" />
@@ -187,7 +185,8 @@
     <Compile Include="gtk-gui\Wallet.AddKeyDialog.cs" />
     <Compile Include="Widgets\MessageBox.cs" />
     <Compile Include="gtk-gui\Wallet.MessageBox.cs" />
-    <Compile Include="Controllers\WalletManager.cs" />
+    <Compile Include="Widgets\Contract\ContractActivation.cs" />
+    <Compile Include="gtk-gui\Wallet.ContractActivation.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
