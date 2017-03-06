@@ -8,7 +8,7 @@ namespace Wallet
 
 		private global::Gtk.ScrolledWindow GtkScrolledWindow1;
 
-		private global::Gtk.TextView textview2;
+		private global::Gtk.TextView txtContractCode;
 
 		private global::Gtk.VBox vbox1;
 
@@ -18,19 +18,21 @@ namespace Wallet
 
 		private global::Gtk.Image image4;
 
-		private global::Gtk.Entry entry2;
+		private global::Gtk.Button buttonSave;
+
+		private global::Gtk.Entry txtContractHash;
 
 		private global::Gtk.ScrolledWindow GtkScrolledWindow;
 
-		private global::Gtk.TextView textview1;
+		private global::Gtk.TextView txtStatus;
 
 		private global::Gtk.HBox hbox4;
 
-		private global::Gtk.EventBox eventboxVerify;
+		private global::Gtk.EventBox eventboxValidate;
 
-		private global::Gtk.Image image5;
+		private global::Gtk.Image image;
 
-		private global::Gtk.EventBox eventboxCreate;
+		private global::Gtk.EventBox eventboxCreateOrExtend;
 
 		private global::Gtk.Image image6;
 
@@ -53,10 +55,10 @@ namespace Wallet
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild
-			this.textview2 = new global::Gtk.TextView();
-			this.textview2.CanFocus = true;
-			this.textview2.Name = "textview2";
-			this.GtkScrolledWindow1.Add(this.textview2);
+			this.txtContractCode = new global::Gtk.TextView();
+			this.txtContractCode.CanFocus = true;
+			this.txtContractCode.Name = "txtContractCode";
+			this.GtkScrolledWindow1.Add(this.txtContractCode);
 			this.hbox2.Add(this.GtkScrolledWindow1);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.GtkScrolledWindow1]));
 			w2.Position = 0;
@@ -84,68 +86,80 @@ namespace Wallet
 			w4.Expand = false;
 			w4.Fill = false;
 			// Container child hbox3.Gtk.Box+BoxChild
-			this.entry2 = new global::Gtk.Entry();
-			this.entry2.CanFocus = true;
-			this.entry2.Name = "entry2";
-			this.entry2.IsEditable = true;
-			this.entry2.InvisibleChar = '●';
-			this.hbox3.Add(this.entry2);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.entry2]));
+			this.buttonSave = new global::Gtk.Button();
+			this.buttonSave.CanFocus = true;
+			this.buttonSave.Name = "buttonSave";
+			this.buttonSave.UseUnderline = true;
+			this.buttonSave.Label = global::Mono.Unix.Catalog.GetString("Save");
+			this.hbox3.Add(this.buttonSave);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.buttonSave]));
 			w5.Position = 1;
+			w5.Expand = false;
+			w5.Fill = false;
+			// Container child hbox3.Gtk.Box+BoxChild
+			this.txtContractHash = new global::Gtk.Entry();
+			this.txtContractHash.CanFocus = true;
+			this.txtContractHash.Name = "txtContractHash";
+			this.txtContractHash.IsEditable = true;
+			this.txtContractHash.InvisibleChar = '●';
+			this.hbox3.Add(this.txtContractHash);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.txtContractHash]));
+			w6.Position = 2;
 			this.vbox1.Add(this.hbox3);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox3]));
-			w6.Position = 0;
-			w6.Expand = false;
-			w6.Fill = false;
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox3]));
+			w7.Position = 0;
+			w7.Expand = false;
+			w7.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.GtkScrolledWindow = new global::Gtk.ScrolledWindow();
 			this.GtkScrolledWindow.Name = "GtkScrolledWindow";
 			this.GtkScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
-			this.textview1 = new global::Gtk.TextView();
-			this.textview1.CanFocus = true;
-			this.textview1.Name = "textview1";
-			this.GtkScrolledWindow.Add(this.textview1);
+			this.txtStatus = new global::Gtk.TextView();
+			this.txtStatus.CanFocus = true;
+			this.txtStatus.Name = "txtStatus";
+			this.txtStatus.Editable = false;
+			this.GtkScrolledWindow.Add(this.txtStatus);
 			this.vbox1.Add(this.GtkScrolledWindow);
-			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow]));
-			w8.Position = 1;
+			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow]));
+			w9.Position = 1;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.hbox4 = new global::Gtk.HBox();
 			this.hbox4.Name = "hbox4";
 			this.hbox4.Spacing = 6;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.eventboxVerify = new global::Gtk.EventBox();
-			this.eventboxVerify.Name = "eventboxVerify";
-			this.eventboxVerify.VisibleWindow = false;
-			// Container child eventboxVerify.Gtk.Container+ContainerChild
-			this.image5 = new global::Gtk.Image();
-			this.image5.Name = "image5";
-			this.image5.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.Contract.Verify.png");
-			this.eventboxVerify.Add(this.image5);
-			this.hbox4.Add(this.eventboxVerify);
-			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventboxVerify]));
-			w10.Position = 0;
-			w10.Expand = false;
-			w10.Fill = false;
+			this.eventboxValidate = new global::Gtk.EventBox();
+			this.eventboxValidate.Name = "eventboxValidate";
+			this.eventboxValidate.VisibleWindow = false;
+			// Container child eventboxValidate.Gtk.Container+ContainerChild
+			this.image = new global::Gtk.Image();
+			this.image.Name = "image";
+			this.image.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.Contract.Verify.png");
+			this.eventboxValidate.Add(this.image);
+			this.hbox4.Add(this.eventboxValidate);
+			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventboxValidate]));
+			w11.Position = 0;
+			w11.Expand = false;
+			w11.Fill = false;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.eventboxCreate = new global::Gtk.EventBox();
-			this.eventboxCreate.Name = "eventboxCreate";
-			this.eventboxCreate.VisibleWindow = false;
-			// Container child eventboxCreate.Gtk.Container+ContainerChild
+			this.eventboxCreateOrExtend = new global::Gtk.EventBox();
+			this.eventboxCreateOrExtend.Name = "eventboxCreateOrExtend";
+			this.eventboxCreateOrExtend.VisibleWindow = false;
+			// Container child eventboxCreateOrExtend.Gtk.Container+ContainerChild
 			this.image6 = new global::Gtk.Image();
 			this.image6.Name = "image6";
 			this.image6.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.Contract.Create.png");
-			this.eventboxCreate.Add(this.image6);
-			this.hbox4.Add(this.eventboxCreate);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventboxCreate]));
-			w12.Position = 1;
-			w12.Expand = false;
-			w12.Fill = false;
-			this.vbox1.Add(this.hbox4);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox4]));
-			w13.Position = 2;
+			this.eventboxCreateOrExtend.Add(this.image6);
+			this.hbox4.Add(this.eventboxCreateOrExtend);
+			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventboxCreateOrExtend]));
+			w13.Position = 1;
 			w13.Expand = false;
 			w13.Fill = false;
+			this.vbox1.Add(this.hbox4);
+			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox4]));
+			w14.Position = 2;
+			w14.Expand = false;
+			w14.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.GtkScrolledWindow2 = new global::Gtk.ScrolledWindow();
 			this.GtkScrolledWindow2.Name = "GtkScrolledWindow2";
@@ -156,13 +170,13 @@ namespace Wallet
 			this.textview3.Name = "textview3";
 			this.GtkScrolledWindow2.Add(this.textview3);
 			this.vbox1.Add(this.GtkScrolledWindow2);
-			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow2]));
-			w15.Position = 3;
+			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow2]));
+			w16.Position = 3;
 			this.hbox2.Add(this.vbox1);
-			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.vbox1]));
-			w16.Position = 1;
-			w16.Expand = false;
-			w16.Fill = false;
+			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.vbox1]));
+			w17.Position = 1;
+			w17.Expand = false;
+			w17.Fill = false;
 			this.Add(this.hbox2);
 			if ((this.Child != null))
 			{

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Store;
 using System.Linq;
 using BlockChain.Data;
+using System.Text;
 
 namespace BlockChain
 {
@@ -34,12 +35,33 @@ namespace BlockChain
 			return ContainsKey(dbTx, contractHash);
 		}
 
+		public UInt32 LastBlock(TransactionContext dbTx, byte[] contractHash)
+		{
+			return Get(dbTx, contractHash).Value.LastBlock;
+		}
+
 		public void Extend(TransactionContext dbTx, byte[] contractHash, ulong kalapas)
 		{
 			var acsItem = Get(dbTx, contractHash);
 			acsItem.Value.LastBlock += (uint)(kalapas / acsItem.Value.KalapasPerBlock);
 
 			Add(dbTx, acsItem.Value);
+		}
+
+		public static ulong KalapasPerBlock(string fsharpCode)
+		{
+			if (string.IsNullOrEmpty(fsharpCode))
+				return 0;
+			
+			return KalapasPerBlock(Encoding.ASCII.GetBytes(fsharpCode));
+		}
+
+		public static ulong KalapasPerBlock(byte[] fsharpCode)
+		{
+			if (fsharpCode == null)
+				return 0;
+			
+			return (ulong)fsharpCode.Length * 1000;
 		}
 
 		public bool Activate(TransactionContext dbTx, byte[] contractCode, ulong kalapas)
@@ -52,7 +74,7 @@ namespace BlockChain
 			byte[] contractHash;
 			if (ContractHelper.Compile(contractCode, out contractHash))
 			{
-				var kalapasPerBlock = (ulong)fsharpCode.Length * 1000;
+				var kalapasPerBlock = KalapasPerBlock(fsharpCode);
 
 				if (kalapas < kalapasPerBlock)
 				{

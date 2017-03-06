@@ -362,6 +362,17 @@ namespace Wallet.core
 			return _BlockChain.HandleTransaction(tx);
 		}
 
+		public bool CanSpend(byte[] asset, ulong amount)
+		{
+			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
+			{
+				ulong change;
+				Assets assets;
+
+				return Require(dbTx, asset, amount, out change, out assets);
+			}
+		}
+
 		/// <summary>
 		/// Constract and sign a transaction satisfying amount of asset
 		/// </summary>
@@ -409,6 +420,63 @@ namespace Wallet.core
 			return true;
 		}
 
+		/// <summary>
+		/// Constract and sign a transaction activating a contract
+		/// </summary>
+		/// <returns>The sign.</returns>
+		/// <param name="address">Address.</param>
+		/// <param name="asset">Asset.</param>
+		/// <param name="amount">Amount.</param>
+		public bool SacrificeToContract(byte[] contractHash, byte[] code, ulong zenAmount, out Types.Transaction signedTx)
+		{
+			ulong change;
+			Assets assets;
+
+			var outputs = new List<Types.Output>();
+
+			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
+			{
+				if (!Require(dbTx, Tests.zhash, zenAmount, out change, out assets))
+				{
+					signedTx = null;
+					return false;
+				}
+				else if (change > 0)
+				{
+					Key key;
+
+					if (_KeyStore.GetUnusedKey(dbTx, out key, true))
+					{
+						_Keys.Add(key);
+						dbTx.Commit();
+					}
+
+					outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(key.Address), new Types.Spend(Tests.zhash, change)));
+				}
+			}
+
+			var output = new Types.Output(
+				Types.OutputLock.NewContractSacrificeLock(
+					new Types.LockCore(0, ListModule.OfSeq(new byte[][] { contractHash }))
+				),
+				new Types.Spend(Tests.zhash, zenAmount)
+			);
+
+			outputs.Add(output);
+
+			signedTx = TransactionValidation.signTx(new Types.Transaction(
+				1,
+				ListModule.OfSeq(assets.Select(t => t.Outpoint)),
+				ListModule.OfSeq(new List<byte[]>()),
+				ListModule.OfSeq(outputs),
+				new Microsoft.FSharp.Core.FSharpOption<Types.ExtendedContract>(
+					Types.ExtendedContract.NewContract(new Types.Contract(code, new byte[] { }, new byte[] { }))
+				)
+			  ), ListModule.OfSeq(assets.Select(i => i.Key.Private)));
+
+			return true;
+		}
+
 		public Key GetUnusedKey()
 		{
 			Key key;
@@ -423,6 +491,30 @@ namespace Wallet.core
 			}
 
 			return key;
+		}
+
+		public bool IsContractActive(byte[] contractHash)
+		{
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				return new ActiveContractSet().IsActive(dbTx, contractHash);
+			}
+		}
+
+		public bool IsContractActive(byte[] contractHash, out UInt32 nextBlocks)
+		{
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				bool isActive = new ActiveContractSet().IsActive(dbTx, contractHash);
+
+				var lastBlock = isActive ? new ActiveContractSet().LastBlock(dbTx, contractHash) : 0;
+
+				var currentHeight = _BlockChain.Tip == null ? 0 : _BlockChain.Tip.Value.header.blockNumber;
+
+				nextBlocks = currentHeight - lastBlock;
+
+				return isActive;
+			}
 		}
 	}
 }
