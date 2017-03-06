@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using BlockChain;
 using BlockChain.Data;
 using BlockChain.Store;
 using Consensus;
@@ -7,16 +7,24 @@ using Store;
 
 namespace Wallet.core
 {
-	//TODO: extend Types.Transaction to contain TxStateEnum, serialize+store using MsgPackStore
+	//TODO: refactor using Msgpack serialization of data structure
 
 	public class TxBalancesStore : ConsensusTypeStore<Types.Transaction>
 	{
 		private static string BALANCES = "balances";
 		private static string STATES = "states";
 		public static string INDEXES = "indexes";
+		public static string TIMES = "times";
 
 		public TxBalancesStore() : base("tx")
 		{
+		}
+
+		public DateTime Time(TransactionContext dbTx, byte[] tx)
+		{
+			var rec = dbTx.Transaction.Select<byte[], long>(TIMES, tx);
+
+			return rec.Exists ? DateTime.FromFileTimeUtc(rec.Value) : DateTime.Now;
 		}
 
 		public void Reset(TransactionContext dbTx)
@@ -25,6 +33,7 @@ namespace Wallet.core
 			dbTx.Transaction.RemoveAllKeys(BALANCES, true);
 			dbTx.Transaction.RemoveAllKeys(STATES, true);
 			dbTx.Transaction.RemoveAllKeys(INDEXES, true);
+			dbTx.Transaction.RemoveAllKeys(TIMES, true);
 		}
 
 		public IEnumerable<Keyed<byte[], Types.Transaction>> All(TransactionContext dbTx)
@@ -55,8 +64,7 @@ namespace Wallet.core
 
 			Put(dbTx, txHash, tx);
 
-			dbTx.Transaction.Insert<byte[], int>(STATES, txHash, (int)txState);
-
+			SetTxState(dbTx, txHash, txState);
 			SetBalances(dbTx, txHash, assetBalances);
 		}
 
@@ -90,7 +98,7 @@ namespace Wallet.core
 
 		public void SetTxState(TransactionContext dbTx, byte[] tx, TxStateEnum txState)
 		{
-			
+			dbTx.Transaction.Insert<byte[], long>(TIMES, tx, DateTime.Now.ToFileTimeUtc());
 			dbTx.Transaction.Insert<byte[], int>(STATES, tx, (int)txState);
 		}
 
