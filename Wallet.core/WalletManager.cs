@@ -21,7 +21,7 @@ namespace Wallet.core
 		private KeyStore _KeyStore { get; set; }
 		private List<Key> _Keys;
 
-		//TODO: merge, consider not using thread loops - * watchout from dbreeze threading limitation
+		//TODO: consider not using thread loops - * watchout from dbreeze threading limitation
 		private EventLoopMessageListener<BlockChainMessage> _BlockChainListener;
 
 		public TxDeltaItemsEventArgs TxDeltaList { get; private set; }
@@ -65,8 +65,6 @@ namespace Wallet.core
 						case TxStateEnum.Invalid:
 							_TxBalancesStore.Remove(dbTx, t.Key);
 							break;
-						default:
-							throw new ArgumentOutOfRangeException();
 					}
 				});
 			}
@@ -165,7 +163,6 @@ namespace Wallet.core
 		private void HandleTx(TransactionContext dbTx, byte[] txHash, TransactionValidation.PointedTransaction ptx, TxDeltaItemsEventArgs deltas, TxStateEnum txState)
 		{
 			var isValid = txState != TxStateEnum.Invalid;
-
 			var _deltas = new AssetDeltas();
 
 			if (!isValid && ptx == null)
