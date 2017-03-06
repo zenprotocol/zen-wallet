@@ -1,59 +1,74 @@
 ﻿using System;
+using System.Text;
+using Gtk;
 
 namespace Wallet
 {
 	public interface ContractView {
-		String ContractCodeHash { set; }
-		String ContractCodeContent { set; }
-		String ContractCodeAssertion { set; }
+		Boolean IsActive { set; }
+		byte[] Hash { set; }
+		ulong Tokens { set; }
+		String Code { get; set; }
+		String Assertion { set; }
 		String Proof { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class Contract : Gtk.Bin, ContractView
+	public partial class Contract : Bin, ContractView
 	{
-		ContractController ContractController = ContractController.GetInstance();
 		public Contract ()
 		{
 			this.Build ();
-			ContractController.ContractView = this;
+			ContractController.Instance.ContractView = this;
 
-			textview1.ModifyBase (Gtk.StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
-			textview2.ModifyBase (Gtk.StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
-			textview3.ModifyBase (Gtk.StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
+			txtStatus.ModifyBase (StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
+			txtContractCode.ModifyBase (StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
+			textview3.ModifyBase (StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
 
-			textview1.ModifyText (Gtk.StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
-			textview2.ModifyText (Gtk.StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
-			textview3.ModifyText (Gtk.StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
+			txtStatus.ModifyText (StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
+			txtContractCode.ModifyText (StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
+			textview3.ModifyText (StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
 
-			eventboxCreate.ButtonPressEvent += delegate {
-				ContractController.Create();
+			eventboxCreateOrExtend.ButtonPressEvent += delegate {
+				ContractController.Instance.CreateOrExtend();
 			};
 
-			eventboxVerify.ButtonPressEvent += delegate {
-				ContractController.Verify();
+			eventboxValidate.ButtonPressEvent += delegate {
+				ContractController.Instance.Verify();
 			};
 
 			eventboxLoad.ButtonPressEvent += delegate {
-				ContractController.Load();
+				ContractController.Instance.Load();
 			};
+
+			buttonSave.Clicked += delegate {
+				ContractController.Instance.Save();
+			};
+
+			txtContractCode.Buffer.Changed += txtContractCode_Changed;
 		}
 
-		public String ContractCodeHash { 
-			set {
-				entry2.Text = value;
-			} 
+		void txtContractCode_Changed(object sender, EventArgs e)
+		{
+			var textView = sender as TextBuffer;
+
+			ContractController.Instance.UpdateContractInfo(textView.Text);
 		}
 
-		public String ContractCodeContent { 
-			set {
-				textview2.Buffer.Text = value;
+		public String Code { 
+			get
+			{
+				return txtContractCode.Buffer.Text;
+			}
+			set
+			{
+				txtContractCode.Buffer.Text = value;
 			} 
 		}
 
 		public String ContractCodeAssertion { 
 			set {
-				textview1.Buffer.Text = value;
+				txtStatus.Buffer.Text = value;
 			} 
 		}
 
@@ -63,6 +78,58 @@ namespace Wallet
 			} 
 		}
 
+		bool _IsActive;
+		public bool IsActive
+		{
+			set
+			{
+				_IsActive = value;
+			}
+		}
+
+		string _Hash;
+		public byte[] Hash
+		{
+			set
+			{
+				_Hash = BitConverter.ToString(value).Replace("-", string.Empty);
+				txtContractHash.Text = _Hash;
+				UpdateStatus();
+			}
+		}
+
+		public string Assertion
+		{
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		ulong _Tokens;
+		public ulong Tokens
+		{
+			set
+			{
+				_Tokens = value;
+				UpdateStatus();
+			}
+		}
+
+		public void UpdateStatus()
+		{
+			var stringBuilder = new StringBuilder();
+
+			stringBuilder.AppendLine("Contract hash: " + _Hash);
+			stringBuilder.AppendLine("Status: " + (_IsActive ? "ACTIVE" : "INACTIVE"));
+
+			if (_Tokens != 0)
+			{
+				stringBuilder.AppendLine($"You own {_Tokens} tokens issued by this contract");
+			}
+
+			txtStatus.Buffer.Text = stringBuilder.ToString();
+		}
 	}
 }
 
