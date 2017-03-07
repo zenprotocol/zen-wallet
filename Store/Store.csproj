@@ -41,11 +41,9 @@
     <Compile Include="DBContext.cs" />
     <Compile Include="Store.cs" />
     <Compile Include="TransactionContext.cs" />
-    <Compile Include="ValueStore.cs" />
     <Compile Include="StoredItem.cs" />
-    <Compile Include="EnumerableStore.cs" />
-    <Compile Include="CachingStore.cs" />
     <Compile Include="MsgPackStore.cs" />
+    <Compile Include="KeylessValueStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
