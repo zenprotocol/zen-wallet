@@ -10,8 +10,6 @@ namespace Wallet
 	{
 		public ActionBarView ActionBarView { get; set; }
 
-		public SendStub SendStub = new SendStub ();
-
 		public void SetTxView(ITransactionsView view)
 		{
 			Apply(view, App.Instance.Wallet.TxDeltaList);

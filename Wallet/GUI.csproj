@@ -106,7 +106,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gtk-gui\generated.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Widgets\Menu\MainMenu.cs" />
     <Compile Include="Widgets\Menu\VerticalMenu.cs" />
@@ -142,7 +141,6 @@
     <Compile Include="Widgets\WidgetCache.cs" />
     <Compile Include="Widgets\TextRenderer.cs" />
     <Compile Include="Domain\LogEntry.cs" />
-    <Compile Include="Domain\CurrencyEnum.cs" />
     <Compile Include="Domain\DirectionEnum.cs" />
     <Compile Include="Widgets\Log\Log.cs" />
     <Compile Include="gtk-gui\Wallet.Log.cs" />
@@ -153,7 +151,6 @@
     <Compile Include="Widgets\Log\LogSummaryRow.cs" />
     <Compile Include="Widgets\Log\LogHeaderRow.cs" />
     <Compile Include="LayoutHelper.cs" />
-    <Compile Include="Domain\AssetType.cs" />
     <Compile Include="Widgets\Portfolio\Portfolio.cs" />
     <Compile Include="gtk-gui\Wallet.Portfolio.cs" />
     <Compile Include="Widgets\Menu\TextButton.cs" />
@@ -162,10 +159,6 @@
     <Compile Include="gtk-gui\Wallet.SendDialog.cs" />
     <Compile Include="Widgets\DialogBase.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="ISend.cs" />
-    <Compile Include="SendStub.cs" />
-    <Compile Include="Domain\AssetTypes.cs" />
-    <Compile Include="EmptyClass.cs" />
     <Compile Include="Widgets\SendDialog\SendDialog.cs" />
     <Compile Include="Widgets\SendDialog\DialogField.cs" />
     <Compile Include="gtk-gui\Wallet.DialogField.cs" />
@@ -175,7 +168,6 @@
     <Compile Include="gtk-gui\Wallet.SendDialogWaiting.cs" />
     <Compile Include="Widgets\SendDialog\SendDialogStep2.cs" />
     <Compile Include="gtk-gui\Wallet.SendDialogStep2.cs" />
-    <Compile Include="ResourceOwnerWindow.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Widgets\ReceiveDialog.cs" />
     <Compile Include="gtk-gui\Wallet.ReceiveDialog.cs" />
