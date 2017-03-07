@@ -1,41 +1,6 @@
-using System;
-
+﻿using System;
 namespace Store
 {
-	//public class Field<TKey, TValue> where TValue : new()
-	//{
-	//	private readonly TransactionContext _Context;
-	//	private readonly String _TableName;
-	//	private readonly TKey _Key;
-
-	//	public Field(TransactionContext context, String tableName, TKey key)
-	//	{
-	//		_Context = context;
-	//		_TableName = tableName;
-	//		_Key = key;
-	//	}
-
-	//	public TValue Value
-	//	{
-	//		get
-	//		{
-	//			var valueRow = _Context.Transaction.Select<TKey, TValue>(_TableName, _Key);
-	//			return valueRow.Exists ? valueRow.Value : new TValue();
-	//		}
-	//		set
-	//		{
-	//			_Context.Transaction.Insert<TKey, TValue>(_TableName, _Key, value);
-	//		}
-	//	}
-	//}
-
-	//public class NoKeyValueStory<TValue> : ValueStore<int, TValue> where TValue : new()
-	//{
-	//	public NoKeyValueStory(String tableName) : base(tableName)
-	//	{
-	//	}
-	//}
-
 	public class KeylessValueStore<TValue> //where TValue : new() //TODO: could remove constraint and return null/default on non existing Row 
 	{
 		private readonly String _TableName;
@@ -102,7 +67,7 @@ namespace Store
 
 		public ValueStoreContext(TransactionContext context, String tableName)
 		{
-			_Context = context;	
+			_Context = context;
 			_TableName = tableName;
 		}
 
