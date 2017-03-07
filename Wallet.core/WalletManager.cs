@@ -17,7 +17,7 @@ namespace Wallet.core
 		private HashDictionary<TransactionValidation.PointedTransaction> _TxCache = new HashDictionary<TransactionValidation.PointedTransaction>();
 		private DBContext _DBContext;
 		private BlockChain.BlockChain _BlockChain;
-		private TxBalancesStore _TxBalancesStore;
+		private TxStore _TxStore;
 		private KeyStore _KeyStore { get; set; }
 		private List<Key> _Keys;
 
@@ -37,7 +37,7 @@ namespace Wallet.core
 			_DBContext = new DBContext(dbName);
 
 			_KeyStore = new KeyStore();
-			_TxBalancesStore = new TxBalancesStore();
+			_TxStore = new TxStore();
 
 			TxDeltaList = new TxDeltaItemsEventArgs();
 			AssetsMetadata = new AssetsMetadata();
@@ -49,21 +49,15 @@ namespace Wallet.core
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				_Keys = _KeyStore.List(dbTx);
-				_TxBalancesStore.All(dbTx).ToList().ForEach(t =>
+				_TxStore.All(dbTx).Select(t=>t.Value).ToList().ForEach(txData =>
 				{
-					var state = _TxBalancesStore.TxState(dbTx, t.Key);
-
-					switch (state)
+					switch (txData.TxState)
 					{
 						case TxStateEnum.Confirmed:
-							TxDeltaList.Add(new TxDelta(state, t.Key, t.Value, _TxBalancesStore.Balances(dbTx, t.Key), _TxBalancesStore.Time(dbTx, t.Key)));
+							TxDeltaList.Add(new TxDelta(txData.TxState, txData.TxHash, txData.Tx, txData.AssetDeltas, txData.DateTime));
 							break;
 						case TxStateEnum.Unconfirmed:
-							_TxBalancesStore.Remove(dbTx, t.Key);
-							_BlockChain.HandleTransaction(t.Value);
-							break;
-						case TxStateEnum.Invalid:
-							_TxBalancesStore.Remove(dbTx, t.Key);
+							_BlockChain.HandleTransaction(txData.Tx);
 							break;
 					}
 				});
@@ -93,28 +87,20 @@ namespace Wallet.core
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				dbTx.Transaction.SynchronizeTables(TxBalancesStore.INDEXES);
-				_TxBalancesStore.Reset(dbTx);
+				//dbTx.Transaction.SynchronizeTables(TxBalancesStore.INDEXES);
+				_TxStore.Reset(dbTx);
 
 				foreach (var item in txOutputs)
 				{
-					var balances = new AssetDeltas();
+					var assetDeltas = new AssetDeltas();
 
 					foreach (var output in item.Value)
 					{
-						AddOutput(balances, output);
+						AddOutput(assetDeltas, output);
 					}
 
-					if (!_TxBalancesStore.ContainsKey(dbTx, item.Key))
-					{
-						_TxBalancesStore.Put(dbTx, item.Key, txs[item.Key], balances, TxStateEnum.Confirmed);
-					}
-					else
-					{
-						_TxBalancesStore.SetBalances(dbTx, item.Key, balances);
-					}
-
-					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, item.Key, txs[item.Key], balances));
+					_TxStore.Put(dbTx, item.Key, txs[item.Key], assetDeltas, TxStateEnum.Confirmed);
+					TxDeltaList.Add(new TxDelta(TxStateEnum.Confirmed, item.Key, txs[item.Key], assetDeltas));
 				}
 
 				_BlockChain.memPool.TxPool.ToList().ForEach(t => HandleTx(dbTx, t.Key, t.Value, TxDeltaList, TxStateEnum.Unconfirmed));
@@ -193,15 +179,7 @@ namespace Wallet.core
 			{
 				var tx = TransactionValidation.unpoint(ptx);
 
-				if (_TxBalancesStore.ContainsKey(dbTx, txHash))
-				{
-					_TxBalancesStore.SetTxState(dbTx, txHash, txState);
-				}
-				else
-				{
-					_TxBalancesStore.Put(dbTx, txHash, tx, _deltas, txState);
-				}
-
+				_TxStore.Put(dbTx, txHash, tx, _deltas, txState);
 				deltas.Add(new TxDelta(txState, txHash, tx, _deltas));
 			}
 		}
@@ -304,10 +282,10 @@ namespace Wallet.core
 
 			var spendableOutputs = new List<Types.Output>();
 
-			_TxBalancesStore.All(dbTx).ToList().ForEach(t =>
+			_TxStore.All(dbTx).Select(t=>t.Value).ToList().ForEach(txData =>
 			{
 				uint idx = 0;
-				t.Value.outputs.ToList().ForEach(o =>
+				txData.Tx.outputs.ToList().ForEach(o =>
 				{
 					if (o.spend.asset.SequenceEqual(asset))
 					{
@@ -315,15 +293,13 @@ namespace Wallet.core
 
 						if (key != null)
 						{
-							var txState = _TxBalancesStore.TxState(dbTx, t.Key);
-
-							if (txState != TxStateEnum.Invalid)
+							if (txData.TxState != TxStateEnum.Invalid)
 							{
 								matchingAssets.Add(new Asset()
 								{
 									Key = key,
-									TxState = txState,
-									Outpoint = new Types.Outpoint(t.Key, idx),
+									TxState = txData.TxState,
+									Outpoint = new Types.Outpoint(txData.TxHash, idx),
 									Output = o
 								});
 							}

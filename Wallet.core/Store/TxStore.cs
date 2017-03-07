@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using BlockChain.Data;
 using BlockChain.Store;
 using Consensus;
@@ -7,104 +6,40 @@ using Store;
 
 namespace Wallet.core
 {
-	//TODO: refactor using Msgpack serialization of data structure
-
-	public class TxBalancesStore : ConsensusTypeStore<Types.Transaction>
+	public class TxData
 	{
-		private static string BALANCES = "balances";
-		private static string STATES = "states";
-		public static string INDEXES = "indexes";
-		public static string TIMES = "times";
+		public byte[] TxHash { get; set; }
+		public Types.Transaction Tx { get; set; }
+		public TxStateEnum TxState { get; set; }
+		public DateTime DateTime { get; set; }
+		public AssetDeltas AssetDeltas { get; set; }
+	}
 
-		public TxBalancesStore() : base("tx")
+	class TxStore : ConsensusTypeStore<int, TxData>
+	{
+		static string TX_HASHES_TO_IDENTITY = "tx-hashes";
+
+		internal TxStore() : base("tx")
 		{
 		}
 
-		public DateTime Time(TransactionContext dbTx, byte[] tx)
-		{
-			var rec = dbTx.Transaction.Select<byte[], long>(TIMES, tx);
-
-			return rec.Exists ? DateTime.FromFileTimeUtc(rec.Value) : DateTime.Now;
-		}
-
-		public void Reset(TransactionContext dbTx)
+		internal void Reset(TransactionContext dbTx)
 		{
 			dbTx.Transaction.RemoveAllKeys(_TableName, true);
-			dbTx.Transaction.RemoveAllKeys(BALANCES, true);
-			dbTx.Transaction.RemoveAllKeys(STATES, true);
-			dbTx.Transaction.RemoveAllKeys(INDEXES, true);
-			dbTx.Transaction.RemoveAllKeys(TIMES, true);
+			dbTx.Transaction.RemoveAllKeys(TX_HASHES_TO_IDENTITY, true);
 		}
 
-		public IEnumerable<Keyed<byte[], Types.Transaction>> All(TransactionContext dbTx)
+		internal void Put(TransactionContext dbTx, byte[] txHash, Types.Transaction tx, AssetDeltas assetDeltas, TxStateEnum txState)
 		{
-			foreach (var index in dbTx.Transaction.SelectForward<int, byte[]>(INDEXES))
+			var txHashRecord = dbTx.Transaction.Select<byte[], int>(TX_HASHES_TO_IDENTITY, txHash);
+			Put(dbTx, txHashRecord.Exists ? txHashRecord.Value : (int)dbTx.Transaction.Count(_TableName), new TxData()
 			{
-				yield return Get(dbTx, index.Value);
-			}
+				DateTime = DateTime.Now,
+				TxState = txState,
+				Tx = tx,
+				AssetDeltas = assetDeltas,
+				TxHash = txHash,
+			});
 		}
-
-		public void Put(TransactionContext dbTx, byte[] txHash, Types.Transaction tx, AssetDeltas assetBalances, TxStateEnum txState)
-		{
-			//	dbTx.Transaction.SynchronizeTables(INDEXES);
-
-			//if (!ContainsKey(dbTx, item.Key))
-			//{
-				int identity = 0;
-
-				var row = dbTx.Transaction.Max<int, byte[]>(INDEXES);
-
-				if (row.Exists)
-					identity = row.Key;
-
-				identity++;
-
-				dbTx.Transaction.Insert<int, byte[]>(INDEXES, identity, txHash);
-			//}
-
-			Put(dbTx, txHash, tx);
-
-			SetTxState(dbTx, txHash, txState);
-			SetBalances(dbTx, txHash, assetBalances);
-		}
-
-		public void SetBalances(TransactionContext dbTx, byte[] txHash, AssetDeltas assetBalances)
-		{
-			var table = dbTx.Transaction.InsertTable<byte[]>(BALANCES, txHash, 0);
-
-			foreach (var asset in assetBalances)
-			{
-				table.Insert<byte[], long>(asset.Key, asset.Value);
-			}
-		}
-
-		public AssetDeltas Balances(TransactionContext dbTx, byte[] tx)
-		{
-			var balances = new AssetDeltas();
-			var table = dbTx.Transaction.SelectTable<byte[]>(BALANCES, tx, 0);
-
-			foreach (var asset in table.SelectForward<byte[], long>())
-			{
-				balances[asset.Key] = asset.Value;
-			}
-
-			return balances;
-		}
-
-		public TxStateEnum TxState(TransactionContext dbTx, byte[] tx)
-		{
-			return (TxStateEnum) dbTx.Transaction.Select<byte[], int>(STATES, tx).Value;
-		}
-
-		public void SetTxState(TransactionContext dbTx, byte[] tx, TxStateEnum txState)
-		{
-			dbTx.Transaction.Insert<byte[], long>(TIMES, tx, DateTime.Now.ToFileTimeUtc());
-			dbTx.Transaction.Insert<byte[], int>(STATES, tx, (int)txState);
-		}
-
-		//public bool Contains(TransactionContext dbTx, byte[] tx)
-		//{
-		//	return dbTx.Transaction.Select<byte[], int>(TXS, tx).Exists;
-		//}
 	}
 }
