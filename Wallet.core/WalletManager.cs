@@ -357,7 +357,7 @@ namespace Wallet.core
 		}
 
 		/// <summary>
-		/// Spend the specified tx.
+		/// Transmits a tx on the network.
 		/// </summary>
 		/// <returns>The spend.</returns>
 		/// <param name="tx">Tx.</param>
@@ -374,6 +374,20 @@ namespace Wallet.core
 				Assets assets;
 
 				return Require(dbTx, asset, amount, out change, out assets);
+			}
+		}
+
+		public bool Parse(byte[] rawTxBytes, out Types.Transaction tx)
+		{
+			try
+			{
+				tx = Serialization.context.GetSerializer<Types.Transaction>().UnpackSingleObject(rawTxBytes);
+				return true;
+			}
+			catch
+			{
+				tx = null;
+				return false;
 			}
 		}
 

@@ -18,6 +18,8 @@ namespace Wallet
 
 		private global::Gtk.Image image1;
 
+		private global::Gtk.Button buttonRaw;
+
 		protected virtual void Build()
 		{
 			global::Stetic.Gui.Initialize(this);
@@ -26,7 +28,6 @@ namespace Wallet
 			this.Name = "Wallet.SendDialogStep1";
 			// Container child Wallet.SendDialogStep1.Gtk.Container+ContainerChild
 			this.vbox2 = new global::Gtk.VBox();
-			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
 			this.dialogfieldTo = new global::Wallet.DialogField();
@@ -74,11 +75,22 @@ namespace Wallet
 			w5.Position = 1;
 			w5.Expand = false;
 			w5.Fill = false;
-			this.vbox2.Add(this.hbox3);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.hbox3]));
-			w6.Position = 3;
+			// Container child hbox3.Gtk.Box+BoxChild
+			this.buttonRaw = new global::Gtk.Button();
+			this.buttonRaw.CanFocus = true;
+			this.buttonRaw.Name = "buttonRaw";
+			this.buttonRaw.UseUnderline = true;
+			this.buttonRaw.Label = global::Mono.Unix.Catalog.GetString("Raw");
+			this.hbox3.Add(this.buttonRaw);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.buttonRaw]));
+			w6.Position = 2;
 			w6.Expand = false;
 			w6.Fill = false;
+			this.vbox2.Add(this.hbox3);
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.hbox3]));
+			w7.Position = 3;
+			w7.Expand = false;
+			w7.Fill = false;
 			this.Add(this.vbox2);
 			if ((this.Child != null))
 			{
