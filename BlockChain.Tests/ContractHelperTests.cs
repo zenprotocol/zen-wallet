@@ -20,7 +20,7 @@ namespace BlockChain
 			var fs = @"
 module Test
 open Consensus.Types
-let run (context : ContractContext, message: Hash, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
 ";
 
 			Assert.That(ContractHelper.Compile(fs, out compiledContract), "Should compile", Is.True);
