@@ -40,7 +40,7 @@ namespace BlockChain
 			Types.Transaction contractCreatedTransaction;
 			Assert.That(ContractHelper.Execute(compiledContract, out contractCreatedTransaction, new ContractArgs()
 			{
-				context = new Types.ContractContext(compiledContract, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
+				context = new Types.ContractContext(compiledContract, new FSharpMap<Types.Outpoint, Types.Output>(utxos), _BlockChain.Tip.Value.header),
 				witnesses = new List<byte[]>(),
 				outputs = outputs,
 				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { }, new byte[] { }, new byte[] { }))

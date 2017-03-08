@@ -14,6 +14,7 @@ namespace BlockChain
 	public class ContractArgs
 	{
 		public Types.ContractContext context { get; set; }
+		public byte[] Message { get; set; }
 		public List<byte[]> witnesses { get; set; }
 		public List<Types.Output> outputs { get; set; }
 		public Types.ExtendedContract option { get; set; }
@@ -44,6 +45,7 @@ namespace BlockChain
 
 				var args = new object[] {
 					contractArgs.context,
+					contractArgs.Message,
 				//	ListModule.OfSeq(contractArgs.inputs),
 					ListModule.OfSeq(contractArgs.witnesses),
 					ListModule.OfSeq(contractArgs.outputs),
@@ -73,11 +75,38 @@ namespace BlockChain
 			return false;
 		}
 
-		public static bool IsTxValid(TransactionValidation.PointedTransaction ptx, byte[] contractHash, List<Tuple<Types.Outpoint, Types.Output>> utxos)
+		public static bool IsTxValid(TransactionValidation.PointedTransaction ptx, byte[] contractHash, List<Tuple<Types.Outpoint, Types.Output>> utxos, Types.BlockHeader blockHeader)
 		{
+			var witnessIdx = -1;
+			byte[] message = null;
+
+			for (var i = 0; i < ptx.witnesses.Length; i++)
+			{
+				if (ptx.witnesses[i] != null)
+					witnessIdx = i;
+			}
+
+			if (witnessIdx == 0)
+			{
+				message = ptx.witnesses[0];
+			}
+			else if (witnessIdx == -1)
+			{
+				var contractLock = ptx.pInputs[0].Item2.@lock as Types.OutputLock.ContractLock;
+
+				if (contractLock == null)
+				{
+					BlockChainTrace.Information("expected ContractLock, tx invalid");
+					return false;
+				}
+
+				message = contractLock.data;
+			}
+
 			var args = new ContractArgs()
 			{
-				context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
+				context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos), blockHeader),
+				Message = message,
 				witnesses = new List<byte[]>(),
 				outputs = ptx.outputs.ToList(),
 				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { }, new byte[] { }, new byte[] { }))
