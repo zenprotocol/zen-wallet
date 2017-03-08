@@ -7,14 +7,15 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class SendDialogStep1 : WidgetBase
 	{
-		public SendDialogStep1 ()
+		public SendDialogStep1()
 		{
-			this.Build ();
+			this.Build();
 
 			dialogfieldAmount.Caption = "AMOUNT";
 			dialogfieldTo.Caption = "TO";
 
-			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) => {
+			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
+			{
 				ulong amount;
 				byte[] address;
 
@@ -53,6 +54,11 @@ namespace Wallet
 				{
 					new MessageBox("Could not satisfy amount for asset").ShowDialog();
 				}
+			};
+
+			buttonRaw.Clicked += delegate
+			{
+				new SendRaw().ShowDialog();
 			};
 		}
 	}

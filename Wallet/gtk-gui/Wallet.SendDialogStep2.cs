@@ -78,7 +78,6 @@ namespace Wallet
 			this.expander.Expanded = true;
 			// Container child expander.Gtk.Container+ContainerChild
 			this.vbox2 = new global::Gtk.VBox();
-			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
 			this.dialogfield3 = new global::Wallet.DialogField();

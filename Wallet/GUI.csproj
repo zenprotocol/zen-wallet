@@ -179,6 +179,8 @@
     <Compile Include="gtk-gui\Wallet.MessageBox.cs" />
     <Compile Include="Widgets\Contract\ContractActivation.cs" />
     <Compile Include="gtk-gui\Wallet.ContractActivation.cs" />
+    <Compile Include="Widgets\SendDialog\SendRaw.cs" />
+    <Compile Include="gtk-gui\Wallet.SendRaw.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
