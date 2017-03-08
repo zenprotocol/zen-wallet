@@ -44,7 +44,6 @@
     <Compile Include="Store\BlockNumberDifficulties.cs" />
     <Compile Include="Store\BlockStore.cs" />
     <Compile Include="Data\HashDictionary.cs" />
-    <Compile Include="Store\TxStore.cs" />
     <Compile Include="Store\UTXOStore.cs" />
     <Compile Include="BlockChainTrace.cs" />
     <Compile Include="Store\ConsensusTypeStore.cs" />
@@ -52,7 +51,6 @@
     <Compile Include="Store\ChainTip.cs" />
     <Compile Include="ContractHelper.cs" />
     <Compile Include="Data\BlockTimestamps.cs" />
-    <Compile Include="Utils.cs" />
     <Compile Include="Data\BlockChainMessage.cs" />
     <Compile Include="Data\Action.cs" />
     <Compile Include="Data\TxStateEnum.cs" />
