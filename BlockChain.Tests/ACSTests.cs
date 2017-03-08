@@ -11,7 +11,7 @@ namespace BlockChain
 		string contractFsCode = @"
 module Test
 open Consensus.Types
-let run (context : ContractContext, message: Hash, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
 ";
 
 		[SetUp]

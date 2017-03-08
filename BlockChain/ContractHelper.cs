@@ -82,7 +82,7 @@ namespace BlockChain
 
 			for (var i = 0; i < ptx.witnesses.Length; i++)
 			{
-				if (ptx.witnesses[i] != null)
+				if (ptx.witnesses[i].Length > 0)
 					witnessIdx = i;
 			}
 
