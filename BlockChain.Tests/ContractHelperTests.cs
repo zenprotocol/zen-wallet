@@ -20,7 +20,7 @@ namespace BlockChain
 			var fs = @"
 module Test
 open Consensus.Types
-let run (context : ContractContext, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+let run (context : ContractContext, message: Hash, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
 ";
 
 			Assert.That(ContractHelper.Compile(fs, out compiledContract), "Should compile", Is.True);
@@ -53,7 +53,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 			Assert.That(ContractHelper.Execute(compiledContract, out contractCreatedTransaction, new ContractArgs()
 			{
-				context = new Types.ContractContext(compiledContract, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
+				context = new Types.ContractContext(compiledContract, new FSharpMap<Types.Outpoint, Types.Output>(utxos), _BlockChain.Tip.Value.header),
 				witnesses = new List<byte[]>(),
 				outputs = outputs,
 				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { },new byte[] { },new byte[] { }))

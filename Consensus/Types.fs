@@ -48,9 +48,6 @@ type Outpoint = {txHash: Hash; index: uint32}
 
 type Witness = byte[]
 
-//TODO: remove
-type ContractContext = { contractId: byte[]; utxo: Map<Outpoint, Output> }
-
 type Contract = {code: byte[]; bounds: byte[]; hint: byte[]}
 
 type ExtendedContract =
@@ -82,6 +79,8 @@ type BlockHeader = {
     pdiff: uint32;
     nonce: Nonce;
     }
+
+type ContractContext = {contractId: byte[]; utxo: Map<Outpoint, Output>; tip: BlockHeader; }
 
 let merkleData (bh : BlockHeader) =
     bh.txMerkleRoot :: bh.witnessMerkleRoot :: bh.contractMerkleRoot :: bh.extraData

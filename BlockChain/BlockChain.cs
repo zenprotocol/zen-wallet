@@ -309,7 +309,7 @@ namespace BlockChain
 					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
 				}
 
-				memPool.ICTxPool.Purge(activeContracts, utxos);
+				memPool.ICTxPool.Purge(activeContracts, utxos, Tip.Value.header);
 				memPool.TxPool.MoveToICTxPool(activeContracts);
 			}
 		}
@@ -464,44 +464,21 @@ namespace BlockChain
 		// bool IsContractGeneratedTransactionValid(dbtx, contracthash, ptx), which raises an exception if called with a missing contract
 		public static bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash)
 		{
-			/// 
-			/// 
-			/// 
-			/// 
-			/// 
 			/// TODO: cache
-
 			var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
 
-			foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
+			foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t =>
+			{
+				var contractLock = t.Value.@lock as Types.OutputLock.ContractLock;
+				return contractLock != null && contractLock.contractHash.SequenceEqual(contractHash); 
+			}))
 			{
 				utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
 			}
 
-			var args = new ContractArgs()
-			{
-				context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos)),
-				//		inputs = inputs,
-				witnesses = new List<byte[]>(),
-				outputs = ptx.outputs.ToList(),
-				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { }, new byte[] { }, new byte[] { }))
-			};
-
-			/// 
-			/// 
-			/// 
-			/// 
-			/// 
-
-
-			Types.Transaction tx;
-			if (!ContractHelper.Execute(contractHash, out tx, args))
-			{
-				BlockChainTrace.Information("Contract execution failed", contractHash);
-				return false;
-			}
-
-			return TransactionValidation.unpoint(ptx).Equals(tx);
+			var chainTip = new ChainTip().Context(dbTx).Value;
+			var tipBlockHeader = chainTip == null ? null : new BlockStore().GetBlock(dbTx, chainTip).Value.header;
+			return ContractHelper.IsTxValid(ptx, contractHash, utxos, tipBlockHeader);
 		}
 
 		public TransactionContext GetDBTransaction()

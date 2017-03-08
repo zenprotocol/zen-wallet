@@ -9,14 +9,14 @@ namespace BlockChain.Data
 	{
 		public TxPool TxPool { get; set; }
 
-		public void Purge(HashSet activeContracts, List<Tuple<Types.Outpoint, Types.Output>> utxos)
+		public void Purge(HashSet activeContracts, List<Tuple<Types.Outpoint, Types.Output>> utxos, Types.BlockHeader blockHeader)
 		{
 			foreach (var key in Keys.ToList())
 			{
 				var tx = this[key];
 				var contractHash = ((Types.OutputLock.ContractLock)tx.pInputs.Head.Item2.@lock).contractHash;
 
-				if (activeContracts.Contains(contractHash) && ContractHelper.IsTxValid(tx, contractHash, utxos))
+				if (activeContracts.Contains(contractHash) && ContractHelper.IsTxValid(tx, contractHash, utxos, blockHeader))
 				{
 					Remove(key);
 					TxPool.Add(key, tx);
