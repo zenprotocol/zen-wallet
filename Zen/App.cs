@@ -32,7 +32,7 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
-			return _BlockChain.HandleBlock(block);
+			return _BlockChain.HandleBlock(block) == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
 		internal void ImportKey(string key)
