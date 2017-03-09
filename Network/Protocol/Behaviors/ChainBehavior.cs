@@ -2,14 +2,16 @@
 using Consensus;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace NBitcoin.Protocol.Behaviors
 {
 	public class ChainBehavior : NodeBehavior
 	{
-		private Timer _Refresh;
-		private BlockChain.BlockChain _BlockChain;
-		private bool IsTipOld;
+		Timer _Refresh;
+		BlockChain.BlockChain _BlockChain;
+		bool IsTipOld;
+		List<Node> Nodes = new List<Node>();
 
 		public ChainBehavior(BlockChain.BlockChain blockChain)
 		{
@@ -19,6 +21,10 @@ namespace NBitcoin.Protocol.Behaviors
 
 		protected override void AttachCore()
 		{
+			lock (Nodes)
+			{
+				Nodes.Add(AttachedNode);
+			}
 			AttachedNode.StateChanged += AttachedNode_StateChanged;
 			AttachedNode.MessageReceived += AttachedNode_MessageReceived;
 		}
@@ -28,7 +34,6 @@ namespace NBitcoin.Protocol.Behaviors
 			AttachedNode.StateChanged -= AttachedNode_StateChanged;
 			AttachedNode.MessageReceived -= AttachedNode_MessageReceived;
 		}
-
 
 		void AttachedNode_StateChanged(Node node, NodeState oldState)
 		{
@@ -40,7 +45,6 @@ namespace NBitcoin.Protocol.Behaviors
 			}
 		}
 
-
 		void AttachedNode_MessageReceived(Node node, IncomingMessage message)
 		{
 			message.IfPayloadIs<Types.Block>(bk =>
@@ -48,6 +52,11 @@ namespace NBitcoin.Protocol.Behaviors
 				switch (_BlockChain.HandleBlock(bk))
 				{
 					case BlockChain.BlockVerificationHelper.BkResultEnum.Accepted:
+						foreach (var other in Nodes)
+						{
+							if (other != AttachedNode && other.State == NodeState.HandShaked)
+								other.SendMessageAsync(bk);
+						}
 						break;
 					case BlockChain.BlockVerificationHelper.BkResultEnum.AcceptedOrphan:
 						node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
@@ -100,6 +109,7 @@ namespace NBitcoin.Protocol.Behaviors
 		public override object Clone()
 		{
 			var behavior = new ChainBehavior(_BlockChain);
+			behavior.Nodes = Nodes;
 			return behavior;
 		}
 
