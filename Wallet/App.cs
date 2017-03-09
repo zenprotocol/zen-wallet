@@ -8,6 +8,7 @@ namespace Wallet
 	{
 		private Gtk.Window _MainWindow;
 		public WalletManager Wallet { get; private set; }
+	//	public NodeManager Node { get; private set; }
 
 		public App()
 		{
@@ -22,18 +23,16 @@ namespace Wallet
 			};
 		}
 
-		public void Start(WalletManager walletManager)
+		public void Start(WalletManager walletManager/*, NodeManager nodeManager*/)
 		{
 			Wallet = walletManager;
+		//	Node = nodeManager;
 
 			Gtk.Application.Init();
 
-			//using (var consoleWriter = ConsoleMessage.Out)
-			//{
-				_MainWindow = new MainWindow();
-				DialogBase.parent = _MainWindow;
-				_MainWindow.Show();
-			//}
+			_MainWindow = new MainWindow();
+			DialogBase.parent = _MainWindow;
+			_MainWindow.Show();
 
 			Gtk.Application.Run();
 		}
