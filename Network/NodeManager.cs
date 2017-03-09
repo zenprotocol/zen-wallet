@@ -102,12 +102,24 @@ namespace Network
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, broadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
+			AddressManagerBehavior.GetAddrman(_NodeConnectionParameters).PeersToFind = _Network.PeersToFind;
+
+			if (ipAddress != null)
+			{
+				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.AdvertizeDiscover; //parameters.Advertize = true;
+				_NodeConnectionParameters.AddressFrom = new System.Net.IPEndPoint(ipAddress, _Network.DefaultPort);
+			}
+			else
+			{
+				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.Discover;
+			}
+
 			//_BlockChain.OnAddedToMempool += t => {
 			//	broadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(t);
 			//};
 
 			if (ipAddress != null)
-			{
+			{ 
 				_Server = new Server(ipAddress, _Network, _NodeConnectionParameters);
 				OwnResource(_Server);
 
@@ -124,33 +136,22 @@ namespace Network
 			if (_Network.Seeds.Count == 0)
 			{
 				NodeServerTrace.Information("No seeds defined");
-				return;
-			}
-
-			AddressManagerBehavior.GetAddrman(_NodeConnectionParameters).PeersToFind = _Network.PeersToFind;
-
-			if (_NATManager.ExternalIPAddress != null)
-			{
-				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.AdvertizeDiscover; //parameters.Advertize = true;
-				_NodeConnectionParameters.AddressFrom = new System.Net.IPEndPoint(_NATManager.ExternalIPAddress, _Network.DefaultPort);
 			}
 			else
 			{
-				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.Discover;
+				_NodesGroup = new NodesGroup(_Network, _NodeConnectionParameters);
+				OwnResource(_NodesGroup);
+
+				_NodesGroup.AllowSameGroup = true; //TODO
+				_NodesGroup.MaximumNodeConnection = _Network.MaximumNodeConnection;
+
+				_NodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
+				{
+					NodeServerTrace.Information("Peer found: " + e.Node.RemoteSocketAddress + ":" + e.Node.RemoteSocketPort);
+				};
+
+				_NodesGroup.Connect();
 			}
-
-			_NodesGroup = new NodesGroup(_Network, _NodeConnectionParameters);
-			OwnResource(_NodesGroup);
-
-			_NodesGroup.AllowSameGroup = true; //TODO
-			_NodesGroup.MaximumNodeConnection = _Network.MaximumNodeConnection;
-
-			_NodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
-			{
-				NodeServerTrace.Information("Peer found: " + e.Node.RemoteSocketAddress + ":" + e.Node.RemoteSocketPort);
-			};
-
-			_NodesGroup.Connect();
 		}
 	}
 }
