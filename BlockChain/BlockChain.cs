@@ -242,12 +242,12 @@ namespace BlockChain
 		/// Handles a block from network.
 		/// </summary>
 		/// <returns><c>true</c>, if new block was acceped, <c>false</c> rejected.</returns>
-		public bool HandleBlock(Types.Block bk)
+		public BlockVerificationHelper.BkResultEnum HandleBlock(Types.Block bk)
 		{
 			return HandleBlock(new HandleBlockAction(bk));
 		}
 
-		bool HandleBlock(HandleBlockAction a)
+		BlockVerificationHelper.BkResultEnum HandleBlock(HandleBlockAction a)
 		{
 			BlockVerificationHelper action = null;
 
@@ -270,7 +270,7 @@ namespace BlockChain
 						UpdateMempool(dbTx, action.ConfirmedTxs, action.UnconfirmedTxs);
 						break;
 					case BlockVerificationHelper.BkResultEnum.Rejected:
-						return false;
+						return action.Result;
 				}
 
 				foreach (var _bk in BlockStore.Orphans(dbTx, a.BkHash))
@@ -287,7 +287,7 @@ namespace BlockChain
 					a.Publish();
 			});
 
-			return true;
+			return action.Result;
 		}
 
 		void UpdateMempool(TransactionContext dbTx, HashDictionary<TransactionValidation.PointedTransaction> confirmedTxs, HashDictionary<Types.Transaction> unconfirmedTxs)
@@ -601,7 +601,7 @@ namespace BlockChain
 				t => TransactionValidation.unpoint(t.Value)))
           	);
 
-			if (HandleBlock(newBlock))
+			if (HandleBlock(newBlock) == BlockVerificationHelper.BkResultEnum.Accepted)
 			{
 				return newBlock;
 			}

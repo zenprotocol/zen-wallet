@@ -202,7 +202,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 			var tx = Utils.GetTx().AddOutput(output);
 			var bk = _GenesisBlock.Child().AddTx(tx);
 
-			Assert.That(_BlockChain.HandleBlock(bk), "Should add block", Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted), "Should add block");
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
