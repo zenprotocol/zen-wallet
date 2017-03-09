@@ -191,6 +191,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		public BroadcastHubBehavior()
 		{
+			_BroadcastHub = new BroadcastHub();
 		}
 
 		BroadcastHubBehavior(BroadcastHub broadcastHub)
