@@ -247,7 +247,8 @@ namespace Zen
 						new byte[] { },
 						new byte[] { },
 						ListModule.OfSeq<byte[]>(new List<byte[]>()),
-						DateTime.Now/*Parse(date)*/.ToBinary(),
+						//DateTime.Now.ToBinary(),
+						DateTime.Parse(date).ToBinary(),
 						1,
 						new byte[] { }
 					);
