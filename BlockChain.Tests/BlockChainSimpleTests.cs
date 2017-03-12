@@ -17,7 +17,7 @@ namespace BlockChain
 
 			_GenesisTx = Utils.GetTx().AddOutput(_Key.Address, Consensus.Tests.zhash, 100);
 			_GenesisBlock = _GenesisBlock.AddTx(_GenesisTx);
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 		}
 
 		[Test, Order(2)]
@@ -41,7 +41,7 @@ namespace BlockChain
 		[Test, Order(3)]
 		public void ShouldRejectBlock()
 		{
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_GenesisTx)), Is.False);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(_GenesisTx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Rejected));
 		}
 
 		[Test, Order(4)]
@@ -57,7 +57,7 @@ namespace BlockChain
 
 			var bk = _GenesisBlock.Child().AddTx(tx1).AddTx(tx2).AddTx(tx3);
 
-			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 		}
 	}
 }

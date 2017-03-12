@@ -12,9 +12,9 @@ namespace BlockChain
 			var block1 = _GenesisBlock.Child();
 			var block2 = _GenesisBlock.Child();
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
-			Assert.That(_BlockChain.HandleBlock(block1), Is.True);
-			Assert.That(_BlockChain.HandleBlock(block2), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
+			Assert.That(_BlockChain.HandleBlock(block1), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
+			Assert.That(_BlockChain.HandleBlock(block2), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 
 			Assert.That(Location(_GenesisBlock), Is.EqualTo(LocationEnum.Main));
 			Assert.That(Location(block1), Is.EqualTo(LocationEnum.Main));
@@ -24,7 +24,7 @@ namespace BlockChain
 
 			// detect branch child
 			var block3 = block2.Child();
-			Assert.That(_BlockChain.HandleBlock(block3), Is.True);
+			Assert.That(_BlockChain.HandleBlock(block3), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 			Assert.That(Location(block3), Is.EqualTo(LocationEnum.Main));
 		}
 	}

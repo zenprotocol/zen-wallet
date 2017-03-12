@@ -24,7 +24,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 			var contractLockOutput = Utils.GetContractOutput(compiledContract, null, Consensus.Tests.zhash, 100);
 			var tx = Utils.GetTx().AddOutput(contractLockOutput).Tag("Tx");
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("Genesis")), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.AddTx(tx).Tag("Genesis")), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 		}
 
 		[Test]
@@ -94,7 +94,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 			var tx = Utils.GetTx().AddOutput(output);
 			var bk = _GenesisBlock.Child().AddTx(tx);
 
-			Assert.That(_BlockChain.HandleBlock(bk), Is.True, "Should add block");
+			Assert.That(_BlockChain.HandleBlock(bk), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted), "Should add block");
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
@@ -159,7 +159,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 
 			var tx = ExecuteContract(compiledContract);
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 		}
 
 		[Test]
@@ -170,8 +170,8 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 			var tx = ExecuteContract(compiledContract);
 
 			var bk = _GenesisBlock.Child();
-			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
-			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(tx)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
+			Assert.That(_BlockChain.HandleBlock(bk.Child().AddTx(tx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 		}
 
 		[Test]
@@ -232,8 +232,8 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		//var child = _GenesisBlock.Child();
 		//var orphan = child.Child().AddTx(tx);
 
-		//Assert.That(_BlockChain.HandleBlock(orphan), Is.True);
-		//Assert.That(_BlockChain.HandleBlock(child), Is.True); // cause an undo
+		//Assert.That(_BlockChain.HandleBlock(orphan), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
+		//Assert.That(_BlockChain.HandleBlock(child), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted)); // cause an undo
 
 		[Test]
 		public void ShouldNotActivateUnderSacrificedContract()
@@ -242,7 +242,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, kalapasPerBlock)).SetContract(
 				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractFsCode), new byte[] { }, new byte[] { }));
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
@@ -256,7 +256,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 			var highVContract = Consensus.Types.ExtendedContract.NewHighVContract(10, new byte[] { });
 			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, 10)).SetContract(highVContract);
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
@@ -277,7 +277,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, kalapasPerBlock)).SetContract(
 				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractFsCode), new byte[] { }, new byte[] { }));
 
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
