@@ -21,7 +21,7 @@ namespace BlockChain
 		[Test, Order(2)]
 		public void TipShouldBeOfGenesis()
 		{
-			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.True);
+			Assert.That(_BlockChain.HandleBlock(_GenesisBlock), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 			Assert.That(_BlockChain.Tip.Value.Equals(_GenesisBlock), Is.True);
 		}
 
@@ -29,8 +29,8 @@ namespace BlockChain
 		public void TipShouldBeOfNewBlock()
 		{
 			block1 = _GenesisBlock.Child();
-			Assert.That(_BlockChain.HandleBlock(block1), Is.True);
-			Assert.That(_BlockChain.Tip.Value.Equals(block1), Is.True);
+			Assert.That(_BlockChain.HandleBlock(block1), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
+			Assert.That(_BlockChain.Tip.Value, Is.EqualTo(block1));
 		}
 
 		[Test, Order(4)]
@@ -38,16 +38,16 @@ namespace BlockChain
 		{
 			block2 = _GenesisBlock.Child();
 			block3 = block2.Child();
-			Assert.That(_BlockChain.HandleBlock(block3), Is.True); //TODO: assert: orphan
+			Assert.That(_BlockChain.HandleBlock(block3), Is.EqualTo(BlockVerificationHelper.BkResultEnum.AcceptedOrphan));
 			Assert.That(_BlockChain.Tip.Value.Equals(block1), Is.True);
 		}
 
 		[Test, Order(5)]
 		public void TipShouldBecomeBranchAfterReorganization()
 		{
-			Assert.That(_BlockChain.HandleBlock(block2), Is.True);
+			Assert.That(_BlockChain.HandleBlock(block2), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 			System.Threading.Thread.Sleep(1000);
-			Assert.That(_BlockChain.Tip.Value.Equals(block3), Is.True);
+			Assert.That(_BlockChain.Tip.Value, Is.EqualTo(block3));
 		}
 	}
 }

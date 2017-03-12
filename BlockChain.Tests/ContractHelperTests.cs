@@ -31,7 +31,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 
 			var bk = _GenesisBlock.AddTx(Utils.GetTx().AddOutput(contractOutput1).AddOutput(contractOutput2).AddOutput(contractOutput3));
 
-			Assert.That(_BlockChain.HandleBlock(bk), Is.True);
+			Assert.That(_BlockChain.HandleBlock(bk), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 		}
 
 		[Test, Order(2)]
