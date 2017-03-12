@@ -128,7 +128,7 @@ namespace BlockChain
 			var fsharpCodeExtracted = @"
 module Test
 open Consensus.Types
-let run (context : ContractContext, witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
 ";
 			fsharpCode = Encoding.ASCII.GetBytes(fsharpCodeExtracted);
 
@@ -180,7 +180,7 @@ let run (context : ContractContext, witnesses: Witness list, outputs: Output lis
 
 		private static byte[] GetHash(string value)
 		{
-			return Merkle.hashHasher.Invoke(Encoding.ASCII.GetBytes(value)); //TODO: hashHasher?
+			return Merkle.innerHash(Encoding.ASCII.GetBytes(value));
 		}
 
 		private static string GetFileName(byte[] hash)

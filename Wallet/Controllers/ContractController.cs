@@ -18,7 +18,7 @@ namespace Wallet
 		public void UpdateContractInfo(string contractText)
 		{
 			_Code = Encoding.ASCII.GetBytes(contractText);
-			_Hash = Consensus.Merkle.hashHasher.Invoke(Encoding.ASCII.GetBytes(contractText));
+			_Hash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractText));
 
 			ContractView.Hash = _Hash;
 			ContractView.IsActive = App.Instance.Wallet.IsContractActive(_Hash);

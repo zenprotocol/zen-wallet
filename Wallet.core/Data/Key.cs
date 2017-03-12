@@ -64,7 +64,7 @@ namespace Wallet.core.Data
 			return new Key()
 			{
 				Private = privateKey,
-				Address = Merkle.hashHasher.Invoke(publicKey),
+				Address = Merkle.innerHash(publicKey),
 				Change = false,
 				Used = false
 			};
