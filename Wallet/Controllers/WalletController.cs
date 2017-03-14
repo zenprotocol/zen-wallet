@@ -9,15 +9,20 @@ namespace Wallet
 	public class WalletController : Singleton<WalletController>
 	{
 		public ActionBarView ActionBarView { get; set; }
+
 		AssetDeltas _AssetDeltas = new AssetDeltas();
+		TxDeltaItemsEventArgs _TxDeltas;
+		ITransactionsView _ITransactionsView;
 
 		public ITransactionsView TransactionsView
 		{
 			set
 			{
-				Apply(value, App.Instance.Wallet.TxDeltaList);
+				_ITransactionsView = value;
+
+				Apply(App.Instance.Wallet.TxDeltaList);
 				App.Instance.Wallet.OnReset += delegate { value.Clear(); };
-				App.Instance.Wallet.OnItems += a => { Apply(value, a); };
+				App.Instance.Wallet.OnItems += a => { Apply(a); };
 			}
 		}
 
@@ -43,32 +48,45 @@ namespace Wallet
 				AssetType = assetsMetadata[value];
 
 				UpdateActionBar();
+
+				if (_ITransactionsView != null)
+				{
+					_ITransactionsView.Clear();
+					Apply(_TxDeltas);
+				}
 			}
 		}
 
 		public AssetType AssetType { get; private set; }
 
-		public void Apply(ITransactionsView view, TxDeltaItemsEventArgs deltas)
+		private void Apply(TxDeltaItemsEventArgs txDeltas)
 		{
+			_TxDeltas = txDeltas;
+			_AssetDeltas.Clear();
+
 			Gtk.Application.Invoke(delegate
 			{
-				deltas.ForEach(u => u.AssetDeltas.ToList().ForEach(b => {
-					if (!_AssetDeltas.ContainsKey(b.Key))
-						_AssetDeltas[b.Key] = 0;	
+				_TxDeltas.ForEach(u => u.AssetDeltas.ToList().ForEach(b => {
+					if (b.Key.SequenceEqual(_Asset))
+					{
+						if (!_AssetDeltas.ContainsKey(b.Key))
+							_AssetDeltas[b.Key] = 0;
 
-					_AssetDeltas[b.Key] += b.Value;
+						_AssetDeltas[b.Key] += b.Value;
 
-					UpdateActionBar();
+						UpdateActionBar();
 
-					view.AddTransactionItem(new TransactionItem(
-					Math.Abs(b.Value),
-					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-					App.Instance.Wallet.AssetsMetadata[b.Key],
-					u.Time,
-					Guid.NewGuid().ToString("N"),
-					BitConverter.ToString(u.TxHash),
-					0,
-					u.TxState));
+						_ITransactionsView.AddTransactionItem(new TransactionItem(
+							Math.Abs(b.Value),
+							b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+							App.Instance.Wallet.AssetsMetadata[b.Key],
+							u.Time,
+							Guid.NewGuid().ToString("N"),
+							BitConverter.ToString(u.TxHash),
+							0,
+							u.TxState)
+						 );
+					}
 				}));
 			});
 		}
