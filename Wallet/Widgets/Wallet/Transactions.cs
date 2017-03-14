@@ -31,7 +31,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			WalletController.Instance.SetTxView(this);
+			WalletController.Instance.TransactionsView = this;
 
 			ScrolledWindow sw = new ScrolledWindow();
 

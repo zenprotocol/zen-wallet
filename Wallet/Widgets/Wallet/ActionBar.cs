@@ -31,7 +31,7 @@ namespace Wallet
 			}, labelAmount, labelAmountConverted);
 
 			ButtonPressEvent (eventboxSend, () => {
-				new SendDialog(WalletController.Instance.Asset).ShowDialog();
+				new SendDialog(WalletController.Instance.AssetType).ShowDialog();
 			});
 
 			ButtonPressEvent(eventboxReceive, () =>
@@ -50,8 +50,7 @@ namespace Wallet
 
 		public Decimal Total {
 			set {
-				labelAmountConverted.Text = value.ToString();
-				labelCurrencyConverted.Text = "USD";
+				labelAmount.Text = value.ToString();
 			}
 		}
 

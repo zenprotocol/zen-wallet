@@ -31,7 +31,7 @@ namespace Wallet
 		String imageSourceFile = null;
 		Label label = null;
 
-		public byte[] Hash;
+		public object Data { get; set; }
 
 		public String ImageName { 
 			set
