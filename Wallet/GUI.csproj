@@ -127,7 +127,6 @@
     <Compile Include="gtk-gui\Wallet.Contract.cs" />
     <Compile Include="Controllers\ContractController.cs" />
     <Compile Include="Controllers\MainAreaController.cs" />
-    <Compile Include="Widgets\Menu\IMenuSelectionHandler.cs" />
     <Compile Include="gtk-gui\Wallet.MainWindow.cs" />
     <Compile Include="gtk-gui\Wallet.MainMenu.cs" />
     <Compile Include="gtk-gui\Wallet.MenuButton.cs" />
