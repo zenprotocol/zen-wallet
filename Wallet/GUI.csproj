@@ -180,6 +180,8 @@
     <Compile Include="gtk-gui\Wallet.ContractActivation.cs" />
     <Compile Include="Widgets\SendDialog\SendRaw.cs" />
     <Compile Include="gtk-gui\Wallet.SendRaw.cs" />
+    <Compile Include="Widgets\SendDialog\DialogComboField.cs" />
+    <Compile Include="gtk-gui\Wallet.DialogComboField.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

@@ -10,9 +10,11 @@ namespace Wallet
 
 		private global::Wallet.DialogField dialogfieldAmount;
 
-		private global::Gtk.Alignment alignment1;
+		private global::Wallet.DialogComboField dialogcombofieldAsset;
 
-		private global::Gtk.HBox hbox3;
+		private global::Gtk.Label labelMessage;
+
+		private global::Gtk.HBox hbox4;
 
 		private global::Gtk.EventBox eventboxSend;
 
@@ -50,19 +52,28 @@ namespace Wallet
 			w2.Expand = false;
 			w2.Fill = false;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.alignment1 = new global::Gtk.Alignment(0.5F, 0.5F, 1F, 1F);
-			this.alignment1.HeightRequest = 10;
-			this.alignment1.Name = "alignment1";
-			this.vbox2.Add(this.alignment1);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.alignment1]));
+			this.dialogcombofieldAsset = new global::Wallet.DialogComboField();
+			this.dialogcombofieldAsset.Events = ((global::Gdk.EventMask)(256));
+			this.dialogcombofieldAsset.Name = "dialogcombofieldAsset";
+			this.vbox2.Add(this.dialogcombofieldAsset);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.dialogcombofieldAsset]));
 			w3.Position = 2;
 			w3.Expand = false;
+			w3.Fill = false;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.hbox3 = new global::Gtk.HBox();
-			this.hbox3.Name = "hbox3";
-			this.hbox3.Homogeneous = true;
-			this.hbox3.Spacing = 6;
-			// Container child hbox3.Gtk.Box+BoxChild
+			this.labelMessage = new global::Gtk.Label();
+			this.labelMessage.Name = "labelMessage";
+			this.vbox2.Add(this.labelMessage);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.labelMessage]));
+			w4.Position = 3;
+			w4.Expand = false;
+			w4.Fill = false;
+			// Container child vbox2.Gtk.Box+BoxChild
+			this.hbox4 = new global::Gtk.HBox();
+			this.hbox4.Name = "hbox4";
+			this.hbox4.Homogeneous = true;
+			this.hbox4.Spacing = 6;
+			// Container child hbox4.Gtk.Box+BoxChild
 			this.eventboxSend = new global::Gtk.EventBox();
 			this.eventboxSend.Name = "eventboxSend";
 			this.eventboxSend.VisibleWindow = false;
@@ -71,27 +82,27 @@ namespace Wallet
 			this.image1.Name = "image1";
 			this.image1.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.misc.send_dialog.png");
 			this.eventboxSend.Add(this.image1);
-			this.hbox3.Add(this.eventboxSend);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.eventboxSend]));
-			w5.Position = 1;
-			w5.Expand = false;
-			w5.Fill = false;
-			// Container child hbox3.Gtk.Box+BoxChild
+			this.hbox4.Add(this.eventboxSend);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventboxSend]));
+			w6.Position = 1;
+			w6.Expand = false;
+			w6.Fill = false;
+			// Container child hbox4.Gtk.Box+BoxChild
 			this.buttonRaw = new global::Gtk.Button();
 			this.buttonRaw.CanFocus = true;
 			this.buttonRaw.Name = "buttonRaw";
 			this.buttonRaw.UseUnderline = true;
 			this.buttonRaw.Label = global::Mono.Unix.Catalog.GetString("Raw");
-			this.hbox3.Add(this.buttonRaw);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.buttonRaw]));
-			w6.Position = 2;
-			w6.Expand = false;
-			w6.Fill = false;
-			this.vbox2.Add(this.hbox3);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.hbox3]));
-			w7.Position = 3;
+			this.hbox4.Add(this.buttonRaw);
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.buttonRaw]));
+			w7.Position = 2;
 			w7.Expand = false;
 			w7.Fill = false;
+			this.vbox2.Add(this.hbox4);
+			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.hbox4]));
+			w8.Position = 4;
+			w8.Expand = false;
+			w8.Fill = false;
 			this.Add(this.vbox2);
 			if ((this.Child != null))
 			{
