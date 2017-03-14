@@ -3,7 +3,8 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface IMainMenuView : IMenu {
+	public interface IMainMenuView {
+		int Default { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]

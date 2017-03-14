@@ -1,10 +1,12 @@
 ﻿using Gtk;
 using Wallet.core;
 using System.Linq;
+using System;
 
 namespace Wallet
 {
-	public interface IVerticalMenu : IMenu {
+	public interface IVerticalMenu {
+		byte[] Asset { set; }
 		bool AllVisible { set; }
 	}
 
@@ -36,7 +38,7 @@ namespace Wallet
 			
 		public override MenuButton Selection { 
 			set {
-				WalletController.Instance.Asset = AssetsMetadata[value.Hash];
+				WalletController.Instance.Asset = (byte[]) value.Data;
 			}
 		}
 
@@ -46,17 +48,31 @@ namespace Wallet
 			} 
 		}
 
+		public byte[] Asset
+		{
+			set
+			{
+				foreach (var child in vboxContainer.Children)
+				{
+					var buttonChild = (MenuButton)child;
+					if (((byte[])buttonChild.Data).SequenceEqual(value))
+						buttonChild.Select();
+				}
+				WalletController.Instance.Asset = value;
+			}
+		}
+
 		void AddButton(byte[] hash, AssetType assetType) {
 			foreach (var child in vboxContainer.Children)
 			{
 				var buttonChild = (MenuButton)child;
-				if (buttonChild.Hash.SequenceEqual(hash))
+				if (((byte[])buttonChild.Data).SequenceEqual(hash))
 					vboxContainer.Remove(buttonChild);
 			}
 
 			var menuButton = new MenuButton()
 			{
-				Hash = hash,
+				Data = hash,
 				ImageFileName = assetType.Image,
 				Caption = assetType.Caption
 			};

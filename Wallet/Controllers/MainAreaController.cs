@@ -33,8 +33,8 @@ namespace Wallet
 				return verticalMenu; 
 			} 
 			set { 
-				verticalMenu = value; 
-				value.Default = DEFAULT_MENU_LEFT_IDX; 
+				verticalMenu = value;
+				value.Asset = Consensus.Tests.zhash;
 			} 
 		}
 
