@@ -1,5 +1,4 @@
-﻿using System;
-using Wallet.core;
+﻿using System.IO;
 using Wallet.core.Data;
 
 namespace Wallet
@@ -11,35 +10,17 @@ namespace Wallet
 		{
 			this.Build();
 
-			dialogfieldAddress.Caption = "Public Key:";
+			entry1.Text = App.Instance.Wallet.GetUnusedKey ().AddressAsString;
 
-			SelectedKey = App.Instance.Wallet.GetUnusedKey ();
+			Gtk.Clipboard clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 
-			//foreach (var key_ in App.Instance.Wallet.ListKeys())
-			//{
-			//	Console.WriteLine(key_.Address);
-			//}
+			buttonCopy.Clicked += delegate {
+				clipboard.Text = entry1.Text;
+			};
 
 			buttonClose.Clicked += delegate { 
 				CloseDialog(); 
 			};
-
-			buttonKeys.Clicked += delegate { 
-				new KeysDialog(key => {
-					SelectedKey = key;
-				}).ShowDialog();
-			};
-		}
-
-		private Key _selectedKey;
-		private Key SelectedKey {
-			get { 
-				return _selectedKey;
-			}
-			set { 
-				_selectedKey = value;
-				dialogfieldAddress.Value = value == null ? null : value.AddressAsString;
-			}
 		}
 	}
 }

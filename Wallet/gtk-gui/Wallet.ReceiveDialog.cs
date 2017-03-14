@@ -6,13 +6,13 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 
-		private global::Wallet.DialogField dialogfieldAddress;
+		private global::Gtk.Entry entry1;
 
 		private global::Gtk.HBox hbox2;
 
 		private global::Gtk.Button buttonClose;
 
-		private global::Gtk.Button buttonKeys;
+		private global::Gtk.Button buttonCopy;
 
 		protected virtual void Build()
 		{
@@ -25,11 +25,14 @@ namespace Wallet
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.dialogfieldAddress = new global::Wallet.DialogField();
-			this.dialogfieldAddress.Events = ((global::Gdk.EventMask)(256));
-			this.dialogfieldAddress.Name = "dialogfieldAddress";
-			this.vbox1.Add(this.dialogfieldAddress);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.dialogfieldAddress]));
+			this.entry1 = new global::Gtk.Entry();
+			this.entry1.WidthRequest = 500;
+			this.entry1.CanFocus = true;
+			this.entry1.Name = "entry1";
+			this.entry1.IsEditable = false;
+			this.entry1.InvisibleChar = '●';
+			this.vbox1.Add(this.entry1);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.entry1]));
 			w1.Position = 0;
 			w1.Expand = false;
 			w1.Fill = false;
@@ -50,13 +53,13 @@ namespace Wallet
 			w2.Expand = false;
 			w2.Fill = false;
 			// Container child hbox2.Gtk.Box+BoxChild
-			this.buttonKeys = new global::Gtk.Button();
-			this.buttonKeys.CanFocus = true;
-			this.buttonKeys.Name = "buttonKeys";
-			this.buttonKeys.UseUnderline = true;
-			this.buttonKeys.Label = global::Mono.Unix.Catalog.GetString("Keys");
-			this.hbox2.Add(this.buttonKeys);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonKeys]));
+			this.buttonCopy = new global::Gtk.Button();
+			this.buttonCopy.CanFocus = true;
+			this.buttonCopy.Name = "buttonCopy";
+			this.buttonCopy.UseUnderline = true;
+			this.buttonCopy.Label = global::Mono.Unix.Catalog.GetString("Copy");
+			this.hbox2.Add(this.buttonCopy);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonCopy]));
 			w3.Position = 2;
 			w3.Expand = false;
 			w3.Fill = false;

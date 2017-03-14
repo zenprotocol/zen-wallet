@@ -49,9 +49,9 @@ namespace Wallet.Constants
 		public static String DaysAgo(int days) { 
 			switch (days) {
 			case 0:
-				return "today";
+				return "Today";
 			case 1:
-				return "yesterday";
+				return "Yesterday";
 			}
 			return String.Format ("{0} days ago", days);
 		}

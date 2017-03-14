@@ -16,20 +16,25 @@ namespace Wallet
 
 		public TransactionItem TransactionItem { private get; set; }
 
-		private String GetTimeDescription() {
+		private String GetTimeDescription()
+		{
 			TimeSpan timeSpan = DateTime.Now - TransactionItem.Date;
 
 			int monthsDiff = (DateTime.Now.Month - TransactionItem.Date.Month) + 12 * (DateTime.Now.Year - TransactionItem.Date.Year);
 
-			if (monthsDiff >= 1) {
-				return Constants.Strings.MonthsAgo (monthsDiff); 
-			}
-					
-			if (timeSpan.TotalDays >= 1) {
-				return Constants.Strings.DaysAgo((int)timeSpan.TotalDays);
+			if (monthsDiff >= 1)
+			{
+				return Constants.Strings.MonthsAgo(monthsDiff);
 			}
 
-			return TransactionItem.Date.ToString ();
+			if (timeSpan.TotalDays >= 1)
+			{
+				return Constants.Strings.DaysAgo((int)timeSpan.TotalDays);
+			}
+			else
+			{
+				return TransactionItem.Date.ToString("H:mm");
+			}
 		}
 
 		private String GetDescrption() {
