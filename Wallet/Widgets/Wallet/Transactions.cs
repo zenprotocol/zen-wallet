@@ -48,7 +48,6 @@ namespace Wallet
 
 			list.RulesHint = true; //alternating colors
 			list.Selection.Mode = SelectionMode.Single;
-			list.HoverSelection = true;
 			list.Selection.Changed += OnSelectionChanged;
 			list.BorderWidth = 0;
 			list.HeadersVisible = false;

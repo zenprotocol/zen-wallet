@@ -1453,7 +1453,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.ReceiveDialog" design-size="366 300">
+  <widget class="Gtk.Bin" id="Wallet.ReceiveDialog" design-size="600 300">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -1461,9 +1461,12 @@
         <property name="MemberName" />
         <property name="Spacing">6</property>
         <child>
-          <widget class="Wallet.DialogField" id="dialogfieldAddress">
+          <widget class="Gtk.Entry" id="entry1">
             <property name="MemberName" />
-            <property name="Events">ButtonPressMask</property>
+            <property name="WidthRequest">500</property>
+            <property name="CanFocus">True</property>
+            <property name="IsEditable">False</property>
+            <property name="InvisibleChar">●</property>
           </widget>
           <packing>
             <property name="Position">0</property>
@@ -1496,11 +1499,11 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.Button" id="buttonKeys">
+              <widget class="Gtk.Button" id="buttonCopy">
                 <property name="MemberName" />
                 <property name="CanFocus">True</property>
                 <property name="Type">TextOnly</property>
-                <property name="Label" translatable="yes">Keys</property>
+                <property name="Label" translatable="yes">Copy</property>
                 <property name="UseUnderline">True</property>
               </widget>
               <packing>

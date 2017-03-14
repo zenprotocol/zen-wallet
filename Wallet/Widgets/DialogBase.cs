@@ -16,11 +16,13 @@ namespace Wallet
 		}
 	
 		public void ShowDialog(/*Window parent*/) {
-			dialog = new Dialog (null, parent, DialogFlags.Modal | DialogFlags.DestroyWithParent);
-			dialog.Decorated = false;
-			dialog.Modal = true;
-			Gdk.GC gc = parent.Style.TextGC(StateType.Normal);
-			gc.RgbFgColor = Constants.Colors.Text.Gdk;
+			dialog = new Dialog (null, parent, DialogFlags.DestroyWithParent);
+			dialog.Decorated = true;
+
+			dialog.AllowGrow = false;
+			dialog.AllowShrink = false;
+			dialog.HasSeparator = false;
+			dialog.Resizable = false;
 
 			dialog.ModifyBg (Gtk.StateType.Normal, Constants.Colors.DialogBackground.Gdk);
 			dialog.VBox.PackStart (this, false, false, 0);
@@ -89,7 +91,8 @@ namespace Wallet
 
 			ShowAll ();
 
-			dialog.Run ();
+		 	dialog.Run ();
+			dialog.Destroy();
 		}
 
 		protected void CloseDialog() {

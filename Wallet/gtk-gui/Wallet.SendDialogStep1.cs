@@ -28,6 +28,7 @@ namespace Wallet
 			this.Name = "Wallet.SendDialogStep1";
 			// Container child Wallet.SendDialogStep1.Gtk.Container+ContainerChild
 			this.vbox2 = new global::Gtk.VBox();
+			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
 			this.dialogfieldTo = new global::Wallet.DialogField();
