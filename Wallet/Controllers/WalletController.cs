@@ -19,10 +19,10 @@ namespace Wallet
 			set
 			{
 				_ITransactionsView = value;
-
-				Apply(App.Instance.Wallet.TxDeltaList);
+				_TxDeltas = App.Instance.Wallet.TxDeltaList;
+				Apply();
 				App.Instance.Wallet.OnReset += delegate { value.Clear(); };
-				App.Instance.Wallet.OnItems += a => { Apply(a); };
+				App.Instance.Wallet.OnItems += a => { _TxDeltas = a; Apply(); };
 			}
 		}
 
@@ -47,51 +47,45 @@ namespace Wallet
 				AssetsMetadata assetsMetadata = App.Instance.Wallet.AssetsMetadata;
 				AssetType = assetsMetadata[value];
 
-				UpdateActionBar();
-
 				if (_ITransactionsView != null)
 				{
 					_ITransactionsView.Clear();
-					Apply(_TxDeltas);
+					Apply();
 				}
 			}
 		}
 
 		public AssetType AssetType { get; private set; }
 
-		private void Apply(TxDeltaItemsEventArgs txDeltas)
+		void Apply()
 		{
-			_TxDeltas = txDeltas;
 			_AssetDeltas.Clear();
 
 			Gtk.Application.Invoke(delegate
 			{
-				_TxDeltas.ForEach(u => u.AssetDeltas.ToList().ForEach(b => {
-					if (b.Key.SequenceEqual(_Asset))
-					{
-						if (!_AssetDeltas.ContainsKey(b.Key))
-							_AssetDeltas[b.Key] = 0;
+				_TxDeltas.ForEach(u => u.AssetDeltas.Where(b => b.Key.SequenceEqual(_Asset)).ToList().ForEach(b => {
+					if (!_AssetDeltas.ContainsKey(b.Key))
+						_AssetDeltas[b.Key] = 0;
 
-						_AssetDeltas[b.Key] += b.Value;
+					_AssetDeltas[b.Key] += b.Value;
 
-						UpdateActionBar();
-
-						_ITransactionsView.AddTransactionItem(new TransactionItem(
-							Math.Abs(b.Value),
-							b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-							App.Instance.Wallet.AssetsMetadata[b.Key],
-							u.Time,
-							Guid.NewGuid().ToString("N"),
-							BitConverter.ToString(u.TxHash),
-							0,
-							u.TxState)
-						 );
-					}
+					_ITransactionsView.AddTransactionItem(new TransactionItem(
+						Math.Abs(b.Value),
+						b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+						App.Instance.Wallet.AssetsMetadata[b.Key],
+						u.Time,
+						Guid.NewGuid().ToString("N"),
+						BitConverter.ToString(u.TxHash),
+						0,
+						u.TxState)
+					 );
 				}));
+
+				UpdateActionBar();
 			});
 		}
 
-		private void UpdateActionBar()
+		void UpdateActionBar()
 		{
 			bool hidden = AssetType is AssetTypeAll;
 
