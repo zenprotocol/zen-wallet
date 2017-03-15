@@ -9,6 +9,7 @@ namespace Wallet
 	public interface ILogView {
 		List<LogEntryItem> LogEntryList { set; }
 		void AddLogEntryItem (LogEntryItem logEntryItem);
+		void Totals(long sent, long recieved, long total);
 		void Clear();
 	}
 
@@ -32,7 +33,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			BalancesController.Instance.SetLogView(this);
+			BalancesController.Instance.LogView = this;
 
 			initList (listHeaders, FactorStore (new LogHeaderRow (0, Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listSummary, logSummaryStore);
@@ -139,19 +140,20 @@ namespace Wallet
 
 		public void AddLogEntryItem (LogEntryItem logEntryItem) {			
 			logEntryStore.AppendValues(new LogEntryRow(logEntryItem));
-			AddToTotals (logEntryItem);
 		}
 
-		private void AddToTotals(LogEntryItem logEntryItem) {
+		public void Totals(long sent, long recieved, long total)
+		{
 			TreeIter storeIter;
-			logSummaryStore.GetIterFirst (out storeIter);
+			logSummaryStore.GetIterFirst(out storeIter);
 
-			LogSummaryRow logSummaryRow = (LogSummaryRow) logSummaryStore.GetValue (storeIter, 0);
+			var logSummaryRow = (LogSummaryRow)logSummaryStore.GetValue(storeIter, 0);
 
-			logSummaryRow[logEntryItem.Direction == DirectionEnum.Recieved ? 1 : 0] += logEntryItem.Amount;
-			logSummaryRow[2] += (logEntryItem.Direction == DirectionEnum.Recieved ? 1 : -1) * logEntryItem.Amount;
+			logSummaryRow[0] = sent;
+			logSummaryRow[1] = recieved;
+			logSummaryRow[2] = total;
 
-			logSummaryStore.SetValue (storeIter, 0, logSummaryRow);
+			logSummaryStore.SetValue(storeIter, 0, logSummaryRow);
 		}
 	}
 }
