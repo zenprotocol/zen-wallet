@@ -14,6 +14,12 @@ namespace BlockChain
 {
 	public class BlockChain : ResourceOwner
 	{
+#if TEST
+		const int COINBASE_MATURITY = 0;
+#else
+		const int COINBASE_MATURITY = 100;
+#endif
+
 		readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
 		readonly DBContext _DBContext;
 
@@ -190,9 +196,11 @@ namespace BlockChain
 							return TxResultEnum.Invalid;
 					}
 
-
-					//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
-
+					if (!IsCoinbaseTxsValid(dbTx, ptx))
+					{
+						BlockChainTrace.Information("referenced coinbase immature", tx);
+						return TxResultEnum.Invalid;
+					}
 
 					byte[] contractHash;
 					switch (IsContractGeneratedTx(ptx, out contractHash))
@@ -233,6 +241,25 @@ namespace BlockChain
 				}
 				return TxResultEnum.Accepted;
 			}
+		}
+
+		bool IsCoinbaseTxsValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
+		{
+			var currentHeight = Tip == null ? 0 : Tip.Value.header.blockNumber;
+
+			foreach (var refTx in ptx.pInputs.Select(t => t.Item1.txHash))
+			{
+				Types.BlockHeader refTxBk;
+				if (BlockStore.IsCoinbaseTx(dbTx, refTx, out refTxBk))
+				{
+					if (refTxBk.blockNumber - currentHeight < COINBASE_MATURITY)
+					{
+						return false;
+					}
+				}
+			}
+
+			return true;
 		}
 
 		/// <summary>

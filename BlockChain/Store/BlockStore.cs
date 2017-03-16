@@ -8,8 +8,6 @@ using BlockChain.Data;
 
 namespace BlockChain.Store
 {
-	
-
 	public enum LocationEnum
 	{
 		Genesis = 1,
@@ -27,6 +25,8 @@ namespace BlockChain.Store
 		private const string BLOCK_TRANSACTIONS = "bk-transactions";
 		private const string TRANSACTIONS = "transactions";
 		private const string BLOCK_UNDO = "block_undo";
+		private const string COINBASETX_BLOCK = "coinbasetx-bk";
+
 		public ConsensusTypeStore<Types.Transaction> TxStore { get; private set; }
 		public ConsensusTypeStore<BlockUndoData> BlockUndo { get; private set; }
 
@@ -64,6 +64,7 @@ namespace BlockChain.Store
 
 			//transactions
 			var transactionsSet = new HashSet<byte[]>();
+			var isFirstTx = true;
 
 			foreach (var tx in block.Value.transactions)
 			{
@@ -74,7 +75,12 @@ namespace BlockChain.Store
 				if (!TxStore.ContainsKey(transactionContext, txHash))
 				{
 					TxStore.Put(transactionContext, txHash, tx);
-					//transactionContext.Transaction.Insert<byte[], double>(TX_BLOCKNUMBER, block.Key, totalWork);
+
+					if (isFirstTx)
+					{
+						transactionContext.Transaction.Insert<byte[], byte[]>(COINBASETX_BLOCK, txHash, block.Key);
+						isFirstTx = false;
+					}
 				}
 			}
 
@@ -85,7 +91,15 @@ namespace BlockChain.Store
 				0,
 				false
 			);
+		}
 
+		public bool IsCoinbaseTx(TransactionContext transactionContext, byte[] txHash, out Types.BlockHeader blockHeader)
+		{
+			var record = transactionContext.Transaction.Select<byte[], byte[]>(COINBASETX_BLOCK, txHash);
+
+			blockHeader = record.Exists ? Get(transactionContext, record.Value).Value : null;
+
+			return record.Exists;
 		}
 
 		public void SetUndoData(
