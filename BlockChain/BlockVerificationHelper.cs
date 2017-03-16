@@ -87,6 +87,13 @@ namespace BlockChain
 				return;
 			}
 
+			if (!IsValidTime())
+			{
+				BlockChainTrace.Information("invalid time", bkHash);
+				Result = BkResultEnum.Rejected;
+				return;
+			}
+
 			//TODO:
 			/*
 			3. Transaction list must be non - empty
@@ -363,9 +370,11 @@ namespace BlockChain
 			return true;
 		}
 
-		bool IsCoinbase(Types.Transaction tx)
+		bool IsValidTime()
 		{
-			return false;
+			var ts = new DateTime(_Bk.header.timestamp) - DateTime.Now;
+
+			return ts.Hours < 2;
 		}
 
 		bool IsGenesis()

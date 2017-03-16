@@ -52,6 +52,7 @@
     <Compile Include="BlockExtensions.cs" />
     <Compile Include="TransactionExtensions.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="BlockVerificationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
