@@ -23,12 +23,15 @@ namespace BlockChain
 				new byte[] { },
 				new byte[] { },
 				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Now.ToFileTimeUtc(),
+				DateTime.Now.Ticks,
 				0,
 				nonce
 			);
 
-			return new Types.Block(header, ListModule.OfSeq<Types.Transaction>(new List<Types.Transaction>()));
+			var txs = new List<Types.Transaction>();
+			txs.Add(GetTx());
+
+			return new Types.Block(header, ListModule.OfSeq(txs));
 		}
 
 		public static Types.Transaction GetTx()

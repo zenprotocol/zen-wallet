@@ -620,7 +620,7 @@ namespace BlockChain
 				new byte[] { },
 				new byte[] { },
 				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				_date.ToBinary(),
+				_date.Ticks,
 				0,
 				nonce
 			);
