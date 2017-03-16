@@ -80,6 +80,13 @@ namespace BlockChain
 				}
 			}
 
+			if (bk.transactions.Count() == 0)
+			{
+				BlockChainTrace.Information("empty tx list", bkHash);
+				Result = BkResultEnum.Rejected;
+				return;
+			}
+
 			//TODO:
 			/*
 			3. Transaction list must be non - empty
