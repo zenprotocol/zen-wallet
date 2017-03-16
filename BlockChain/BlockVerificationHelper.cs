@@ -281,7 +281,7 @@ namespace BlockChain
 
 						byte[] contractKey = null;
 
-						if (contractLock.Item.lockData[0].Length > 0)
+						if (contractLock.Item.lockData[0] != null && contractLock.Item.lockData[0].Length > 0)
 						{
 							contractKey = contractLock.Item.lockData[0]; // output-lock-level indicated contract
 						}
