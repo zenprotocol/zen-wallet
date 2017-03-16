@@ -152,7 +152,6 @@ namespace BlockChain
 		/// <summary>
 		/// Handles a new transaction from network or wallet. 
 		/// </summary>
-		/// <returns><c>true</c>, if new transaction was acceped, <c>false</c> rejected.</returns>
 		public TxResultEnum HandleTransaction(Types.Transaction tx)
 		{
 			using (var dbTx = _DBContext.GetTransactionContext())
@@ -193,8 +192,6 @@ namespace BlockChain
 
 
 					//TODO: 5. For each input, if the referenced transaction is coinbase, reject if it has fewer than COINBASE_MATURITY confirmations.
-					//TODO: 7. Apply fee rules. If fails, reject
-					//TODO: 8. Validate each input. If fails, reject
 
 
 					byte[] contractHash;
@@ -417,7 +414,6 @@ namespace BlockChain
 
 		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx)
 		{
-			//For each input, if the referenced output transaction is coinbase (i.e.only 1 input, with hash = 0, n = -1), it must have at least COINBASE_MATURITY (100) confirmations; else reject.
 			//Verify crypto signatures for each input; reject if any are bad
 
 
@@ -534,10 +530,14 @@ namespace BlockChain
 		}
 
 		//TODO: should asset that the block came from main?
+
 		public Types.Block GetBlock(byte[] key)
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
+				if (BlockStore.GetLocation(context, key) == LocationEnum.Main)
+					return null;
+
 				var bk = BlockStore.GetBlock(context, key);
 
 				return bk == null ? null : bk.Value;
@@ -574,8 +574,9 @@ namespace BlockChain
 			}
 
 			uint version = 1;
-			string date = "2000-02-02";
-
+			var date = "2000-02-02";
+			var _date = DateTime.Parse(date);
+			_date = _date.AddDays(1);
 		//	Merkle.Hashable x = new Merkle.Hashable ();
 		//	x.
 		//	var merkleRoot = Merkle.merkleRoot(Tip.Key,
@@ -587,13 +588,13 @@ namespace BlockChain
 			var blockHeader = new Types.BlockHeader(
 				version,
 				Tip.Key,
-				0,
+				Tip.Value.header.blockNumber + 1,
 				new byte[] { },
 				new byte[] { },
 				new byte[] { },
 				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Parse(date).ToBinary(),
-				1,
+				_date.ToBinary(),
+				0,
 				nonce
 			);
 
