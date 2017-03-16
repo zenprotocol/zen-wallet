@@ -80,10 +80,15 @@ namespace NBitcoin.Protocol.Behaviors
 
 				if (tip != null)
 				{
-					NodeServerTrace.Information("Sending tip: " + System.Convert.ToBase64String(tip.Key));
-					node.SendMessageAsync(_BlockChain.GetBlock(tip.Key));
+					var bk = _BlockChain.GetBlock(tip.Key);
+
+					if (bk != null)
+					{
+						NodeServerTrace.Information("Sending tip: " + System.Convert.ToBase64String(tip.Key));
+						node.SendMessageAsync(bk);
+					}
 				}
-				else 
+				else
 				{
 					NodeServerTrace.Information("No tip to send");
 				}
