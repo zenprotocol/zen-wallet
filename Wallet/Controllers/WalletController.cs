@@ -14,6 +14,11 @@ namespace Wallet
 		TxDeltaItemsEventArgs _TxDeltas;
 		ITransactionsView _ITransactionsView;
 
+		public WalletController()
+		{
+			Asset = Consensus.Tests.zhash;
+		}
+
 		public ITransactionsView TransactionsView
 		{
 			set
@@ -37,7 +42,7 @@ namespace Wallet
 			} 
 		}
 
-		byte[] _Asset = Consensus.Tests.zhash;
+		byte[] _Asset;
 		public byte[] Asset
 		{
 			set
@@ -87,18 +92,18 @@ namespace Wallet
 
 		void UpdateActionBar()
 		{
-			bool hidden = AssetType is AssetTypeAll;
+			//bool hidden = AssetType is AssetTypeAll;
 
 			if (WalletView == null)
 				return;
 			
-			WalletView.ActionBar = !hidden;
+			//WalletView.ActionBar = !hidden;
 
-			if (!hidden)
-			{
+			//if (!hidden)
+			//{
 				ActionBarView.Asset = AssetType;
 				ActionBarView.Total = _AssetDeltas.ContainsKey(_Asset) ? _AssetDeltas[_Asset] : 0;
-			}
+			//}
 		}
 	}
 }

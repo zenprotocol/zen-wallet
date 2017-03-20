@@ -7,7 +7,7 @@ namespace Wallet
 	{
 		private const int DEFAULT_MENU_TOP_IDX = 1;
 
-		private Type DEFAULT_CONTROL = typeof(Log);//Wallet);
+		private Type DEFAULT_CONTROL = typeof(LogLayout);//Wallet);
 
 		private IMainAreaView mainAreaView; 
 
@@ -41,7 +41,7 @@ namespace Wallet
 					mainAreaView.Control = typeof(Contract);
 					break;
 				case "Balance":
-					mainAreaView.Control = typeof(Log);
+					mainAreaView.Control = typeof(LogLayout);
 					break;
 				}
 			}
