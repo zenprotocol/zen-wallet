@@ -26,7 +26,7 @@ namespace Wallet
 			}
 		}
 
-		byte[] _Asset;
+		byte[] _Asset =  Consensus.Tests.zhash;
 		public byte[] Asset
 		{
 			set
