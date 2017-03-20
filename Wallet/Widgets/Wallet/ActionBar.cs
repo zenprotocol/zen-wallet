@@ -56,6 +56,9 @@ namespace Wallet
 
 		public AssetType Asset {
 			set {
+				if (value == null)
+					return;
+				
 				labelCurrency.Text = value.Caption;
 				if (value.Image != null) {
 					image2.Pixbuf = new Gdk.Pixbuf(value.Image);
