@@ -18,7 +18,7 @@ namespace Wallet
 
 		private global::Gtk.Label label7;
 
-		private global::Wallet.Log log1;
+		private global::Wallet.LogLayout loglayout1;
 
 		private global::Gtk.Label label8;
 
@@ -32,7 +32,7 @@ namespace Wallet
 			this.notebook1 = new global::Gtk.Notebook();
 			this.notebook1.CanFocus = true;
 			this.notebook1.Name = "notebook1";
-			this.notebook1.CurrentPage = 0;
+			this.notebook1.CurrentPage = 3;
 			this.notebook1.ShowBorder = false;
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.wallet1 = new global::Wallet.Wallet();
@@ -72,17 +72,17 @@ namespace Wallet
 			this.notebook1.SetTabLabel(this.contract1, this.label7);
 			this.label7.ShowAll();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
-			this.log1 = new global::Wallet.Log();
-			this.log1.Events = ((global::Gdk.EventMask)(256));
-			this.log1.Name = "log1";
-			this.notebook1.Add(this.log1);
-			global::Gtk.Notebook.NotebookChild w4 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.log1]));
+			this.loglayout1 = new global::Wallet.LogLayout();
+			this.loglayout1.Events = ((global::Gdk.EventMask)(256));
+			this.loglayout1.Name = "loglayout1";
+			this.notebook1.Add(this.loglayout1);
+			global::Gtk.Notebook.NotebookChild w4 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.loglayout1]));
 			w4.Position = 3;
 			// Notebook tab
 			this.label8 = new global::Gtk.Label();
 			this.label8.Name = "label8";
 			this.label8.LabelProp = global::Mono.Unix.Catalog.GetString("page3");
-			this.notebook1.SetTabLabel(this.log1, this.label8);
+			this.notebook1.SetTabLabel(this.loglayout1, this.label8);
 			this.label8.ShowAll();
 			this.Add(this.notebook1);
 			if ((this.Child != null))
