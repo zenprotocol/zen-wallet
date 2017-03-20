@@ -37,12 +37,12 @@ namespace Wallet
 
 			initList (listHeaders, FactorStore (new LogHeaderRow (0, Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listSummary, logSummaryStore);
-			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.Sent, Strings.Received, Strings.Balance)));
+			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.TotalSent, Strings.TotalReceived, Strings.TotalBalance)));
 			initList (listTransactions, logEntryStore);
 
-			ExposeEvent += (object o, ExposeEventArgs args) => {
-				listSummaryHeader.Hide ();
-			};
+			//ExposeEvent += (object o, ExposeEventArgs args) => {
+			//	listSummaryHeader.Hide ();
+			//};
 
 			foreach (Widget w in new Widget[] { eventbox1, eventbox2, eventbox3, eventbox4, eventbox5, eventbox6, eventbox7 }) {
 				w.ModifyBg (Gtk.StateType.Normal, Colors.Base.Gdk);
