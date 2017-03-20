@@ -46,19 +46,6 @@ namespace Wallet.Constants
 	{
 		public static String Received = "Received";
 		public static String Sent = "Sent";
-		public static String DaysAgo(int days) { 
-			switch (days) {
-			case 0:
-				return "Today";
-			case 1:
-				return "Yesterday";
-			}
-			return String.Format ("{0} days ago", days);
-		}
-		public static String MonthsAgo(int months) { 
-			return String.Format ("{0} months ago", months);
-		}
-
 		public static String Date = "Date";
 		public static String Balance = "Balance";
 		public static String TransactionId = "Transaction ID";
