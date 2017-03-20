@@ -6,10 +6,6 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 
-		private global::Gtk.HBox hbox4;
-
-		private global::Gtk.Image imageLogo;
-
 		private global::Wallet.MainMenu MainMenu1;
 
 		private global::Gtk.HBox hbox6;
@@ -28,33 +24,13 @@ namespace Wallet
 			this.vbox1 = new global::Gtk.VBox();
 			this.vbox1.Name = "vbox1";
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.hbox4 = new global::Gtk.HBox();
-			this.hbox4.Name = "hbox4";
-			this.hbox4.Homogeneous = true;
-			this.hbox4.Spacing = 6;
-			// Container child hbox4.Gtk.Box+BoxChild
-			this.imageLogo = new global::Gtk.Image();
-			this.imageLogo.Name = "imageLogo";
-			this.imageLogo.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.logosmall.png");
-			this.hbox4.Add(this.imageLogo);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.imageLogo]));
-			w1.Position = 1;
-			w1.Expand = false;
-			w1.Fill = false;
-			this.vbox1.Add(this.hbox4);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox4]));
-			w2.Position = 0;
-			w2.Expand = false;
-			w2.Fill = false;
-			w2.Padding = ((uint)(15));
-			// Container child vbox1.Gtk.Box+BoxChild
 			this.MainMenu1 = new global::Wallet.MainMenu();
 			this.MainMenu1.Events = ((global::Gdk.EventMask)(256));
 			this.MainMenu1.Name = "MainMenu1";
 			this.vbox1.Add(this.MainMenu1);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.MainMenu1]));
-			w3.Position = 1;
-			w3.Expand = false;
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.MainMenu1]));
+			w1.Position = 0;
+			w1.Expand = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.hbox6 = new global::Gtk.HBox();
 			this.hbox6.Name = "hbox6";
@@ -63,11 +39,11 @@ namespace Wallet
 			this.mainarea1.Events = ((global::Gdk.EventMask)(256));
 			this.mainarea1.Name = "mainarea1";
 			this.hbox6.Add(this.mainarea1);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.mainarea1]));
-			w4.Position = 0;
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.mainarea1]));
+			w2.Position = 0;
 			this.vbox1.Add(this.hbox6);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox6]));
-			w5.Position = 2;
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox6]));
+			w3.Position = 1;
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{
