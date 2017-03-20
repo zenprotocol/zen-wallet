@@ -184,6 +184,7 @@
     <Compile Include="gtk-gui\Wallet.DialogComboField.cs" />
     <Compile Include="Widgets\Log\LogLayout.cs" />
     <Compile Include="gtk-gui\Wallet.LogLayout.cs" />
+    <Compile Include="Extensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
