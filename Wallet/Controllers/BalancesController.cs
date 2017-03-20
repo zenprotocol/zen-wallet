@@ -14,6 +14,11 @@ namespace Wallet
 		TxDeltaItemsEventArgs _TxDeltas;
 		ILogView _ILogView;
 
+		public BalancesController()
+		{
+			Asset = Consensus.Tests.zhash;
+		}
+
 		public ILogView LogView
 		{
 			set
@@ -26,7 +31,7 @@ namespace Wallet
 			}
 		}
 
-		byte[] _Asset =  Consensus.Tests.zhash;
+		byte[] _Asset;
 		public byte[] Asset
 		{
 			set
