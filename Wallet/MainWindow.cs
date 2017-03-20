@@ -4,7 +4,6 @@ using Gtk;
 namespace Wallet
 {
 	public interface MainView {
-		Boolean SideMenuVisible { set; }
 	}
 
 	public partial class MainWindow : Gtk.Window, MainView
@@ -35,15 +34,6 @@ namespace Wallet
 		{
 			a.RetVal = true;
 			App.Instance.Quit();
-		}
-
-		public Boolean SideMenuVisible { 
-			set {
-				Gtk.Container c = (Gtk.Container)Children [0];
-				c = (Gtk.Container)c.Children [2];
-
-				((VerticalMenu)c.Children [0]).Visible = value;
-			}
 		}
 	}
 }

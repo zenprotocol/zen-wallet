@@ -31,8 +31,6 @@ namespace Wallet
 				AddButton(item.Key, item.Value);
 			}
 
-			MainAreaController.Instance.VerticalMenuView = this;
-
 			WidthRequest = 170;
 		}
 			

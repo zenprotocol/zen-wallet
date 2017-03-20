@@ -12,9 +12,7 @@ namespace Wallet
 
 		private global::Wallet.MainMenu MainMenu1;
 
-		private global::Gtk.HBox hbox1;
-
-		private global::Wallet.VerticalMenu VerticalMenu1;
+		private global::Gtk.HBox hbox6;
 
 		private global::Wallet.MainArea mainarea1;
 
@@ -58,26 +56,18 @@ namespace Wallet
 			w3.Position = 1;
 			w3.Expand = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.hbox1 = new global::Gtk.HBox();
-			this.hbox1.Name = "hbox1";
-			// Container child hbox1.Gtk.Box+BoxChild
-			this.VerticalMenu1 = new global::Wallet.VerticalMenu();
-			this.VerticalMenu1.Events = ((global::Gdk.EventMask)(256));
-			this.VerticalMenu1.Name = "VerticalMenu1";
-			this.hbox1.Add(this.VerticalMenu1);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.VerticalMenu1]));
-			w4.Position = 0;
-			w4.Expand = false;
-			// Container child hbox1.Gtk.Box+BoxChild
+			this.hbox6 = new global::Gtk.HBox();
+			this.hbox6.Name = "hbox6";
+			// Container child hbox6.Gtk.Box+BoxChild
 			this.mainarea1 = new global::Wallet.MainArea();
 			this.mainarea1.Events = ((global::Gdk.EventMask)(256));
 			this.mainarea1.Name = "mainarea1";
-			this.hbox1.Add(this.mainarea1);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.mainarea1]));
-			w5.Position = 1;
-			this.vbox1.Add(this.hbox1);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox1]));
-			w6.Position = 2;
+			this.hbox6.Add(this.mainarea1);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.mainarea1]));
+			w4.Position = 0;
+			this.vbox1.Add(this.hbox6);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox6]));
+			w5.Position = 2;
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{
