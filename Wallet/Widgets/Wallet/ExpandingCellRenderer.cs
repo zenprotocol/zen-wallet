@@ -69,7 +69,7 @@ namespace Wallet
 			int TEXT_PADDING = 12;
 			int TEXT_PADDING_LEFT = 70;
 
-			textRenderer.RenderLayoutText (context, TransactionItem.Date.TimeAgo(), 0, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Right, Pango.EllipsizeMode.End);
+			textRenderer.RenderLayoutText (context, TransactionItem.Date.TimeAgo(), 0, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Right, Pango.EllipsizeMode.End, -20);
 			textRenderer.RenderLayoutText (context, GetDescrption(), TEXT_PADDING_LEFT, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 
 			int EXPANTION_SPACE = 50;
