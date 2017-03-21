@@ -16,7 +16,7 @@ namespace Wallet
 			
 		//TODO: Deprecate Cairo usage entirely
 		public Gdk.Rectangle RenderLayoutText (Context cr, String text, int x, int y, int width, int textHeight,
-			Constants.Color color, Pango.Alignment align, Pango.EllipsizeMode ellipse)
+			Constants.Color color, Pango.Alignment align, Pango.EllipsizeMode ellipse, int horisontalOffset = 0)
 		{
 			if (string.IsNullOrEmpty (text)) return new Gdk.Rectangle ();
 
@@ -42,13 +42,14 @@ namespace Wallet
 
 			cr.Rectangle (x, y, width, 155);
 			cr.Clip ();
-			cr.MoveTo (x, y);
+			cr.MoveTo (x + horisontalOffset, y);
 			Pango.CairoHelper.ShowLayout (cr, layout);
 			Pango.Rectangle strong, weak;
 			layout.GetCursorPos (layout.Lines [layout.LineCount-1].StartIndex + 
 				layout.Lines [layout.LineCount-1].Length, 
 				out strong, out weak);
 			cr.ResetClip ();
+
 			return new Gdk.Rectangle (Pango.Units.ToPixels (weak.X) + x,
 				Pango.Units.ToPixels (weak.Y) + y,
 				Pango.Units.ToPixels (weak.Width),
