@@ -12,7 +12,7 @@ namespace Wallet
 		AssetDeltas _AssetDeltasRecieved = new AssetDeltas();
 		AssetDeltas _AssetDeltasTotal = new AssetDeltas();
 		TxDeltaItemsEventArgs _TxDeltas;
-		ILogView _ILogView;
+		ILogView _LogView;
 
 		public BalancesController()
 		{
@@ -23,7 +23,7 @@ namespace Wallet
 		{
 			set
 			{
-				_ILogView = value;
+				_LogView = value;
 				_TxDeltas = App.Instance.Wallet.TxDeltaList;
 				Apply();
 				App.Instance.Wallet.OnReset += delegate { value.Clear(); };
@@ -38,9 +38,9 @@ namespace Wallet
 			{
 				_Asset = value;
 
-				if (_ILogView != null)
+				if (_LogView != null)
 				{
-					_ILogView.Clear();
+					_LogView.Clear();
 					Apply();
 				}
 			}
@@ -58,7 +58,7 @@ namespace Wallet
 				{
 					AddToTotals(b.Key, b.Value);
 
-					_ILogView.AddLogEntryItem(new LogEntryItem(
+					_LogView.AddLogEntryItem(new LogEntryItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					App.Instance.Wallet.AssetsMetadata[b.Key],
@@ -89,14 +89,14 @@ namespace Wallet
 
 		void UpdateTotals()
 		{
-			if (_ILogView == null)
+			if (_LogView == null)
 				return;
 
 			var sent = _AssetDeltasSent.ContainsKey(_Asset) ? _AssetDeltasSent[_Asset] : 0;
 			var recieved = _AssetDeltasRecieved.ContainsKey(_Asset) ? _AssetDeltasRecieved[_Asset] : 0;
 			var total = _AssetDeltasTotal.ContainsKey(_Asset) ? _AssetDeltasTotal[_Asset] : 0;
 
-			_ILogView.Totals(sent, recieved, total);
+			_LogView.Totals(sent, recieved, total);
 		}
 	}
 }

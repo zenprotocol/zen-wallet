@@ -32,7 +32,7 @@ namespace Wallet
 			this.notebook1 = new global::Gtk.Notebook();
 			this.notebook1.CanFocus = true;
 			this.notebook1.Name = "notebook1";
-			this.notebook1.CurrentPage = 3;
+			this.notebook1.CurrentPage = 1;
 			this.notebook1.ShowBorder = false;
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.wallet1 = new global::Wallet.Wallet();
