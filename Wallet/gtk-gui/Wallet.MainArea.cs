@@ -10,6 +10,10 @@ namespace Wallet
 
 		private global::Gtk.Label label6;
 
+		private global::Wallet.WalletLayout walletlayout1;
+
+		private global::Gtk.Label label3;
+
 		private global::Wallet.Portfolio portfolio1;
 
 		private global::Gtk.Label label1;
@@ -46,12 +50,25 @@ namespace Wallet
 			this.notebook1.SetTabLabel(this.wallet1, this.label6);
 			this.label6.ShowAll();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
+			this.walletlayout1 = new global::Wallet.WalletLayout();
+			this.walletlayout1.Events = ((global::Gdk.EventMask)(256));
+			this.walletlayout1.Name = "walletlayout1";
+			this.notebook1.Add(this.walletlayout1);
+			global::Gtk.Notebook.NotebookChild w2 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletlayout1]));
+			w2.Position = 1;
+			// Notebook tab
+			this.label3 = new global::Gtk.Label();
+			this.label3.Name = "label3";
+			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString("page5");
+			this.notebook1.SetTabLabel(this.walletlayout1, this.label3);
+			this.label3.ShowAll();
+			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.portfolio1 = new global::Wallet.Portfolio();
 			this.portfolio1.Events = ((global::Gdk.EventMask)(256));
 			this.portfolio1.Name = "portfolio1";
 			this.notebook1.Add(this.portfolio1);
-			global::Gtk.Notebook.NotebookChild w2 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.portfolio1]));
-			w2.Position = 1;
+			global::Gtk.Notebook.NotebookChild w3 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.portfolio1]));
+			w3.Position = 2;
 			// Notebook tab
 			this.label1 = new global::Gtk.Label();
 			this.label1.Name = "label1";
@@ -63,8 +80,8 @@ namespace Wallet
 			this.contract1.Events = ((global::Gdk.EventMask)(256));
 			this.contract1.Name = "contract1";
 			this.notebook1.Add(this.contract1);
-			global::Gtk.Notebook.NotebookChild w3 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.contract1]));
-			w3.Position = 2;
+			global::Gtk.Notebook.NotebookChild w4 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.contract1]));
+			w4.Position = 3;
 			// Notebook tab
 			this.label7 = new global::Gtk.Label();
 			this.label7.Name = "label7";
@@ -76,8 +93,8 @@ namespace Wallet
 			this.loglayout1.Events = ((global::Gdk.EventMask)(256));
 			this.loglayout1.Name = "loglayout1";
 			this.notebook1.Add(this.loglayout1);
-			global::Gtk.Notebook.NotebookChild w4 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.loglayout1]));
-			w4.Position = 3;
+			global::Gtk.Notebook.NotebookChild w5 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.loglayout1]));
+			w5.Position = 4;
 			// Notebook tab
 			this.label8 = new global::Gtk.Label();
 			this.label8.Name = "label8";

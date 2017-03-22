@@ -66,6 +66,13 @@
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
+    <Reference Include="QRCoder">
+      <HintPath>..\packages\QRCoder.1.2.6\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\packages\QRCoder.1.2.6\lib\net40\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -103,6 +110,8 @@
     <EmbeddedResource Include="Assets\Balance_off.png" />
     <EmbeddedResource Include="Assets\Balance_on.png" />
     <EmbeddedResource Include="Assets\misc\send_dialog.png" />
+    <EmbeddedResource Include="Assets\History_off.png" />
+    <EmbeddedResource Include="Assets\History_on.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gtk-gui\generated.cs" />
@@ -188,6 +197,11 @@
     <Compile Include="Widgets\Portfolio\IPortfolioVIew.cs" />
     <Compile Include="Widgets\Wallet\ExpandingCellRenderer.cs" />
     <Compile Include="Widgets\Portfolio\RowRenderer.cs" />
+    <Compile Include="Wallet\WalletLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletLayout.cs" />
+    <Compile Include="Wallet\WalletReceiveLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletReceiveLayout.cs" />
+    <Compile Include="IControlInit.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -199,15 +213,12 @@
     <Folder Include="Widgets\Log\" />
     <Folder Include="Widgets\Portfolio\" />
     <Folder Include="Widgets\SendDialog\" />
+    <Folder Include="Wallet\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.Testing\Infrastructure.Testing.csproj">
-      <Project>{D3641686-BDB9-4399-8B53-10897DD26337}</Project>
-      <Name>Infrastructure.Testing</Name>
     </ProjectReference>
     <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
       <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
