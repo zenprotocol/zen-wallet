@@ -31,10 +31,13 @@ namespace Wallet
 		public String MainAreaSelected { 
 			set {
 			switch (value) {
+				case "Wallet":
+					mainAreaView.Control = typeof(WalletLayout);
+					break;
 				case "Portfolio":
 					mainAreaView.Control = typeof(Portfolio);
 					break;
-				case "Wallet":
+				case "History":
 					mainAreaView.Control = typeof(Wallet);
 					break;
 				case "Contract":

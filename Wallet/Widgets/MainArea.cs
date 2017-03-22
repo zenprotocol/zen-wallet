@@ -29,7 +29,14 @@ namespace Wallet
 		public Type Control { 
 			set { 
 				for (int i = 0; i < FindChild<Notebook>().Children.Length; i++) {
-					FindChild<Notebook>().GetNthPage (i).Visible = FindChild<Notebook> ().GetNthPage (i).GetType () == value;
+					var ctl = FindChild<Notebook>().GetNthPage(i);
+
+					if (ctl is IControlInit)
+					{
+						((IControlInit)ctl).Init();
+					}
+
+					FindChild<Notebook>().GetNthPage (i).Visible = ctl.GetType () == value;
 				}
 			}
 		}
