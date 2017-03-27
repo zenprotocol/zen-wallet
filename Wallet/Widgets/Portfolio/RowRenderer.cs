@@ -8,20 +8,8 @@ namespace Wallet
 {
 	public class RowRenderer : CellRenderer
 	{
-		static Dictionary<string, Gdk.Pixbuf> _IconsCache = new Dictionary<string, Pixbuf>();
-		static Gdk.Pixbuf GetIcon(string image)
-		{
-			if (!_IconsCache.ContainsKey(image))
-			{
-				_IconsCache[image] = new Pixbuf(image).ScaleSimple(32, 32, InterpType.Hyper);
-			}
-
-			return _IconsCache[image];
-		}
-
 		public byte[] Asset { private get; set; }
 		public long Value { private get; set; }
-
 
 		public override void GetSize (Widget widget, ref Gdk.Rectangle cellArea, out int xOffset, out int yOffset, out int width, out int height)
 		{
@@ -41,7 +29,7 @@ namespace Wallet
 			var rendererHelper = new RendererHelper(gc, window, widget, exposeArea);
 
 			if (asset.Image != null)
-				rendererHelper.Image(GetIcon(asset.Image), 50, 10);
+				rendererHelper.Image(ImagesCache.Instance.GetIcon(asset.Image), 50, 10);
 
 			var textRenderer = new TextRenderer (widget);
 

@@ -61,8 +61,14 @@ namespace Wallet
 				
 				labelCurrency.Text = value.Caption;
 				if (value.Image != null) {
-					image2.Pixbuf = new Gdk.Pixbuf(value.Image);
-					image2.Pixbuf = image2.Pixbuf.ScaleSimple(64, 64, Gdk.InterpType.Hyper);
+					try
+					{
+						image2.Pixbuf = new Gdk.Pixbuf(value.Image);
+						image2.Pixbuf = image2.Pixbuf.ScaleSimple(64, 64, Gdk.InterpType.Hyper);
+					}
+					catch
+					{
+					}
 				}
 				else
 					image2.Pixbuf = null;

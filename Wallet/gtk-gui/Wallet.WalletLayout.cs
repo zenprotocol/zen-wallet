@@ -44,7 +44,11 @@ namespace Wallet
 
 		private global::Wallet.WalletSendLayout walletsendlayout1;
 
-		private global::Gtk.Label label6;
+		private global::Gtk.Label label7;
+
+		private global::Wallet.WalletSendConfirmationLayout walletsendconfirmationlayout1;
+
+		private global::Gtk.Label label9;
 
 		protected virtual void Build()
 		{
@@ -56,7 +60,7 @@ namespace Wallet
 			this.notebook1 = new global::Gtk.Notebook();
 			this.notebook1.CanFocus = true;
 			this.notebook1.Name = "notebook1";
-			this.notebook1.CurrentPage = 2;
+			this.notebook1.CurrentPage = 3;
 			this.notebook1.ShowBorder = false;
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.vbox3 = new global::Gtk.VBox();
@@ -170,6 +174,7 @@ namespace Wallet
 			w13.Position = 0;
 			// Container child vbox3.Gtk.Box+BoxChild
 			this.hbox2 = new global::Gtk.HBox();
+			this.hbox2.Name = "hbox2";
 			this.hbox2.Homogeneous = true;
 			this.hbox2.Spacing = 6;
 			// Container child hbox2.Gtk.Box+BoxChild
@@ -226,11 +231,24 @@ namespace Wallet
 			global::Gtk.Notebook.NotebookChild w19 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletsendlayout1]));
 			w19.Position = 2;
 			// Notebook tab
-			this.label6 = new global::Gtk.Label();
-			this.label6.Name = "label6";
-			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString("page3");
-			this.notebook1.SetTabLabel(this.walletsendlayout1, this.label6);
-			this.label6.ShowAll();
+			this.label7 = new global::Gtk.Label();
+			this.label7.Name = "label7";
+			this.label7.LabelProp = global::Mono.Unix.Catalog.GetString("page3");
+			this.notebook1.SetTabLabel(this.walletsendlayout1, this.label7);
+			this.label7.ShowAll();
+			// Container child notebook1.Gtk.Notebook+NotebookChild
+			this.walletsendconfirmationlayout1 = new global::Wallet.WalletSendConfirmationLayout();
+			this.walletsendconfirmationlayout1.Events = ((global::Gdk.EventMask)(256));
+			this.walletsendconfirmationlayout1.Name = "walletsendconfirmationlayout1";
+			this.notebook1.Add(this.walletsendconfirmationlayout1);
+			global::Gtk.Notebook.NotebookChild w20 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletsendconfirmationlayout1]));
+			w20.Position = 3;
+			// Notebook tab
+			this.label9 = new global::Gtk.Label();
+			this.label9.Name = "label9";
+			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString("page4");
+			this.notebook1.SetTabLabel(this.walletsendconfirmationlayout1, this.label9);
+			this.label9.ShowAll();
 			this.Add(this.notebook1);
 			if ((this.Child != null))
 			{
