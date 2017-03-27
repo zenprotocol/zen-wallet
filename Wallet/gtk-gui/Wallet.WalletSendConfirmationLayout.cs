@@ -14,6 +14,12 @@ namespace Wallet
 
 		private global::Gtk.VBox vboxMainInner;
 
+		private global::Gtk.EventBox eventboxStatus;
+
+		private global::Gtk.HBox hboxStatus;
+
+		private global::Gtk.Label labelStatus;
+
 		private global::Gtk.EventBox eventboxDestination;
 
 		private global::Gtk.VBox vboxDestination;
@@ -28,13 +34,9 @@ namespace Wallet
 
 		private global::Gtk.EventBox eventboxAsset;
 
-		private global::Gtk.VBox vboxDestination1;
-
 		private global::Gtk.HBox hbox3;
 
 		private global::Gtk.Label labelAsset;
-
-		private global::Gtk.HBox hboxAsset;
 
 		private global::Gtk.EventBox eventbox6;
 
@@ -50,13 +52,13 @@ namespace Wallet
 
 		private global::Gtk.Label labelAmount;
 
-		private global::Gtk.SpinButton spinbuttonAmount;
+		private global::Gtk.Label labelAmountValue;
 
 		private global::Gtk.Label labelSelectedAsset1;
 
 		private global::Gtk.HBox hbox4;
 
-		private global::Gtk.Button buttonConfirm;
+		private global::Gtk.Button buttonTransmit;
 
 		protected virtual void Build()
 		{
@@ -102,6 +104,30 @@ namespace Wallet
 			this.vboxMainInner.Spacing = 15;
 			this.vboxMainInner.BorderWidth = ((uint)(40));
 			// Container child vboxMainInner.Gtk.Box+BoxChild
+			this.eventboxStatus = new global::Gtk.EventBox();
+			this.eventboxStatus.Name = "eventboxStatus";
+			// Container child eventboxStatus.Gtk.Container+ContainerChild
+			this.hboxStatus = new global::Gtk.HBox();
+			this.hboxStatus.Name = "hboxStatus";
+			this.hboxStatus.Spacing = 10;
+			this.hboxStatus.BorderWidth = ((uint)(15));
+			// Container child hboxStatus.Gtk.Box+BoxChild
+			this.labelStatus = new global::Gtk.Label();
+			this.labelStatus.Name = "labelStatus";
+			this.labelStatus.LabelProp = global::Mono.Unix.Catalog.GetString("-");
+			this.hboxStatus.Add(this.labelStatus);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hboxStatus[this.labelStatus]));
+			w4.Position = 0;
+			w4.Expand = false;
+			w4.Fill = false;
+			this.eventboxStatus.Add(this.hboxStatus);
+			this.vboxMainInner.Add(this.eventboxStatus);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxStatus]));
+			w6.Position = 0;
+			w6.Expand = false;
+			w6.Fill = false;
+			w6.Padding = ((uint)(5));
+			// Container child vboxMainInner.Gtk.Box+BoxChild
 			this.eventboxDestination = new global::Gtk.EventBox();
 			this.eventboxDestination.Name = "eventboxDestination";
 			// Container child eventboxDestination.Gtk.Container+ContainerChild
@@ -117,16 +143,16 @@ namespace Wallet
 			this.labelDestination.Name = "labelDestination";
 			this.labelDestination.LabelProp = global::Mono.Unix.Catalog.GetString("Destination:");
 			this.hbox2.Add(this.labelDestination);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.labelDestination]));
-			w4.Position = 0;
-			w4.Expand = false;
-			w4.Fill = false;
-			w4.Padding = ((uint)(10));
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.labelDestination]));
+			w7.Position = 0;
+			w7.Expand = false;
+			w7.Fill = false;
+			w7.Padding = ((uint)(10));
 			this.vboxDestination.Add(this.hbox2);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vboxDestination[this.hbox2]));
-			w5.Position = 0;
-			w5.Expand = false;
-			w5.Fill = false;
+			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vboxDestination[this.hbox2]));
+			w8.Position = 0;
+			w8.Expand = false;
+			w8.Fill = false;
 			// Container child vboxDestination.Gtk.Box+BoxChild
 			this.hbox8 = new global::Gtk.HBox();
 			this.hbox8.Name = "hbox8";
@@ -140,29 +166,25 @@ namespace Wallet
 			this.entryDestination.IsEditable = true;
 			this.entryDestination.InvisibleChar = '●';
 			this.hbox8.Add(this.entryDestination);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox8[this.entryDestination]));
-			w6.Position = 0;
-			w6.Padding = ((uint)(10));
+			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.hbox8[this.entryDestination]));
+			w9.Position = 0;
+			w9.Padding = ((uint)(10));
 			this.vboxDestination.Add(this.hbox8);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vboxDestination[this.hbox8]));
-			w7.Position = 1;
-			w7.Expand = false;
-			w7.Fill = false;
+			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.vboxDestination[this.hbox8]));
+			w10.Position = 1;
+			w10.Expand = false;
+			w10.Fill = false;
 			this.eventboxDestination.Add(this.vboxDestination);
 			this.vboxMainInner.Add(this.eventboxDestination);
-			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxDestination]));
-			w9.Position = 0;
-			w9.Expand = false;
-			w9.Fill = false;
-			w9.Padding = ((uint)(5));
+			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxDestination]));
+			w12.Position = 1;
+			w12.Expand = false;
+			w12.Fill = false;
+			w12.Padding = ((uint)(5));
 			// Container child vboxMainInner.Gtk.Box+BoxChild
 			this.eventboxAsset = new global::Gtk.EventBox();
 			this.eventboxAsset.Name = "eventboxAsset";
 			// Container child eventboxAsset.Gtk.Container+ContainerChild
-			this.vboxDestination1 = new global::Gtk.VBox();
-			this.vboxDestination1.Name = "vboxDestination1";
-			this.vboxDestination1.BorderWidth = ((uint)(5));
-			// Container child vboxDestination1.Gtk.Box+BoxChild
 			this.hbox3 = new global::Gtk.HBox();
 			this.hbox3.Name = "hbox3";
 			this.hbox3.BorderWidth = ((uint)(10));
@@ -171,21 +193,12 @@ namespace Wallet
 			this.labelAsset.Name = "labelAsset";
 			this.labelAsset.LabelProp = global::Mono.Unix.Catalog.GetString("Asset:");
 			this.hbox3.Add(this.labelAsset);
-			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.labelAsset]));
-			w10.Position = 0;
-			w10.Expand = false;
-			w10.Fill = false;
-			w10.Padding = ((uint)(10));
-			this.vboxDestination1.Add(this.hbox3);
-			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.vboxDestination1[this.hbox3]));
-			w11.Position = 0;
-			w11.Expand = false;
-			w11.Fill = false;
-			// Container child vboxDestination1.Gtk.Box+BoxChild
-			this.hboxAsset = new global::Gtk.HBox();
-			this.hboxAsset.Name = "hboxAsset";
-			this.hboxAsset.BorderWidth = ((uint)(10));
-			// Container child hboxAsset.Gtk.Box+BoxChild
+			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.labelAsset]));
+			w13.Position = 0;
+			w13.Expand = false;
+			w13.Fill = false;
+			w13.Padding = ((uint)(10));
+			// Container child hbox3.Gtk.Box+BoxChild
 			this.eventbox6 = new global::Gtk.EventBox();
 			this.eventbox6.Name = "eventbox6";
 			this.eventbox6.BorderWidth = ((uint)(10));
@@ -198,36 +211,31 @@ namespace Wallet
 			this.imageAsset.Name = "imageAsset";
 			this.imageAsset.Pixbuf = global::Stetic.IconLoader.LoadIcon(this, "gtk-connect", global::Gtk.IconSize.Menu);
 			this.hbox7.Add(this.imageAsset);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox7[this.imageAsset]));
-			w12.Position = 0;
-			w12.Expand = false;
-			w12.Fill = false;
+			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hbox7[this.imageAsset]));
+			w14.Position = 0;
+			w14.Expand = false;
+			w14.Fill = false;
 			// Container child hbox7.Gtk.Box+BoxChild
 			this.labelSelectedAsset = new global::Gtk.Label();
 			this.labelSelectedAsset.Name = "labelSelectedAsset";
 			this.labelSelectedAsset.LabelProp = global::Mono.Unix.Catalog.GetString("Zen");
 			this.hbox7.Add(this.labelSelectedAsset);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.hbox7[this.labelSelectedAsset]));
-			w13.Position = 1;
-			w13.Expand = false;
-			w13.Fill = false;
-			this.eventbox6.Add(this.hbox7);
-			this.hboxAsset.Add(this.eventbox6);
-			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hboxAsset[this.eventbox6]));
-			w15.Position = 0;
+			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hbox7[this.labelSelectedAsset]));
+			w15.Position = 1;
 			w15.Expand = false;
 			w15.Fill = false;
-			this.vboxDestination1.Add(this.hboxAsset);
-			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vboxDestination1[this.hboxAsset]));
-			w16.Position = 1;
-			w16.Expand = false;
-			w16.Fill = false;
-			this.eventboxAsset.Add(this.vboxDestination1);
+			this.eventbox6.Add(this.hbox7);
+			this.hbox3.Add(this.eventbox6);
+			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.eventbox6]));
+			w17.Position = 1;
+			w17.Expand = false;
+			w17.Fill = false;
+			this.eventboxAsset.Add(this.hbox3);
 			this.vboxMainInner.Add(this.eventboxAsset);
-			global::Gtk.Box.BoxChild w18 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxAsset]));
-			w18.Position = 1;
-			w18.Expand = false;
-			w18.Fill = false;
+			global::Gtk.Box.BoxChild w19 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxAsset]));
+			w19.Position = 2;
+			w19.Expand = false;
+			w19.Fill = false;
 			// Container child vboxMainInner.Gtk.Box+BoxChild
 			this.eventboxAmount = new global::Gtk.EventBox();
 			this.eventboxAmount.Name = "eventboxAmount";
@@ -241,72 +249,64 @@ namespace Wallet
 			this.labelAmount.Name = "labelAmount";
 			this.labelAmount.LabelProp = global::Mono.Unix.Catalog.GetString("Amount to send:");
 			this.hbox6.Add(this.labelAmount);
-			global::Gtk.Box.BoxChild w19 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.labelAmount]));
-			w19.Position = 0;
-			w19.Expand = false;
-			w19.Fill = false;
-			w19.Padding = ((uint)(10));
-			// Container child hbox6.Gtk.Box+BoxChild
-			this.spinbuttonAmount = new global::Gtk.SpinButton(0, 100, 1);
-			this.spinbuttonAmount.WidthRequest = 110;
-			this.spinbuttonAmount.Sensitive = false;
-			this.spinbuttonAmount.CanFocus = true;
-			this.spinbuttonAmount.Name = "spinbuttonAmount";
-			this.spinbuttonAmount.Adjustment.PageIncrement = 10;
-			this.spinbuttonAmount.ClimbRate = 1;
-			this.spinbuttonAmount.Digits = ((uint)(3));
-			this.spinbuttonAmount.Numeric = true;
-			this.spinbuttonAmount.SnapToTicks = true;
-			this.hbox6.Add(this.spinbuttonAmount);
-			global::Gtk.Box.BoxChild w20 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.spinbuttonAmount]));
-			w20.Position = 1;
+			global::Gtk.Box.BoxChild w20 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.labelAmount]));
+			w20.Position = 0;
 			w20.Expand = false;
 			w20.Fill = false;
+			w20.Padding = ((uint)(10));
+			// Container child hbox6.Gtk.Box+BoxChild
+			this.labelAmountValue = new global::Gtk.Label();
+			this.labelAmountValue.Name = "labelAmountValue";
+			this.hbox6.Add(this.labelAmountValue);
+			global::Gtk.Box.BoxChild w21 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.labelAmountValue]));
+			w21.Position = 1;
+			w21.Expand = false;
+			w21.Fill = false;
 			// Container child hbox6.Gtk.Box+BoxChild
 			this.labelSelectedAsset1 = new global::Gtk.Label();
 			this.labelSelectedAsset1.Name = "labelSelectedAsset1";
 			this.labelSelectedAsset1.LabelProp = global::Mono.Unix.Catalog.GetString("Zen");
 			this.hbox6.Add(this.labelSelectedAsset1);
-			global::Gtk.Box.BoxChild w21 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.labelSelectedAsset1]));
-			w21.Position = 2;
-			w21.Expand = false;
-			w21.Fill = false;
+			global::Gtk.Box.BoxChild w22 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.labelSelectedAsset1]));
+			w22.Position = 2;
+			w22.Expand = false;
+			w22.Fill = false;
 			this.eventboxAmount.Add(this.hbox6);
 			this.vboxMainInner.Add(this.eventboxAmount);
-			global::Gtk.Box.BoxChild w23 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxAmount]));
-			w23.Position = 2;
-			w23.Expand = false;
-			w23.Fill = false;
-			w23.Padding = ((uint)(5));
+			global::Gtk.Box.BoxChild w24 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxAmount]));
+			w24.Position = 3;
+			w24.Expand = false;
+			w24.Fill = false;
+			w24.Padding = ((uint)(5));
 			// Container child vboxMainInner.Gtk.Box+BoxChild
 			this.hbox4 = new global::Gtk.HBox();
 			this.hbox4.Name = "hbox4";
 			this.hbox4.Homogeneous = true;
 			this.hbox4.Spacing = 6;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.buttonConfirm = new global::Gtk.Button();
-			this.buttonConfirm.WidthRequest = 140;
-			this.buttonConfirm.HeightRequest = 50;
-			this.buttonConfirm.CanFocus = true;
-			this.buttonConfirm.Name = "buttonConfirm";
-			this.buttonConfirm.UseUnderline = true;
-			this.buttonConfirm.Label = global::Mono.Unix.Catalog.GetString("Confirm");
-			this.hbox4.Add(this.buttonConfirm);
-			global::Gtk.Box.BoxChild w24 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.buttonConfirm]));
-			w24.Position = 1;
-			w24.Expand = false;
-			w24.Fill = false;
-			this.vboxMainInner.Add(this.hbox4);
-			global::Gtk.Box.BoxChild w25 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.hbox4]));
-			w25.PackType = ((global::Gtk.PackType)(1));
-			w25.Position = 3;
+			this.buttonTransmit = new global::Gtk.Button();
+			this.buttonTransmit.WidthRequest = 140;
+			this.buttonTransmit.HeightRequest = 50;
+			this.buttonTransmit.CanFocus = true;
+			this.buttonTransmit.Name = "buttonTransmit";
+			this.buttonTransmit.UseUnderline = true;
+			this.buttonTransmit.Label = global::Mono.Unix.Catalog.GetString("Transmit");
+			this.hbox4.Add(this.buttonTransmit);
+			global::Gtk.Box.BoxChild w25 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.buttonTransmit]));
+			w25.Position = 1;
 			w25.Expand = false;
 			w25.Fill = false;
-			this.vbox3.Add(this.vboxMainInner);
-			global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.vboxMainInner]));
-			w26.Position = 1;
+			this.vboxMainInner.Add(this.hbox4);
+			global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.hbox4]));
+			w26.PackType = ((global::Gtk.PackType)(1));
+			w26.Position = 4;
 			w26.Expand = false;
 			w26.Fill = false;
+			this.vbox3.Add(this.vboxMainInner);
+			global::Gtk.Box.BoxChild w27 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.vboxMainInner]));
+			w27.Position = 1;
+			w27.Expand = false;
+			w27.Fill = false;
 			this.Add(this.vbox3);
 			if ((this.Child != null))
 			{
