@@ -13,20 +13,20 @@ namespace Wallet
 		{
 			this.Build();
 
-			eventbox1.ModifyBg(Gtk.StateType.Normal, Constants.Colors.DialogBackground.Gdk);
+			eventbox1.ModifyBg(StateType.Normal, Constants.Colors.DialogBackground.Gdk);
 
 			Apply((Label label) =>
 			{
-				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.SubText.Gdk);
+				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarBig);
 			}, label1);
 
-			entryAddress.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-			entryAddress.ModifyFont(Constants.Fonts.ActionBarBig);
+			entryAddress.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
+			entryAddress.ModifyFont(Constants.Fonts.ActionBarSmall);
 
 			var key = App.Instance.Wallet.GetUnusedKey().AddressAsString;
 
-			Gtk.Clipboard clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
+			Clipboard clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 			buttonCopy.Clicked += delegate
 			{
 				clipboard.Text = key;
@@ -39,7 +39,7 @@ namespace Wallet
 			entryAddress.FocusGrabbed += (sender, e) => {
 				new System.Threading.Thread(() =>
 				{
-					Gtk.Application.Invoke(delegate
+					Application.Invoke(delegate
 					{
 						System.Threading.Thread.Sleep(150);
 						entryAddress.SelectRegion(0, -1);

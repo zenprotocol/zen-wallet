@@ -204,6 +204,9 @@
     <Compile Include="IControlInit.cs" />
     <Compile Include="Wallet\WalletSendLayout.cs" />
     <Compile Include="gtk-gui\Wallet.WalletSendLayout.cs" />
+    <Compile Include="Wallet\WalletSendConfirmationLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletSendConfirmationLayout.cs" />
+    <Compile Include="ImagesCache.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
