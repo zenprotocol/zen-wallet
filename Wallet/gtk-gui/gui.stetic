@@ -2685,6 +2685,18 @@
                             <property name="Padding">10</property>
                           </packing>
                         </child>
+                        <child>
+                          <widget class="Gtk.Label" id="labelDestinationError">
+                            <property name="MemberName" />
+                          </widget>
+                          <packing>
+                            <property name="PackType">End</property>
+                            <property name="Position">1</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
                         <property name="Position">0</property>
@@ -2894,22 +2906,17 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="Gtk.SpinButton" id="spinbuttonAmount">
+                          <widget class="Gtk.Entry" id="entryAmount">
                             <property name="MemberName" />
-                            <property name="WidthRequest">110</property>
                             <property name="CanFocus">True</property>
-                            <property name="Upper">100</property>
-                            <property name="PageIncrement">10</property>
-                            <property name="StepIncrement">1</property>
-                            <property name="ClimbRate">1</property>
-                            <property name="Digits">3</property>
-                            <property name="Numeric">True</property>
+                            <property name="IsEditable">True</property>
+                            <property name="InvisibleChar">●</property>
+                            <property name="Xalign">1</property>
                           </widget>
                           <packing>
                             <property name="Position">1</property>
-                            <property name="AutoSize">True</property>
+                            <property name="AutoSize">False</property>
                             <property name="Expand">False</property>
-                            <property name="Fill">False</property>
                           </packing>
                         </child>
                         <child>
@@ -2919,6 +2926,18 @@
                           </widget>
                           <packing>
                             <property name="Position">2</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Label" id="labelAmountError">
+                            <property name="MemberName" />
+                          </widget>
+                          <packing>
+                            <property name="PackType">End</property>
+                            <property name="Position">3</property>
                             <property name="AutoSize">True</property>
                             <property name="Expand">False</property>
                             <property name="Fill">False</property>
