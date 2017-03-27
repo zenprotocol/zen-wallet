@@ -24,7 +24,7 @@ namespace Wallet.Constants
 		public static Color ButtonSelected = new Color(0x028,0x02f,0x037);
 		public static Color Textbox = new Color(0x034,0x047,0x05a);
 		public static Color DialogBackground = new Color(0x022,0x02c,0x039);
-
+		public static Color Error = new Color(0x0ff, 0x00, 0x00);
 	}
 
 	public class Fonts

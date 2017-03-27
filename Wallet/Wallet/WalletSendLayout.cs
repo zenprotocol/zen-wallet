@@ -19,9 +19,17 @@ namespace Wallet
 			get; set;
 		}
 	
-		public string Destination
+		public byte[] Destination
 		{
 			get; set;
+		}
+
+		public bool Valid
+		{
+			get
+			{
+				return Amount > 0 && Destination != null && Asset != null;
+			}
 		}
 	}
 
@@ -34,15 +42,17 @@ namespace Wallet
 		}
 
 		AssetDeltas _AssetDeltas = null;
+		long _AssetBalance = 0;
 
 		public WalletSendLayout()
 		{
 			this.Build();
 			SendInfo = new SendInfo();
 
-			buttonPaste.Clicked += delegate {
-				Clipboard clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
+			buttonSignAndReview.Sensitive = false;
 
+			buttonPaste.Clicked += delegate {
+				var clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 				var target = Gdk.Atom.Intern("text/plain", true);
 				var selection = clipboard.WaitForContents(target);
 
@@ -54,16 +64,59 @@ namespace Wallet
 
 			entryDestination.Changed += (sender, e) =>
 			{
-				SendInfo.Destination = ((Entry)sender).Text;
+				try
+				{
+					SendInfo.Destination = core.Data.Key.FromBase64String(((Entry)sender).Text);
+					labelDestinationError.Text = "";
+				}
+				catch
+				{
+					SendInfo.Destination = null;
+					labelDestinationError.Text = "Invalid address";
+				}
+
+				buttonSignAndReview.Sensitive = SendInfo.Valid;
 			};
 
-			spinbuttonAmount.Xalign = 1;
-			spinbuttonAmount.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
-			spinbuttonAmount.ModifyFont(Constants.Fonts.ActionBarSmall);
-			spinbuttonAmount.ValueChanged += (sender, e) =>
+			entryAmount.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
+			entryAmount.ModifyFont(Constants.Fonts.ActionBarSmall);
+			entryAmount.Changed += (sender, e) =>
 			{
-				SendInfo.Amount = ((SpinButton)sender).Value;
+				var text = ((Entry)sender).Text;
+
+				if (text.Trim().Length == 0)
+				{
+					SendInfo.Amount = 0;
+					labelAmountError.Text = "";
+				}
+				else
+				{
+					try
+					{
+						SendInfo.Amount = ulong.Parse(text);
+						labelAmountError.Text = "";
+					}
+					catch
+					{
+						SendInfo.Amount = 0;
+						labelAmountError.Text = "Invalid amount";
+					}
+
+					if (SendInfo.Amount > _AssetBalance)
+					{
+						SendInfo.Amount = 0;
+						labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+					}
+				}
+
+				buttonSignAndReview.Sensitive = SendInfo.Valid;
 			};
+
+			Apply((Label label) =>
+			{
+				label.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
+				label.ModifyFont(Constants.Fonts.ActionBarSmall);
+			}, labelDestinationError, labelAmountError);
 
 			Apply((EventBox eventbox) =>
 			{
@@ -158,8 +211,8 @@ namespace Wallet
 
 		void UpdateBalance()
 		{
-			var balance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : _AssetDeltas[SendInfo.Asset];		
-			labelBalanceValue.Text = $"{balance} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
+			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : _AssetDeltas[SendInfo.Asset];		
+			labelBalanceValue.Text = $"{_AssetBalance} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
 		}
 	}
 }

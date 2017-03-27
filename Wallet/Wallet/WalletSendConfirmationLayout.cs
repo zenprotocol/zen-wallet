@@ -50,7 +50,7 @@ namespace Wallet
 				labelSelectedAsset.Text = labelSelectedAsset1.Text = assetType.Caption;
 
 				spinbuttonAmount.Value = WalletSendLayout.SendInfo.Amount;
-				entryDestination.Text = WalletSendLayout.SendInfo.Destination;
+				entryDestination.Text = BitConverter.ToString(WalletSendLayout.SendInfo.Destination);
 			};
 
 			buttonConfirm.Clicked += delegate {
