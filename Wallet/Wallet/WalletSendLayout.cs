@@ -6,27 +6,61 @@ using QRCoder;
 
 namespace Wallet
 {
+	public class SendInfo
+	{
+		public byte[] Asset
+		{
+			get; set;
+		}
+
+		public double Amount
+		{
+			get; set;
+		}
+	
+		public string Destination
+		{
+			get; set;
+		}
+	}
+
 	[System.ComponentModel.ToolboxItem(true)]
 	public partial class WalletSendLayout : WidgetBase
 	{
-		static Dictionary<string, Gdk.Pixbuf> _IconsCache = new Dictionary<string, Pixbuf>();
-		static Gdk.Pixbuf GetIcon(string image)
+		public static SendInfo SendInfo
 		{
-			if (!_IconsCache.ContainsKey(image))
-			{
-				_IconsCache[image] = new Pixbuf(image).ScaleSimple(32, 32, InterpType.Hyper);
-			}
-
-			return _IconsCache[image];
+			get; private set;
 		}
 
 		public WalletSendLayout()
 		{
 			this.Build();
+			SendInfo = new SendInfo();
+
+			buttonPaste.Clicked += delegate {
+				Clipboard clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
+
+				var target = Gdk.Atom.Intern("text/plain", true);
+				var selection = clipboard.WaitForContents(target);
+
+				if (selection != null)
+				{
+					entryDestination.Text = System.Text.Encoding.UTF8.GetString(selection.Data, 0, selection.Data.Length);
+				}
+			};
+
+			entryDestination.Changed += (sender, e) =>
+			{
+				SendInfo.Destination = ((Entry)sender).Text;
+			};
 
 			spinbuttonAmount.Xalign = 1;
 			spinbuttonAmount.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
 			spinbuttonAmount.ModifyFont(Constants.Fonts.ActionBarSmall);
+			spinbuttonAmount.ValueChanged += (sender, e) =>
+			{
+				SendInfo.Amount = ((SpinButton)sender).Value;
+			};
 
 			Apply((EventBox eventbox) =>
 			{
@@ -43,9 +77,9 @@ namespace Wallet
 			{
 				entry.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
 				entry.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, entryAddress);	
+			}, entryDestination);	
 
-			buttonClose.Clicked += Back;
+			buttonBack.Clicked += Back;
 
 			var i = 0;
 			int selectedIdx = 0;
@@ -56,6 +90,7 @@ namespace Wallet
 
 				if (WalletController.Instance.AssetType.Caption == _asset.Value.Caption)
 				{
+					SendInfo.Asset = _asset.Key;
 					selectedIdx = i;
 				}
 				else
@@ -78,10 +113,15 @@ namespace Wallet
 				var value = new GLib.Value();
 				comboBox.Model.GetValue(iter, 0, ref value);
 
-				var assetType = App.Instance.Wallet.AssetsMetadata[keys[value.Val as string]];
+				SendInfo.Asset = keys[value.Val as string]; 
+				var assetType = App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
 
 				labelSelectedAsset.Text = labelSelectedAsset1.Text = assetType.Caption;
-				imageAsset.Pixbuf = GetIcon(assetType.Image);
+				imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
+			};
+
+			buttonSignAndReview.Clicked += delegate {
+				FindParent<Notebook>().Page = 3;
 			};
 		}
 
