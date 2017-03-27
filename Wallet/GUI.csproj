@@ -202,6 +202,8 @@
     <Compile Include="Wallet\WalletReceiveLayout.cs" />
     <Compile Include="gtk-gui\Wallet.WalletReceiveLayout.cs" />
     <Compile Include="IControlInit.cs" />
+    <Compile Include="Wallet\WalletSendLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletSendLayout.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
