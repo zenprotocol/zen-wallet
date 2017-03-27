@@ -9,12 +9,15 @@ namespace Wallet
 {
 	public class SendInfo
 	{
+		public bool Signed { get; set; }
+		public BlockChain.BlockChain.TxResultEnum? Result { get; set; }
+
 		public byte[] Asset
 		{
 			get; set;
 		}
 
-		public double Amount
+		public ulong Amount
 		{
 			get; set;
 		}
@@ -31,6 +34,12 @@ namespace Wallet
 				return Amount > 0 && Destination != null && Asset != null;
 			}
 		}
+
+		public SendInfo()
+		{
+			Signed = false;
+			Result = null;
+		}
 	}
 
 	[System.ComponentModel.ToolboxItem(true)]
@@ -41,14 +50,21 @@ namespace Wallet
 			get; private set;
 		}
 
+		static Consensus.Types.Transaction _Tx;
+		public static Consensus.Types.Transaction Tx
+		{
+			get { return _Tx; }
+		}
+
 		AssetDeltas _AssetDeltas = null;
-		long _AssetBalance = 0;
+		ulong _AssetBalance = 0;
 
 		public WalletSendLayout()
 		{
 			this.Build();
 			SendInfo = new SendInfo();
 
+			_Tx = null;
 			buttonSignAndReview.Sensitive = false;
 
 			buttonPaste.Clicked += delegate {
@@ -187,7 +203,24 @@ namespace Wallet
 			UpdateBalance();
 
 			buttonSignAndReview.Clicked += delegate {
-				FindParent<Notebook>().Page = 3;
+				SendInfo.Result = null;
+
+				SendInfo.Signed = App.Instance.Wallet.Sign(
+					SendInfo.Destination,
+					SendInfo.Asset,
+					SendInfo.Amount,
+					out _Tx
+				);
+
+				if (SendInfo.Signed)
+				{
+					FindParent<Notebook>().Page = 3;
+					FindParent<WalletLayout>().FindChild<WalletSendConfirmationLayout>().Init();
+				}
+				else
+				{
+					labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+				}
 			};
 
 			PortfolioController.Instance.AddVIew(this);
@@ -211,7 +244,7 @@ namespace Wallet
 
 		void UpdateBalance()
 		{
-			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : _AssetDeltas[SendInfo.Asset];		
+			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];		
 			labelBalanceValue.Text = $"{_AssetBalance} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
 		}
 	}

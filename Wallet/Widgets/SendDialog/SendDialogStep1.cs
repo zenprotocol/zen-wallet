@@ -96,7 +96,7 @@ namespace Wallet
 				}
 				else
 				{
-					labelMessage.Text = "Not engough " + App.Instance.Wallet.AssetsMetadata[asset];
+					labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[asset];
 				}
 			};
 
