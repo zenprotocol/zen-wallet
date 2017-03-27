@@ -107,6 +107,7 @@ namespace Wallet
 			// Container child eventboxDestination.Gtk.Container+ContainerChild
 			this.vboxDestination = new global::Gtk.VBox();
 			this.vboxDestination.Name = "vboxDestination";
+			this.vboxDestination.BorderWidth = ((uint)(5));
 			// Container child vboxDestination.Gtk.Box+BoxChild
 			this.hbox2 = new global::Gtk.HBox();
 			this.hbox2.Name = "hbox2";
@@ -160,6 +161,7 @@ namespace Wallet
 			// Container child eventboxAsset.Gtk.Container+ContainerChild
 			this.vboxDestination1 = new global::Gtk.VBox();
 			this.vboxDestination1.Name = "vboxDestination1";
+			this.vboxDestination1.BorderWidth = ((uint)(5));
 			// Container child vboxDestination1.Gtk.Box+BoxChild
 			this.hbox3 = new global::Gtk.HBox();
 			this.hbox3.Name = "hbox3";
@@ -233,7 +235,7 @@ namespace Wallet
 			this.hbox6 = new global::Gtk.HBox();
 			this.hbox6.Name = "hbox6";
 			this.hbox6.Spacing = 10;
-			this.hbox6.BorderWidth = ((uint)(10));
+			this.hbox6.BorderWidth = ((uint)(15));
 			// Container child hbox6.Gtk.Box+BoxChild
 			this.labelAmount = new global::Gtk.Label();
 			this.labelAmount.Name = "labelAmount";
