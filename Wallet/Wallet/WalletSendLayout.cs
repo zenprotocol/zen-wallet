@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gdk;
 using Gtk;
 using QRCoder;
+using Wallet.core;
 
 namespace Wallet
 {
@@ -25,12 +26,14 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class WalletSendLayout : WidgetBase
+	public partial class WalletSendLayout : WidgetBase, IPortfolioVIew
 	{
 		public static SendInfo SendInfo
 		{
 			get; private set;
 		}
+
+		AssetDeltas _AssetDeltas = null;
 
 		public WalletSendLayout()
 		{
@@ -70,8 +73,14 @@ namespace Wallet
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
+				label.ModifyFont(Constants.Fonts.ActionBarIntermediate);
+			}, labelDestination, labelAsset, labelAmount, labelBalanceValue);
+
+			Apply((Label label) =>
+			{
+				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, labelDestination, labelAsset, labelSelectedAsset, labelSelectedAsset1, labelSelectOtherAsset, labelAmount);
+			}, labelSelectedAsset, labelSelectedAsset1, labelSelectOtherAsset, labelBalance);
 
 			Apply((Entry entry) =>
 			{
@@ -118,16 +127,39 @@ namespace Wallet
 
 				labelSelectedAsset.Text = labelSelectedAsset1.Text = assetType.Caption;
 				imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
+
+				UpdateBalance();
 			};
+
+			UpdateBalance();
 
 			buttonSignAndReview.Clicked += delegate {
 				FindParent<Notebook>().Page = 3;
 			};
+
+			PortfolioController.Instance.AddVIew(this);
 		}
 
 		void Back(object sender, EventArgs e)
 		{
 			FindParent<Notebook>().Page = 0;
+		}
+
+		public void Clear()
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SetDeltas(AssetDeltas assetDeltas)
+		{
+			_AssetDeltas = assetDeltas;
+			UpdateBalance();
+		}
+
+		void UpdateBalance()
+		{
+			var balance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : _AssetDeltas[SendInfo.Asset];		
+			labelBalanceValue.Text = $"{balance} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
 		}
 	}
 }
