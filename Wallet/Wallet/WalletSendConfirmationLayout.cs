@@ -24,8 +24,14 @@ namespace Wallet
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
+				label.ModifyFont(Constants.Fonts.ActionBarIntermediate);
+			}, labelDestination, labelAsset, labelAmount);
+
+			Apply((Label label) =>
+			{
+				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, labelDestination, labelAsset, labelSelectedAsset, labelSelectedAsset1, labelAmount);
+			}, labelSelectedAsset, labelSelectedAsset1);
 
 			Apply((Entry entry) =>
 			{

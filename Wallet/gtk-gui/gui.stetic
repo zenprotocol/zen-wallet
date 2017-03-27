@@ -2667,6 +2667,7 @@
                 <child>
                   <widget class="Gtk.VBox" id="vboxDestination">
                     <property name="MemberName" />
+                    <property name="BorderWidth">5</property>
                     <child>
                       <widget class="Gtk.HBox" id="hbox2">
                         <property name="MemberName" />
@@ -2750,6 +2751,7 @@
                 <child>
                   <widget class="Gtk.VBox" id="vboxDestination1">
                     <property name="MemberName" />
+                    <property name="BorderWidth">5</property>
                     <child>
                       <widget class="Gtk.HBox" id="hbox3">
                         <property name="MemberName" />
@@ -2870,49 +2872,98 @@
               <widget class="Gtk.EventBox" id="eventboxAmount">
                 <property name="MemberName" />
                 <child>
-                  <widget class="Gtk.HBox" id="hbox6">
+                  <widget class="Gtk.VBox" id="vbox4">
                     <property name="MemberName" />
-                    <property name="Spacing">10</property>
-                    <property name="BorderWidth">10</property>
+                    <property name="Spacing">6</property>
                     <child>
-                      <widget class="Gtk.Label" id="labelAmount">
+                      <widget class="Gtk.HBox" id="hbox6">
                         <property name="MemberName" />
-                        <property name="LabelProp" translatable="yes">Amount to send:</property>
+                        <property name="Spacing">10</property>
+                        <property name="BorderWidth">15</property>
+                        <child>
+                          <widget class="Gtk.Label" id="labelAmount">
+                            <property name="MemberName" />
+                            <property name="LabelProp" translatable="yes">Amount to send:</property>
+                          </widget>
+                          <packing>
+                            <property name="Position">0</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                            <property name="Padding">10</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.SpinButton" id="spinbuttonAmount">
+                            <property name="MemberName" />
+                            <property name="WidthRequest">110</property>
+                            <property name="CanFocus">True</property>
+                            <property name="Upper">100</property>
+                            <property name="PageIncrement">10</property>
+                            <property name="StepIncrement">1</property>
+                            <property name="ClimbRate">1</property>
+                            <property name="Digits">3</property>
+                            <property name="Numeric">True</property>
+                          </widget>
+                          <packing>
+                            <property name="Position">1</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Label" id="labelSelectedAsset1">
+                            <property name="MemberName" />
+                            <property name="LabelProp" translatable="yes">Zen</property>
+                          </widget>
+                          <packing>
+                            <property name="Position">2</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
                         <property name="Position">0</property>
                         <property name="AutoSize">True</property>
                         <property name="Expand">False</property>
                         <property name="Fill">False</property>
-                        <property name="Padding">10</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="Gtk.SpinButton" id="spinbuttonAmount">
+                      <widget class="Gtk.HBox" id="hbox8">
                         <property name="MemberName" />
-                        <property name="WidthRequest">110</property>
-                        <property name="CanFocus">True</property>
-                        <property name="Upper">100</property>
-                        <property name="PageIncrement">10</property>
-                        <property name="StepIncrement">1</property>
-                        <property name="ClimbRate">1</property>
-                        <property name="Digits">3</property>
-                        <property name="Numeric">True</property>
+                        <property name="Spacing">10</property>
+                        <property name="BorderWidth">15</property>
+                        <child>
+                          <widget class="Gtk.Label" id="labelBalance">
+                            <property name="MemberName" />
+                            <property name="LabelProp" translatable="yes">Your balance:</property>
+                          </widget>
+                          <packing>
+                            <property name="Position">0</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                            <property name="Padding">10</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Label" id="labelBalanceValue">
+                            <property name="MemberName" />
+                          </widget>
+                          <packing>
+                            <property name="Position">1</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
                         <property name="Position">1</property>
-                        <property name="AutoSize">True</property>
-                        <property name="Expand">False</property>
-                        <property name="Fill">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="Gtk.Label" id="labelSelectedAsset1">
-                        <property name="MemberName" />
-                        <property name="LabelProp" translatable="yes">Zen</property>
-                      </widget>
-                      <packing>
-                        <property name="Position">2</property>
                         <property name="AutoSize">True</property>
                         <property name="Expand">False</property>
                         <property name="Fill">False</property>
@@ -2977,7 +3028,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.WalletSendConfirmationLayout" design-size="512 478">
+  <widget class="Gtk.Bin" id="Wallet.WalletSendConfirmationLayout" design-size="512 498">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -3033,6 +3084,7 @@
                 <child>
                   <widget class="Gtk.VBox" id="vboxDestination">
                     <property name="MemberName" />
+                    <property name="BorderWidth">5</property>
                     <child>
                       <widget class="Gtk.HBox" id="hbox2">
                         <property name="MemberName" />
@@ -3102,6 +3154,7 @@
                 <child>
                   <widget class="Gtk.VBox" id="vboxDestination1">
                     <property name="MemberName" />
+                    <property name="BorderWidth">5</property>
                     <child>
                       <widget class="Gtk.HBox" id="hbox3">
                         <property name="MemberName" />
@@ -3198,7 +3251,7 @@
                   <widget class="Gtk.HBox" id="hbox6">
                     <property name="MemberName" />
                     <property name="Spacing">10</property>
-                    <property name="BorderWidth">10</property>
+                    <property name="BorderWidth">15</property>
                     <child>
                       <widget class="Gtk.Label" id="labelAmount">
                         <property name="MemberName" />

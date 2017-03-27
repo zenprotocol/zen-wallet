@@ -29,7 +29,7 @@ namespace Wallet
 				label.ModifyFont(Constants.Fonts.ActionBarBig);
 			}, labelZen);
 
-			PortfolioController.Instance.PortfolioVIew = this;
+			PortfolioController.Instance.AddVIew(this);
 	
 			ConfigureList();
 
