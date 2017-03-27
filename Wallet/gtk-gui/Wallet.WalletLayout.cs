@@ -42,6 +42,8 @@ namespace Wallet
 
 		private global::Gtk.Label label5;
 
+		private global::Wallet.WalletSendLayout walletsendlayout1;
+
 		private global::Gtk.Label label6;
 
 		protected virtual void Build()
@@ -54,7 +56,7 @@ namespace Wallet
 			this.notebook1 = new global::Gtk.Notebook();
 			this.notebook1.CanFocus = true;
 			this.notebook1.Name = "notebook1";
-			this.notebook1.CurrentPage = 1;
+			this.notebook1.CurrentPage = 2;
 			this.notebook1.ShowBorder = false;
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.vbox3 = new global::Gtk.VBox();
@@ -216,14 +218,18 @@ namespace Wallet
 			this.label5.LabelProp = global::Mono.Unix.Catalog.GetString("page2");
 			this.notebook1.SetTabLabel(this.walletreceivelayout1, this.label5);
 			this.label5.ShowAll();
+			// Container child notebook1.Gtk.Notebook+NotebookChild
+			this.walletsendlayout1 = new global::Wallet.WalletSendLayout();
+			this.walletsendlayout1.Events = ((global::Gdk.EventMask)(256));
+			this.walletsendlayout1.Name = "walletsendlayout1";
+			this.notebook1.Add(this.walletsendlayout1);
+			global::Gtk.Notebook.NotebookChild w19 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletsendlayout1]));
+			w19.Position = 2;
 			// Notebook tab
-			global::Gtk.Label w19 = new global::Gtk.Label();
-			w19.Visible = true;
-			this.notebook1.Add(w19);
 			this.label6 = new global::Gtk.Label();
 			this.label6.Name = "label6";
 			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString("page3");
-			this.notebook1.SetTabLabel(w19, this.label6);
+			this.notebook1.SetTabLabel(this.walletsendlayout1, this.label6);
 			this.label6.ShowAll();
 			this.Add(this.notebook1);
 			if ((this.Child != null))
