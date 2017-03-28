@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Gdk;
 using Gtk;
-using QRCoder;
 using Wallet.core;
 
 namespace Wallet
@@ -27,11 +26,16 @@ namespace Wallet
 			get; set;
 		}
 
+		public bool HasEnough
+		{
+			get; set;
+		}
+
 		public bool Valid
 		{
 			get
 			{
-				return Amount > 0 && Destination != null && Asset != null;
+				return Amount > 0 && Destination != null && Asset != null && HasEnough;
 			}
 		}
 
@@ -110,18 +114,12 @@ namespace Wallet
 					try
 					{
 						SendInfo.Amount = ulong.Parse(text);
-						labelAmountError.Text = "";
+						CheckAssetAmount();
 					}
 					catch
 					{
 						SendInfo.Amount = 0;
 						labelAmountError.Text = "Invalid amount";
-					}
-
-					if (SendInfo.Amount > _AssetBalance)
-					{
-						SendInfo.Amount = 0;
-						labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
 					}
 				}
 
@@ -246,6 +244,21 @@ namespace Wallet
 		{
 			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];		
 			labelBalanceValue.Text = $"{_AssetBalance} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
+			CheckAssetAmount();
+		}
+
+		void CheckAssetAmount()
+		{
+			SendInfo.HasEnough = SendInfo.Amount <= _AssetBalance;
+
+			if (!SendInfo.HasEnough)
+			{
+				labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+			}
+			else
+			{
+				labelAmountError.Text = "";
+			}
 		}
 	}
 }
