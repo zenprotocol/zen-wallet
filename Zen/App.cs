@@ -248,7 +248,7 @@ namespace Zen
 						new byte[] { },
 						ListModule.OfSeq<byte[]>(new List<byte[]>()),
 						//DateTime.Now.ToBinary(),
-						DateTime.Parse(date).ToBinary(),
+						DateTime.Parse(date).Ticks,
 						1,
 						new byte[] { }
 					);
@@ -271,6 +271,12 @@ namespace Zen
 			}
 
 			JsonLoader<NetworkInfo>.Instance.FileName = file;
+
+			//if (JsonLoader<NetworkInfo>.Instance.IsNew)
+			//{
+			//	JsonLoader<NetworkInfo>.Instance.Value.DefaultPort = 9999;
+			//	JsonLoader<NetworkInfo>.Instance.Save();
+			//}
 
 			foreach (String seed in Settings.Seeds) {
 				if (!JsonLoader<NetworkInfo>.Instance.Value.Seeds.Contains (seed)) {
