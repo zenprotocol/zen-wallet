@@ -25,6 +25,7 @@ namespace Zen
 			options["main"].Add("Start GUI");
 			options["main"].Add("Wallet Menu");
 			options["main"].Add("BlockChain Menu");
+			options["main"].Add("Miner Menu");
 			options["main"].Add("Tests");
 			options["main"].Add("Stop");
 			options["main"].Add("Exit");
@@ -39,6 +40,11 @@ namespace Zen
 			options["blockchain"] = new List<string>();
 			options["blockchain"].Add("Add Genesis");
 			options["blockchain"].Add("Back");
+
+			options["miner"] = new List<string>();
+			options["miner"].Add("Start Miner");
+			options["miner"].Add("Stop Miner");
+			options["miner"].Add("Back");
 
 			options["tests"] = new List<string>();
 			options["tests"].Add("Import all genesis");
@@ -85,6 +91,9 @@ namespace Zen
 					case "BlockChain Menu":
 						menu("blockchain");
 						break;
+					case "Miner Menu":
+						menu("miner");
+						break;
 					case "Start Node":
 						app.Start();
 						dialog.Text += " (running)";
@@ -113,6 +122,22 @@ namespace Zen
 				{
 					case "Add Genesis":
 						app.AddGenesisBlock();
+						break;
+					case "Back":
+						menu("main");
+						break;
+				}
+			};
+
+			actions["miner"] = a =>
+			{
+				switch (a)
+				{
+					case "Start Miner":
+						app.MinerEnabled = true;
+						break;
+					case "Stop Miner":
+						app.MinerEnabled = false;
 						break;
 					case "Back":
 						menu("main");
