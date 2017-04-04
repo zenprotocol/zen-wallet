@@ -69,7 +69,10 @@ namespace Network
 			_Network.DefaultPort = 9999;
 			_Network.PeersToFind = 1;
 			_Network.MaximumNodeConnection = 1;
-			_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
+
+			if (!_Network.Seeds.Contains(_NATManager.InternalIPAddress.ToString()))
+				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());	
+			
 			JsonLoader<NetworkInfo>.Instance.Save();
 			Connect(null);
 		}
@@ -88,7 +91,10 @@ namespace Network
 			_Network.DefaultPort = 9999;
 			_Network.PeersToFind = 1;
 			_Network.MaximumNodeConnection = 1;
-			_Network.Seeds.Add(ipAddress.ToString());
+
+			if (!_Network.Seeds.Contains(ipAddress.ToString()))
+				_Network.Seeds.Add(ipAddress.ToString());
+
 			JsonLoader<NetworkInfo>.Instance.Save();
 			Connect(null);
 		}
