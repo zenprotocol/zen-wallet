@@ -33,6 +33,7 @@ namespace Zen
 		//	options["wallet"].Add("Reset");
 		//	options["wallet"].Add("Sync");
 			options["wallet"].Add("Add Key");
+			options["wallet"].Add("Get Receive Address");
 			options["wallet"].Add("Back");
 
 			options["blockchain"] = new List<string>();
@@ -138,6 +139,9 @@ namespace Zen
 					//case "Import":
 					//	app.ImportWallet();
 					//	break;
+					case "Get Receive Address":
+						listTrace.Items.Add(app.GetUnusedKey().AddressAsString);
+						break;
 					case "Back":
 						menu("main");
 						break;
