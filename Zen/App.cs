@@ -25,6 +25,17 @@ namespace Zen
 			Settings = new Settings();
 		}
 
+		bool _MinerEnabled;
+		internal bool MinerEnabled {
+			set
+			{
+				_MinerEnabled = value;
+
+				if (_NodeManager != null)
+					_NodeManager.MinerEnabled = value;
+			}
+		}
+
 		internal bool AddGenesisBlock()
 		{
 			return AddBlock(GenesisBlock.Value);
@@ -152,6 +163,7 @@ namespace Zen
 				}
 
 				_NodeManager = new NodeManager(_BlockChain);
+				_NodeManager.MinerEnabled = _MinerEnabled;
 
 				if (Settings.ConnectToSeed != null)
 				{

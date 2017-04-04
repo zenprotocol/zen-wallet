@@ -17,6 +17,7 @@ namespace Network
 		private NetworkInfo _Network;
 		private NodeConnectionParameters _NodeConnectionParameters;
 
+		private Miner _Miner;
 #if DEBUG
 		public
 #else
@@ -30,6 +31,15 @@ namespace Network
 		private
 #endif
 		NodesGroup _NodesGroup;
+
+		bool _MinerEnabled;
+		public bool MinerEnabled { set {
+				_MinerEnabled = value;
+
+				if (_Miner != null)
+					_Miner.Enabled = value;
+			}
+		}
 
 		public NodeManager(BlockChain.BlockChain blockChain)
 		{
@@ -104,10 +114,11 @@ namespace Network
 		{
 			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior();
 
-			Miner miner = new Miner(_BlockChain);
+			_Miner = new Miner(_BlockChain);
+			_Miner.Enabled = _MinerEnabled;
 
 			_NodeConnectionParameters.TemplateBehaviors.Add(broadcastHubBehavior);
-			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(miner));
+			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(_Miner));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, broadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
