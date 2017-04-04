@@ -231,7 +231,7 @@ namespace Wallet
 
 		public void Clear()
 		{
-			throw new NotImplementedException();
+
 		}
 
 		public void SetDeltas(AssetDeltas assetDeltas)
