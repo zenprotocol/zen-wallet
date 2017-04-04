@@ -87,6 +87,10 @@ namespace NBitcoin.Protocol.Behaviors
 						NodeServerTrace.Information("Sending tip: " + System.Convert.ToBase64String(tip.Key));
 						node.SendMessageAsync(bk);
 					}
+					else
+					{
+						NodeServerTrace.Information("Missing or invalid tip block requested");
+					}
 				}
 				else
 				{
@@ -104,6 +108,10 @@ namespace NBitcoin.Protocol.Behaviors
 					{
 						NodeServerTrace.Information("Sending block: " + bk.header.blockNumber);
 						node.SendMessageAsync(bk);
+					}
+					else
+					{
+						NodeServerTrace.Information("Missing or invalid block requested");
 					}
 				}
 			});
