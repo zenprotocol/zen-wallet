@@ -562,12 +562,16 @@ namespace BlockChain
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
-				if (BlockStore.GetLocation(context, key) == LocationEnum.Main)
-					return null;
+				var location = BlockStore.GetLocation(context, key);
 
-				var bk = BlockStore.GetBlock(context, key);
+				if (location == LocationEnum.Main || location == LocationEnum.Genesis)
+				{
+					var bk = BlockStore.GetBlock(context, key);
 
-				return bk == null ? null : bk.Value;
+					return bk == null ? null : bk.Value;
+				}
+
+				return null;
 			}
 		}
 
