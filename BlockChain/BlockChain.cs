@@ -397,7 +397,7 @@ namespace BlockChain
 				memPool.TxPool.RemoveDoubleSpends(spentOutputs);
 				memPool.ICTxPool.RemoveDoubleSpends(spentOutputs);
 
-				new TxMessage(item.Key, item.Value, TxStateEnum.Confirmed).Publish();
+				//new TxMessage(item.Key, item.Value, TxStateEnum.Confirmed).Publish();
 			}
 		}
 
@@ -605,9 +605,10 @@ namespace BlockChain
 			}
 
 			uint version = 1;
-			var date = "2000-02-02";
-			var _date = DateTime.Parse(date);
-			_date = _date.AddDays(1);
+			//var date = "2000-02-02";
+			//var _date = DateTime.Parse(date);
+			//_date = _date.AddDays(1);
+
 		//	Merkle.Hashable x = new Merkle.Hashable ();
 		//	x.
 		//	var merkleRoot = Merkle.merkleRoot(Tip.Key,
@@ -624,7 +625,7 @@ namespace BlockChain
 				new byte[] { },
 				new byte[] { },
 				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				_date.Ticks,
+				DateTime.Now.Ticks,
 				0,
 				nonce
 			);
