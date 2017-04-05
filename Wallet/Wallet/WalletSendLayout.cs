@@ -111,15 +111,27 @@ namespace Wallet
 				}
 				else
 				{
-					try
-					{
-						SendInfo.Amount = ulong.Parse(text);
-						CheckAssetAmount();
-					}
-					catch
+					var parts = text.Split('.');
+
+					if (parts.Length == 2 && parts[1].Length > 8)
 					{
 						SendInfo.Amount = 0;
 						labelAmountError.Text = "Invalid amount";
+					}
+					else
+					{
+						try
+						{
+							var raw = decimal.Parse(text);
+							var kalapas = Math.Pow(10, 8) * (double)raw;
+							SendInfo.Amount = (ulong)Math.Truncate(kalapas);
+							CheckAssetAmount();
+						}
+						catch
+						{
+							SendInfo.Amount = 0;
+							labelAmountError.Text = "Invalid amount";
+						}
 					}
 				}
 
