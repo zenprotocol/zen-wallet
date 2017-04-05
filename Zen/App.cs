@@ -68,7 +68,7 @@ namespace Zen
 
 			if (_WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx))
 			{
-				return _WalletManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+				return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
 			else
 			{
@@ -85,7 +85,7 @@ namespace Zen
 
 		internal bool Transmit(Types.Transaction tx)
 		{
-			return _WalletManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+			return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal long AssetMount()
@@ -190,7 +190,7 @@ namespace Zen
 
 		public void GUI()
 		{
-			Wallet.App.Instance.Start(_WalletManager);
+			Wallet.App.Instance.Start(_WalletManager, _NodeManager);
 		}
 
 		private Keyed<Types.Block> _GenesisBlock = null;

@@ -25,7 +25,7 @@ namespace Wallet
 
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
 			{
-				var result = App.Instance.Wallet.Transmit(Tx);
+				var result = App.Instance.Node.Transmit(Tx);
 
 				if (result == BlockChain.BlockChain.TxResultEnum.Accepted)
 				{
