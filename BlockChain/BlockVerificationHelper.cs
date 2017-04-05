@@ -459,6 +459,7 @@ namespace BlockChain
 
 		bool IsValidTimeStamp()
 		{
+			//TODO: assert block's timestamp isn't too far in the future
 			var result = _Bk.header.timestamp > _BlockChain.Timestamps.Median();
 
 			if (!result)
