@@ -49,16 +49,25 @@ namespace Wallet.core
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				_Keys = _KeyStore.List(dbTx);
-				_TxStore.All(dbTx).Select(t=>t.Value).ToList().ForEach(txData =>
+				var purgeList = new List<int>();
+
+				_TxStore.All(dbTx).ToList().ForEach(item =>
 				{
-					switch (txData.TxState)
+					switch (item.Value.TxState)
 					{
 						case TxStateEnum.Confirmed:
-							TxDeltaList.Add(new TxDelta(txData.TxState, txData.TxHash, txData.Tx, txData.AssetDeltas, txData.DateTime));
+							TxDeltaList.Add(new TxDelta(item.Value.TxState, item.Value.TxHash, item.Value.Tx, item.Value.AssetDeltas, item.Value.DateTime));
 							break;
 						case TxStateEnum.Unconfirmed:
-							_BlockChain.HandleTransaction(txData.Tx);
+							purgeList.Add(item.Key);
+							//TODO: implement 'smarter' mode: only after the node has been synced and is up-to-date, try to revalidate
+							//_BlockChain.HandleTransaction(txData.Tx);
 							break;
+					}
+
+					foreach (var key in purgeList)
+					{
+						_TxStore.Remove(dbTx, key);
 					}
 				});
 			}
