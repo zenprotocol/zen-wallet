@@ -49,7 +49,7 @@ namespace Wallet.core
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
 				_Keys = _KeyStore.List(dbTx);
-				var purgeList = new List<int>();
+				var purgeList = new List<ulong>();
 
 				_TxStore.All(dbTx).ToList().ForEach(item =>
 				{
