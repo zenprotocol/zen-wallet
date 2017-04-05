@@ -356,16 +356,6 @@ namespace Wallet.core
 			return total >= amount;
 		}
 
-		/// <summary>
-		/// Transmits a tx on the network.
-		/// </summary>
-		/// <returns>The spend.</returns>
-		/// <param name="tx">Tx.</param>
-		public BlockChain.BlockChain.TxResultEnum Transmit(Types.Transaction tx)
-		{
-			return _BlockChain.HandleTransaction(tx);
-		}
-
 		public bool CanSpend(byte[] asset, ulong amount)
 		{
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
