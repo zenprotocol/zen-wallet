@@ -9,7 +9,7 @@ namespace Wallet
 	public interface ILogView {
 		List<LogEntryItem> LogEntryList { set; }
 		void AddLogEntryItem (LogEntryItem logEntryItem);
-		void Totals(long sent, long recieved, long total);
+		void Totals(decimal sent, decimal recieved, decimal total);
 		void Clear();
 	}
 
@@ -142,7 +142,7 @@ namespace Wallet
 			logEntryStore.AppendValues(new LogEntryRow(logEntryItem));
 		}
 
-		public void Totals(long sent, long recieved, long total)
+		public void Totals(decimal sent, decimal recieved, decimal total)
 		{
 			TreeIter storeIter;
 			logSummaryStore.GetIterFirst(out storeIter);
