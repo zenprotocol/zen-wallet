@@ -63,8 +63,8 @@ namespace Wallet
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					App.Instance.Wallet.AssetsMetadata[b.Key],
 					u.Time,
+					"TODO",
 					BitConverter.ToString(u.TxHash),
-					Guid.NewGuid().ToString("N"),
 					0
 					));
 				}));
