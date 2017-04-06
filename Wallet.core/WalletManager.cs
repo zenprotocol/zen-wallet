@@ -73,6 +73,17 @@ namespace Wallet.core
 			}
 		}
 
+		public void ResetUIHandlers()
+		{
+			if (OnItems != null)
+				foreach (Action<TxDeltaItemsEventArgs> handler in OnItems.GetInvocationList())
+					OnItems -= handler;
+
+			if (OnReset != null)
+				foreach (Action<ResetEventArgs> handler in OnReset.GetInvocationList())
+					OnReset -= handler;
+		}
+
 		/// <summary>
 		/// Imports wallet file 
 		/// </summary>

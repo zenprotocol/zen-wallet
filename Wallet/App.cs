@@ -28,6 +28,8 @@ namespace Wallet
 			Wallet = walletManager;
 			Node = nodeManager;
 
+			Wallet.ResetUIHandlers();
+
 			Gtk.Application.Init();
 
 			_MainWindow = new MainWindow();
