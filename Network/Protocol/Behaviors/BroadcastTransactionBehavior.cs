@@ -50,22 +50,6 @@ namespace NBitcoin.Protocol.Behaviors
 
 	public class BroadcastHub
 	{
-		public BroadcastHub()
-		{
-			Infrastructure.MessageProducer<BlockChainMessage>.Instance.AddMessageListener(
-				new Infrastructure.MessageListener<BlockChainMessage>(t =>
-				{
-					if (t is TxMessage)
-					{
-						var m = (TxMessage)t;
-
-						if (m.State == TxStateEnum.Unconfirmed && m.Ptx != null)
-							BroadcastTransactionAsync(TransactionValidation.unpoint(m.Ptx));
-					}
-				})
-			);
-		}
-
 		public static BroadcastHub GetBroadcastHub(Node node)
 		{
 			return GetBroadcastHub(node.Behaviors);

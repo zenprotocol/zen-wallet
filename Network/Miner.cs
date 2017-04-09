@@ -17,10 +17,15 @@ namespace Network
 		public Miner(BlockChain.BlockChain blockChain) { 
 			_BlockChain = blockChain;
 
+			Enabled = false;
+
 			OwnResource (new Timer (o => {
-				CreateBlock ();
+				if (Enabled)
+					CreateBlock ();
 			}, null, 0, (int)TimeSpan.FromSeconds (10).TotalMilliseconds));
 		}
+
+		public bool Enabled { get; set; }
 			
 		private void CreateBlock()
 		{

@@ -22,7 +22,7 @@ namespace Wallet
 				if (_Tx == null)
 					return;
 
-				var txResultEnum = App.Instance.Wallet.Transmit(_Tx);
+				var txResultEnum = App.Instance.Node.Transmit(_Tx);
 				switch (txResultEnum)
 				{
 					case BlockChain.BlockChain.TxResultEnum.Accepted:
