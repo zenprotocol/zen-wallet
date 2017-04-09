@@ -18,7 +18,7 @@ namespace Wallet
 		public ActionBar ()
 		{
 			this.Build ();
-			WalletController.ActionBarView = this;
+			//WalletController.ActionBarView = this;
 
 			Apply ((Label label) => {
 				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);

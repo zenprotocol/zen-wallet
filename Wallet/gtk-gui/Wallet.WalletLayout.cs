@@ -79,6 +79,7 @@ namespace Wallet
 			this.eventbox1.Name = "eventbox1";
 			// Container child eventbox1.Gtk.Container+ContainerChild
 			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1.Name = "vbox1";
 			this.vbox1.Homogeneous = true;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.label1 = new global::Gtk.Label();
