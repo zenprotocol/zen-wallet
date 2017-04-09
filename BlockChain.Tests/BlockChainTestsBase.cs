@@ -56,8 +56,15 @@ namespace BlockChain
 		{
 			if (m is TxMessage)
 			{
-				TxMessage txMessage = (TxMessage)m;
+				var txMessage = (TxMessage)m;
 				_TxStates[txMessage.TxHash] = ((TxMessage)m).State;
+			}
+			else if (m is BlockMessage)
+			{
+				foreach (var item in ((BlockMessage)m).PointedTransactions)
+				{
+					_TxStates[item.Key] = TxStateEnum.Confirmed;
+				}
 			}
 		}
 

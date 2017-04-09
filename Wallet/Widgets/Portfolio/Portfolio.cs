@@ -85,7 +85,7 @@ namespace Wallet
 			var rowRenderer = cellRenderer as RowRenderer;
 
 			rowRenderer.Asset = (byte[])model.GetValue(iter, 0);
-			rowRenderer.Value = (long)model.GetValue(iter, 1);
+			rowRenderer.Value = Convert.ToDecimal((long)model.GetValue(iter, 1) / Math.Pow(10, 8));
 		}
 
 		public AssetDeltas AssetDeltas
@@ -106,11 +106,11 @@ namespace Wallet
 			{
 				if (item.Key.SequenceEqual(Consensus.Tests.zhash))
 				{
-					labelZen.Text = String.Format(Constants.Formats.Money, item.Value) + " " + App.Instance.Wallet.AssetsMetadata[item.Key];
+					labelZen.Text = String.Format(Constants.Formats.Money, item.Value / Math.Pow(10, 8)) + " " + App.Instance.Wallet.AssetsMetadata[item.Key];
 				}
 				else
 				{
-					listStore.AppendValues(item.Key, item.Value);
+					listStore.AppendValues(item.Key, item.Value / Math.Pow(10, 8));
 				}
 			}
 		}

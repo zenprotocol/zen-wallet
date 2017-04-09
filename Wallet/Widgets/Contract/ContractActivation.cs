@@ -37,7 +37,7 @@ namespace Wallet
 					return;
 				}
 
-				var txResult = App.Instance.Wallet.Transmit(tx);
+				var txResult = App.Instance.Node.Transmit(tx);
 
 				if (txResult != BlockChain.BlockChain.TxResultEnum.Accepted)
 				{

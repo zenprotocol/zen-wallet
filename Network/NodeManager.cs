@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using NBitcoin;
 using NBitcoin.Protocol.Behaviors;
 using System.Net;
+using Consensus;
 
 namespace Network
 {
@@ -16,7 +17,9 @@ namespace Network
 		private BlockChain.BlockChain _BlockChain = null;
 		private NetworkInfo _Network;
 		private NodeConnectionParameters _NodeConnectionParameters;
+		private BroadcastHubBehavior _BroadcastHubBehavior;
 
+		private Miner _Miner;
 #if DEBUG
 		public
 #else
@@ -30,6 +33,15 @@ namespace Network
 		private
 #endif
 		NodesGroup _NodesGroup;
+
+		bool _MinerEnabled;
+		public bool MinerEnabled { set {
+				_MinerEnabled = value;
+
+				if (_Miner != null)
+					_Miner.Enabled = value;
+			}
+		}
 
 		public NodeManager(BlockChain.BlockChain blockChain)
 		{
@@ -69,7 +81,10 @@ namespace Network
 			_Network.DefaultPort = 9999;
 			_Network.PeersToFind = 1;
 			_Network.MaximumNodeConnection = 1;
-			_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
+
+			if (!_Network.Seeds.Contains(_NATManager.InternalIPAddress.ToString()))
+				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());	
+			
 			JsonLoader<NetworkInfo>.Instance.Save();
 			Connect(null);
 		}
@@ -88,7 +103,10 @@ namespace Network
 			_Network.DefaultPort = 9999;
 			_Network.PeersToFind = 1;
 			_Network.MaximumNodeConnection = 1;
-			_Network.Seeds.Add(ipAddress.ToString());
+
+			if (!_Network.Seeds.Contains(ipAddress.ToString()))
+				_Network.Seeds.Add(ipAddress.ToString());
+
 			JsonLoader<NetworkInfo>.Instance.Save();
 			Connect(null);
 		}
@@ -96,13 +114,14 @@ namespace Network
 
 		public void Connect(IPAddress ipAddress)
 		{
-			BroadcastHubBehavior broadcastHubBehavior = new BroadcastHubBehavior();
+			_BroadcastHubBehavior = new BroadcastHubBehavior();
 
-			Miner miner = new Miner(_BlockChain);
+			_Miner = new Miner(_BlockChain);
+			_Miner.Enabled = _MinerEnabled;
 
-			_NodeConnectionParameters.TemplateBehaviors.Add(broadcastHubBehavior);
-			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(miner));
-			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, broadcastHubBehavior.BroadcastHub));
+			_NodeConnectionParameters.TemplateBehaviors.Add(_BroadcastHubBehavior);
+			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(_Miner));
+			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _BroadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
 			AddressManagerBehavior.GetAddrman(_NodeConnectionParameters).PeersToFind = _Network.PeersToFind;
@@ -155,6 +174,19 @@ namespace Network
 
 				_NodesGroup.Connect();
 			}
+		}
+
+		/// <summary>
+		/// Transmits a tx on the network.
+		/// </summary>
+		public BlockChain.BlockChain.TxResultEnum Transmit(Types.Transaction tx)
+		{
+			var result = _BlockChain.HandleTransaction(tx);
+
+			if (result == BlockChain.BlockChain.TxResultEnum.Accepted)
+				_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
+
+			return result;
 		}
 	}
 }

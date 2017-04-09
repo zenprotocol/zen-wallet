@@ -51,8 +51,7 @@ namespace Wallet.core
 			_AssetsLoader.FileName = PathCombine(_Directory, Config("assetsFile"));
 			_CacheLoader.FileName = PathCombine(_CacheDirectory, "metadata.json");
 
-			Add(new byte[] { }, new AssetTypeAll());
-			Add(Consensus.Tests.zhash, new AssetType("Zen", null));
+			Add(Consensus.Tests.zhash, new AssetType("Zen", "zen.png"));
 
 			foreach (var item in _AssetsLoader.Value)
 			{
