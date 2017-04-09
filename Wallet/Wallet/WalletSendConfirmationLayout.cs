@@ -44,7 +44,7 @@ namespace Wallet
 			buttonBack.Clicked += Back;
 
 			buttonTransmit.Clicked += delegate {
-				WalletSendLayout.SendInfo.Result = App.Instance.Wallet.Transmit(WalletSendLayout.Tx);
+				WalletSendLayout.SendInfo.Result = App.Instance.Node.Transmit(WalletSendLayout.Tx);
 				UpdateStatus();
 			};
 		}

@@ -63,8 +63,8 @@ namespace Wallet
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					App.Instance.Wallet.AssetsMetadata[b.Key],
 					u.Time,
+					"TODO",
 					BitConverter.ToString(u.TxHash),
-					Guid.NewGuid().ToString("N"),
 					0
 					));
 				}));
@@ -92,11 +92,11 @@ namespace Wallet
 			if (_LogView == null)
 				return;
 
-			var sent = _AssetDeltasSent.ContainsKey(_Asset) ? _AssetDeltasSent[_Asset] : 0;
-			var recieved = _AssetDeltasRecieved.ContainsKey(_Asset) ? _AssetDeltasRecieved[_Asset] : 0;
-			var total = _AssetDeltasTotal.ContainsKey(_Asset) ? _AssetDeltasTotal[_Asset] : 0;
+			var sent = _AssetDeltasSent.ContainsKey(_Asset) ? _AssetDeltasSent[_Asset] / Math.Pow(10, 8) : 0;
+			var recieved = _AssetDeltasRecieved.ContainsKey(_Asset) ? _AssetDeltasRecieved[_Asset] / Math.Pow(10, 8) : 0;
+			var total = _AssetDeltasTotal.ContainsKey(_Asset) ? _AssetDeltasTotal[_Asset] / Math.Pow(10, 8) : 0;
 
-			_LogView.Totals(sent, recieved, total);
+			_LogView.Totals(Convert.ToDecimal(sent), Convert.ToDecimal(recieved), Convert.ToDecimal(total));
 		}
 	}
 }

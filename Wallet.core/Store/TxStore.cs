@@ -15,7 +15,7 @@ namespace Wallet.core
 		public AssetDeltas AssetDeltas { get; set; }
 	}
 
-	class TxStore : ConsensusTypeStore<int, TxData>
+	class TxStore : ConsensusTypeStore<ulong, TxData>
 	{
 		static string TX_HASHES_TO_IDENTITY = "tx-hashes";
 
@@ -31,8 +31,14 @@ namespace Wallet.core
 
 		internal void Put(TransactionContext dbTx, byte[] txHash, Types.Transaction tx, AssetDeltas assetDeltas, TxStateEnum txState)
 		{
-			var txHashRecord = dbTx.Transaction.Select<byte[], int>(TX_HASHES_TO_IDENTITY, txHash);
-			Put(dbTx, txHashRecord.Exists ? txHashRecord.Value : (int)dbTx.Transaction.Count(_TableName), new TxData()
+			var txHashRecord = dbTx.Transaction.Select<byte[], ulong>(TX_HASHES_TO_IDENTITY, txHash);
+
+			var identity = txHashRecord.Exists ? txHashRecord.Value : dbTx.Transaction.Count(TX_HASHES_TO_IDENTITY);
+
+			if (!txHashRecord.Exists)
+				dbTx.Transaction.Insert<byte[], ulong>(TX_HASHES_TO_IDENTITY, txHash, identity);
+
+			Put(dbTx, identity, new TxData()
 			{
 				DateTime = DateTime.Now,
 				TxState = txState,

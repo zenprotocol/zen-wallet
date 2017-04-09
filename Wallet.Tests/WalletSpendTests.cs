@@ -42,7 +42,7 @@ public class WalletSpendTests : WalletTestsBase
 		Types.Transaction txParsed;
 
 		Assert.That(_WalletManager.Parse(bytes, out txParsed), Is.True);
-		Assert.That(_WalletManager.Transmit(txParsed), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
+		Assert.That(_BlockChain.HandleTransaction(txParsed), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
 	}
 
 	[Test()]
@@ -97,7 +97,7 @@ public class WalletSpendTests : WalletTestsBase
 
 		Types.Transaction txNew;
 		Assert.That(_WalletManager.Sign(key1.Address, Consensus.Tests.zhash, spendAmount, out txNew), Is.True);
-		Assert.That(_WalletManager.Transmit(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
+		Assert.That(_BlockChain.HandleTransaction(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
 
 		_WalletManager.OnItems += onItems;
 		_WalletManager.OnReset += onReset;
@@ -128,7 +128,7 @@ public class WalletSpendTests : WalletTestsBase
 
 		Types.Transaction txNew;
 		Assert.That(_WalletManager.Sign(key1.Address, Consensus.Tests.zhash, spendAmount, out txNew), Is.True);
-		Assert.That(_WalletManager.Transmit(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
+		Assert.That(_BlockChain.HandleTransaction(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
 
 		// mine the tx from mempool
 		_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(txNew));
@@ -160,7 +160,7 @@ public class WalletSpendTests : WalletTestsBase
 		Types.Transaction txNew;
 
 		Assert.That(_WalletManager.Sign(key1.Address, Consensus.Tests.zhash, spendAmount, out txNew), Is.True);
-		Assert.That(_WalletManager.Transmit(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
+		Assert.That(_BlockChain.HandleTransaction(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
 
 		//Assert.That(_BlockChain.GetUTXOSet(null).Values.Count, Is.EqualTo(2));
 
@@ -170,7 +170,7 @@ public class WalletSpendTests : WalletTestsBase
 		Thread.Sleep(1000);
 
 		Assert.That(_WalletManager.Sign(key2.Address, Consensus.Tests.zhash, spendAmount, out txNew), Is.True);
-		Assert.That(_WalletManager.Transmit(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
+		Assert.That(_BlockChain.HandleTransaction(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
 	}
 
 	[Test()]
@@ -199,7 +199,7 @@ public class WalletSpendTests : WalletTestsBase
 		//_WalletManager.Import();
 		Types.Transaction txNew;
 		Assert.That(_WalletManager.Sign(key1.Address, Consensus.Tests.zhash, spendAmount, out txNew), Is.True);
-		Assert.That(_WalletManager.Transmit(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
+		Assert.That(_BlockChain.HandleTransaction(txNew), Is.EqualTo(BlockChain.BlockChain.TxResultEnum.Accepted));
 
 		var mempoolPtx = _BlockChain.memPool.TxPool.ToList()[0].Value;
 		var _tx = TransactionValidation.unpoint(mempoolPtx);

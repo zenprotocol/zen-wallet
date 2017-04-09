@@ -61,10 +61,22 @@ namespace Store
 
 			foreach (var row in transactionContext.Transaction.SelectForward<byte[], byte[]>(_TableName))
 			{
-				var key = Unpack<TKey>(row.Key);
-				var value = Unpack<TValue>(row.Value);
+				bool valid = true;
+				TKey key = default(TKey);
+				TValue value = default(TValue);
 
-				if (predicate == null || predicate(value))
+				try
+				{
+					key = Unpack<TKey>(row.Key);
+					value = Unpack<TValue>(row.Value);
+				}
+				catch (Exception e)
+				{
+					valid = false;
+					Trace.Error("Row data error", e);
+				}
+
+				if (valid && (predicate == null || predicate(value)))
 				{
 					yield return new Keyed<TKey, TValue>(key, value);
 				}

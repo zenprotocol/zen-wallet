@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Gdk;
 using Gtk;
-using QRCoder;
 using Wallet.core;
 
 namespace Wallet
@@ -27,11 +26,16 @@ namespace Wallet
 			get; set;
 		}
 
+		public bool HasEnough
+		{
+			get; set;
+		}
+
 		public bool Valid
 		{
 			get
 			{
-				return Amount > 0 && Destination != null && Asset != null;
+				return Amount > 0 && Destination != null && Asset != null && HasEnough;
 			}
 		}
 
@@ -107,21 +111,27 @@ namespace Wallet
 				}
 				else
 				{
-					try
-					{
-						SendInfo.Amount = ulong.Parse(text);
-						labelAmountError.Text = "";
-					}
-					catch
+					var parts = text.Split('.');
+
+					if (parts.Length == 2 && parts[1].Length > 8)
 					{
 						SendInfo.Amount = 0;
 						labelAmountError.Text = "Invalid amount";
 					}
-
-					if (SendInfo.Amount > _AssetBalance)
+					else
 					{
-						SendInfo.Amount = 0;
-						labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+						try
+						{
+							var raw = decimal.Parse(text);
+							var kalapas = Math.Pow(10, 8) * (double)raw;
+							SendInfo.Amount = (ulong)Math.Truncate(kalapas);
+							CheckAssetAmount();
+						}
+						catch
+						{
+							SendInfo.Amount = 0;
+							labelAmountError.Text = "Invalid amount";
+						}
 					}
 				}
 
@@ -233,7 +243,7 @@ namespace Wallet
 
 		public void Clear()
 		{
-			throw new NotImplementedException();
+
 		}
 
 		public void SetDeltas(AssetDeltas assetDeltas)
@@ -246,6 +256,21 @@ namespace Wallet
 		{
 			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];		
 			labelBalanceValue.Text = $"{_AssetBalance} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
+			CheckAssetAmount();
+		}
+
+		void CheckAssetAmount()
+		{
+			SendInfo.HasEnough = SendInfo.Amount <= _AssetBalance;
+
+			if (!SendInfo.HasEnough)
+			{
+				labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+			}
+			else
+			{
+				labelAmountError.Text = "";
+			}
 		}
 	}
 }

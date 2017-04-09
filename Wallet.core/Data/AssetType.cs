@@ -23,9 +23,9 @@ namespace Wallet.core
 		}
 	}
 
-	public class AssetTypeAll : AssetType
-	{
-		public AssetTypeAll() : base("All", null) {}
-	}
+	//public class AssetTypeAll : AssetType
+	//{
+	//	public AssetTypeAll() : base("All", null) {}
+	//}
 }
 

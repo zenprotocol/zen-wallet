@@ -8,7 +8,7 @@ namespace Wallet
 	{
 		private Gtk.Window _MainWindow;
 		public WalletManager Wallet { get; private set; }
-	//	public NodeManager Node { get; private set; }
+		public Network.NodeManager Node { get; private set; }
 
 		public App()
 		{
@@ -23,10 +23,12 @@ namespace Wallet
 			};
 		}
 
-		public void Start(WalletManager walletManager/*, NodeManager nodeManager*/)
+		public void Start(WalletManager walletManager, Network.NodeManager nodeManager)
 		{
 			Wallet = walletManager;
-		//	Node = nodeManager;
+			Node = nodeManager;
+
+			Wallet.ResetUIHandlers();
 
 			Gtk.Application.Init();
 

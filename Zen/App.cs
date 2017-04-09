@@ -25,6 +25,17 @@ namespace Zen
 			Settings = new Settings();
 		}
 
+		bool _MinerEnabled;
+		internal bool MinerEnabled {
+			set
+			{
+				_MinerEnabled = value;
+
+				if (_NodeManager != null)
+					_NodeManager.MinerEnabled = value;
+			}
+		}
+
 		internal bool AddGenesisBlock()
 		{
 			return AddBlock(GenesisBlock.Value);
@@ -57,7 +68,7 @@ namespace Zen
 
 			if (_WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx))
 			{
-				return _WalletManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+				return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
 			else
 			{
@@ -74,7 +85,7 @@ namespace Zen
 
 		internal bool Transmit(Types.Transaction tx)
 		{
-			return _WalletManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+			return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal long AssetMount()
@@ -152,6 +163,7 @@ namespace Zen
 				}
 
 				_NodeManager = new NodeManager(_BlockChain);
+				_NodeManager.MinerEnabled = _MinerEnabled;
 
 				if (Settings.ConnectToSeed != null)
 				{
@@ -178,7 +190,7 @@ namespace Zen
 
 		public void GUI()
 		{
-			Wallet.App.Instance.Start(_WalletManager);
+			Wallet.App.Instance.Start(_WalletManager, _NodeManager);
 		}
 
 		private Keyed<Types.Block> _GenesisBlock = null;
@@ -248,7 +260,7 @@ namespace Zen
 						new byte[] { },
 						ListModule.OfSeq<byte[]>(new List<byte[]>()),
 						//DateTime.Now.ToBinary(),
-						DateTime.Parse(date).ToBinary(),
+						DateTime.Parse(date).Ticks,
 						1,
 						new byte[] { }
 					);
@@ -271,6 +283,12 @@ namespace Zen
 			}
 
 			JsonLoader<NetworkInfo>.Instance.FileName = file;
+
+			//if (JsonLoader<NetworkInfo>.Instance.IsNew)
+			//{
+			//	JsonLoader<NetworkInfo>.Instance.Value.DefaultPort = 9999;
+			//	JsonLoader<NetworkInfo>.Instance.Save();
+			//}
 
 			foreach (String seed in Settings.Seeds) {
 				if (!JsonLoader<NetworkInfo>.Instance.Value.Seeds.Contains (seed)) {
