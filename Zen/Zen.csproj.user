@@ -3,8 +3,13 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
     <StartProgram></StartProgram>
-    <StartArguments>-g -d</StartArguments>
+    <StartArguments>--localhost</StartArguments>
     <ExternalConsole>true</ExternalConsole>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Headless' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>--headless --localhost</StartArguments>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
 </Project>
