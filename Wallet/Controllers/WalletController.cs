@@ -8,7 +8,7 @@ namespace Wallet
 {
 	public class WalletController : Singleton<WalletController>
 	{
-		public ActionBarView ActionBarView { get; set; }
+		//public ActionBarView ActionBarView { get; set; }
 
 		AssetDeltas _AssetDeltas = new AssetDeltas();
 		TxDeltaItemsEventArgs _TxDeltas;
@@ -38,7 +38,7 @@ namespace Wallet
 			} 
 			set {
 				_WalletView = value;
-				UpdateActionBar();
+				//UpdateActionBar();
 			} 
 		}
 
@@ -86,25 +86,25 @@ namespace Wallet
 					 );
 				}));
 
-				UpdateActionBar();
+				//UpdateActionBar();
 			});
 		}
 
-		void UpdateActionBar()
-		{
-			//bool hidden = AssetType is AssetTypeAll;
+		//void UpdateActionBar()
+		//{
+		//	//bool hidden = AssetType is AssetTypeAll;
 
-			if (WalletView == null)
-				return;
+		//	if (WalletView == null)
+		//		return;
 			
-			//WalletView.ActionBar = !hidden;
+		//	//WalletView.ActionBar = !hidden;
 
-			//if (!hidden)
-			//{
-				ActionBarView.Asset = AssetType;
-				ActionBarView.Total = _AssetDeltas.ContainsKey(_Asset) ? _AssetDeltas[_Asset] : 0;
-			//}
-		}
+		//	//if (!hidden)
+		//	//{
+		//		ActionBarView.Asset = AssetType;
+		//		ActionBarView.Total = _AssetDeltas.ContainsKey(_Asset) ? _AssetDeltas[_Asset] : 0;
+		//	//}
+		//}
 	}
 }
 
