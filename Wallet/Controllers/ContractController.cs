@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using ContractGenerator;
 using Gtk;
 using Infrastructure;
 
@@ -55,9 +57,14 @@ namespace Wallet
 			filechooser.Destroy();
 		}
 
-		public void Verify() {
+		public Task<ContractGenerationData> Verify(string fsCode)
+		{
+			return Verify(Encoding.ASCII.GetBytes(fsCode));
 		}
 
+		public Task<ContractGenerationData> Verify(byte[] fsCode) {
+			return ContractMockValidationMock.Instance.Generate(fsCode);
+		}
 	}
 }
 

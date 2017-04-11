@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Infrastructure;
 
-namespace BlockChain
+namespace ContractGenerator
 {
+	public interface IContractGenerator
+	{
+		Task<ContractGenerationData> Generate(byte[] fsCode);
+	}
+
 	public class ContractGenerationData
 	{
 		public byte[] Hints { get; set; }
@@ -10,22 +16,20 @@ namespace BlockChain
 		public ulong ActivationCost { get; set; }
 	}
 
-	public static class ContractMockValidation
+	public class ContractMockValidationMock : Singleton<ContractMockValidationMock>, IContractGenerator
 	{
-		public static async Task<ContractGenerationData> GenerateHints(byte[] fsCode)
+		public async Task<ContractGenerationData> Generate(byte[] fsCode)
 		{
-			new Task(() =>
+			await Task.Delay(1500);
+
+			var contractGenerationData = new ContractGenerationData()
 			{
-				var contractGenerationData = new ContractGenerationData()
-				{
-					Hints = new byte() { 0x00, 0x01, 0x02 },
-					KalapasPerBlock = 1000,
-					ActivationCost = 100
-				}
+				Hints = new byte[] { 0x00, 0x01, 0x02 },
+				KalapasPerBlock = 1000,
+				ActivationCost = 100
+			};
 
-				yield return contractGenerationData;
-
-			}).Start();
+			return contractGenerationData;
 		}
 	}
 }
