@@ -218,7 +218,7 @@ namespace Wallet.core
 		{
 			foreach (var key in _Keys)
 			{
-				if (key.IsMatch(output.@lock))
+				if (key.Address.IsMatch(output.@lock))
 				{
 					return key;
 				}
@@ -408,7 +408,7 @@ namespace Wallet.core
 		/// <param name="address">Address.</param>
 		/// <param name="asset">Asset.</param>
 		/// <param name="amount">Amount.</param>
-		public bool Sign(byte[] address, byte[] asset, ulong amount, out Types.Transaction signedTx)
+		public bool Sign(Address address, byte[] asset, ulong amount, out Types.Transaction signedTx)
 		{
 			ulong change;
 			Assets assets;
@@ -432,11 +432,11 @@ namespace Wallet.core
 						dbTx.Commit();
 					}
 			
-					outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(key.Address), new Types.Spend(asset, change)));
+					outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(asset, change)));
 				}
 			}
 
-			outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(address), new Types.Spend(Tests.zhash, amount)));
+			outputs.Add(new Types.Output(address.GetLock(), new Types.Spend(Tests.zhash, amount)));
 
 			signedTx = TransactionValidation.signTx(new Types.Transaction(
 				1,
@@ -479,7 +479,7 @@ namespace Wallet.core
 						dbTx.Commit();
 					}
 
-					outputs.Add(new Types.Output(Types.OutputLock.NewPKLock(key.Address), new Types.Spend(Tests.zhash, change)));
+					outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Tests.zhash, change)));
 				}
 			}
 

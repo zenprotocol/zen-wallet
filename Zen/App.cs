@@ -9,6 +9,7 @@ using Wallet.core.Data;
 using System.Threading;
 using BlockChain.Data;
 using Network;
+using Zen.Data;
 
 namespace Zen
 {
@@ -218,8 +219,7 @@ namespace Zen
 
 								JsonLoader<Outputs>.Instance.Value.Values.Add(new Output() { Key = key.ToString(), Amount = amount });
 
-								var pklock = Types.OutputLock.NewPKLock(key.Address);
-								outputs.Add(new Types.Output(pklock, new Types.Spend(Consensus.Tests.zhash, amount)));
+								outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
 							}
 							catch
 							{
@@ -237,8 +237,7 @@ namespace Zen
 							var key = Key.Create(output.Key);
 							var amount = output.Amount;
 
-							var pklock = Types.OutputLock.NewPKLock(key.Address);
-							outputs.Add(new Types.Output(pklock, new Types.Spend(Consensus.Tests.zhash, amount)));
+							outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
 						}
 					}
 

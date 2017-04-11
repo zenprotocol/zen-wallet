@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Network;
 
-namespace Zen
+namespace Zen.Data
 {
 	public class Settings
 	{

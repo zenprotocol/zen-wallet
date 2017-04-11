@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections.Generic;
 using Wallet.core.Data;
 using Infrastructure;
+using Zen.Data;
 
 namespace Zen
 {
@@ -165,7 +166,7 @@ namespace Zen
 					//	app.ImportWallet();
 					//	break;
 					case "Get Receive Address":
-						listTrace.Items.Add(app.GetUnusedKey().AddressAsString);
+						listTrace.Items.Add(app.GetUnusedKey().Address.ToString());
 						break;
 					case "Back":
 						menu("main");

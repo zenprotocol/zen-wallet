@@ -14,7 +14,7 @@ namespace Wallet
 			entryAddress.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
 			entryAddress.ModifyFont(Constants.Fonts.ActionBarBig);
 
-			var key = App.Instance.Wallet.GetUnusedKey().AddressAsString;
+			var key = App.Instance.Wallet.GetUnusedKey().Address.ToString();
 
 			Gtk.Clipboard clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 			buttonCopy.Clicked += delegate
