@@ -40,7 +40,7 @@
           <placeholder />
         </child>
         <child>
-          <widget class="Wallet.MenuButton" id="History">
+          <widget class="Wallet.MenuButton" id="Contract">
             <property name="MemberName" />
             <property name="HeightRequest">10</property>
             <property name="Events">ButtonPressMask</property>
@@ -51,23 +51,12 @@
           </packing>
         </child>
         <child>
-          <widget class="Wallet.MenuButton" id="Contract">
-            <property name="MemberName" />
-            <property name="HeightRequest">10</property>
-            <property name="Events">ButtonPressMask</property>
-          </widget>
-          <packing>
-            <property name="Position">4</property>
-            <property name="AutoSize">True</property>
-          </packing>
-        </child>
-        <child>
           <widget class="Wallet.MenuButton" id="Balance">
             <property name="MemberName" />
             <property name="Events">ButtonPressMask</property>
           </widget>
           <packing>
-            <property name="Position">5</property>
+            <property name="Position">4</property>
             <property name="AutoSize">True</property>
           </packing>
         </child>
@@ -388,38 +377,20 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.MainArea" design-size="1126 300">
+  <widget class="Gtk.Bin" id="Wallet.MainArea" design-size="1126 625">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
       <widget class="Gtk.Notebook" id="notebook1">
         <property name="MemberName" />
         <property name="CanFocus">True</property>
-        <property name="CurrentPage">1</property>
+        <property name="CurrentPage">0</property>
         <property name="ShowBorder">False</property>
-        <child>
-          <widget class="Wallet.Wallet" id="wallet1">
-            <property name="MemberName" />
-            <property name="Events">ButtonPressMask</property>
-          </widget>
-        </child>
-        <child>
-          <widget class="Gtk.Label" id="label6">
-            <property name="MemberName" />
-            <property name="LabelProp" translatable="yes">page1</property>
-          </widget>
-          <packing>
-            <property name="type">tab</property>
-          </packing>
-        </child>
         <child>
           <widget class="Wallet.WalletLayout" id="walletlayout1">
             <property name="MemberName" />
             <property name="Events">ButtonPressMask</property>
           </widget>
-          <packing>
-            <property name="Position">1</property>
-          </packing>
         </child>
         <child>
           <widget class="Gtk.Label" id="label3">
@@ -436,11 +407,11 @@
             <property name="Events">ButtonPressMask</property>
           </widget>
           <packing>
-            <property name="Position">2</property>
+            <property name="Position">1</property>
           </packing>
         </child>
         <child>
-          <widget class="Gtk.Label" id="label1">
+          <widget class="Gtk.Label" id="label12">
             <property name="MemberName" />
             <property name="LabelProp" translatable="yes">page4</property>
           </widget>
@@ -454,11 +425,11 @@
             <property name="Events">ButtonPressMask</property>
           </widget>
           <packing>
-            <property name="Position">3</property>
+            <property name="Position">2</property>
           </packing>
         </child>
         <child>
-          <widget class="Gtk.Label" id="label7">
+          <widget class="Gtk.Label" id="label13">
             <property name="MemberName" />
             <property name="LabelProp" translatable="yes">page2</property>
           </widget>
@@ -472,11 +443,11 @@
             <property name="Events">ButtonPressMask</property>
           </widget>
           <packing>
-            <property name="Position">4</property>
+            <property name="Position">3</property>
           </packing>
         </child>
         <child>
-          <widget class="Gtk.Label" id="label8">
+          <widget class="Gtk.Label" id="label15">
             <property name="MemberName" />
             <property name="LabelProp" translatable="yes">page3</property>
           </widget>
@@ -507,7 +478,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="Wallet.Contract" design-size="593 300">
+  <widget class="Gtk.Bin" id="Wallet.Contract" design-size="599 300">
     <property name="MemberName" />
     <property name="Visible">False</property>
     <child>
@@ -648,6 +619,17 @@
                   </widget>
                   <packing>
                     <property name="Position">1</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.Label" id="labelStatus">
+                    <property name="MemberName" />
+                  </widget>
+                  <packing>
+                    <property name="Position">2</property>
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>
@@ -2159,7 +2141,7 @@
             <child>
               <widget class="Gtk.Label" id="label1">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes">Assert:</property>
+                <property name="LabelProp" translatable="yes">Asset:</property>
               </widget>
               <packing>
                 <property name="Position">0</property>
