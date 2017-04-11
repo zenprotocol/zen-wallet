@@ -57,7 +57,7 @@ namespace Wallet
 			labelSelectedAsset.Text = labelSelectedAsset1.Text = assetType.Caption;
 
 			labelAmountValue.Text = WalletSendLayout.SendInfo.Amount.ToString();
-			entryDestination.Text = BitConverter.ToString(WalletSendLayout.SendInfo.Destination);
+			entryDestination.Text = WalletSendLayout.SendInfo.Destination.ToString();
 
 			UpdateStatus();
 		}

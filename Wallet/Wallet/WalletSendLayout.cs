@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gdk;
 using Gtk;
 using Wallet.core;
+using Wallet.core.Data;
 
 namespace Wallet
 {
@@ -21,7 +22,7 @@ namespace Wallet
 			get; set;
 		}
 	
-		public byte[] Destination
+		public Address Destination
 		{
 			get; set;
 		}
@@ -86,7 +87,7 @@ namespace Wallet
 			{
 				try
 				{
-					SendInfo.Destination = core.Data.Key.FromBase64String(((Entry)sender).Text);
+					SendInfo.Destination = new Address(((Entry)sender).Text);
 					labelDestinationError.Text = "";
 				}
 				catch

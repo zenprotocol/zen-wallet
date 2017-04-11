@@ -4,6 +4,7 @@ using System.Linq;
 using Consensus;
 using Microsoft.FSharp.Collections;
 using Store;
+using Wallet.core.Data;
 
 namespace BlockChain
 {
@@ -44,11 +45,12 @@ namespace BlockChain
 				null);
 		}
 
-		public static Types.Output GetOutput(byte[] address, byte[] asset, ulong amount)
+		public static Types.Output GetOutput(Address address, byte[] asset, ulong amount)
 		{
 			return new Types.Output(
-				Types.OutputLock.NewPKLock(address),
-				new Types.Spend(asset, amount));
+				address.GetLock(),
+				new Types.Spend(asset, amount)
+			);
 		}
 
 		public static Types.Output GetContractOutput(byte[] contractHash, byte[] data, byte[] asset, ulong amount)
