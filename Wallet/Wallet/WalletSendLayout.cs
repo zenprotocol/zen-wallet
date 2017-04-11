@@ -261,7 +261,7 @@ namespace Wallet
 
 		void CheckAssetAmount()
 		{
-			SendInfo.HasEnough = SendInfo.Amount <= _AssetBalance;
+			SendInfo.HasEnough = SendInfo.Amount <= _AssetBalance * Math.Pow(10, 8);
 
 			if (!SendInfo.HasEnough)
 			{

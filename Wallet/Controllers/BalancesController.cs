@@ -58,6 +58,9 @@ namespace Wallet
 				{
 					AddToTotals(b.Key, b.Value);
 
+					var total = _AssetDeltasTotal.ContainsKey(_Asset) ? _AssetDeltasTotal[_Asset] / Math.Pow(10, 8) : 0;
+					var decTotal = Convert.ToDecimal(total);
+
 					_LogView.AddLogEntryItem(new LogEntryItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
@@ -65,7 +68,7 @@ namespace Wallet
 					u.Time,
 					"TODO",
 					BitConverter.ToString(u.TxHash),
-					0
+					decTotal
 					));
 				}));
 
