@@ -201,6 +201,7 @@
     <Compile Include="Wallet\WalletSendConfirmationLayout.cs" />
     <Compile Include="gtk-gui\Wallet.WalletSendConfirmationLayout.cs" />
     <Compile Include="ImagesCache.cs" />
+    <Compile Include="Domain\Zen.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
