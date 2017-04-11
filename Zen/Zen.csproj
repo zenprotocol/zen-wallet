@@ -60,13 +60,13 @@
     <None Include="readme.md" />
     <None Include="Reset.txt" />
     <None Include="ResetAcquireAndSend.txt" />
-    <None Include="Config\genesis_outputs.json">
+    <None Include="genesis_outputs.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Config\keys.json">
+    <None Include="keys.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Config\network.json">
+    <None Include="network.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -113,7 +113,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Config\" />
     <Folder Include="Tests\" />
     <Folder Include="Data\" />
   </ItemGroup>
