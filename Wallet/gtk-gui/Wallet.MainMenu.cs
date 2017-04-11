@@ -10,8 +10,6 @@ namespace Wallet
 
 		private global::Wallet.MenuButton Portfolio;
 
-		private global::Wallet.MenuButton History;
-
 		private global::Wallet.MenuButton Contract;
 
 		private global::Wallet.MenuButton Balance;
@@ -43,28 +41,20 @@ namespace Wallet
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Portfolio]));
 			w2.Position = 1;
 			// Container child hboxContainer.Gtk.Box+BoxChild
-			this.History = new global::Wallet.MenuButton();
-			this.History.HeightRequest = 10;
-			this.History.Events = ((global::Gdk.EventMask)(256));
-			this.History.Name = "History";
-			this.hboxContainer.Add(this.History);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.History]));
-			w3.Position = 3;
-			// Container child hboxContainer.Gtk.Box+BoxChild
 			this.Contract = new global::Wallet.MenuButton();
 			this.Contract.HeightRequest = 10;
 			this.Contract.Events = ((global::Gdk.EventMask)(256));
 			this.Contract.Name = "Contract";
 			this.hboxContainer.Add(this.Contract);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Contract]));
-			w4.Position = 4;
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Contract]));
+			w3.Position = 3;
 			// Container child hboxContainer.Gtk.Box+BoxChild
 			this.Balance = new global::Wallet.MenuButton();
 			this.Balance.Events = ((global::Gdk.EventMask)(256));
 			this.Balance.Name = "Balance";
 			this.hboxContainer.Add(this.Balance);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Balance]));
-			w5.Position = 5;
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Balance]));
+			w4.Position = 4;
 			this.Add(this.hboxContainer);
 			if ((this.Child != null))
 			{
