@@ -36,6 +36,8 @@ namespace Wallet
 
 		private global::Gtk.Image image6;
 
+		private global::Gtk.Label labelStatus;
+
 		private global::Gtk.ScrolledWindow GtkScrolledWindow2;
 
 		private global::Gtk.TextView textview3;
@@ -155,11 +157,19 @@ namespace Wallet
 			w13.Position = 1;
 			w13.Expand = false;
 			w13.Fill = false;
-			this.vbox1.Add(this.hbox4);
-			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox4]));
+			// Container child hbox4.Gtk.Box+BoxChild
+			this.labelStatus = new global::Gtk.Label();
+			this.labelStatus.Name = "labelStatus";
+			this.hbox4.Add(this.labelStatus);
+			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.labelStatus]));
 			w14.Position = 2;
 			w14.Expand = false;
 			w14.Fill = false;
+			this.vbox1.Add(this.hbox4);
+			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox4]));
+			w15.Position = 2;
+			w15.Expand = false;
+			w15.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.GtkScrolledWindow2 = new global::Gtk.ScrolledWindow();
 			this.GtkScrolledWindow2.Name = "GtkScrolledWindow2";
@@ -170,13 +180,13 @@ namespace Wallet
 			this.textview3.Name = "textview3";
 			this.GtkScrolledWindow2.Add(this.textview3);
 			this.vbox1.Add(this.GtkScrolledWindow2);
-			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow2]));
-			w16.Position = 3;
+			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow2]));
+			w17.Position = 3;
 			this.hbox2.Add(this.vbox1);
-			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.vbox1]));
-			w17.Position = 1;
-			w17.Expand = false;
-			w17.Fill = false;
+			global::Gtk.Box.BoxChild w18 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.vbox1]));
+			w18.Position = 1;
+			w18.Expand = false;
+			w18.Fill = false;
 			this.Add(this.hbox2);
 			if ((this.Child != null))
 			{
