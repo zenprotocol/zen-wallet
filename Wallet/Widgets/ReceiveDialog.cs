@@ -10,7 +10,7 @@ namespace Wallet
 		{
 			this.Build();
 
-			entry1.Text = App.Instance.Wallet.GetUnusedKey ().AddressAsString;
+			entry1.Text = App.Instance.Wallet.GetUnusedKey().Address.ToString();
 
 			Gtk.Clipboard clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 

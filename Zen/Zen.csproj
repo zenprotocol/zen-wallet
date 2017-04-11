@@ -47,17 +47,28 @@
     <Compile Include="TUI.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Config\Outputs.cs" />
-    <Compile Include="Config\Settings.cs" />
-    <Compile Include="Config\Keys.cs" />
     <Compile Include="AppTraceListener.cs" />
     <Compile Include="Tests\UITests.cs" />
+    <Compile Include="Data\Keys.cs" />
+    <Compile Include="Data\Outputs.cs" />
+    <Compile Include="Data\Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="app.config" />
     <None Include="readme.md" />
+    <None Include="Reset.txt" />
+    <None Include="ResetAcquireAndSend.txt" />
+    <None Include="Config\genesis_outputs.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\keys.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\network.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wallet\GUI.csproj">
@@ -104,5 +115,6 @@
   <ItemGroup>
     <Folder Include="Config\" />
     <Folder Include="Tests\" />
+    <Folder Include="Data\" />
   </ItemGroup>
 </Project>

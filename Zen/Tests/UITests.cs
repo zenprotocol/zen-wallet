@@ -8,6 +8,7 @@ using System.IO;
 using System.Reflection;
 using Consensus;
 using BlockChain;
+using Zen.Data;
 
 namespace Zen
 {

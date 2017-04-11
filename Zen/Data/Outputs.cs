@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Zen
+namespace Zen.Data
 {
 	public class Output
 	{
