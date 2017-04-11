@@ -29,12 +29,31 @@ namespace Wallet
 			txtContractCode.ModifyText (StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
 			textview3.ModifyText (StateType.Normal, new Gdk.Color (0x0F7, 0x0F7, 0x0F7));
 
+			labelStatus.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text.Gdk);
+
 			eventboxCreateOrExtend.ButtonPressEvent += delegate {
 				ContractController.Instance.CreateOrExtend();
 			};
 
-			eventboxValidate.ButtonPressEvent += delegate {
-				ContractController.Instance.Verify();
+			bool isGenerateBusy = false;
+			eventboxValidate.ButtonPressEvent += async (o, args) => {
+				if (isGenerateBusy)
+				{
+					labelStatus.Text = "Generating, skipped.";
+					return;
+				}
+
+				isGenerateBusy = true;
+				labelStatus.Text = "Generating...";
+				var contractGenerationData = await ContractController.Instance.Verify(Code);
+
+				Gtk.Application.Invoke(delegate
+				{
+					Proof = BitConverter.ToString(contractGenerationData.Hints);
+				});
+
+				labelStatus.Text = "Done.";
+				isGenerateBusy = false;
 			};
 
 			eventboxLoad.ButtonPressEvent += delegate {
