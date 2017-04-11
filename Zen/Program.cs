@@ -20,8 +20,8 @@ namespace Zen
 				{ "t|tui", "show TUI",
 					v => tui = true },
 				
-				//{ "p|profile=", "use settings profile",
-				//	v =>  app.Settings.NetworkProfile = v },
+				{ "p|profile=", "use settings profile",
+					v =>  app.Settings.NetworkProfile = v },
 				//{ "settings=", "use settings profile",
 				//	v =>  app.Settings.SettingsProfile = v },
 				//{ "k|key=", "add private key",

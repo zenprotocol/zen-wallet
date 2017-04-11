@@ -3,8 +3,18 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
     <StartProgram></StartProgram>
-    <StartArguments>-d</StartArguments>
+    <StartArguments>-t</StartArguments>
     <ExternalConsole>true</ExternalConsole>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Local-server' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>-t -localhost -db=local_server</StartArguments>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Local-client' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>-t -localhost-connect -db=local_client</StartArguments>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
 </Project>

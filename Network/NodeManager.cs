@@ -82,8 +82,8 @@ namespace Network
 			_Network.PeersToFind = 1;
 			_Network.MaximumNodeConnection = 1;
 
-			if (!_Network.Seeds.Contains(_NATManager.InternalIPAddress.ToString()))
-				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());	
+			_Network.Seeds.Clear();
+			_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());	
 			
 			JsonLoader<NetworkInfo>.Instance.Save();
 			Connect(null);
@@ -104,8 +104,8 @@ namespace Network
 			_Network.PeersToFind = 1;
 			_Network.MaximumNodeConnection = 1;
 
-			if (!_Network.Seeds.Contains(ipAddress.ToString()))
-				_Network.Seeds.Add(ipAddress.ToString());
+			_Network.Seeds.Clear();
+			_Network.Seeds.Add(ipAddress.ToString());
 
 			JsonLoader<NetworkInfo>.Instance.Save();
 			Connect(null);
