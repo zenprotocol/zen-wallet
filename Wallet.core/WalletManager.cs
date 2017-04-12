@@ -73,6 +73,14 @@ namespace Wallet.core
 			}
 		}
 
+		public List<Key> GetKeys()
+		{
+			using (var context = _DBContext.GetTransactionContext())
+			{
+				return _KeyStore.List(context);
+			}
+		}
+
 		public void ResetUIHandlers()
 		{
 			if (OnItems != null)
