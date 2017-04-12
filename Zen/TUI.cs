@@ -8,6 +8,7 @@ using Infrastructure;
 using Zen.Data;
 using System.Globalization;
 using Wallet.Constants;
+using Wallet.core;
 
 namespace Zen
 {
@@ -208,7 +209,7 @@ namespace Zen
 					case "List Keys":
 						listMenu.Items.Clear();
 
-						foreach (var key in app.ListKeys())
+						foreach (var key in app.WalletManager.GetKeys())
 						{
 							string info = key.Used ? "used" : "ununsed";
 
@@ -226,28 +227,14 @@ namespace Zen
 					//	app.ImportWallet();
 					//	break;
 					case "Get Receive Address":
-						listTrace.Items.Add(app.GetUnusedKey().Address.ToString());
+						listTrace.Items.Add(app.WalletManager.GetUnusedKey().Address.ToString());
 						break;
 					case "My Wallet":
 						listMenu.Items.Clear();
 
-						foreach (var txDelta in app.GetTxDeltaList())
+						foreach (var txDelta in app.WalletManager.TxDeltaList)
 						{
-							string info = txDelta.TxState.ToString();
-
-							info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
-
-							if (txDelta.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
-							{
-								var value = txDelta.AssetDeltas[Consensus.Tests.zhash];
-								info += ", " + value;
-							}
-							else
-							{
-								info += ", " + "Other asset";
-							}
-							
-							listMenu.Items.Add(info);
+							listMenu.Items.Add(GetTxDeltaInfo(txDelta));
 						}
 						listMenu.Items.Add("Back");
 						break;
@@ -262,7 +249,7 @@ namespace Zen
 						{
 							if (a == output.Amount + " " + output.Key)
 							{
-								app.ImportKey(output.Key);
+								app.WalletManager.Import(Key.Create(output.Key));
 							}
 						}
 						break;
@@ -276,7 +263,7 @@ namespace Zen
 					case "Import all genesis":
 						app.AddGenesisBlock();
 
-						JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+						JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
 						app.Reconnect();
 						app.GUI();
@@ -316,10 +303,43 @@ namespace Zen
 				}
 			};
 
+			Action<ResetEventArgs> wallet_OnReset = a =>
+			{
+				foreach (var txDelta in a.TxDeltaList)
+					listTrace.Items.Add(GetTxDeltaInfo(txDelta, "Wallet reset"));
+			};
+
+			Action<TxDeltaItemsEventArgs> wallet_OnItems = a =>
+		   	{
+				foreach (var txDelta in a)
+					listTrace.Items.Add(GetTxDeltaInfo(txDelta, "Wallet item"));
+		   	};
+
+			app.WalletOnItemsHandler = wallet_OnItems;
+			app.WalletOnResetHandler = wallet_OnReset;
+
 		//	app.Init();
 			root.Run();
 		}
 
+        static string GetTxDeltaInfo(TxDelta txDelta, string prefix = null)
+		{
+			string info = (prefix == null ? "" : prefix + ": ") + txDelta.TxState.ToString();
+
+			info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
+			if (txDelta.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
+			{
+				var value = txDelta.AssetDeltas[Consensus.Tests.zhash];
+				info += ", " + value;
+			}
+			else
+			{
+				info += ", " + "Other asset";
+			}
+
+			return info;
+		}
+						                
 		public static void WriteColor(string message, ConsoleColor color)
 		{
 			if (listTrace != null)
