@@ -8,8 +8,6 @@ namespace Wallet
 {
 	public class WalletController : Singleton<WalletController>
 	{
-		//public ActionBarView ActionBarView { get; set; }
-
 		AssetDeltas _AssetDeltas = new AssetDeltas();
 		TxDeltaItemsEventArgs _TxDeltas;
 		ITransactionsView _ITransactionsView;
@@ -26,9 +24,25 @@ namespace Wallet
 				_ITransactionsView = value;
 				_TxDeltas = App.Instance.Wallet.TxDeltaList;
 				Apply();
-				App.Instance.Wallet.OnReset += delegate { value.Clear(); };
-				App.Instance.Wallet.OnItems += a => { _TxDeltas = a; Apply(); };
+
+				App.Instance.Wallet.OnReset -= Wallet_OnReset; // ensure single registration
+				App.Instance.Wallet.OnReset += Wallet_OnReset;
+				App.Instance.Wallet.OnItems -= Wallet_OnItems; // ensure single registration
+				App.Instance.Wallet.OnItems += Wallet_OnItems;
 			}
+		}
+
+		void Wallet_OnReset(ResetEventArgs args)
+		{
+			_ITransactionsView.Clear();
+			_TxDeltas = args.TxDeltaList;
+			Apply();
+		}
+
+		void Wallet_OnItems(TxDeltaItemsEventArgs args)
+		{
+			_TxDeltas = args;
+			Apply();
 		}
 
 		IWalletView _WalletView;
