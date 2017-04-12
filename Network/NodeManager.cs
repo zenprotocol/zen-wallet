@@ -80,6 +80,11 @@ namespace Network
 			}
 			else
 #endif
+			if (!string.IsNullOrEmpty(_Network.ExternalIPAddress))
+			{
+				ipAddress = _NATManager.ExternalIPAddress;
+			}
+			else
 			{
 				await _NATManager.Init();
 
