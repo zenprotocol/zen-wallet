@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Wallet.core.Data;
 using Infrastructure;
 using Zen.Data;
+using System.Globalization;
+using Wallet.Constants;
 
 namespace Zen
 {
@@ -35,9 +37,11 @@ namespace Zen
 			options["wallet"] = new List<string>();
 		//	options["wallet"].Add("Reset");
 		//	options["wallet"].Add("Sync");
-			options["wallet"].Add("Add Key");
+			options["wallet"].Add("Add Genesis UTXO");
 			options["wallet"].Add("List Keys");
 			options["wallet"].Add("Get Receive Address");
+			options["wallet"].Add("My Wallet");
+			options["wallet"].Add("Send Dialog");
 			options["wallet"].Add("Back");
 
 			options["blockchain"] = new List<string>();
@@ -67,23 +71,62 @@ namespace Zen
 
 			dialog = new Dialog(root) { Text = string.IsNullOrEmpty(app.Settings.NetworkProfile) ? "Zen" : app.Settings.NetworkProfile, Width = 75, Height = 19, Top = 2, Left = 2, Border = BorderStyle.Thick };
 
-			//var dialogMenu = new Dialog(root) { Text = "Menu", Width = 50, Height = 10, Top = 6, Left = 6, Border = BorderStyle.Thick, Visible = false };
-			//var x = new SingleLineTextbox(dialogMenu)
-			//{
-			//	Top = 1,
-			//	Left = 1,
-			//	Width = 20
-			//};
-			//Action addDialog = () =>
-			//{
-			//	dialog.Hide();
-			//	//listMenu = new ListBox(dialog) { Top = 1, Left = 1, Width = 70, Height = 6, Border = BorderStyle.Thin };
-			//	//listTrace = new ListBox(dialog) { Top = 8, Left = 1, Width = 73, Height = 11, Border = BorderStyle.Thin };
-			//	dialogMenu.Show();
-			//	x.SetFocus();
-			//};
+			var sendDialog = new Dialog(root) { Text = "Send", Width = 70, Height = 18, Top = 4, Left = 4, Border = BorderStyle.Thick, Visible = false };
 
-			//dialogMenu.Hide();
+			new Label(sendDialog) { Top = 1, Left = 1, Width = 66, Text = "Destination" };
+			var address = new SingleLineTextbox(sendDialog) { Top = 3, Left = 1, Width = 65 };
+			new Label(sendDialog) { Top = 5, Left = 1, Width = 66, Text = "Amount" };
+			var amount = new SingleLineTextbox(sendDialog) { Top = 7, Left = 1, Width = 65 };
+			var sendDialogSendButton = new Button(sendDialog) { Top = 10, Left = 1, Width = 15, Text = "Send" };
+			var sendDialogCloseButton = new Button(sendDialog) { Top = 10, Left = 20, Width = 15, Text = "Close" };
+			var status = new Label(sendDialog) { Top = 16, Left = 1, Width = 40, Text = "", Background = ConsoleColor.Black };
+
+			sendDialogCloseButton.Clicked += (sender, e) => {
+				sendDialog.Hide();
+				dialog.Show();
+			};
+
+			sendDialogSendButton.Clicked += (sender, e) =>
+			{
+				ulong _amount;
+
+				try
+				{
+					_amount = ulong.Parse(amount.Text);
+				}
+				catch
+				{
+					status.Text = "Invalid amount";
+					return;
+				}
+
+				Address _address;
+
+				try
+				{
+					_address = new Address(address.Text);
+				}
+				catch
+				{
+					status.Text = "Invalid address";
+					return;
+				}
+
+				if (!app.Spend(_amount, _address))
+				{
+					status.Text = "Could not spend";
+					return;
+				}
+
+				status.Text = "Success";
+			};
+
+			Action showSendDialog = () => {
+				status.Text = "";
+				dialog.Hide();
+				sendDialog.Show();
+				address.SetFocus();
+			};
 
 			actions["main"] = async a =>
 			{
@@ -153,7 +196,7 @@ namespace Zen
 			{
 				switch (a)
 				{
-					case "Add Key":
+					case "Add Genesis UTXO":
 						listMenu.Items.Clear();
 
 						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
@@ -184,6 +227,32 @@ namespace Zen
 					//	break;
 					case "Get Receive Address":
 						listTrace.Items.Add(app.GetUnusedKey().Address.ToString());
+						break;
+					case "My Wallet":
+						listMenu.Items.Clear();
+
+						foreach (var txDelta in app.GetTxDeltaList())
+						{
+							string info = txDelta.TxState.ToString();
+
+							info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
+
+							if (txDelta.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
+							{
+								var value = txDelta.AssetDeltas[Consensus.Tests.zhash];
+								info += ", " + value;
+							}
+							else
+							{
+								info += ", " + "Other asset";
+							}
+							
+							listMenu.Items.Add(info);
+						}
+						listMenu.Items.Add("Back");
+						break;
+					case "Send Dialog":
+						showSendDialog();
 						break;
 					case "Back":
 						menu("main");

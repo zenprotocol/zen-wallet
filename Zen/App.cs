@@ -28,15 +28,6 @@ namespace Zen
 		{
 			Settings = new Settings();
 
-			string networkProfileFile = Settings.NetworkProfile ?? ConfigurationManager.AppSettings.Get("network");
-
-			if (!networkProfileFile.EndsWith(".json"))
-			{
-				networkProfileFile += ".json";
-			}
-
-			JsonLoader<NetworkInfo>.Instance.FileName = networkProfileFile;
-
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
 
 			InitSettingsProfile();
@@ -51,6 +42,12 @@ namespace Zen
 				if (_NodeManager != null)
 					_NodeManager.MinerEnabled = value;
 			}
+		}
+
+		internal List<TxDelta> GetTxDeltaList()
+		{
+			EnsureInitialized(_WalletManager);
+			return _WalletManager.TxDeltaList;
 		}
 
 		internal bool AddGenesisBlock()
@@ -82,31 +79,21 @@ namespace Zen
 			return _WalletManager.GetUnusedKey();
 		}
 
-		internal bool Spend(ulong amount)
+		internal bool Spend(ulong amount, Address address = null)
 		{
 			Types.Transaction tx;
-			return Spend(amount, out tx);
-		}
 
-		internal bool Spend(ulong amount, out Types.Transaction tx)
-		{
-			var key = Key.Create();
-
-			if (_WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx))
+			if (_WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx))
 			{
 				return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
-			else
-			{
-				return false;
-			}
+
+			return false;
 		}
 
-		internal bool Sign(ulong amount, out Types.Transaction tx)
+		internal bool Sign(ulong amount, out Types.Transaction tx, Address address = null)
 		{
-			var key = Key.Create();
-
-			return _WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx);
+			return _WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx);
 		}
 
 		internal bool Transmit(Types.Transaction tx)
@@ -190,6 +177,10 @@ namespace Zen
 
 			if (_NodeManager == null)
 			{
+				string confFile = Settings.NetworkProfile ?? ConfigurationManager.AppSettings.Get("network");
+				confFile += confFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? "" : ".json";
+				JsonLoader<NetworkInfo>.Instance.FileName = confFile;
+
 				_NodeManager = new NodeManager(_BlockChain);
 				_NodeManager.MinerEnabled = _MinerEnabled;
 			}
