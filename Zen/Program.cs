@@ -20,7 +20,7 @@ namespace Zen
 				{ "t|tui", "show TUI",
 					v => tui = true },
 				
-				{ "p|profile=", "use settings profile",
+				{ "n|network=", "use network profile",
 					v =>  app.Settings.NetworkProfile = v },
 				//{ "settings=", "use settings profile",
 				//	v =>  app.Settings.SettingsProfile = v },
@@ -30,34 +30,17 @@ namespace Zen
 				//	v => app.Settings.SaveNetworkProfile = v != null },
 				//{ "save_settings", "save general settings profile (to be used with settings option)",
 				//	v => app.Settings.SaveSettings = v != null },
-				//{ "seed=", "use seed ip address", 
-				//	v => app.Settings.Seeds.Add(v) },
-				//{ "peers=", "number peers to find", 
-				//	v => app.Settings.PeersToFind = int.Parse(v) },
-				//{ "connections=", "number of node connections", 
-				//	v => app.Settings.Connections = int.Parse(v) },
-				//{ "port=", "default network port", 
-				//	v => app.Settings.Port = int.Parse(v) },
+
+				{ "db=", "DB suffix", 
+					v => app.Settings.DBSuffix = v },
 
 				{ "d|disable-network", "disable networking",
 					v => app.Settings.DisableNetworking = true },
-				{ "connect=", "connect to seed's ip address",
-					v => app.Settings.ConnectToSeed = IPAddress.Parse(v) },
-				{ "external-ip=", "use external ip address", 
-					v => app.Settings.ExternalAddress = IPAddress.Parse(v) },
-				{ "localhost", "act as localhost",
-					v => app.Settings.AsLocalhost = v != null },
-				{ "localhost-connect", "connect to localhost",
-					v => app.Settings.ConnectToLocalhost = v != null },
-				
-				{ "db=", "DB suffix", 
-					v => app.Settings.DBSuffix = v },
 				
 				//{ "o|output=", "add a genesis block transaction output (address, amount)",
 				//	v => app.Settings.AddOutput(v) },
 				//{ "ge|genesis", "init the genesis block",
 				//	v => app.Settings.InitGenesisBlock = v != null },
-
 
 				//{ "v", "increase debug message verbosity",
 				//	v => { if (v != null) ++verbosity; } },

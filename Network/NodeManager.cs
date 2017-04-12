@@ -35,7 +35,10 @@ namespace Network
 		NodesGroup _NodesGroup;
 
 		bool _MinerEnabled;
-		public bool MinerEnabled { set {
+		public bool MinerEnabled
+		{
+			set
+			{
 				_MinerEnabled = value;
 
 				if (_Miner != null)
@@ -58,62 +61,36 @@ namespace Network
 			_NATManager = new NATManager(_Network.DefaultPort);
 		}
 
-		public void Connect()
+		public async Task Connect()
 		{
-			_NATManager.Init().ContinueWith(t =>
+			IPAddress ipAddress = null;
+
+#if DEBUG
+			if (_Network.IsLANHost)
 			{
+				ipAddress = _NATManager.InternalIPAddress;
+				_Network.PeersToFind = 0;
+			}
+			else if (_Network.IsLANClient)
+			{
+				ipAddress = null;
+				_Network.PeersToFind = 1;
+				_Network.Seeds.Clear();
+				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
+			}
+			else
+#endif
+			{
+				await _NATManager.Init();
+
 				if (_NATManager.DeviceFound &&
 					_NATManager.Mapped.Value &&
 					_NATManager.ExternalIPVerified.Value)
 				{
-					Connect(_NATManager.ExternalIPAddress);
+					ipAddress = _NATManager.ExternalIPAddress;
 				}
-				else
-				{
-					Connect(null);
-				}
-			});
-		}
+			}
 
-#if DEBUG
-		public void ConnectToLocalhost()
-		{
-			_Network.DefaultPort = 9999;
-			_Network.PeersToFind = 1;
-			_Network.MaximumNodeConnection = 1;
-
-			_Network.Seeds.Clear();
-			_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());	
-			
-			JsonLoader<NetworkInfo>.Instance.Save();
-			Connect(null);
-		}
-
-		public void AsLocalhost()
-		{
-			_Network.DefaultPort = 9999;
-			_Network.PeersToFind = 0;
-			_Network.MaximumNodeConnection = 0;
-			JsonLoader<NetworkInfo>.Instance.Save();
-			Connect(_NATManager.InternalIPAddress); 
-		}
-
-		public void ConnectToSeed(IPAddress ipAddress)
-		{
-			_Network.DefaultPort = 9999;
-			_Network.PeersToFind = 1;
-			_Network.MaximumNodeConnection = 1;
-
-			_Network.Seeds.Clear();
-			_Network.Seeds.Add(ipAddress.ToString());
-
-			JsonLoader<NetworkInfo>.Instance.Save();
-			Connect(null);
-		}
-#endif
-
-		public void Connect(IPAddress ipAddress)
-		{
 			_BroadcastHubBehavior = new BroadcastHubBehavior();
 
 			_Miner = new Miner(_BlockChain);
@@ -135,10 +112,6 @@ namespace Network
 			{
 				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.Discover;
 			}
-
-			//_BlockChain.OnAddedToMempool += t => {
-			//	broadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(t);
-			//};
 
 			if (ipAddress != null)
 			{ 

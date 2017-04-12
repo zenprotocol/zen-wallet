@@ -82,7 +82,7 @@ namespace Zen
 
 			//dialogMenu.Hide();
 
-			actions["main"] = a =>
+			actions["main"] = async a =>
 			{
 				switch (a)
 				{
@@ -96,12 +96,10 @@ namespace Zen
 						menu("miner");
 						break;
 					case "Start Node":
-						app.Start();
-						dialog.Text += " (running)";
+						await app.Start();
 						break;
 					case "Start GUI":
 						app.GUI();
-						dialog.Text += " (running)";
 						break;
 					case "Stop":
 						app.Stop();
@@ -217,14 +215,6 @@ namespace Zen
 			menu("main");
 			//	app.Settings.InitGenesisBlock = checkboxGenesis.Checked;
 
-			app.OnInitProfile += network => {
-			//	if (network.Seeds != null) {
-			//		foreach (String seed in network.Seeds) {
-					//	peersList.Items.Add (seed);
-			//		}
-			//	}
-			};
-							
 			listMenu.Clicked += (object sender, EventArgs e) => {
 		//		var option = currentMenu + "_" + ((ListBox)sender).SelectedItem;
 
