@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Net;
+using Infrastructure;
 using Network;
 
 namespace Zen.Data
@@ -12,8 +14,19 @@ namespace Zen.Data
 
 		private string _DBSuffix = null;
 		public String DBSuffix { get { return string.IsNullOrEmpty(_DBSuffix) ? "" : "_" + _DBSuffix; } set { _DBSuffix = value; } }
+
+		private string _NetworkProfile;
+		public String NetworkProfile { 
+			get { 
+				return _NetworkProfile; 
+			} 
+			set {
+				_NetworkProfile = value;
+				JsonLoader<NetworkInfo>.Instance.FileName = value + (value.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? "" : ".json");
+			}
+		}
+
 		public List<String> Keys { get; set; }
-		public String NetworkProfile { get; set; }
 		public String SettingsProfile { get; set; }
 		public bool SaveSettings { get; set; }
 		public bool DisableNetworking { get; set; }
@@ -21,6 +34,8 @@ namespace Zen.Data
 		public Settings() {
 			GenesisOutputs = new List<Tuple<string, string>>();
 			Keys = new List<string>();
+
+			NetworkProfile = ConfigurationManager.AppSettings.Get("network");
 		}
 
 		public void AddOutput(String output)

@@ -20,9 +20,85 @@ namespace Zen
 	{
 		public Settings Settings { get; set; }
 
-		private BlockChain.BlockChain _BlockChain;
-		private WalletManager _WalletManager;
-		private NodeManager _NodeManager;
+		Action<TxDeltaItemsEventArgs> _WalletOnItemsHandler;
+		public Action<TxDeltaItemsEventArgs> WalletOnItemsHandler
+		{
+			get
+			{
+				return _WalletOnItemsHandler;
+			}
+			set
+			{
+				_WalletOnItemsHandler = value;
+
+				if (_WalletManager != null)
+				{
+					_WalletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
+					_WalletManager.OnItems += WalletOnItemsHandler;
+				}
+			}
+		}
+
+		Action<ResetEventArgs> _WalletOnResetHandler;
+		public Action<ResetEventArgs> WalletOnResetHandler
+		{
+			get
+			{
+				return _WalletOnResetHandler;
+			}
+			set
+			{
+				_WalletOnResetHandler = value;
+
+				if (_WalletManager != null)
+				{
+					_WalletManager.OnReset -= WalletOnResetHandler; // ensure single registration
+					_WalletManager.OnReset += WalletOnResetHandler;
+				}
+			}
+		}
+
+		BlockChain.BlockChain _BlockChain = null;
+		WalletManager _WalletManager = null;
+		NodeManager _NodeManager = null;
+
+		BlockChain.BlockChain BlockChain_ //TODO: refactor class name - conflicts with namespace/member
+		{
+			get
+			{
+				if (_BlockChain == null)
+					_BlockChain = new BlockChain.BlockChain(DefaultBlockChainDB + Settings.DBSuffix, GenesisBlock.Key);
+
+				return _BlockChain;
+			}
+		}
+
+		public WalletManager WalletManager
+		{
+			get
+			{
+				if (_WalletManager == null)
+					_WalletManager = new WalletManager(BlockChain_, DefaultWalletDB + Settings.DBSuffix);
+
+				_WalletManager.OnReset -= WalletOnResetHandler; // ensure single registration
+				_WalletManager.OnReset += WalletOnResetHandler;
+				_WalletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
+				_WalletManager.OnItems += WalletOnItemsHandler;
+
+				return _WalletManager;
+			}
+		}
+
+		NodeManager NodeManager
+		{
+			get
+			{
+				if (_NodeManager == null)
+					_NodeManager = new NodeManager(BlockChain_);
+
+				return _NodeManager;
+			}
+		}
 
 		public App()
 		{
@@ -44,12 +120,6 @@ namespace Zen
 			}
 		}
 
-		internal List<TxDelta> GetTxDeltaList()
-		{
-			EnsureInitialized(_WalletManager);
-			return _WalletManager.TxDeltaList;
-		}
-
 		internal bool AddGenesisBlock()
 		{
 			return AddBlock(GenesisBlock.Value);
@@ -57,35 +127,16 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
-			EnsureInitialized(_BlockChain);
-			return _BlockChain.HandleBlock(block) == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
-		}
-
-		internal void ImportKey(string key)
-		{
-			EnsureInitialized(_WalletManager);
-			_WalletManager.Import(Key.Create(key));
-		}
-
-		internal List<Key> ListKeys()
-		{
-			EnsureInitialized(_WalletManager);
-			return _WalletManager.GetKeys();
-		}
-
-		internal Key GetUnusedKey()
-		{
-			EnsureInitialized(_WalletManager);
-			return _WalletManager.GetUnusedKey();
+			return BlockChain_.HandleBlock(block) ==  BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
 		internal bool Spend(ulong amount, Address address = null)
 		{
 			Types.Transaction tx;
 
-			if (_WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx))
+			if (WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx))
 			{
-				return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+				return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
 
 			return false;
@@ -93,19 +144,19 @@ namespace Zen
 
 		internal bool Sign(ulong amount, out Types.Transaction tx, Address address = null)
 		{
-			return _WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx);
+			return WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx);
 		}
 
 		internal bool Transmit(Types.Transaction tx)
 		{
-			return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+			return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal long AssetMount()
 		{
 			long amount = 0;
 
-			_WalletManager.TxDeltaList.ForEach((obj) =>
+			WalletManager.TxDeltaList.ForEach((obj) =>
 			{
 				if (obj.TxState != TxStateEnum.Invalid && obj.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
 				{
@@ -168,46 +219,19 @@ namespace Zen
 				Directory.Delete(Path.Combine(dbDir, DefaultWalletDB + Settings.DBSuffix), true);
 		}
 
-		internal void EnsureInitialized(object obj = null)
-		{
-			if (_BlockChain == null)
-				_BlockChain = new BlockChain.BlockChain(DefaultBlockChainDB + Settings.DBSuffix, GenesisBlock.Key);
-
-			if (obj == _BlockChain)
-				return;
-
-			if (_WalletManager == null)
-				_WalletManager = new WalletManager(_BlockChain, DefaultWalletDB + Settings.DBSuffix);
-
-			if (obj == _WalletManager)
-				return;
-
-			if (_NodeManager == null)
-			{
-				string confFile = Settings.NetworkProfile ?? ConfigurationManager.AppSettings.Get("network");
-				confFile += confFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? "" : ".json";
-				JsonLoader<NetworkInfo>.Instance.FileName = confFile;
-
-				_NodeManager = new NodeManager(_BlockChain);
-				_NodeManager.MinerEnabled = _MinerEnabled;
-			}
-		}
-
 		public async Task Reconnect()
 		{
 			if (!Settings.DisableNetworking)
 			{
 				Stop();
-				EnsureInitialized();
 
-				await _NodeManager.Connect();
+				await NodeManager.Connect();
 			}
 		}
 
 		public void GUI()
 		{
-			EnsureInitialized();
-			Wallet.App.Instance.Start(_WalletManager, _NodeManager);
+			Wallet.App.Instance.Start(WalletManager, NodeManager);
 		}
 
 		private Keyed<Types.Block> _GenesisBlock = null;
