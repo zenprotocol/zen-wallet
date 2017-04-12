@@ -9,6 +9,7 @@ using System.Reflection;
 using Consensus;
 using BlockChain;
 using Zen.Data;
+using Wallet.core.Data;
 
 namespace Zen
 {
@@ -44,7 +45,7 @@ namespace Zen
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o =>
 			{
 				expectedAmount += o.Amount;
-				app.ImportKey(o.Key);
+				app.WalletManager.Import(Key.Create(o.Key));
 			});
 
 			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
@@ -73,7 +74,7 @@ namespace Zen
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o =>
 			{
 				expectedAmount += o.Amount;
-				app.ImportKey(o.Key);
+				app.WalletManager.Import(Key.Create(o.Key));
 			});
 
 			Thread.Sleep(000);
@@ -102,7 +103,7 @@ namespace Zen
 
 			app.AddGenesisBlock();
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
 			app.Reconnect();
 
@@ -141,7 +142,7 @@ namespace Zen
 	//		var _NewTx = Infrastructure.Testing.Utils.GetTx().AddOutput(app.GetUnusedKey().Address, Tests.zhash, 1);
 
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
 			app.Reconnect();
 
@@ -196,7 +197,7 @@ namespace Zen
 
 			app.AddGenesisBlock();
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
 			app.Reconnect();
 
