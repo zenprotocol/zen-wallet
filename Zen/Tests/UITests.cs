@@ -204,7 +204,7 @@ namespace Zen
 			{
 				Types.Transaction tx;
 				Thread.Sleep(1000);
-				Assert.That(app.Spend(2, out tx), Is.True);
+				Assert.That(app.Sign(2, out tx), Is.True);
 				Thread.Sleep(1000);
 
 				var block = app.GenesisBlock.Value.Child().AddTx(tx);
