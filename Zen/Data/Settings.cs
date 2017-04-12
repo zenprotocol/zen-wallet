@@ -9,7 +9,9 @@ namespace Zen.Data
 	{
 		public List<Tuple<string, string>> GenesisOutputs { get; set; }
 		public bool InitGenesisBlock { get; set; }
-		public String DBSuffix { get; set; }
+
+		private string _DBSuffix = null;
+		public String DBSuffix { get { return string.IsNullOrEmpty(_DBSuffix) ? "" : "_" + _DBSuffix; } set { _DBSuffix = value; } }
 		public List<String> Keys { get; set; }
 		public String NetworkProfile { get; set; }
 		public String SettingsProfile { get; set; }

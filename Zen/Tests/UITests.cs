@@ -37,8 +37,6 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
-
 			app.AddGenesisBlock();
 
 			ulong expectedAmount = 0;
@@ -51,7 +49,7 @@ namespace Zen
 
 			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
 
-			app.Start();
+			app.Reconnect();
 
 			new Thread(() =>
 			{
@@ -70,8 +68,6 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
-
 			ulong expectedAmount = 0;
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o =>
@@ -86,7 +82,7 @@ namespace Zen
 
 			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
 			      
-			app.Start();
+			app.Reconnect();
 
 			new Thread(() =>
 			{
@@ -104,13 +100,11 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
-
 			app.AddGenesisBlock();
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
 
-			app.Start();
+			app.Reconnect();
 
 			Task.Run(() =>
 			{
@@ -142,7 +136,6 @@ namespace Zen
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
-			app.Init();
 			app.AddGenesisBlock();
 			
 	//		var _NewTx = Infrastructure.Testing.Utils.GetTx().AddOutput(app.GetUnusedKey().Address, Tests.zhash, 1);
@@ -150,7 +143,7 @@ namespace Zen
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
 
-			app.Start();
+			app.Reconnect();
 
 			Task.Run(() =>
 			{
@@ -201,12 +194,11 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
 			app.AddGenesisBlock();
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
 
-			app.Start();
+			app.Reconnect();
 
 			Task.Run(() =>
 			{
