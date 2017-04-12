@@ -158,7 +158,14 @@ namespace Zen
 		internal void ResetDB()
 		{
 			Stop();
-			Directory.Delete(ConfigurationManager.AppSettings.Get("dbDir"), true);
+
+			var dbDir = ConfigurationManager.AppSettings.Get("dbDir");
+
+			if (Directory.Exists(Path.Combine(dbDir, DefaultBlockChainDB + Settings.DBSuffix)))
+				Directory.Delete(Path.Combine(dbDir, DefaultBlockChainDB + Settings.DBSuffix), true);
+
+			if (Directory.Exists(Path.Combine(dbDir, DefaultWalletDB + Settings.DBSuffix)))
+				Directory.Delete(Path.Combine(dbDir, DefaultWalletDB + Settings.DBSuffix), true);
 		}
 
 		internal void EnsureInitialized(object obj = null)
