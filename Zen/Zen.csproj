@@ -41,6 +41,9 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="CLRCLI">
+      <HintPath>..\packages\CLRCLI.1.0.0.5\lib\net45\CLRCLI.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -107,10 +110,6 @@
     <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
       <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
       <Name>Infrastructure.TestingGtk</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Zen.CLRCLI\Zen.CLRCLI.csproj">
-      <Project>{29BB24E8-D6C7-403E-8B7C-DC65765E342B}</Project>
-      <Name>Zen.CLRCLI</Name>
     </ProjectReference>
     <ProjectReference Include="..\BlockChain.Tests\BlockChain.Tests.csproj">
       <Project>{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}</Project>
