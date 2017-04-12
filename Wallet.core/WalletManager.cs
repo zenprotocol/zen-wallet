@@ -357,7 +357,7 @@ namespace Wallet.core
 							break;
 					}
 
-					WalletTrace.Verbose($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
+					WalletTrace.Information($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
 
 					if (canSpend)
 					{
