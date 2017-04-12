@@ -7,14 +7,24 @@
     <ExternalConsole>true</ExternalConsole>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Local-server' ">
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'lan-client' ">
     <StartAction>Project</StartAction>
-    <StartArguments>-t -localhost -db=local_server</StartArguments>
+    <StartArguments>-t -n=lan_client -db=lan_client</StartArguments>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Local-client' ">
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'lan-host' ">
     <StartAction>Project</StartAction>
-    <StartArguments>-t -localhost-connect -db=local_client</StartArguments>
+    <StartArguments>-t -n=lan_host -db=lan_host</StartArguments>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'no-network' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>-d -t</StartArguments>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'testnet' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>-t -n=testnet_client</StartArguments>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
 </Project>

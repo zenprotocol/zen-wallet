@@ -10,26 +10,13 @@ namespace Zen.Data
 		public List<Tuple<string, string>> GenesisOutputs { get; set; }
 		public bool InitGenesisBlock { get; set; }
 		public String DBSuffix { get; set; }
-		public List<String> Seeds { get; set; }
 		public List<String> Keys { get; set; }
 		public String NetworkProfile { get; set; }
 		public String SettingsProfile { get; set; }
-		public int? PeersToFind { get; set; }
-		public int? Connections { get; set; }
-		public int? Port { get; set; }
-		public bool SaveNetworkProfile { get; set; }
 		public bool SaveSettings { get; set; }
-
-		public bool UseInternalIp { get; set; }
 		public bool DisableNetworking { get; set; }
-		public IPAddress ExternalAddress { get; set; }
-
-		public bool AsLocalhost { get; set; }
-		public bool ConnectToLocalhost { get; set; }
-		public IPAddress ConnectToSeed { get; set; }
 
 		public Settings() {
-			Seeds = new List<string>();
 			GenesisOutputs = new List<Tuple<string, string>>();
 			Keys = new List<string>();
 		}
