@@ -156,7 +156,7 @@ namespace Network
 		{
 			var result = _BlockChain.HandleTransaction(tx);
 
-			if (result == BlockChain.BlockChain.TxResultEnum.Accepted)
+			if (result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
 				_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
 
 			return result;
