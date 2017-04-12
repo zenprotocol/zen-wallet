@@ -65,15 +65,13 @@ namespace Zen
 				return;
 			}
 
-			app.Init();
-
 			if (tui)
 			{
 				TUI.Start(app, String.Join(" ", args));
 			}
 			else
 			{
-				app.Start();
+				app.Reconnect();
 
 				if (!headless)
 				{

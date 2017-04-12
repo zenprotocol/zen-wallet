@@ -11,6 +11,8 @@ using BlockChain.Data;
 using Network;
 using Zen.Data;
 using System.Threading.Tasks;
+using System.IO;
+using System.Configuration;
 
 namespace Zen
 {
@@ -25,6 +27,19 @@ namespace Zen
 		public App()
 		{
 			Settings = new Settings();
+
+			string networkProfileFile = Settings.NetworkProfile ?? ConfigurationManager.AppSettings.Get("network");
+
+			if (!networkProfileFile.EndsWith(".json"))
+			{
+				networkProfileFile += ".json";
+			}
+
+			JsonLoader<NetworkInfo>.Instance.FileName = networkProfileFile;
+
+			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
+
+			InitSettingsProfile();
 		}
 
 		bool _MinerEnabled;
@@ -45,16 +60,19 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
+			EnsureInitialized(_BlockChain);
 			return _BlockChain.HandleBlock(block) == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
 		internal void ImportKey(string key)
 		{
+			EnsureInitialized(_WalletManager);
 			_WalletManager.Import(Key.Create(key));
 		}
 
 		internal Key GetUnusedKey()
 		{
+			EnsureInitialized(_WalletManager);
 			return _WalletManager.GetUnusedKey();
 		}
 
@@ -128,56 +146,63 @@ namespace Zen
 			if (_WalletManager != null)
 			{
 				_WalletManager.Dispose();
+				_WalletManager = null;
 			}
 
 			if (_NodeManager != null)
 			{
 				_NodeManager.Dispose();
+				_NodeManager = null;
 			}
 
 			if (_BlockChain != null)
 			{
 				_BlockChain.Dispose();
+				_BlockChain = null;
 			}
 		}
 
-		internal void Init()
+		internal void ResetDB()
 		{
-			string networkProfileFile = Settings.NetworkProfile ?? "network";
-
-			if (!networkProfileFile.EndsWith(".json"))
-			{
-				networkProfileFile += ".json";
-			}
-
-			JsonLoader<NetworkInfo>.Instance.FileName = networkProfileFile;
-
-			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
-
-			InitSettingsProfile();
-
-			_BlockChain = new BlockChain.BlockChain(DefaultBlockChainDB + Settings.DBSuffix, GenesisBlock.Key);
-			_WalletManager = new WalletManager(_BlockChain, DefaultWalletDB + Settings.DBSuffix);
+			Stop();
+			Directory.Delete(ConfigurationManager.AppSettings.Get("dbDir"), true);
 		}
 
-		public async Task Start()
+		internal void EnsureInitialized(object obj = null)
+		{
+			if (_BlockChain == null)
+				_BlockChain = new BlockChain.BlockChain(DefaultBlockChainDB + Settings.DBSuffix, GenesisBlock.Key);
+
+			if (obj == _BlockChain)
+				return;
+
+			if (_WalletManager == null)
+				_WalletManager = new WalletManager(_BlockChain, DefaultWalletDB + Settings.DBSuffix);
+
+			if (obj == _WalletManager)
+				return;
+
+			if (_NodeManager == null)
+			{
+				_NodeManager = new NodeManager(_BlockChain);
+				_NodeManager.MinerEnabled = _MinerEnabled;
+			}
+		}
+
+		public async Task Reconnect()
 		{
 			if (!Settings.DisableNetworking)
 			{
-				if (_NodeManager != null)
-				{
-					_NodeManager.Dispose();
-					_NodeManager = null;
-				}
+				Stop();
+				EnsureInitialized();
 
-				_NodeManager = new NodeManager(_BlockChain);
-				_NodeManager.MinerEnabled = _MinerEnabled;
 				await _NodeManager.Connect();
 			}
 		}
 
 		public void GUI()
 		{
+			EnsureInitialized();
 			Wallet.App.Instance.Start(_WalletManager, _NodeManager);
 		}
 
@@ -284,24 +309,6 @@ namespace Zen
 					}
 				}
 			}
-			//if (Settings.SaveSettings)
-			//{
-			//	string file = Settings.SettingsProfile ?? "settings";
-
-			//	if (!file.EndsWith(".xml"))
-			//	{
-			//		file += ".xml";
-			//	}
-
-			//	JsonLoader<Settings>.Instance.FileName = file;
-			//	JsonLoader<Settings>.Instance.Value = Settings;
-			//	JsonLoader<Settings>.Instance.Save();
-			//}
-			//else 
-			//{
-			//	JsonLoader<Settings>.Instance.FileName = Settings.SettingsProfile;
-			//	Settings = JsonLoader<Settings>.Instance.Value;
-			//}
 		}
 	}
 }

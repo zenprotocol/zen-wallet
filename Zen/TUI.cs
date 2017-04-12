@@ -22,12 +22,13 @@ namespace Zen
 			var options = new Dictionary<string, List<string>>();
 
 			options["main"] = new List<string>();
-			options["main"].Add("Start Node");
+			options["main"].Add("Reconnect");
 			options["main"].Add("Start GUI");
 			options["main"].Add("Wallet Menu");
 			options["main"].Add("BlockChain Menu");
 			options["main"].Add("Miner Menu");
 			options["main"].Add("Tests");
+			options["main"].Add("Reset DB");
 			options["main"].Add("Stop");
 			options["main"].Add("Exit");
 
@@ -63,7 +64,8 @@ namespace Zen
 				options[currentMenu].ForEach(t => listMenu.Items.Add(t));
 			};
 
-			dialog = new Dialog(root) { Text = "Zen", Width = 75, Height = 19, Top = 2, Left = 2, Border = BorderStyle.Thick };
+			dialog = new Dialog(root) { Text = string.IsNullOrEmpty(app.Settings.NetworkProfile) ? "Zen" : app.Settings.NetworkProfile, Width = 75, Height = 19, Top = 2, Left = 2, Border = BorderStyle.Thick };
+
 			//var dialogMenu = new Dialog(root) { Text = "Menu", Width = 50, Height = 10, Top = 6, Left = 6, Border = BorderStyle.Thick, Visible = false };
 			//var x = new SingleLineTextbox(dialogMenu)
 			//{
@@ -95,15 +97,17 @@ namespace Zen
 					case "Miner Menu":
 						menu("miner");
 						break;
-					case "Start Node":
-						await app.Start();
+					case "Reconnect":
+						await app.Reconnect();
 						break;
 					case "Start GUI":
 						app.GUI();
 						break;
+					case "Reset DB":
+						app.ResetDB();
+						break;
 					case "Stop":
 						app.Stop();
-						dialog.Text = "Zen";
 						break;
 					case "Tests":
 						menu("tests");
@@ -190,7 +194,7 @@ namespace Zen
 
 						JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
 
-						app.Start();
+						app.Reconnect();
 						app.GUI();
 						break;
 					case "Back":

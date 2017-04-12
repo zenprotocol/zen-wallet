@@ -34,6 +34,7 @@
     <Reference Include="DBreeze">
       <HintPath>..\packages\DBreeze.1.82.0\lib\net45\DBreeze.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
