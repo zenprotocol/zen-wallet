@@ -1,27 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Network
 {
 	public class NetworkInfo
 	{
-//		public String IPAddressOverride { get; set; }
 		public List<String> Seeds { get; set; }
 		public int DefaultPort { get; set; }
-		public uint Magic { get; }
-		public int PeersToFind;
-		public int MaximumNodeConnection;
+		public uint Magic { get; set; }
+		public int PeersToFind { get; set; }
+		public int MaximumNodeConnection { get; set; }
+		public string ExternalIPAddress { get; set; }
+
+#if DEBUG
+		public bool IsLANClient { get; set; }
+		public bool IsLANHost { get; set; }
+#endif
 
 		public NetworkInfo() {
 			Seeds = new List<string> ();
 		}
-
-//		public override string ToString ()
-//		{
-//			String msg = $"[ \tSeeds={Seeds}, \tDefaultPort={DefaultPort}, \tMagic={Magic}, \tPeersToFind={PeersToFind}, \tMaximumNodeConnection={MaximumNodeConnection} ]";
-//
-//			return msg.Replace(" ", "\n");
-//		}
 	}
 }

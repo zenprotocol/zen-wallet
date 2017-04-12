@@ -10,6 +10,7 @@ using System.Threading;
 using BlockChain.Data;
 using Network;
 using Zen.Data;
+using System.Threading.Tasks;
 
 namespace Zen
 {
@@ -117,7 +118,6 @@ namespace Zen
 		public readonly static string DefaultBlockChainDB = "blockchain_db";
 		public readonly static string DefaultWalletDB = "wallet_db";
 
-		public event Action<NetworkInfo> OnInitProfile;
 		public event Action<Settings> OnInitSettings;
 		//private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
 		private ManualResetEventSlim stoppedEvent = new ManualResetEventSlim();
@@ -143,7 +143,14 @@ namespace Zen
 
 		internal void Init()
 		{
-			InitNetworkProfile();
+			string networkProfileFile = Settings.NetworkProfile ?? "network";
+
+			if (!networkProfileFile.EndsWith(".json"))
+			{
+				networkProfileFile += ".json";
+			}
+
+			JsonLoader<NetworkInfo>.Instance.FileName = networkProfileFile;
 
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
 
@@ -153,7 +160,7 @@ namespace Zen
 			_WalletManager = new WalletManager(_BlockChain, DefaultWalletDB + Settings.DBSuffix);
 		}
 
-		public void Start()
+		public async Task Start()
 		{
 			if (!Settings.DisableNetworking)
 			{
@@ -165,27 +172,7 @@ namespace Zen
 
 				_NodeManager = new NodeManager(_BlockChain);
 				_NodeManager.MinerEnabled = _MinerEnabled;
-
-				if (Settings.ConnectToSeed != null)
-				{
-					_NodeManager.ConnectToSeed(Settings.ConnectToSeed);
-				}
-				else if (Settings.ExternalAddress != null)
-				{
-					_NodeManager.Connect(Settings.ExternalAddress);
-				}
-				else if (Settings.AsLocalhost)
-				{
-					_NodeManager.AsLocalhost();
-				}
-				else if (Settings.ConnectToLocalhost)
-				{
-					_NodeManager.ConnectToLocalhost();
-				}
-				else
-				{
-					_NodeManager.Connect();
-				}
+				await _NodeManager.Connect();
 			}
 		}
 
@@ -271,48 +258,6 @@ namespace Zen
 				}
 
 				return _GenesisBlock;
-			}
-		}
-
-		private void InitNetworkProfile() {
-			string file = Settings.NetworkProfile ?? "network";
-
-			if (!file.EndsWith (".json")) {
-				file += ".json";
-			}
-
-			JsonLoader<NetworkInfo>.Instance.FileName = file;
-
-			//if (JsonLoader<NetworkInfo>.Instance.IsNew)
-			//{
-			//	JsonLoader<NetworkInfo>.Instance.Value.DefaultPort = 9999;
-			//	JsonLoader<NetworkInfo>.Instance.Save();
-			//}
-
-			foreach (String seed in Settings.Seeds) {
-				if (!JsonLoader<NetworkInfo>.Instance.Value.Seeds.Contains (seed)) {
-					JsonLoader<NetworkInfo>.Instance.Value.Seeds.Add (seed); 
-				}
-			}
-
-			if (Settings.PeersToFind.HasValue) {
-				JsonLoader<NetworkInfo>.Instance.Value.PeersToFind = Settings.PeersToFind.Value;
-			}
-
-			if (Settings.Connections.HasValue) {
-				JsonLoader<NetworkInfo>.Instance.Value.MaximumNodeConnection = Settings.Connections.Value;
-			}
-
-			if (Settings.Port.HasValue) {
-				JsonLoader<NetworkInfo>.Instance.Value.DefaultPort = Settings.Port.Value;
-			}
-
-			if (Settings.SaveNetworkProfile) {
-				JsonLoader<NetworkInfo>.Instance.Save ();
-			}
-
-			if (OnInitProfile != null) {
-				OnInitProfile (JsonLoader<NetworkInfo>.Instance.Value);
 			}
 		}
 
