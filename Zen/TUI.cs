@@ -36,6 +36,7 @@ namespace Zen
 		//	options["wallet"].Add("Reset");
 		//	options["wallet"].Add("Sync");
 			options["wallet"].Add("Add Key");
+			options["wallet"].Add("List Keys");
 			options["wallet"].Add("Get Receive Address");
 			options["wallet"].Add("Back");
 
@@ -158,6 +159,20 @@ namespace Zen
 						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
 						{
 							listMenu.Items.Add(output.Amount + " " + output.Key);
+						}
+						listMenu.Items.Add("Back");
+						break;
+					case "List Keys":
+						listMenu.Items.Clear();
+
+						foreach (var key in app.ListKeys())
+						{
+							string info = key.Used ? "used" : "ununsed";
+
+							if (key.Change)
+								info += ",change";
+									
+							listMenu.Items.Add(info + " " + key.Address);
 						}
 						listMenu.Items.Add("Back");
 						break;

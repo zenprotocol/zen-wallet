@@ -70,6 +70,12 @@ namespace Zen
 			_WalletManager.Import(Key.Create(key));
 		}
 
+		internal List<Key> ListKeys()
+		{
+			EnsureInitialized(_WalletManager);
+			return _WalletManager.GetKeys();
+		}
+
 		internal Key GetUnusedKey()
 		{
 			EnsureInitialized(_WalletManager);
