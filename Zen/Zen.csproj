@@ -45,6 +45,9 @@
       <HintPath>..\packages\CLRCLI.1.0.0.5\lib\net45\CLRCLI.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -56,6 +59,7 @@
     <Compile Include="Data\Keys.cs" />
     <Compile Include="Data\Outputs.cs" />
     <Compile Include="Data\Settings.cs" />
+    <Compile Include="BlockChainDumper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -80,6 +84,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="testnet_host.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="graph.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
