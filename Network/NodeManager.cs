@@ -82,7 +82,7 @@ namespace Network
 #endif
 			if (!string.IsNullOrEmpty(_Network.ExternalIPAddress))
 			{
-				ipAddress = _NATManager.ExternalIPAddress;
+				ipAddress = IPAddress.Parse(_Network.ExternalIPAddress);
 			}
 			else
 			{

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+.link line {
+  stroke: #696969;
+}
+
+.link line.separator {
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.node circle {
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+</head>
+<body>
+<script>
+
+var graph = {
+  "nodes": [
+    {"atom": "Genesis Block", "size": 20, "color": 1}, //0
+    {"atom": "Block 0", "size": 20, "color": 1}, //1
+    {"atom": "TX", "size": 20, "color": 2}, //2
+    {"atom": "output", "size": 5, "color": 3}, //3
+    {"atom": "TX", "size": 8, "color": 2}, //4
+    {"atom": "input", "size": 5, "color": 4}, //5
+
+
+    {"atom": "TX", "size": 8}, //6
+    {"atom": "output", "size": 5}, //7
+
+  ],
+  "links": [
+    {"source": 0, "target": 1, "bond": 1},
+    {"source": 0, "target": 2, "bond": 2},
+    {"source": 2, "target": 3, "bond": 2},
+    {"source": 3, "target": 5, "bond": 2},
+    {"source": 4, "target": 5, "bond": 2},
+    {"source": 1, "target": 4, "bond": 2},
+
+    {"source": 6, "target": 7, "bond": 2},
+    {"source": 8, "target": 7, "bond": 2},
+
+  ]
+};
+
+
+var width = 960,
+    height = 500;
+
+var color = d3.scale.category20();
+
+var radius = d3.scale.sqrt()
+    .range([0, 6]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var force = d3.layout.force()
+    .size([width, height])
+    .charge(-500)
+    .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; });
+
+//d3.json('graph.json', function(graph) {
+  force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .on("tick", tick)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+    .enter().append("g")
+      .attr("class", "link");
+
+  link.append("line")
+      .style("stroke-width", function(d) { return (d.bond * 2 - 1) * 2 + "px"; });
+
+  link.filter(function(d) { return d.bond > 1; }).append("line")
+      .attr("class", "separator");
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+    .enter().append("g")
+      .attr("class", "node")
+      .call(force.drag);
+
+  node.append("circle")
+      .attr("r", function(d) { return radius(d.size); })
+      .style("fill", function(d) { return color(d.color); });
+
+  node.append("text")
+      .attr("dy", ".35em")
+      .attr("text-anchor", "middle")
+      .text(function(d) { return d.atom; });
+
+  function tick() {
+    link.selectAll("line")
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+  }
+</script>
+
+</body>
+</html>
+
