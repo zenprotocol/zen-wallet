@@ -23,39 +23,11 @@
 }
 
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+	<script src="nodes.js"></script>
 </head>
 <body>
 <script>
-
-var graph = {
-  "nodes": [
-    {"atom": "Genesis Block", "size": 20, "color": 1}, //0
-    {"atom": "Block 0", "size": 20, "color": 1}, //1
-    {"atom": "TX", "size": 20, "color": 2}, //2
-    {"atom": "output", "size": 5, "color": 3}, //3
-    {"atom": "TX", "size": 8, "color": 2}, //4
-    {"atom": "input", "size": 5, "color": 4}, //5
-
-
-    {"atom": "TX", "size": 8}, //6
-    {"atom": "output", "size": 5}, //7
-
-  ],
-  "links": [
-    {"source": 0, "target": 1, "bond": 1},
-    {"source": 0, "target": 2, "bond": 2},
-    {"source": 2, "target": 3, "bond": 2},
-    {"source": 3, "target": 5, "bond": 2},
-    {"source": 4, "target": 5, "bond": 2},
-    {"source": 1, "target": 4, "bond": 2},
-
-    {"source": 6, "target": 7, "bond": 2},
-    {"source": 8, "target": 7, "bond": 2},
-
-  ]
-};
-
 
 var width = 960,
     height = 500;

@@ -234,6 +234,26 @@ namespace Zen
 			Wallet.App.Instance.Start(WalletManager, NodeManager);
 		}
 
+		public void Dump()
+		{
+			var blockChainDumper = new BlockChainDumper(BlockChain_);
+			try
+			{
+				blockChainDumper.Populate();
+				var jsonString = blockChainDumper.Generate();
+
+				File.WriteAllText("nodes.js", "var graph = " + jsonString);
+
+				string path = Directory.GetCurrentDirectory();
+				System.Diagnostics.Process.Start(Path.Combine(path, "graph.html"));
+			}
+			catch
+			{
+		//		if (File.Exists("nodes.js"))
+		//			File.Delete("nodes.js");
+			}
+		}
+
 		private Keyed<Types.Block> _GenesisBlock = null;
 
 		public Keyed<Types.Block> GenesisBlock

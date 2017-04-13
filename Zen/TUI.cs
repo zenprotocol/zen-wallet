@@ -32,6 +32,7 @@ namespace Zen
 			options["main"].Add("Miner Menu");
 			options["main"].Add("Tests");
 			options["main"].Add("Reset DB");
+			options["main"].Add("Generate Graph");
 			options["main"].Add("Stop");
 			options["main"].Add("Exit");
 
@@ -150,6 +151,9 @@ namespace Zen
 						break;
 					case "Reset DB":
 						app.ResetDB();
+						break;
+					case "Generate Graph":
+						app.Dump();
 						break;
 					case "Stop":
 						app.Stop();
