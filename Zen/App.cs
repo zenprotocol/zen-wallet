@@ -105,8 +105,7 @@ namespace Zen
 			Settings = new Settings();
 
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
-
-			InitSettingsProfile();
+			JsonLoader<Keys>.Instance.FileName = "keys.json";
 		}
 
 		bool _MinerEnabled;
@@ -331,31 +330,6 @@ namespace Zen
 				}
 
 				return _GenesisBlock;
-			}
-		}
-
-		private void InitSettingsProfile()
-		{
-			JsonLoader<Keys>.Instance.FileName = "keys.json";
-
-			if (Settings.Keys.Count > 0)
-			{
-				foreach (var key in Settings.Keys)
-				{
-					JsonLoader<Keys>.Instance.Value.Values.Add(key);
-				}
-
-				JsonLoader<Keys>.Instance.Save();
-			}
-			else
-			{
-				if (!JsonLoader<Keys>.Instance.IsNew)
-				{
-					foreach (var key in JsonLoader<Keys>.Instance.Value.Values)
-					{
-						Settings.Keys.Add(key);
-					}
-				}
 			}
 		}
 	}
