@@ -41,6 +41,7 @@ namespace Zen
 		//	options["wallet"].Add("Sync");
 			options["wallet"].Add("Add Genesis UTXO");
 			options["wallet"].Add("List Keys");
+			options["wallet"].Add("Import Test Key");
 			options["wallet"].Add("Get Receive Address");
 			options["wallet"].Add("My Wallet");
 			options["wallet"].Add("Send Dialog");
@@ -212,11 +213,13 @@ namespace Zen
 				}
 			};
 
+			var wallet_mode = "";
 			actions["wallet"] = a =>
 			{
 				switch (a)
 				{
 					case "Add Genesis UTXO":
+						wallet_mode = a;
 						listMenu.Items.Clear();
 
 						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
@@ -235,7 +238,18 @@ namespace Zen
 							if (key.Change)
 								info += ",change";
 									
-							listMenu.Items.Add(info + " " + key.Address);
+							listMenu.Items.Add(info + " " + key.PrivateAsString);
+						}
+						listMenu.Items.Add("Back");
+						break;
+					case "Import Test Key":
+						wallet_mode = a;
+
+						listMenu.Items.Clear();
+
+						foreach (var key in  JsonLoader<Keys>.Instance.Value.Values)
+						{
+							listMenu.Items.Add(key);
 						}
 						listMenu.Items.Add("Back");
 						break;
@@ -264,12 +278,20 @@ namespace Zen
 						menu("main");
 						break;
 					default:
-						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
+						switch (wallet_mode)
 						{
-							if (a == output.Amount + " " + output.Key)
-							{
-								app.WalletManager.Import(Key.Create(output.Key));
-							}
+							case "Add Genesis UTXO":
+								foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
+								{
+									if (a == output.Amount + " " + output.Key)
+									{
+										app.WalletManager.Import(Key.Create(output.Key));
+									}
+								}
+								break;
+							case "Import Test Key":
+								app.WalletManager.Import(Key.Create(a));
+								break;
 						}
 						break;
 				}
