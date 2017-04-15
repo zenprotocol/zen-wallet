@@ -26,14 +26,12 @@ namespace Zen.Data
 			}
 		}
 
-		public List<String> Keys { get; set; }
 		public String SettingsProfile { get; set; }
 		public bool SaveSettings { get; set; }
 		public bool DisableNetworking { get; set; }
 
 		public Settings() {
 			GenesisOutputs = new List<Tuple<string, string>>();
-			Keys = new List<string>();
 
 			NetworkProfile = ConfigurationManager.AppSettings.Get("network");
 		}
