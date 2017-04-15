@@ -1,6 +1,7 @@
 ﻿using System;
 using NDesk.Options;
 using System.Net;
+using System.IO;
 
 namespace Zen
 {
@@ -10,9 +11,11 @@ namespace Zen
 		public static void Main (string[] args)
 		{
 			App app = new App();
+
 			bool show_help = false;
 			bool headless = false;
 			bool tui = false;
+			string script = null;
 
 			var p = new OptionSet() {
 				{ "headless", "start in headless mode",
@@ -36,7 +39,10 @@ namespace Zen
 
 				{ "d|disable-network", "disable networking",
 					v => app.Settings.DisableNetworking = true },
-				
+
+				{ "s|script=", "execute script",
+					v => script = v },
+
 				//{ "o|output=", "add a genesis block transaction output (address, amount)",
 				//	v => app.Settings.AddOutput(v) },
 				//{ "ge|genesis", "init the genesis block",
@@ -64,6 +70,9 @@ namespace Zen
 				ShowHelp (p);
 				return;
 			}
+
+			if (script != null)
+				ScriptRunner.Execute(app, Path.Combine("Scripts", script));
 
 			if (tui)
 			{
