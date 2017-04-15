@@ -120,7 +120,7 @@ namespace Zen
 			}
 		}
 
-		internal bool AddGenesisBlock()
+		public bool AddGenesisBlock()
 		{
 			return AddBlock(GenesisBlock.Value);
 		}
@@ -206,7 +206,7 @@ namespace Zen
 			}
 		}
 
-		internal void ResetDB()
+		public void ResetDB()
 		{
 			Stop();
 

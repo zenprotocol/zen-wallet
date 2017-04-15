@@ -60,6 +60,7 @@
     <Compile Include="Data\Outputs.cs" />
     <Compile Include="Data\Settings.cs" />
     <Compile Include="BlockChainDumper.cs" />
+    <Compile Include="ScriptRunner.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -87,6 +88,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="graph.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\reset.fs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -131,5 +135,6 @@
   <ItemGroup>
     <Folder Include="Tests\" />
     <Folder Include="Data\" />
+    <Folder Include="Scripts\" />
   </ItemGroup>
 </Project>
