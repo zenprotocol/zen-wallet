@@ -56,9 +56,11 @@ namespace Zen
 			options["miner"].Add("Back");
 
 			options["tests"] = new List<string>();
-			options["tests"].Add("Import all genesis");
-			options["tests"].Add("Localhost Client");
-			options["tests"].Add("Localhost Server");
+
+			foreach (var scriptFile in Directory.GetFiles("Scripts"))
+			{
+				options["tests"].Add(new FileInfo(scriptFile).Name);
+			}
 			options["tests"].Add("Back");
 
 
@@ -197,6 +199,19 @@ namespace Zen
 				}
 			};
 
+			actions["tests"] = a =>
+			{
+				switch (a)
+				{
+					case "Back":
+						menu("main");
+						break;
+					default:
+						ScriptRunner.Execute(app, Path.Combine("Scripts", a));	
+						break;
+				}
+			};
+
 			actions["wallet"] = a =>
 			{
 				switch (a)
@@ -256,33 +271,6 @@ namespace Zen
 								app.WalletManager.Import(Key.Create(output.Key));
 							}
 						}
-						break;
-				}
-			};
-
-			actions["tests"] = a =>
-			{
-				switch (a)
-				{
-					case "Import all genesis":
-						app.AddGenesisBlock();
-
-						JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
-
-						app.Reconnect();
-						app.GUI();
-						break;
-					case "Back":
-						menu("main");
-						break;
-
-//					case "Localhost Client":
-//						app.Settings.EndpointOption = Settings.EndpointOptionsEnum.LocalhostClient;
-////						app.Start();
-//						break;
-//					case "Localhost Server":
-//						app.Settings.EndpointOption = Settings.EndpointOptionsEnum.LocalhostServer;
-////						app.Start();
 						break;
 				}
 			};
