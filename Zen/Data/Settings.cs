@@ -12,8 +12,8 @@ namespace Zen.Data
 		public List<Tuple<string, string>> GenesisOutputs { get; set; }
 		public bool InitGenesisBlock { get; set; }
 
-		private string _DBSuffix = null;
-		public String DBSuffix { get { return string.IsNullOrEmpty(_DBSuffix) ? "" : "_" + _DBSuffix; } set { _DBSuffix = value; } }
+		public string WalletDB { get; set; }
+		public string BlockChainDBSuffix { get; set; }
 
 		private string _NetworkProfile;
 		public String NetworkProfile { 
@@ -21,8 +21,7 @@ namespace Zen.Data
 				return _NetworkProfile; 
 			} 
 			set {
-				_NetworkProfile = value;
-				JsonLoader<NetworkInfo>.Instance.FileName = value + (value.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? "" : ".json");
+				_NetworkProfile = value + (value.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? "" : ".json");
 			}
 		}
 
@@ -31,8 +30,8 @@ namespace Zen.Data
 		public bool DisableNetworking { get; set; }
 
 		public Settings() {
+			WalletDB = null;
 			GenesisOutputs = new List<Tuple<string, string>>();
-
 			NetworkProfile = ConfigurationManager.AppSettings.Get("network");
 		}
 

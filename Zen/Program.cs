@@ -2,6 +2,9 @@
 using NDesk.Options;
 using System.Net;
 using System.IO;
+using Microsoft.FSharp.Collections;
+using System.Collections.Generic;
+using Consensus;
 
 namespace Zen
 {
@@ -34,14 +37,17 @@ namespace Zen
 				//{ "save_settings", "save general settings profile (to be used with settings option)",
 				//	v => app.Settings.SaveSettings = v != null },
 
-				{ "db=", "DB suffix", 
-					v => app.Settings.DBSuffix = v },
+				{ "wallet=", "specify wallet", 
+					v => app.Settings.WalletDB = v },
+
+				{ "db=", "Wallet DB",
+					v => app.Settings.WalletDB = v },
 
 				{ "d|disable-network", "disable networking",
 					v => app.Settings.DisableNetworking = true },
 
 				{ "s|script=", "execute script",
-					v => script = v },
+					v => script = v.EndsWith(".fs", StringComparison.OrdinalIgnoreCase) ? v : v + ".fs" },
 
 				//{ "o|output=", "add a genesis block transaction output (address, amount)",
 				//	v => app.Settings.AddOutput(v) },
@@ -72,21 +78,36 @@ namespace Zen
 			}
 
 			if (script != null)
-				ScriptRunner.Execute(app, Path.Combine("Scripts", script));
+			{
+				object result;
+				var isSuccess = ScriptRunner.Execute(app, Path.Combine("Scripts", script), out result);
+
+				if (isSuccess)
+				{
+					Console.WriteLine(result);
+					Console.ReadLine();
+				}
+				else
+				{
+					Console.ReadLine();
+					return;
+				}
+			}
 
 			if (tui)
 			{
-				TUI.Start(app, String.Join(" ", args));
+				TUI.Start(app, script);
+				return;
+			}
+
+			if (!headless)
+			{
+				app.GUI();
+				app.Stop();
 			}
 			else
 			{
 				app.Reconnect();
-
-				if (!headless)
-				{
-					app.GUI();
-					app.Stop();
-				}
 			}
 		}
 

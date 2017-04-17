@@ -23,7 +23,7 @@ namespace Store
 			{
 				if (_Engine == null)
 				{
-					_Engine = new DBreezeEngine(System.IO.Path.Combine(ConfigurationManager.AppSettings.Get("dbDir"), _dbName));
+					_Engine = new DBreezeEngine(_dbName);
 				}
 
 				var t = new TransactionContext(this, _Engine.GetTransaction());

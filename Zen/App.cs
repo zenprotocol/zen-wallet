@@ -13,6 +13,7 @@ using Zen.Data;
 using System.Threading.Tasks;
 using System.IO;
 using System.Configuration;
+using Newtonsoft.Json;
 
 namespace Zen
 {
@@ -67,7 +68,11 @@ namespace Zen
 			get
 			{
 				if (_BlockChain == null)
-					_BlockChain = new BlockChain.BlockChain(DefaultBlockChainDB + Settings.DBSuffix, GenesisBlock.Key);
+					_BlockChain = new BlockChain.BlockChain(BlockChainDB, GenesisBlock.Key);
+
+				// init wallet after having initialized blockchain
+				//if (_WalletManager !== null)
+				//	_WalletManager = GetWalletManager(_BlockChain);
 
 				return _BlockChain;
 			}
@@ -78,15 +83,22 @@ namespace Zen
 			get
 			{
 				if (_WalletManager == null)
-					_WalletManager = new WalletManager(BlockChain_, DefaultWalletDB + Settings.DBSuffix);
-
-				_WalletManager.OnReset -= WalletOnResetHandler; // ensure single registration
-				_WalletManager.OnReset += WalletOnResetHandler;
-				_WalletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
-				_WalletManager.OnItems += WalletOnItemsHandler;
+					_WalletManager = GetWalletManager(BlockChain_);
 
 				return _WalletManager;
 			}
+		}
+
+		WalletManager GetWalletManager(BlockChain.BlockChain blockChain)
+		{
+			var walletManager = new WalletManager(blockChain, WalletDB);
+
+			walletManager.OnReset -= WalletOnResetHandler; // ensure single registration
+			walletManager.OnReset += WalletOnResetHandler;
+			walletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
+			walletManager.OnItems += WalletOnItemsHandler;
+
+			return walletManager;
 		}
 
 		NodeManager NodeManager
@@ -109,7 +121,8 @@ namespace Zen
 		}
 
 		bool _MinerEnabled;
-		internal bool MinerEnabled {
+		internal bool MinerEnabled
+		{
 			set
 			{
 				_MinerEnabled = value;
@@ -126,7 +139,25 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
-			return BlockChain_.HandleBlock(block) ==  BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+			return BlockChain_.HandleBlock(block) == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+		}
+
+		public void Acuire(int utxoIndex)
+		{
+			WalletManager.Import(Key.Create(JsonLoader<Outputs>.Instance.Value.Values[utxoIndex].Key));
+		}
+
+		public void MineBlock()
+		{
+			var result = BlockChain_.MineAllInMempool() != null;
+
+
+		}
+
+		public bool Spend(int amount, int keyIndex)
+		{
+			//TODO: handle return value
+			return Spend((ulong) amount, Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]).Address);
 		}
 
 		internal bool Spend(ulong amount, Address address = null)
@@ -176,8 +207,38 @@ namespace Zen
 		//	_WalletManager.Import();
 		//}
 
-		public readonly static string DefaultBlockChainDB = "blockchain_db";
-		public readonly static string DefaultWalletDB = "wallet_db";
+		string Setting(string key)
+		{
+			return ConfigurationManager.AppSettings.Get(key);
+		}
+
+		public void SetBlockChainDBSuffix(string value)
+		{
+			Settings.BlockChainDBSuffix = value;
+		}
+
+		string BlockChainDB
+		{
+			get
+			{
+				return Path.Combine(
+					Setting("dbDir"), 
+					"blockchain" + (string.IsNullOrWhiteSpace(Settings.BlockChainDBSuffix) ? "" : Settings.BlockChainDBSuffix)
+				);
+			}
+		}
+
+		string WalletDB
+		{
+			get
+			{
+				return Path.Combine(
+					Setting("dbDir"), 
+					"wallets", 
+					string.IsNullOrWhiteSpace(Settings.WalletDB) ? Setting("walletDb") : Settings.WalletDB
+				);
+			}
+		}
 
 		public event Action<Settings> OnInitSettings;
 		//private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
@@ -185,12 +246,6 @@ namespace Zen
 
 		public void Stop() {
 			//stopEvent.Set();
-
-			if (_WalletManager != null)
-			{
-				_WalletManager.Dispose();
-				_WalletManager = null;
-			}
 
 			if (_NodeManager != null)
 			{
@@ -203,19 +258,57 @@ namespace Zen
 				_BlockChain.Dispose();
 				_BlockChain = null;
 			}
+
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+				_WalletManager = null;
+			}
 		}
 
-		public void ResetDB()
+		public void ResetBlockChainDB()
 		{
 			Stop();
 
-			var dbDir = ConfigurationManager.AppSettings.Get("dbDir");
+			if (Directory.Exists(BlockChainDB))
+				Directory.Delete(BlockChainDB, true);
+		}
 
-			if (Directory.Exists(Path.Combine(dbDir, DefaultBlockChainDB + Settings.DBSuffix)))
-				Directory.Delete(Path.Combine(dbDir, DefaultBlockChainDB + Settings.DBSuffix), true);
+		public void ResetWalletDB()
+		{
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+				_WalletManager = null;
+			}
 
-			if (Directory.Exists(Path.Combine(dbDir, DefaultWalletDB + Settings.DBSuffix)))
-				Directory.Delete(Path.Combine(dbDir, DefaultWalletDB + Settings.DBSuffix), true);
+			if (Directory.Exists(WalletDB))
+				Directory.Delete(WalletDB, true);
+		}
+
+		public void SetWallet(string walletDB)
+		{
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+				_WalletManager = null;
+			}
+
+			Settings.WalletDB = walletDB;
+
+			var x = WalletManager;
+		}
+
+		public void SetNetwork(string networkProfile)
+		{
+			Stop();
+
+			Settings.NetworkProfile = networkProfile;
+		}
+
+		public void AddKey(int keyIndex)
+		{
+			WalletManager.Import(Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]));
 		}
 
 		public async Task Reconnect()
@@ -224,7 +317,7 @@ namespace Zen
 			{
 				Stop();
 
-				await NodeManager.Connect();
+				await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
 			}
 		}
 
@@ -238,7 +331,7 @@ namespace Zen
 			var blockChainDumper = new BlockChainDumper(BlockChain_);
 			try
 			{
-				blockChainDumper.Populate();
+				blockChainDumper.Populate(WalletManager, BlockChain_);
 				var jsonString = blockChainDumper.Generate();
 
 				File.WriteAllText("nodes.js", "var graph = " + jsonString);
@@ -246,8 +339,9 @@ namespace Zen
 				string path = Directory.GetCurrentDirectory();
 				System.Diagnostics.Process.Start(Path.Combine(path, "graph.html"));
 			}
-			catch
+			catch (Exception e)
 			{
+				Console.WriteLine(e.Message);
 		//		if (File.Exists("nodes.js"))
 		//			File.Delete("nodes.js");
 			}
