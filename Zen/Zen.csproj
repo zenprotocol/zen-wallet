@@ -6,7 +6,7 @@
     <ProjectGuid>{1F030257-FBB4-4538-BBD8-4B241FD73B13}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Zen</RootNamespace>
-    <AssemblyName>Zen</AssemblyName>
+    <AssemblyName>zen</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -93,6 +93,18 @@
     <None Include="Scripts\reset.fs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="standalone.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\lan_sender.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\lan_receiver.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="d3.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wallet\GUI.csproj">
@@ -130,6 +142,10 @@
     <ProjectReference Include="..\Network\Network.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Zen.StockAPI.Google\Zen.StockAPI.Google.csproj">
+      <Project>{00B5F4CD-E9DD-4C12-A73F-A0258C440589}</Project>
+      <Name>Zen.StockAPI.Google</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -13,25 +13,11 @@ namespace Network
 {
 	public class NodeManager : ResourceOwner//, INodeManager
 	{
-		private Server _Server = null;
-		private BlockChain.BlockChain _BlockChain = null;
-		private NetworkInfo _Network;
-		private NodeConnectionParameters _NodeConnectionParameters;
-		private BroadcastHubBehavior _BroadcastHubBehavior;
-
-		private Miner _Miner;
-#if DEBUG
-		public
-#else
-		private
-#endif
-		NATManager _NATManager;
-
-#if DEBUG
-		public
-#else
-		private
-#endif
+		Server _Server = null;
+		BlockChain.BlockChain _BlockChain = null;
+		NodeConnectionParameters _NodeConnectionParameters;
+		BroadcastHubBehavior _BroadcastHubBehavior;
+		Miner _Miner;
 		NodesGroup _NodesGroup;
 
 		bool _MinerEnabled;
@@ -50,49 +36,48 @@ namespace Network
 		{
 			_BlockChain = blockChain;
 			//OwnResource (_BlockChain);
-			_Network = JsonLoader<NetworkInfo>.Instance.Value;
-
 			AddressManager addressManager = new AddressManager();
 
 			_NodeConnectionParameters = new NodeConnectionParameters();
 			var addressManagerBehavior = new AddressManagerBehavior(addressManager);
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
-			_NATManager = new NATManager(_Network.DefaultPort);
 		}
 
-		public async Task Connect()
+		public async Task Connect(NetworkInfo networkInfo)
 		{
 			IPAddress ipAddress = null;
+			var natManager = new NATManager(networkInfo.DefaultPort);
 
 #if DEBUG
-			if (_Network.IsLANHost)
+			if (networkInfo.IsLANHost)
 			{
-				ipAddress = _NATManager.InternalIPAddress;
-				_Network.PeersToFind = 0;
+				ipAddress = natManager.InternalIPAddress;
+				networkInfo.PeersToFind = 0;
 			}
-			else if (_Network.IsLANClient)
+			else if (networkInfo.IsLANClient)
 			{
 				ipAddress = null;
-				_Network.PeersToFind = 1;
-				_Network.Seeds.Clear();
-				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());
+				networkInfo.PeersToFind = 1;
+				networkInfo.Seeds.Clear();
+				networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
 			}
 			else
 #endif
-			if (!string.IsNullOrEmpty(_Network.ExternalIPAddress))
+			if (!string.IsNullOrEmpty(networkInfo.ExternalIPAddress))
 			{
-				ipAddress = IPAddress.Parse(_Network.ExternalIPAddress);
+				ipAddress = IPAddress.Parse(networkInfo.ExternalIPAddress);
 			}
 			else
 			{
-				await _NATManager.Init();
 
-				if (_NATManager.DeviceFound &&
-					_NATManager.Mapped.Value &&
-					_NATManager.ExternalIPVerified.Value)
+				await natManager.Init();
+
+				if (natManager.DeviceFound &&
+					natManager.Mapped.Value &&
+					natManager.ExternalIPVerified.Value)
 				{
-					ipAddress = _NATManager.ExternalIPAddress;
+					ipAddress = natManager.ExternalIPAddress;
 				}
 			}
 
@@ -106,12 +91,12 @@ namespace Network
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _BroadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
-			AddressManagerBehavior.GetAddrman(_NodeConnectionParameters).PeersToFind = _Network.PeersToFind;
+			AddressManagerBehavior.GetAddrman(_NodeConnectionParameters).PeersToFind = networkInfo.PeersToFind;
 
 			if (ipAddress != null)
 			{
 				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.AdvertizeDiscover; //parameters.Advertize = true;
-				_NodeConnectionParameters.AddressFrom = new System.Net.IPEndPoint(ipAddress, _Network.DefaultPort);
+				_NodeConnectionParameters.AddressFrom = new System.Net.IPEndPoint(ipAddress, networkInfo.DefaultPort);
 			}
 			else
 			{
@@ -120,30 +105,30 @@ namespace Network
 
 			if (ipAddress != null)
 			{ 
-				_Server = new Server(ipAddress, _Network, _NodeConnectionParameters);
+				_Server = new Server(ipAddress, networkInfo, _NodeConnectionParameters);
 				OwnResource(_Server);
 
 				if (_Server.Start())
 				{
-					NodeServerTrace.Information($"Server started at {ipAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information($"Server started at {ipAddress}:{networkInfo.DefaultPort}");
 				}
 				else
 				{
-					NodeServerTrace.Information($"Could not start server at {ipAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information($"Could not start server at {ipAddress}:{networkInfo.DefaultPort}");
 				}
 			}
 
-			if (_Network.Seeds.Count == 0)
+			if (networkInfo.Seeds.Count == 0)
 			{
 				NodeServerTrace.Information("No seeds defined");
 			}
 			else
 			{
-				_NodesGroup = new NodesGroup(_Network, _NodeConnectionParameters);
+				_NodesGroup = new NodesGroup(networkInfo, _NodeConnectionParameters);
 				OwnResource(_NodesGroup);
 
 				_NodesGroup.AllowSameGroup = true; //TODO
-				_NodesGroup.MaximumNodeConnection = _Network.MaximumNodeConnection;
+				_NodesGroup.MaximumNodeConnection = networkInfo.MaximumNodeConnection;
 
 				_NodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
 				{

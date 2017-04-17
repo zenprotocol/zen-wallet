@@ -21,15 +21,15 @@ namespace Zen
 		{
 			Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-			if (Directory.Exists(App.DefaultBlockChainDB))
-			{
-				Directory.Delete(App.DefaultBlockChainDB, true);
-			}
+			//if (Directory.Exists(App.DefaultBlockChainDB))
+			//{
+			//	Directory.Delete(App.DefaultBlockChainDB, true);
+			//}
 
-			if (Directory.Exists(App.DefaultWalletDB))
-			{
-				Directory.Delete(App.DefaultWalletDB, true);
-			}
+			//if (Directory.Exists(App.DefaultWalletDB))
+			//{
+			//	Directory.Delete(App.DefaultWalletDB, true);
+			//}
 		}
 
 		[Test(), Order(1)]
