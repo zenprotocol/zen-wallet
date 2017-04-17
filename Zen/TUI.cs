@@ -19,7 +19,7 @@ namespace Zen
 		static ListBox listMenu;
 		static string currentMenu { get; set; }
 
-		public static void Start (App app, String args)
+		public static void Start (App app, String script)
 		{
 			var root = new RootWindow();
 			var options = new Dictionary<string, List<string>>();
@@ -54,13 +54,17 @@ namespace Zen
 			options["miner"] = new List<string>();
 			options["miner"].Add("Start Miner");
 			options["miner"].Add("Stop Miner");
+			options["miner"].Add("Mine Block");
 			options["miner"].Add("Back");
 
 			options["tests"] = new List<string>();
 
 			foreach (var scriptFile in Directory.GetFiles("Scripts"))
 			{
-				options["tests"].Add(new FileInfo(scriptFile).Name);
+				var fileInfo = new FileInfo(scriptFile);
+
+				if (fileInfo.Extension == ".fs")
+					options["tests"].Add(fileInfo.Name);
 			}
 			options["tests"].Add("Back");
 
@@ -151,9 +155,14 @@ namespace Zen
 						break;
 					case "Start GUI":
 						app.GUI();
+						root.Detach();
+						root.Run();
 						break;
-					case "Reset DB":
-						app.ResetDB();
+					case "Reset Blockchain":
+						app.ResetBlockChainDB();
+						break;
+					case "Reset Wallet":
+						app.ResetWalletDB();
 						break;
 					case "Generate Graph":
 						app.Dump();
@@ -194,6 +203,9 @@ namespace Zen
 					case "Stop Miner":
 						app.MinerEnabled = false;
 						break;
+					case "Mine Block":
+						app.MineBlock();
+						break;
 					case "Back":
 						menu("main");
 						break;
@@ -208,7 +220,9 @@ namespace Zen
 						menu("main");
 						break;
 					default:
-						ScriptRunner.Execute(app, Path.Combine("Scripts", a));	
+						object result;
+						ScriptRunner.Execute(app, Path.Combine("Scripts", a), out result);
+						listTrace.Items.Add(result);	
 						break;
 				}
 			};
@@ -332,7 +346,7 @@ namespace Zen
 			app.WalletOnItemsHandler = wallet_OnItems;
 			app.WalletOnResetHandler = wallet_OnReset;
 
-		//	app.Init();
+			//	app.Init();
 			root.Run();
 		}
 

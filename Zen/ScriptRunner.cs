@@ -9,10 +9,15 @@ namespace Zen
 	{
 		static string _CompilerPath = "/usr/lib/mono/4.5/"; //TODO
 		const string DEPENCENCY_OPTION = " -r ";
-		static readonly string[] _Dependencies = new string[] { Process.GetCurrentProcess().MainModule.ModuleName };
+		static readonly string[] _Dependencies = new string[] { 
+			Process.GetCurrentProcess().MainModule.ModuleName,
+			"/usr/lib/cli/nunit.framework-2.6.3/nunit.framework.dll",
+		};
 
-		public static void Execute(App app, string fileName)
+		public static bool Execute(App app, string fileName, out object result)
 		{
+			result = "";
+
 			var process = new Process();
 
 			var dllFile = Path.ChangeExtension(fileName, ".dll");
@@ -42,7 +47,7 @@ namespace Zen
 			if (process.ExitCode != 0)
 			{
 				Console.WriteLine("error compiling script");
-				return;
+				return false;
 			}
 
 			try
@@ -54,14 +59,19 @@ namespace Zen
 
 				var args = new object[] { app };
 
-				var result = method.Invoke(null, args);
+				result = method.Invoke(null, args);
 			}
-			catch
+			catch (Exception e)
 			{
 				Console.WriteLine("error executing script");
+				Console.WriteLine(e);
+				Console.WriteLine(e.Message);
+				return false;
 			}
 
 			File.Delete(dllFile);
+
+			return true;
 		}
 
 		static bool IsRunningOnMono()
