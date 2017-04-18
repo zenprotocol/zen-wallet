@@ -17,31 +17,21 @@ namespace Network
 		BlockChain.BlockChain _BlockChain = null;
 		NodeConnectionParameters _NodeConnectionParameters;
 		BroadcastHubBehavior _BroadcastHubBehavior;
-		Miner _Miner;
 		NodesGroup _NodesGroup;
 
-		bool _MinerEnabled;
-		public bool MinerEnabled
-		{
-			set
-			{
-				_MinerEnabled = value;
-
-				if (_Miner != null)
-					_Miner.Enabled = value;
-			}
-		}
+		public readonly Miner Miner;
 
 		public NodeManager(BlockChain.BlockChain blockChain)
 		{
 			_BlockChain = blockChain;
-			//OwnResource (_BlockChain);
-			AddressManager addressManager = new AddressManager();
+			var addressManager = new AddressManager();
 
 			_NodeConnectionParameters = new NodeConnectionParameters();
 			var addressManagerBehavior = new AddressManagerBehavior(addressManager);
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
+			Miner = new Miner();
+			Miner.BlockChain_ = blockChain;
 		}
 
 		public async Task Connect(NetworkInfo networkInfo)
@@ -83,11 +73,8 @@ namespace Network
 
 			_BroadcastHubBehavior = new BroadcastHubBehavior();
 
-			_Miner = new Miner(_BlockChain);
-			_Miner.Enabled = _MinerEnabled;
-
 			_NodeConnectionParameters.TemplateBehaviors.Add(_BroadcastHubBehavior);
-			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(_Miner));
+			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(Miner));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _BroadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 

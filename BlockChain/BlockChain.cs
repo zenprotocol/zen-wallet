@@ -9,6 +9,7 @@ using System.Linq;
 using BlockChain.Data;
 using System.Threading.Tasks.Dataflow;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace BlockChain
 {
@@ -557,7 +558,6 @@ namespace BlockChain
 		}
 
 		//TODO: should asset that the block came from main?
-
 		public Types.Block GetBlock(byte[] key)
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
@@ -593,56 +593,6 @@ namespace BlockChain
 					txOutputs[item.Key.txHash].Add(item.Value);
 					txs[item.Key.txHash] = BlockStore.TxStore.Get(context, item.Key.txHash).Value;
 				}
-			}
-		}
-
-		////demo
-		public Types.Block MineAllInMempool()
-		{
-			if (memPool.TxPool.Count == 0)
-			{
-				return null;
-			}
-
-			uint version = 1;
-			//var date = "2000-02-02";
-			//var _date = DateTime.Parse(date);
-			//_date = _date.AddDays(1);
-
-		//	Merkle.Hashable x = new Merkle.Hashable ();
-		//	x.
-		//	var merkleRoot = Merkle.merkleRoot(Tip.Key,
-
-			var nonce = new byte[10];
-
-			new Random().NextBytes (nonce);
-
-			var blockHeader = new Types.BlockHeader(
-				version,
-				Tip.Key,
-				Tip.Value.header.blockNumber + 1,
-				new byte[] { },
-				new byte[] { },
-				new byte[] { },
-				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Now.Ticks,
-				0,
-				nonce
-			);
-
-			var newBlock = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(memPool.TxPool.Select(
-				t => TransactionValidation.unpoint(t.Value)))
-          	);
-
-			if (HandleBlock(newBlock) == BlockVerificationHelper.BkResultEnum.Accepted)
-			{
-				return newBlock;
-			}
-			else 
-			{
-				BlockChainTrace.Information("*** error mining block ***");
-				//	throw new Exception();
-				return null;
 			}
 		}
 	}

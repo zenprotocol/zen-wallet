@@ -9,6 +9,7 @@ using Zen.Data;
 using System.Globalization;
 using Wallet.Constants;
 using Wallet.core;
+using Network;
 
 namespace Zen
 {
@@ -78,10 +79,10 @@ namespace Zen
 				options[currentMenu].ForEach(t => listMenu.Items.Add(t));
 			};
 
-			dialog = new Dialog(root) { Text = string.IsNullOrEmpty(app.Settings.NetworkProfile) ? "Zen" : app.Settings.NetworkProfile, Width = 75, Height = 19, Top = 2, Left = 2, Border = BorderStyle.Thick };
+			dialog = new Dialog(root) { Text = string.IsNullOrEmpty(app.Settings.NetworkProfile) ? "Zen" : app.Settings.NetworkProfile.Replace(".json", ""), Width = 75, Height = 19, Top = 2, Left = 2, Border = BorderStyle.Thick };
 
+			#region Send Dialog
 			var sendDialog = new Dialog(root) { Text = "Send", Width = 70, Height = 18, Top = 4, Left = 4, Border = BorderStyle.Thick, Visible = false };
-
 			new Label(sendDialog) { Top = 1, Left = 1, Width = 66, Text = "Destination" };
 			var address = new SingleLineTextbox(sendDialog) { Top = 3, Left = 1, Width = 65 };
 			new Label(sendDialog) { Top = 5, Left = 1, Width = 66, Text = "Amount" };
@@ -90,7 +91,8 @@ namespace Zen
 			var sendDialogCloseButton = new Button(sendDialog) { Top = 10, Left = 20, Width = 15, Text = "Close" };
 			var status = new Label(sendDialog) { Top = 16, Left = 1, Width = 40, Text = "", Background = ConsoleColor.Black };
 
-			sendDialogCloseButton.Clicked += (sender, e) => {
+			sendDialogCloseButton.Clicked += (sender, e) =>
+			{
 				sendDialog.Hide();
 				dialog.Show();
 			};
@@ -136,6 +138,61 @@ namespace Zen
 				sendDialog.Show();
 				address.SetFocus();
 			};
+			#endregion
+
+			#region Miner Dialog
+			var minerDialog = new Dialog(root) { Text = "Miner", Width = 70, Height = 18, Top = 2, Left = 6, Border = BorderStyle.Thick, Visible = false };
+			var radioMinerEnabled = new RadioButton(minerDialog) { Top = 1, Left = 1, Id = "minerIsEnabled", Text = "Enabled" };
+			var radioMinerDisabled = new RadioButton(minerDialog) { Top = 2, Left = 1, Id = "minerIsEnabled", Text = "Disabled" };
+			new Label(minerDialog) { Top = 4, Left = 1, Width = 10, Text = "Difficulty" };
+			var difficulty = new SingleLineTextbox(minerDialog) { Top = 4, Left = 15, Width = 10 };
+			var minerDialogMinerButton = new Button(minerDialog) { Top = 1, Left = 32, Width = 15, Text = "Mine Now" };
+			var minerDialogCloseButton = new Button(minerDialog) { Top = 1, Left = 50, Width = 18, Text = "Apply and Close" };
+			var minerLog = new ListBox(minerDialog) { Top = 6, Left = 2, Width = 66, Height = 11, Border = BorderStyle.Thin };
+
+			Func<MinerLogData, string> minerLogData = log =>
+			{
+				return $"Block #{log.BlockNumber} {log.Status} with {log.Transactions} txs, in {log.TimeToMine} seconds";
+			};
+
+			app.NodeManager.Miner.OnMinedBlock += log => minerLog.Items.Add(minerLogData(log));
+
+			minerDialogCloseButton.Clicked += (sender, e) =>
+			{
+				var miner = app.NodeManager.Miner;
+
+				miner.Difficulty = int.Parse(difficulty.Text);
+				miner.Enabled = radioMinerEnabled.Checked;
+
+				minerDialog.Hide();
+				dialog.Show();
+			};
+
+			minerDialogMinerButton.Clicked += (sender, e) =>
+			{
+				app.MineBlock();
+			};
+
+			Action showMinerDialog = () =>
+			{
+				var miner = app.NodeManager.Miner;
+				difficulty.Text = miner.Difficulty.ToString();
+
+				if (miner.Enabled)
+					radioMinerEnabled.Checked = true;
+				else
+					radioMinerDisabled.Checked = true;
+
+				minerLog.Items.Clear();
+				foreach (var log in app.MinerLogData)
+				{
+					minerLog.Items.Add(minerLogData(log));
+				}
+
+				dialog.Hide();
+				minerDialog.Show();
+			};
+			#endregion
 
 			actions["main"] = async a =>
 			{
@@ -148,7 +205,8 @@ namespace Zen
 						menu("blockchain");
 						break;
 					case "Miner Menu":
-						menu("miner");
+						//menu("miner");
+						showMinerDialog();
 						break;
 					case "Reconnect":
 						await app.Reconnect();
@@ -174,7 +232,7 @@ namespace Zen
 						menu("tests");
 						break;
 					case "Exit":
-						app.Stop();
+						app.Dispose();
 						root.Detach();
 						break;
 				}
