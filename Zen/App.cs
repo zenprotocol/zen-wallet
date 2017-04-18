@@ -14,10 +14,12 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Configuration;
 using Newtonsoft.Json;
+using System.Text;
+using System.Net;
 
 namespace Zen
 {
-	public class App
+	public class App : IDisposable
 	{
 		public Settings Settings { get; set; }
 
@@ -101,20 +103,33 @@ namespace Zen
 			return walletManager;
 		}
 
-		NodeManager NodeManager
+		public List<MinerLogData> MinerLogData { get; private set; }
+		public NodeManager NodeManager
 		{
 			get
 			{
 				if (_NodeManager == null)
+				{
 					_NodeManager = new NodeManager(BlockChain_);
+					_NodeManager.Miner.Enabled = _MinerEnabled;
+
+					_NodeManager.Miner.OnMinedBlock -= MinedBlockHandler;
+					_NodeManager.Miner.OnMinedBlock += MinedBlockHandler;
+				}
 
 				return _NodeManager;
 			}
 		}
 
+		void MinedBlockHandler(MinerLogData minerLogData)
+		{
+			MinerLogData.Add(minerLogData);
+		}
+
 		public App()
 		{
 			Settings = new Settings();
+			MinerLogData = new List<MinerLogData>();
 
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
 			JsonLoader<Keys>.Instance.FileName = "keys.json";
@@ -128,7 +143,7 @@ namespace Zen
 				_MinerEnabled = value;
 
 				if (_NodeManager != null)
-					_NodeManager.MinerEnabled = value;
+					_NodeManager.Miner.Enabled = value;
 			}
 		}
 
@@ -149,9 +164,12 @@ namespace Zen
 
 		public void MineBlock()
 		{
-			var result = BlockChain_.MineAllInMempool() != null;
+			NodeManager.Miner.Mine();
+		}
 
-
+		public void SetMinerEnabled(bool enabled)
+		{
+			NodeManager.Miner.Enabled = enabled;
 		}
 
 		public bool Spend(int amount, int keyIndex)
@@ -345,6 +363,11 @@ namespace Zen
 		//		if (File.Exists("nodes.js"))
 		//			File.Delete("nodes.js");
 			}
+		}
+
+		public void Dispose()
+		{
+			Stop();
 		}
 
 		private Keyed<Types.Block> _GenesisBlock = null;

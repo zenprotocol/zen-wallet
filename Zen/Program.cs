@@ -1,10 +1,6 @@
 ﻿using System;
 using NDesk.Options;
-using System.Net;
 using System.IO;
-using Microsoft.FSharp.Collections;
-using System.Collections.Generic;
-using Consensus;
 
 namespace Zen
 {
@@ -13,7 +9,7 @@ namespace Zen
 
 		public static void Main (string[] args)
 		{
-			App app = new App();
+			var app = new App();
 
 			bool show_help = false;
 			bool headless = false;
@@ -48,6 +44,9 @@ namespace Zen
 
 				{ "s|script=", "execute script",
 					v => script = v.EndsWith(".fs", StringComparison.OrdinalIgnoreCase) ? v : v + ".fs" },
+
+				{ "m|miner", "enable miner",
+					v => app.MinerEnabled = true },
 
 				//{ "o|output=", "add a genesis block transaction output (address, amount)",
 				//	v => app.Settings.AddOutput(v) },
@@ -85,11 +84,12 @@ namespace Zen
 				if (isSuccess)
 				{
 					Console.WriteLine(result);
-					Console.ReadLine();
+					Console.ReadKey();
 				}
 				else
 				{
-					Console.ReadLine();
+					Console.ReadKey();
+					app.Dispose();
 					return;
 				}
 			}
@@ -103,7 +103,7 @@ namespace Zen
 			if (!headless)
 			{
 				app.GUI();
-				app.Stop();
+				app.Dispose();
 			}
 			else
 			{
