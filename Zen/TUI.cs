@@ -32,7 +32,8 @@ namespace Zen
 			options["main"].Add("BlockChain Menu");
 			options["main"].Add("Miner Menu");
 			options["main"].Add("Tests");
-			options["main"].Add("Reset DB");
+			options["main"].Add("Reset Blockchain DB");
+			options["main"].Add("Reset Wallet DB");
 			options["main"].Add("Generate Graph");
 			options["main"].Add("Stop");
 			options["main"].Add("Exit");
@@ -224,6 +225,12 @@ namespace Zen
 						break;
 					case "Generate Graph":
 						app.Dump();
+						break;
+					case "Reset Blockchain DB":
+						app.ResetBlockChainDB();
+						break;
+					case "Reset Wallet DB":
+						app.ResetWalletDB();
 						break;
 					case "Stop":
 						app.Stop();
