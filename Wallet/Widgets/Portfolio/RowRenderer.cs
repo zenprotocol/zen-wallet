@@ -22,6 +22,9 @@ namespace Wallet
 
 		protected override void Render (Drawable window, Widget widget, Gdk.Rectangle backgroundArea, Gdk.Rectangle cellArea, Gdk.Rectangle exposeArea, CellRendererState flags)
 		{
+			if (!App.Instance.Wallet.AssetsMetadata.ContainsKey(Asset))
+				return;
+
 			var gc = widget.Style.TextGC(StateType.Normal);
 
 			var asset = App.Instance.Wallet.AssetsMetadata[Asset];

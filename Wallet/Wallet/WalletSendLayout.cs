@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using Gdk;
 using Gtk;
+using System.Linq;
 using Wallet.core;
+using Wallet.core.Data;
+using Consensus;
+using Wallet.Constants;
 
 namespace Wallet
 {
@@ -21,7 +25,7 @@ namespace Wallet
 			get; set;
 		}
 	
-		public byte[] Destination
+		public Address Destination
 		{
 			get; set;
 		}
@@ -86,7 +90,7 @@ namespace Wallet
 			{
 				try
 				{
-					SendInfo.Destination = core.Data.Key.FromBase64String(((Entry)sender).Text);
+					SendInfo.Destination = new Address(((Entry)sender).Text);
 					labelDestinationError.Text = "";
 				}
 				catch
@@ -111,27 +115,15 @@ namespace Wallet
 				}
 				else
 				{
-					var parts = text.Split('.');
-
-					if (parts.Length == 2 && parts[1].Length > 8)
+					if (!Zen.IsValidText(text))
 					{
 						SendInfo.Amount = 0;
 						labelAmountError.Text = "Invalid amount";
 					}
 					else
 					{
-						try
-						{
-							var raw = decimal.Parse(text);
-							var kalapas = Math.Pow(10, 8) * (double)raw;
-							SendInfo.Amount = (ulong)Math.Truncate(kalapas);
-							CheckAssetAmount();
-						}
-						catch
-						{
-							SendInfo.Amount = 0;
-							labelAmountError.Text = "Invalid amount";
-						}
+						SendInfo.Amount = new Zen(text).Kalapas;
+						CheckAssetAmount();
 					}
 				}
 
@@ -254,8 +246,20 @@ namespace Wallet
 
 		void UpdateBalance()
 		{
-			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];		
-			labelBalanceValue.Text = $"{_AssetBalance} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
+			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];
+
+			string value;
+
+			if (SendInfo.Asset.SequenceEqual(Tests.zhash))
+			{
+				value = new Zen(_AssetBalance).ToString();
+			}
+			else
+			{
+				value = String.Format(Formats.Money, _AssetBalance);
+			}
+
+			labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
 			CheckAssetAmount();
 		}
 

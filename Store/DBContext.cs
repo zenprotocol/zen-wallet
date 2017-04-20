@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using System.Threading;
 using DBreeze;
 
@@ -6,19 +7,25 @@ namespace Store
 {
 	public class DBContext : IDisposable
 	{
-		private System.Collections.Generic.List<TransactionContext> _List = new System.Collections.Generic.List<TransactionContext>();
-		private DBreezeEngine _Engine;
-		private ManualResetEvent _Event = new ManualResetEvent(false);
+		System.Collections.Generic.List<TransactionContext> _List = new System.Collections.Generic.List<TransactionContext>();
+		DBreezeEngine _Engine = null;
+		ManualResetEvent _Event = new ManualResetEvent(false);
+		string _dbName;
 
 		public DBContext(string dbName)
 		{
-			_Engine = new DBreezeEngine(dbName);
+			_dbName = dbName;
 		}
 
 		public TransactionContext GetTransactionContext()
 		{
 			lock (_List)
 			{
+				if (_Engine == null)
+				{
+					_Engine = new DBreezeEngine(_dbName);
+				}
+
 				var t = new TransactionContext(this, _Engine.GetTransaction());
 				_List.Add(t);
 				_Event.Reset();
@@ -43,7 +50,12 @@ namespace Store
 		public void Dispose()
 		{
 			_Event.WaitOne();
-			_Engine.Dispose();
+
+			if (_Engine != null)
+			{
+				_Engine.Dispose();
+				_Engine = null;
+			}
 		}
 
 		public void Wait()

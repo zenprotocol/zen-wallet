@@ -8,6 +8,8 @@ using System.IO;
 using System.Reflection;
 using Consensus;
 using BlockChain;
+using Zen.Data;
+using Wallet.core.Data;
 
 namespace Zen
 {
@@ -19,15 +21,15 @@ namespace Zen
 		{
 			Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-			if (Directory.Exists(App.DefaultBlockChainDB))
-			{
-				Directory.Delete(App.DefaultBlockChainDB, true);
-			}
+			//if (Directory.Exists(App.DefaultBlockChainDB))
+			//{
+			//	Directory.Delete(App.DefaultBlockChainDB, true);
+			//}
 
-			if (Directory.Exists(App.DefaultWalletDB))
-			{
-				Directory.Delete(App.DefaultWalletDB, true);
-			}
+			//if (Directory.Exists(App.DefaultWalletDB))
+			//{
+			//	Directory.Delete(App.DefaultWalletDB, true);
+			//}
 		}
 
 		[Test(), Order(1)]
@@ -36,8 +38,6 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
-
 			app.AddGenesisBlock();
 
 			ulong expectedAmount = 0;
@@ -45,12 +45,12 @@ namespace Zen
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o =>
 			{
 				expectedAmount += o.Amount;
-				app.ImportKey(o.Key);
+				app.WalletManager.Import(Key.Create(o.Key));
 			});
 
 			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
 
-			app.Start();
+			app.Reconnect();
 
 			new Thread(() =>
 			{
@@ -69,14 +69,12 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
-
 			ulong expectedAmount = 0;
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o =>
 			{
 				expectedAmount += o.Amount;
-				app.ImportKey(o.Key);
+				app.WalletManager.Import(Key.Create(o.Key));
 			});
 
 			Thread.Sleep(000);
@@ -85,7 +83,7 @@ namespace Zen
 
 			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
 			      
-			app.Start();
+			app.Reconnect();
 
 			new Thread(() =>
 			{
@@ -103,13 +101,11 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
-
 			app.AddGenesisBlock();
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
-			app.Start();
+			app.Reconnect();
 
 			Task.Run(() =>
 			{
@@ -141,15 +137,14 @@ namespace Zen
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
 			//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
-			app.Init();
 			app.AddGenesisBlock();
 			
 	//		var _NewTx = Infrastructure.Testing.Utils.GetTx().AddOutput(app.GetUnusedKey().Address, Tests.zhash, 1);
 
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
-			app.Start();
+			app.Reconnect();
 
 			Task.Run(() =>
 			{
@@ -200,18 +195,17 @@ namespace Zen
 			App app = new App();
 		//	app.Settings.EndpointOptions.EndpointOption = Network.EndpointOptions.EndpointOptionsEnum.NoNetworking;
 
-			app.Init();
 			app.AddGenesisBlock();
 
-			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.ImportKey(o.Key));
+			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
-			app.Start();
+			app.Reconnect();
 
 			Task.Run(() =>
 			{
 				Types.Transaction tx;
 				Thread.Sleep(1000);
-				Assert.That(app.Spend(2, out tx), Is.True);
+				Assert.That(app.Sign(2, out tx), Is.True);
 				Thread.Sleep(1000);
 
 				var block = app.GenesisBlock.Value.Child().AddTx(tx);
