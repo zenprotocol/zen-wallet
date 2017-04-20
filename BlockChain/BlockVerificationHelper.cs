@@ -19,7 +19,8 @@ namespace BlockChain
 		{
 			Accepted,
 			AcceptedOrphan,
-			Rejected
+			AcceptedSideChain,
+			Rejected,
 		}
 
 		BlockChain _BlockChain;
@@ -211,6 +212,9 @@ namespace BlockChain
 				else
 				{
 					blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Branch, totalWork);
+					BlockChainTrace.Information("block accepted", _Bk);
+					Result = BkResultEnum.AcceptedSideChain;
+					return;
 				}
 			}
 			else
