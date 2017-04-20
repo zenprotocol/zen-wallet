@@ -372,7 +372,7 @@ namespace BlockChain
 
 		bool IsValidTime()
 		{
-			var ts = new DateTime(_Bk.header.timestamp) - DateTime.Now;
+			var ts = new DateTime(_Bk.header.timestamp) - DateTime.Now.ToUniversalTime();
 
 			return ts.Hours < 2;
 		}

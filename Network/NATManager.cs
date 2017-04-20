@@ -70,11 +70,11 @@ namespace Network
 
 			if (_NatDevice != null)
 			{
-				ExternalIPVerified = VerifyExternalIP().Result;
+				ExternalIPVerified = await VerifyExternalIP();
 
 				if (ExternalIPVerified.Value)
 				{
-					Mapped = EnsureMapping().Result;
+					Mapped = await EnsureMapping();
 				}
 			}
 		}

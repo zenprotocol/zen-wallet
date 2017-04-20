@@ -1,5 +1,6 @@
 ﻿using Consensus;
 using Microsoft.FSharp.Collections;
+using Wallet.core.Data;
 
 namespace BlockChain
 {
@@ -11,7 +12,7 @@ namespace BlockChain
 			return tx;
 		}
 
-		public static Types.Transaction AddOutput(this Types.Transaction tx, byte[] address, byte[] asset, ulong amount)
+		public static Types.Transaction AddOutput(this Types.Transaction tx, Address address, byte[] asset, ulong amount)
 		{
 			return tx.AddOutput(Utils.GetOutput(address, asset, amount));
 		}
