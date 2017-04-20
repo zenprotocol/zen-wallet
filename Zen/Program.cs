@@ -1,6 +1,6 @@
 ﻿using System;
 using NDesk.Options;
-using System.Net;
+using System.IO;
 
 namespace Zen
 {
@@ -9,10 +9,12 @@ namespace Zen
 
 		public static void Main (string[] args)
 		{
-			App app = new App();
+			var app = new App();
+
 			bool show_help = false;
 			bool headless = false;
 			bool tui = false;
+			string script = null;
 
 			var p = new OptionSet() {
 				{ "headless", "start in headless mode",
@@ -20,8 +22,8 @@ namespace Zen
 				{ "t|tui", "show TUI",
 					v => tui = true },
 				
-				//{ "p|profile=", "use settings profile",
-				//	v =>  app.Settings.NetworkProfile = v },
+				{ "n|network=", "use network profile",
+					v =>  app.Settings.NetworkProfile = v },
 				//{ "settings=", "use settings profile",
 				//	v =>  app.Settings.SettingsProfile = v },
 				//{ "k|key=", "add private key",
@@ -30,34 +32,26 @@ namespace Zen
 				//	v => app.Settings.SaveNetworkProfile = v != null },
 				//{ "save_settings", "save general settings profile (to be used with settings option)",
 				//	v => app.Settings.SaveSettings = v != null },
-				//{ "seed=", "use seed ip address", 
-				//	v => app.Settings.Seeds.Add(v) },
-				//{ "peers=", "number peers to find", 
-				//	v => app.Settings.PeersToFind = int.Parse(v) },
-				//{ "connections=", "number of node connections", 
-				//	v => app.Settings.Connections = int.Parse(v) },
-				//{ "port=", "default network port", 
-				//	v => app.Settings.Port = int.Parse(v) },
+
+				{ "wallet=", "specify wallet", 
+					v => app.Settings.WalletDB = v },
+
+				{ "db=", "Wallet DB",
+					v => app.Settings.WalletDB = v },
 
 				{ "d|disable-network", "disable networking",
 					v => app.Settings.DisableNetworking = true },
-				{ "connect=", "connect to seed's ip address",
-					v => app.Settings.ConnectToSeed = IPAddress.Parse(v) },
-				{ "external-ip=", "use external ip address", 
-					v => app.Settings.ExternalAddress = IPAddress.Parse(v) },
-				{ "localhost", "act as localhost",
-					v => app.Settings.AsLocalhost = v != null },
-				{ "localhost-connect", "connect to localhost",
-					v => app.Settings.ConnectToLocalhost = v != null },
-				
-				{ "db=", "DB suffix", 
-					v => app.Settings.DBSuffix = v },
-				
+
+				{ "s|script=", "execute script",
+					v => script = v.EndsWith(".fs", StringComparison.OrdinalIgnoreCase) ? v : v + ".fs" },
+
+				{ "m|miner", "enable miner",
+					v => app.MinerEnabled = true },
+
 				//{ "o|output=", "add a genesis block transaction output (address, amount)",
 				//	v => app.Settings.AddOutput(v) },
 				//{ "ge|genesis", "init the genesis block",
 				//	v => app.Settings.InitGenesisBlock = v != null },
-
 
 				//{ "v", "increase debug message verbosity",
 				//	v => { if (v != null) ++verbosity; } },
@@ -82,21 +76,38 @@ namespace Zen
 				return;
 			}
 
-			app.Init();
+			if (script != null)
+			{
+				object result;
+				var isSuccess = ScriptRunner.Execute(app, Path.Combine("Scripts", script), out result);
+
+				if (isSuccess)
+				{
+					Console.WriteLine(result);
+					Console.ReadKey();
+				}
+				else
+				{
+					Console.ReadKey();
+					app.Dispose();
+					return;
+				}
+			}
 
 			if (tui)
 			{
-				TUI.Start(app, String.Join(" ", args));
+				TUI.Start(app, script);
+				return;
+			}
+
+			if (!headless)
+			{
+				app.GUI();
+				app.Dispose();
 			}
 			else
 			{
-				app.Start();
-
-				if (!headless)
-				{
-					app.GUI();
-					app.Stop();
-				}
+				app.Reconnect();
 			}
 		}
 

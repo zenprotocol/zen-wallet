@@ -55,7 +55,7 @@ namespace Wallet
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
 			{
 				ulong amount;
-				byte[] address;
+				Address address;
 
 				try
 				{
@@ -75,9 +75,8 @@ namespace Wallet
 
 				try
 				{
-					address = Key.FromBase64String(dialogfieldTo.Value);
-				}
-				catch
+					address = new Address(dialogfieldTo.Value);
+				} catch
 				{
 					labelMessage.Text = "Invalid address";
 					return;

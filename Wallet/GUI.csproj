@@ -201,6 +201,7 @@
     <Compile Include="Wallet\WalletSendConfirmationLayout.cs" />
     <Compile Include="gtk-gui\Wallet.WalletSendConfirmationLayout.cs" />
     <Compile Include="ImagesCache.cs" />
+    <Compile Include="Domain\Zen.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -242,6 +243,10 @@
     <ProjectReference Include="..\Network\Network.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ContractGenerator\ContractGenerator.csproj">
+      <Project>{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}</Project>
+      <Name>ContractGenerator</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

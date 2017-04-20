@@ -17,13 +17,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.core", "Wallet.core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen", "Zen\Zen.csproj", "{1F030257-FBB4-4538-BBD8-4B241FD73B13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.CLRCLI", "Zen.CLRCLI\Zen.CLRCLI.csproj", "{29BB24E8-D6C7-403E-8B7C-DC65765E342B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain.Tests", "BlockChain.Tests\BlockChain.Tests.csproj", "{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.Tests", "Wallet.Tests\Wallet.Tests.csproj", "{889EFC00-964C-4A24-A9AC-06F82DA147B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Network", "Network\Network.csproj", "{4741344C-3334-42C6-B3BF-5AB10280E6C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractGenerator", "ContractGenerator\ContractGenerator.csproj", "{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,10 +63,6 @@ Global
 		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Debug|x86.Build.0 = Debug|Any CPU
 		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Release|x86.ActiveCfg = Release|Any CPU
 		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Release|x86.Build.0 = Release|Any CPU
-		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Debug|x86.ActiveCfg = Debug|x86
-		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Debug|x86.Build.0 = Debug|x86
-		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Release|x86.ActiveCfg = Release|x86
-		{29BB24E8-D6C7-403E-8B7C-DC65765E342B}.Release|x86.Build.0 = Release|x86
 		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.Build.0 = Debug|Any CPU
 		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.ActiveCfg = Release|Any CPU
@@ -79,5 +75,9 @@ Global
 		{4741344C-3334-42C6-B3BF-5AB10280E6C4}.Debug|x86.Build.0 = Debug|Any CPU
 		{4741344C-3334-42C6-B3BF-5AB10280E6C4}.Release|x86.ActiveCfg = Release|Any CPU
 		{4741344C-3334-42C6-B3BF-5AB10280E6C4}.Release|x86.Build.0 = Release|Any CPU
+		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Debug|x86.Build.0 = Debug|Any CPU
+		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Release|x86.ActiveCfg = Release|Any CPU
+		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -9,11 +9,12 @@ namespace Wallet
 		public int Offset { get { return 0; }}
 
 		public LogEntryRow (LogEntryItem logEntryItem) {
+			var zenAmount = new Zen(logEntryItem.Amount).ToString();
 			Values = new System.Object[] {
 				logEntryItem.Date.TimeAgo(), 
 				logEntryItem.Id, 
-				logEntryItem.Direction == DirectionEnum.Sent ? logEntryItem.Amount / Math.Pow(10, 8) : 0,
-				logEntryItem.Direction == DirectionEnum.Recieved ? logEntryItem.Amount / Math.Pow(10, 8) : 0,
+				logEntryItem.Direction == DirectionEnum.Sent ? zenAmount : "0",
+				logEntryItem.Direction == DirectionEnum.Recieved ? zenAmount : "0",
 				logEntryItem.Balance
 			};
 		}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace Infrastructure
 {
@@ -35,19 +36,38 @@ namespace Infrastructure
 		#endregion
 	}
 
+	public class Wrapper<T>
+	{
+		public T Value { get; set; }
+
+#if DEBUG
+		public StackTrace StackTrace { get; set; }
+#endif
+
+		public Wrapper(T t)
+		{
+			Value = t;
+
+#if DEBUG
+			StackTrace = new StackTrace(true);
+#endif
+		}
+
+	}
+
 	public class EventLoopMessageListener<T> : IMessageListener<T>, IDisposable
 	{
 		private ManualResetEvent continueEvent = new ManualResetEvent(true);
 		private Thread thread;
 
 #if DEBUG
-		public string _CreatorStackTrace;
+		public StackTrace _CreatorStackTrace;
 #endif
 
 		public EventLoopMessageListener(Action<T> processMessage)
 		{
 #if DEBUG
-			_CreatorStackTrace = Environment.StackTrace;
+			_CreatorStackTrace = new StackTrace(true);
 #endif
 
 			thread = new Thread(new ThreadStart(() =>
@@ -56,7 +76,7 @@ namespace Infrastructure
 				{
 					while (!cancellationSource.IsCancellationRequested)
 					{
-						T message;
+						Wrapper<T> message;
 
 						message = _MessageQueue.Take(cancellationSource.Token);
 
@@ -67,13 +87,14 @@ namespace Infrastructure
 							try
 							{
 								InfrastructureTrace.Information("processMessage: " + message.GetType());
-								processMessage(message);
+								processMessage(message.Value);
 							}
 							catch (Exception ex)
 							{
 								InfrastructureTrace.Error("Exception during message loop", ex);
 								Console.WriteLine("Exception during message loop", ex); //TODO: write to trace
 																						//NodeServerTrace.Error("Exception during message loop", ex);
+
 								throw ex;
 							}
 						}
@@ -97,8 +118,8 @@ namespace Infrastructure
 			continueEvent.Set();
 		}
 
-		BlockingCollection<T> _MessageQueue = new BlockingCollection<T>(new ConcurrentQueue<T>());
-		public BlockingCollection<T> MessageQueue
+		BlockingCollection<Wrapper<T>> _MessageQueue = new BlockingCollection<Wrapper<T>>(new ConcurrentQueue<Wrapper<T>>());
+		public BlockingCollection<Wrapper<T>> MessageQueue
 		{
 			get
 			{
@@ -111,7 +132,7 @@ namespace Infrastructure
 
 		public void PushMessage(T message)
 		{
-			_MessageQueue.Add(message);
+			_MessageQueue.Add(new Wrapper<T>(message));
 		}
 
 		#endregion

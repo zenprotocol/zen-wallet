@@ -13,159 +13,109 @@ namespace Network
 {
 	public class NodeManager : ResourceOwner//, INodeManager
 	{
-		private Server _Server = null;
-		private BlockChain.BlockChain _BlockChain = null;
-		private NetworkInfo _Network;
-		private NodeConnectionParameters _NodeConnectionParameters;
-		private BroadcastHubBehavior _BroadcastHubBehavior;
-
-		private Miner _Miner;
-#if DEBUG
-		public
-#else
-		private
-#endif
-		NATManager _NATManager;
-
-#if DEBUG
-		public
-#else
-		private
-#endif
+		Server _Server = null;
+		BlockChain.BlockChain _BlockChain = null;
+		NodeConnectionParameters _NodeConnectionParameters;
+		BroadcastHubBehavior _BroadcastHubBehavior;
 		NodesGroup _NodesGroup;
 
-		bool _MinerEnabled;
-		public bool MinerEnabled { set {
-				_MinerEnabled = value;
-
-				if (_Miner != null)
-					_Miner.Enabled = value;
-			}
-		}
+		public readonly Miner Miner;
 
 		public NodeManager(BlockChain.BlockChain blockChain)
 		{
 			_BlockChain = blockChain;
-			//OwnResource (_BlockChain);
-			_Network = JsonLoader<NetworkInfo>.Instance.Value;
-
-			AddressManager addressManager = new AddressManager();
+			var addressManager = new AddressManager();
 
 			_NodeConnectionParameters = new NodeConnectionParameters();
 			var addressManagerBehavior = new AddressManagerBehavior(addressManager);
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
-			_NATManager = new NATManager(_Network.DefaultPort);
+			Miner = new Miner();
+			Miner.BlockChain_ = blockChain;
 		}
 
-		public void Connect()
+		public async Task Connect(NetworkInfo networkInfo)
 		{
-			_NATManager.Init().ContinueWith(t =>
-			{
-				if (_NATManager.DeviceFound &&
-					_NATManager.Mapped.Value &&
-					_NATManager.ExternalIPVerified.Value)
-				{
-					Connect(_NATManager.ExternalIPAddress);
-				}
-				else
-				{
-					Connect(null);
-				}
-			});
-		}
+			IPAddress ipAddress = null;
+			var natManager = new NATManager(networkInfo.DefaultPort);
 
 #if DEBUG
-		public void ConnectToLocalhost()
-		{
-			_Network.DefaultPort = 9999;
-			_Network.PeersToFind = 1;
-			_Network.MaximumNodeConnection = 1;
-
-			if (!_Network.Seeds.Contains(_NATManager.InternalIPAddress.ToString()))
-				_Network.Seeds.Add(_NATManager.InternalIPAddress.ToString());	
-			
-			JsonLoader<NetworkInfo>.Instance.Save();
-			Connect(null);
-		}
-
-		public void AsLocalhost()
-		{
-			_Network.DefaultPort = 9999;
-			_Network.PeersToFind = 0;
-			_Network.MaximumNodeConnection = 0;
-			JsonLoader<NetworkInfo>.Instance.Save();
-			Connect(_NATManager.InternalIPAddress); 
-		}
-
-		public void ConnectToSeed(IPAddress ipAddress)
-		{
-			_Network.DefaultPort = 9999;
-			_Network.PeersToFind = 1;
-			_Network.MaximumNodeConnection = 1;
-
-			if (!_Network.Seeds.Contains(ipAddress.ToString()))
-				_Network.Seeds.Add(ipAddress.ToString());
-
-			JsonLoader<NetworkInfo>.Instance.Save();
-			Connect(null);
-		}
+			if (networkInfo.IsLANHost)
+			{
+				ipAddress = natManager.InternalIPAddress;
+				networkInfo.PeersToFind = 0;
+			}
+			else if (networkInfo.IsLANClient)
+			{
+				ipAddress = null;
+				networkInfo.PeersToFind = 1;
+				networkInfo.Seeds.Clear();
+				networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
+			}
+			else
 #endif
+			if (!string.IsNullOrEmpty(networkInfo.ExternalIPAddress))
+			{
+				ipAddress = IPAddress.Parse(networkInfo.ExternalIPAddress);
+			}
+			else
+			{
 
-		public void Connect(IPAddress ipAddress)
-		{
+				await natManager.Init();
+
+				if (natManager.DeviceFound &&
+					natManager.Mapped.Value &&
+					natManager.ExternalIPVerified.Value)
+				{
+					ipAddress = natManager.ExternalIPAddress;
+				}
+			}
+
 			_BroadcastHubBehavior = new BroadcastHubBehavior();
 
-			_Miner = new Miner(_BlockChain);
-			_Miner.Enabled = _MinerEnabled;
-
 			_NodeConnectionParameters.TemplateBehaviors.Add(_BroadcastHubBehavior);
-			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(_Miner));
+			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(Miner));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _BroadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
-			AddressManagerBehavior.GetAddrman(_NodeConnectionParameters).PeersToFind = _Network.PeersToFind;
+			AddressManagerBehavior.GetAddrman(_NodeConnectionParameters).PeersToFind = networkInfo.PeersToFind;
 
 			if (ipAddress != null)
 			{
 				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.AdvertizeDiscover; //parameters.Advertize = true;
-				_NodeConnectionParameters.AddressFrom = new System.Net.IPEndPoint(ipAddress, _Network.DefaultPort);
+				_NodeConnectionParameters.AddressFrom = new System.Net.IPEndPoint(ipAddress, networkInfo.DefaultPort);
 			}
 			else
 			{
 				_NodeConnectionParameters.TemplateBehaviors.Find<AddressManagerBehavior>().Mode = AddressManagerBehaviorMode.Discover;
 			}
 
-			//_BlockChain.OnAddedToMempool += t => {
-			//	broadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(t);
-			//};
-
 			if (ipAddress != null)
 			{ 
-				_Server = new Server(ipAddress, _Network, _NodeConnectionParameters);
+				_Server = new Server(ipAddress, networkInfo, _NodeConnectionParameters);
 				OwnResource(_Server);
 
 				if (_Server.Start())
 				{
-					NodeServerTrace.Information($"Server started at {ipAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information($"Server started at {ipAddress}:{networkInfo.DefaultPort}");
 				}
 				else
 				{
-					NodeServerTrace.Information($"Could not start server at {ipAddress}:{_Network.DefaultPort}");
+					NodeServerTrace.Information($"Could not start server at {ipAddress}:{networkInfo.DefaultPort}");
 				}
 			}
 
-			if (_Network.Seeds.Count == 0)
+			if (networkInfo.Seeds.Count == 0)
 			{
 				NodeServerTrace.Information("No seeds defined");
 			}
 			else
 			{
-				_NodesGroup = new NodesGroup(_Network, _NodeConnectionParameters);
+				_NodesGroup = new NodesGroup(networkInfo, _NodeConnectionParameters);
 				OwnResource(_NodesGroup);
 
 				_NodesGroup.AllowSameGroup = true; //TODO
-				_NodesGroup.MaximumNodeConnection = _Network.MaximumNodeConnection;
+				_NodesGroup.MaximumNodeConnection = networkInfo.MaximumNodeConnection;
 
 				_NodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
 				{
@@ -183,7 +133,7 @@ namespace Network
 		{
 			var result = _BlockChain.HandleTransaction(tx);
 
-			if (result == BlockChain.BlockChain.TxResultEnum.Accepted)
+			if (result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
 				_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
 
 			return result;

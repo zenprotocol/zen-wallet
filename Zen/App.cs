@@ -9,90 +9,202 @@ using Wallet.core.Data;
 using System.Threading;
 using BlockChain.Data;
 using Network;
+using Zen.Data;
+using System.Threading.Tasks;
+using System.IO;
+using System.Configuration;
+using Newtonsoft.Json;
+using System.Text;
+using System.Net;
 
 namespace Zen
 {
-	public class App
+	public class App : IDisposable
 	{
 		public Settings Settings { get; set; }
 
-		private BlockChain.BlockChain _BlockChain;
-		private WalletManager _WalletManager;
-		private NodeManager _NodeManager;
+		Action<TxDeltaItemsEventArgs> _WalletOnItemsHandler;
+		public Action<TxDeltaItemsEventArgs> WalletOnItemsHandler
+		{
+			get
+			{
+				return _WalletOnItemsHandler;
+			}
+			set
+			{
+				_WalletOnItemsHandler = value;
+
+				if (_WalletManager != null)
+				{
+					_WalletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
+					_WalletManager.OnItems += WalletOnItemsHandler;
+				}
+			}
+		}
+
+		Action<ResetEventArgs> _WalletOnResetHandler;
+		public Action<ResetEventArgs> WalletOnResetHandler
+		{
+			get
+			{
+				return _WalletOnResetHandler;
+			}
+			set
+			{
+				_WalletOnResetHandler = value;
+
+				if (_WalletManager != null)
+				{
+					_WalletManager.OnReset -= WalletOnResetHandler; // ensure single registration
+					_WalletManager.OnReset += WalletOnResetHandler;
+				}
+			}
+		}
+
+		BlockChain.BlockChain _BlockChain = null;
+		WalletManager _WalletManager = null;
+		NodeManager _NodeManager = null;
+
+		BlockChain.BlockChain BlockChain_ //TODO: refactor class name - conflicts with namespace/member
+		{
+			get
+			{
+				if (_BlockChain == null)
+					_BlockChain = new BlockChain.BlockChain(BlockChainDB, GenesisBlock.Key);
+
+				// init wallet after having initialized blockchain
+				//if (_WalletManager !== null)
+				//	_WalletManager = GetWalletManager(_BlockChain);
+
+				return _BlockChain;
+			}
+		}
+
+		public WalletManager WalletManager
+		{
+			get
+			{
+				if (_WalletManager == null)
+					_WalletManager = GetWalletManager(BlockChain_);
+
+				return _WalletManager;
+			}
+		}
+
+		WalletManager GetWalletManager(BlockChain.BlockChain blockChain)
+		{
+			var walletManager = new WalletManager(blockChain, WalletDB);
+
+			walletManager.OnReset -= WalletOnResetHandler; // ensure single registration
+			walletManager.OnReset += WalletOnResetHandler;
+			walletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
+			walletManager.OnItems += WalletOnItemsHandler;
+
+			return walletManager;
+		}
+
+		public List<MinerLogData> MinerLogData { get; private set; }
+		public NodeManager NodeManager
+		{
+			get
+			{
+				if (_NodeManager == null)
+				{
+					_NodeManager = new NodeManager(BlockChain_);
+					_NodeManager.Miner.Enabled = _MinerEnabled;
+
+					_NodeManager.Miner.OnMinedBlock -= MinedBlockHandler;
+					_NodeManager.Miner.OnMinedBlock += MinedBlockHandler;
+				}
+
+				return _NodeManager;
+			}
+		}
+
+		void MinedBlockHandler(MinerLogData minerLogData)
+		{
+			MinerLogData.Add(minerLogData);
+		}
 
 		public App()
 		{
 			Settings = new Settings();
+			MinerLogData = new List<MinerLogData>();
+
+			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
+			JsonLoader<Keys>.Instance.FileName = "keys.json";
 		}
 
 		bool _MinerEnabled;
-		internal bool MinerEnabled {
+		internal bool MinerEnabled
+		{
 			set
 			{
 				_MinerEnabled = value;
 
 				if (_NodeManager != null)
-					_NodeManager.MinerEnabled = value;
+					_NodeManager.Miner.Enabled = value;
 			}
 		}
 
-		internal bool AddGenesisBlock()
+		public bool AddGenesisBlock()
 		{
 			return AddBlock(GenesisBlock.Value);
 		}
 
 		internal bool AddBlock(Types.Block block)
 		{
-			return _BlockChain.HandleBlock(block) == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+			return BlockChain_.HandleBlock(block) == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
-		internal void ImportKey(string key)
+		public void Acuire(int utxoIndex)
 		{
-			_WalletManager.Import(Key.Create(key));
+			WalletManager.Import(Key.Create(JsonLoader<Outputs>.Instance.Value.Values[utxoIndex].Key));
 		}
 
-		internal Key GetUnusedKey()
+		public void MineBlock()
 		{
-			return _WalletManager.GetUnusedKey();
+			NodeManager.Miner.Mine();
 		}
 
-		internal bool Spend(ulong amount)
+		public void SetMinerEnabled(bool enabled)
+		{
+			NodeManager.Miner.Enabled = enabled;
+		}
+
+		public bool Spend(int amount, int keyIndex)
+		{
+			//TODO: handle return value
+			return Spend((ulong) amount, Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]).Address);
+		}
+
+		internal bool Spend(ulong amount, Address address = null)
 		{
 			Types.Transaction tx;
-			return Spend(amount, out tx);
+
+			if (WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx))
+			{
+				return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+			}
+
+			return false;
 		}
 
-		internal bool Spend(ulong amount, out Types.Transaction tx)
+		internal bool Sign(ulong amount, out Types.Transaction tx, Address address = null)
 		{
-			var key = Key.Create();
-
-			if (_WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx))
-			{
-				return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		internal bool Sign(ulong amount, out Types.Transaction tx)
-		{
-			var key = Key.Create();
-
-			return _WalletManager.Sign(key.Address, Consensus.Tests.zhash, amount, out tx);
+			return WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx);
 		}
 
 		internal bool Transmit(Types.Transaction tx)
 		{
-			return _NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+			return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal long AssetMount()
 		{
 			long amount = 0;
 
-			_WalletManager.TxDeltaList.ForEach((obj) =>
+			WalletManager.TxDeltaList.ForEach((obj) =>
 			{
 				if (obj.TxState != TxStateEnum.Invalid && obj.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
 				{
@@ -113,10 +225,39 @@ namespace Zen
 		//	_WalletManager.Import();
 		//}
 
-		public readonly static string DefaultBlockChainDB = "blockchain_db";
-		public readonly static string DefaultWalletDB = "wallet_db";
+		string Setting(string key)
+		{
+			return ConfigurationManager.AppSettings.Get(key);
+		}
 
-		public event Action<NetworkInfo> OnInitProfile;
+		public void SetBlockChainDBSuffix(string value)
+		{
+			Settings.BlockChainDBSuffix = value;
+		}
+
+		string BlockChainDB
+		{
+			get
+			{
+				return Path.Combine(
+					Setting("dbDir"), 
+					"blockchain" + (string.IsNullOrWhiteSpace(Settings.BlockChainDBSuffix) ? "" : Settings.BlockChainDBSuffix)
+				);
+			}
+		}
+
+		string WalletDB
+		{
+			get
+			{
+				return Path.Combine(
+					Setting("dbDir"), 
+					"wallets", 
+					string.IsNullOrWhiteSpace(Settings.WalletDB) ? Setting("walletDb") : Settings.WalletDB
+				);
+			}
+		}
+
 		public event Action<Settings> OnInitSettings;
 		//private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
 		private ManualResetEventSlim stoppedEvent = new ManualResetEventSlim();
@@ -124,73 +265,109 @@ namespace Zen
 		public void Stop() {
 			//stopEvent.Set();
 
-			if (_WalletManager != null)
-			{
-				_WalletManager.Dispose();
-			}
-
 			if (_NodeManager != null)
 			{
 				_NodeManager.Dispose();
+				_NodeManager = null;
 			}
 
 			if (_BlockChain != null)
 			{
 				_BlockChain.Dispose();
+				_BlockChain = null;
+			}
+
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+				_WalletManager = null;
 			}
 		}
 
-		internal void Init()
+		public void ResetBlockChainDB()
 		{
-			InitNetworkProfile();
+			Stop();
 
-			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
-
-			InitSettingsProfile();
-
-			_BlockChain = new BlockChain.BlockChain(DefaultBlockChainDB + Settings.DBSuffix, GenesisBlock.Key);
-			_WalletManager = new WalletManager(_BlockChain, DefaultWalletDB + Settings.DBSuffix);
+			if (Directory.Exists(BlockChainDB))
+				Directory.Delete(BlockChainDB, true);
 		}
 
-		public void Start()
+		public void ResetWalletDB()
+		{
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+				_WalletManager = null;
+			}
+
+			if (Directory.Exists(WalletDB))
+				Directory.Delete(WalletDB, true);
+		}
+
+		public void SetWallet(string walletDB)
+		{
+			if (_WalletManager != null)
+			{
+				_WalletManager.Dispose();
+				_WalletManager = null;
+			}
+
+			Settings.WalletDB = walletDB;
+
+			var x = WalletManager;
+		}
+
+		public void SetNetwork(string networkProfile)
+		{
+			Stop();
+
+			Settings.NetworkProfile = networkProfile;
+		}
+
+		public void AddKey(int keyIndex)
+		{
+			WalletManager.Import(Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]));
+		}
+
+		public async Task Reconnect()
 		{
 			if (!Settings.DisableNetworking)
 			{
-				if (_NodeManager != null)
-				{
-					_NodeManager.Dispose();
-					_NodeManager = null;
-				}
+				Stop();
 
-				_NodeManager = new NodeManager(_BlockChain);
-				_NodeManager.MinerEnabled = _MinerEnabled;
-
-				if (Settings.ConnectToSeed != null)
-				{
-					_NodeManager.ConnectToSeed(Settings.ConnectToSeed);
-				}
-				else if (Settings.ExternalAddress != null)
-				{
-					_NodeManager.Connect(Settings.ExternalAddress);
-				}
-				else if (Settings.AsLocalhost)
-				{
-					_NodeManager.AsLocalhost();
-				}
-				else if (Settings.ConnectToLocalhost)
-				{
-					_NodeManager.ConnectToLocalhost();
-				}
-				else
-				{
-					_NodeManager.Connect();
-				}
+				await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
 			}
 		}
 
 		public void GUI()
 		{
-			Wallet.App.Instance.Start(_WalletManager, _NodeManager);
+			Wallet.App.Instance.Start(WalletManager, NodeManager);
+		}
+
+		public void Dump()
+		{
+			var blockChainDumper = new BlockChainDumper(BlockChain_);
+			try
+			{
+				blockChainDumper.Populate(WalletManager, BlockChain_);
+				var jsonString = blockChainDumper.Generate();
+
+				File.WriteAllText("nodes.js", "var graph = " + jsonString);
+
+				string path = Directory.GetCurrentDirectory();
+				System.Diagnostics.Process.Start(Path.Combine(path, "graph.html"));
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+		//		if (File.Exists("nodes.js"))
+		//			File.Delete("nodes.js");
+			}
+		}
+
+		public void Dispose()
+		{
+			Stop();
 		}
 
 		private Keyed<Types.Block> _GenesisBlock = null;
@@ -218,8 +395,7 @@ namespace Zen
 
 								JsonLoader<Outputs>.Instance.Value.Values.Add(new Output() { Key = key.ToString(), Amount = amount });
 
-								var pklock = Types.OutputLock.NewPKLock(key.Address);
-								outputs.Add(new Types.Output(pklock, new Types.Spend(Consensus.Tests.zhash, amount)));
+								outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
 							}
 							catch
 							{
@@ -237,8 +413,7 @@ namespace Zen
 							var key = Key.Create(output.Key);
 							var amount = output.Amount;
 
-							var pklock = Types.OutputLock.NewPKLock(key.Address);
-							outputs.Add(new Types.Output(pklock, new Types.Spend(Consensus.Tests.zhash, amount)));
+							outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
 						}
 					}
 
@@ -273,91 +448,6 @@ namespace Zen
 
 				return _GenesisBlock;
 			}
-		}
-
-		private void InitNetworkProfile() {
-			string file = Settings.NetworkProfile ?? "network";
-
-			if (!file.EndsWith (".json")) {
-				file += ".json";
-			}
-
-			JsonLoader<NetworkInfo>.Instance.FileName = file;
-
-			//if (JsonLoader<NetworkInfo>.Instance.IsNew)
-			//{
-			//	JsonLoader<NetworkInfo>.Instance.Value.DefaultPort = 9999;
-			//	JsonLoader<NetworkInfo>.Instance.Save();
-			//}
-
-			foreach (String seed in Settings.Seeds) {
-				if (!JsonLoader<NetworkInfo>.Instance.Value.Seeds.Contains (seed)) {
-					JsonLoader<NetworkInfo>.Instance.Value.Seeds.Add (seed); 
-				}
-			}
-
-			if (Settings.PeersToFind.HasValue) {
-				JsonLoader<NetworkInfo>.Instance.Value.PeersToFind = Settings.PeersToFind.Value;
-			}
-
-			if (Settings.Connections.HasValue) {
-				JsonLoader<NetworkInfo>.Instance.Value.MaximumNodeConnection = Settings.Connections.Value;
-			}
-
-			if (Settings.Port.HasValue) {
-				JsonLoader<NetworkInfo>.Instance.Value.DefaultPort = Settings.Port.Value;
-			}
-
-			if (Settings.SaveNetworkProfile) {
-				JsonLoader<NetworkInfo>.Instance.Save ();
-			}
-
-			if (OnInitProfile != null) {
-				OnInitProfile (JsonLoader<NetworkInfo>.Instance.Value);
-			}
-		}
-
-		private void InitSettingsProfile()
-		{
-			JsonLoader<Keys>.Instance.FileName = "keys.json";
-
-			if (Settings.Keys.Count > 0)
-			{
-				foreach (var key in Settings.Keys)
-				{
-					JsonLoader<Keys>.Instance.Value.Values.Add(key);
-				}
-
-				JsonLoader<Keys>.Instance.Save();
-			}
-			else
-			{
-				if (!JsonLoader<Keys>.Instance.IsNew)
-				{
-					foreach (var key in JsonLoader<Keys>.Instance.Value.Values)
-					{
-						Settings.Keys.Add(key);
-					}
-				}
-			}
-			//if (Settings.SaveSettings)
-			//{
-			//	string file = Settings.SettingsProfile ?? "settings";
-
-			//	if (!file.EndsWith(".xml"))
-			//	{
-			//		file += ".xml";
-			//	}
-
-			//	JsonLoader<Settings>.Instance.FileName = file;
-			//	JsonLoader<Settings>.Instance.Value = Settings;
-			//	JsonLoader<Settings>.Instance.Save();
-			//}
-			//else 
-			//{
-			//	JsonLoader<Settings>.Instance.FileName = Settings.SettingsProfile;
-			//	Settings = JsonLoader<Settings>.Instance.Value;
-			//}
 		}
 	}
 }

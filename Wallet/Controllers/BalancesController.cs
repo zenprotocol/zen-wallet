@@ -58,6 +58,9 @@ namespace Wallet
 				{
 					AddToTotals(b.Key, b.Value);
 
+					var total = _AssetDeltasTotal.ContainsKey(_Asset) ? new Zen(_AssetDeltasTotal[_Asset]).Value : 0;
+					var decTotal = Convert.ToDecimal(total);
+
 					_LogView.AddLogEntryItem(new LogEntryItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
@@ -65,7 +68,7 @@ namespace Wallet
 					u.Time,
 					"TODO",
 					BitConverter.ToString(u.TxHash),
-					0
+					decTotal
 					));
 				}));
 
@@ -92,9 +95,9 @@ namespace Wallet
 			if (_LogView == null)
 				return;
 
-			var sent = _AssetDeltasSent.ContainsKey(_Asset) ? _AssetDeltasSent[_Asset] / Math.Pow(10, 8) : 0;
-			var recieved = _AssetDeltasRecieved.ContainsKey(_Asset) ? _AssetDeltasRecieved[_Asset] / Math.Pow(10, 8) : 0;
-			var total = _AssetDeltasTotal.ContainsKey(_Asset) ? _AssetDeltasTotal[_Asset] / Math.Pow(10, 8) : 0;
+			var sent = _AssetDeltasSent.ContainsKey(_Asset) ? new Zen(_AssetDeltasSent[_Asset]).Value : 0;
+			var recieved = _AssetDeltasRecieved.ContainsKey(_Asset) ? new Zen(_AssetDeltasRecieved[_Asset]).Value : 0;
+			var total = _AssetDeltasTotal.ContainsKey(_Asset) ? new Zen(_AssetDeltasTotal[_Asset]).Value : 0;
 
 			_LogView.Totals(Convert.ToDecimal(sent), Convert.ToDecimal(recieved), Convert.ToDecimal(total));
 		}
