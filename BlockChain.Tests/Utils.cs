@@ -24,7 +24,7 @@ namespace BlockChain
 				new byte[] { },
 				new byte[] { },
 				ListModule.OfSeq<byte[]>(new List<byte[]>()),
-				DateTime.Now.Ticks,
+				DateTime.Now.ToUniversalTime().Ticks,
 				0,
 				nonce
 			);
