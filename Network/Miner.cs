@@ -82,7 +82,7 @@ namespace Network
 			uint version = 1;
 			var nonce = new byte[10];
 			var random = new Random();
-			var time = DateTime.Now;
+			var time = DateTime.Now.ToUniversalTime();
 
 			while (!_Stopping)
 			{
@@ -113,7 +113,7 @@ namespace Network
 					new byte[] { },
 					new byte[] { },
 					ListModule.OfSeq<byte[]>(new List<byte[]>()),
-					DateTime.Now.Ticks,
+					DateTime.Now.ToUniversalTime().Ticks,
 					0,
 					nonce
 				);
@@ -138,7 +138,7 @@ namespace Network
 					var log = new MinerLogData();
 					var block = new Types.Block(blockHeader, txsList);
 
-					log.TimeToMine = (DateTime.Now - time).TotalSeconds;
+					log.TimeToMine = (DateTime.Now.ToUniversalTime() - time).TotalSeconds;
 					log.BlockNumber = block.header.blockNumber;
 					log.Transactions = block.transactions.Count();
 
