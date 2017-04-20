@@ -27,7 +27,7 @@ namespace BlockChain
 			new Random().NextBytes(nonce);
 			//var nonce = new byte[] { };
 
-			var timestamp = DateTime.Now.AddHours(addHours).Ticks;
+			var timestamp = DateTime.Now.ToUniversalTime().AddHours(addHours).Ticks;
 
 			var header = new Types.BlockHeader(
 				0,

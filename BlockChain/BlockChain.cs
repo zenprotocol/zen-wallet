@@ -530,7 +530,7 @@ namespace BlockChain
 		{
 			get
 			{
-				return Tip == null ? true : DateTime.Now - DateTime.FromBinary(Tip.Value.header.timestamp) > OLD_TIP_TIME_SPAN;
+				return Tip == null ? true : DateTime.Now.ToUniversalTime() - DateTime.FromBinary(Tip.Value.header.timestamp) > OLD_TIP_TIME_SPAN;
 			}
 		}
 
