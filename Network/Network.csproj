@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Network</RootNamespace>
+    <AssemblyName>Network</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>LOCAL_TESTS;TRACE;DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Mono.Posix" />
+    <Reference Include="FSharp.Core" />
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="Open.Nat">
+      <HintPath>..\packages\Open.NAT.2.1.0.0\lib\net45\Open.Nat.dll</HintPath>
+    </Reference>
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Protocol\AddressManager.cs" />
+    <Compile Include="Protocol\Behaviors\AddressManagerBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\NodeBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\NodeBehaviorsCollection.cs" />
+    <Compile Include="Protocol\Behaviors\NodesGroupBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\PingPongBehavior.cs" />
+    <Compile Include="Protocol\Filters\ActionFilter.cs" />
+    <Compile Include="Protocol\Filters\NodeFilter.cs" />
+    <Compile Include="Protocol\Filters\NodeFiltersCollection.cs" />
+    <Compile Include="Protocol\IMessageProducer.cs" />
+    <Compile Include="Protocol\IncomingMessage.cs" />
+    <Compile Include="Protocol\Message.cs" />
+    <Compile Include="Protocol\MessageListener.cs" />
+    <Compile Include="Protocol\NetworkAddress.cs" />
+    <Compile Include="Protocol\Node.cs" />
+    <Compile Include="Protocol\NodeConnectionParameters.cs" />
+    <Compile Include="Protocol\NodeListener.cs" />
+    <Compile Include="Protocol\NodesCollection.cs" />
+    <Compile Include="Protocol\NodeServer.cs" />
+    <Compile Include="Protocol\NodeServerTrace.cs" />
+    <Compile Include="Protocol\NodesGroup.cs" />
+    <Compile Include="Protocol\Payloads\AddrPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetAddrPayload.cs" />
+    <Compile Include="Protocol\Payloads\PingPayload.cs" />
+    <Compile Include="Protocol\Payloads\PongPayload.cs" />
+    <Compile Include="Protocol\Payloads\VerAckPayload.cs" />
+    <Compile Include="Protocol\Payloads\VersionPayload.cs" />
+    <Compile Include="Protocol\PerformanceCounter.cs" />
+    <Compile Include="Protocol\ProtocolException.cs" />
+    <Compile Include="Protocol\VarInt.cs" />
+    <Compile Include="Protocol\VarString.cs" />
+    <Compile Include="Protocol\Versions.cs" />
+    <Compile Include="TraceCorrelationScope.cs" />
+    <Compile Include="IpExtensions.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="DataEncoders\ASCIIEncoder.cs" />
+    <Compile Include="DataEncoders\Encoders.cs" />
+    <Compile Include="DataEncoders\HexEncoder.cs" />
+    <Compile Include="Utils\ActionDisposable.cs" />
+    <Compile Include="Utils\BoundedDictionary.cs" />
+    <Compile Include="Utils\ThreadSafeCollection.cs" />
+    <Compile Include="Protocol\Payloads\RejectPayload.cs" />
+    <Compile Include="Scope.cs" />
+    <Compile Include="RandomUtils.cs" />
+    <Compile Include="RandomUtils.partial.cs" />
+    <Compile Include="Protocol\Behaviors\BroadcastTransactionBehavior.cs" />
+    <Compile Include="Protocol\InventoryVector.cs" />
+    <Compile Include="Protocol\Payloads\InvPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetDataPayload.cs" />
+    <Compile Include="Protocol\Behaviors\SPVBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\ByteArrayComparer.cs" />
+    <Compile Include="Protocol\Serialization\WireSerialization.cs" />
+    <Compile Include="Protocol\Serialization\IPEndPointSerializer.cs" />
+    <Compile Include="Crypto\Hashes.cs" />
+    <Compile Include="Protocol\Payloads\GetTipPayload.cs" />
+    <Compile Include="Protocol\Behaviors\ChainBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\MinerBehavior.cs" />
+    <Compile Include="Miner.cs" />
+    <Compile Include="NATManager.cs" />
+    <Compile Include="NodeManager.cs" />
+    <Compile Include="Server.cs" />
+    <Compile Include="Config\NetworkInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Protocol\" />
+    <Folder Include="Crypto\" />
+    <Folder Include="DataEncoders\" />
+    <Folder Include="Utils\" />
+    <Folder Include="Protocol\Serialization\" />
+    <Folder Include="Config\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

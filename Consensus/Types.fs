@@ -80,6 +80,8 @@ type BlockHeader = {
     nonce: Nonce;
     }
 
+type ContractContext = {contractId: byte[]; utxo: Map<Outpoint, Output>; tip: BlockHeader; }
+
 let merkleData (bh : BlockHeader) =
     bh.txMerkleRoot :: bh.witnessMerkleRoot :: bh.contractMerkleRoot :: bh.extraData
 

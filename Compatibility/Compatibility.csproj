@@ -36,10 +36,16 @@
     <Reference Include="LevelDB.Net">
       <HintPath>..\packages\LevelDB.Net.1.2.1\lib\net40\LevelDB.Net.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core" />
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="LightningDB.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Consensus.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

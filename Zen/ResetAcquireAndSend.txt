@@ -1,0 +1,10 @@
+﻿Maintenance Menu, Delete Wallet DB
+Maintenance Menu, Delete Blockchain DB
+Start Node
+BlockChain Menu, Add Genesis 
+Wallet Menu, Add All
+;AddKey 1
+Send 1234 1
+;Sleep 200
+Spawn ResetAndAquire.txt
+Start GUI

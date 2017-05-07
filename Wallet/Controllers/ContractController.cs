@@ -1,41 +1,69 @@
-﻿using System;
-using System.Threading;
+﻿using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using ContractGenerator;
+using Gtk;
+using Infrastructure;
 
 namespace Wallet
 {
-	public class ContractController
+	public class ContractController : Singleton<ContractController>
 	{
-		private static ContractController instance = null;
-
+		byte[] _Code;
+		byte[] _Hash;
 		public ContractView ContractView { set; get; }
 
-		public static ContractController GetInstance() {
-			if (instance == null) {
-				instance = new ContractController ();
-			}
-
-			return instance;
+		public void CreateOrExtend() {
+			new ContractActivation().ShowDialog(_Hash, _Code);
 		}
 
-		public void Create() {
-			ContractView.ContractCodeAssertion = "ContractCodeAssertion: Create clicked";
-			ContractView.ContractCodeContent = "ContractCodeContent: Create clicked";
-			ContractView.ContractCodeHash = "ContractCodeHash: Create clicked";
-			ContractView.Proof = "Proof: Create clicked";
+		public void UpdateContractInfo(string contractText)
+		{
+			_Code = Encoding.ASCII.GetBytes(contractText);
+			_Hash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractText));
+
+			ContractView.Hash = _Hash;
+			ContractView.IsActive = App.Instance.Wallet.IsContractActive(_Hash);
+		}
+
+		public void Save()
+		{
+			var filechooser = new FileChooserDialog("Choose contract file",
+				(Window)MainAreaController.Instance.MainView,
+                FileChooserAction.Save,
+				"Cancel", ResponseType.Cancel,
+				"Save", ResponseType.Accept);
+
+			if (filechooser.Run() == (int)ResponseType.Accept)
+			{
+				File.WriteAllText(filechooser.Filename, ContractView.Code);
+			}
+
+			filechooser.Destroy();
 		}
 
 		public void Load() {
-			ContractView.ContractCodeAssertion = "ContractCodeAssertion: Load clicked";
-			ContractView.ContractCodeContent = "ContractCodeContent: Load clicked";
-			ContractView.ContractCodeHash = "ContractCodeHash: Load clicked";
-			ContractView.Proof = "Proof: Load clicked";
+			var filechooser = new FileChooserDialog("Choose contract file",
+				(Window)MainAreaController.Instance.MainView,
+				FileChooserAction.Open,
+				"Cancel", ResponseType.Cancel,
+				"Open", ResponseType.Accept);
+
+			if (filechooser.Run() == (int)ResponseType.Accept)
+			{
+				ContractView.Code = File.ReadAllText(filechooser.Filename);
+			}
+
+			filechooser.Destroy();
 		}
 
-		public void Verify() {
-			ContractView.ContractCodeAssertion = "ContractCodeAssertion: Verify clicked";
-			ContractView.ContractCodeContent = "ContractCodeContent: Verify clicked";
-			ContractView.ContractCodeHash = "ContractCodeHash: Verify clicked";
-			ContractView.Proof = "Proof: Verify clicked";
+		public Task<ContractGenerationData> Verify(string fsCode)
+		{
+			return Verify(Encoding.ASCII.GetBytes(fsCode));
+		}
+
+		public Task<ContractGenerationData> Verify(byte[] fsCode) {
+			return ContractMockValidationMock.Instance.Generate(fsCode);
 		}
 	}
 }

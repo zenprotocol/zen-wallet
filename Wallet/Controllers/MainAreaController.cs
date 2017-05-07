@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Threading;
-using System.Collections.Generic;
+using Infrastructure;
 
 namespace Wallet
 {
-	public class MainAreaController
+	public class MainAreaController : Singleton<MainAreaController>
 	{
 		private const int DEFAULT_MENU_TOP_IDX = 1;
-		private const int DEFAULT_MENU_LEFT_IDX = 1;
 
-		private Type DEFAULT_CONTROL = typeof(Log);//Wallet);
-		private static MainAreaController instance = null;
+		private Type DEFAULT_CONTROL = typeof(LogLayout);//Wallet);
 
-		private MainAreaView mainAreaView; 
-		private IVerticalMenu verticalMenu;
+		private IMainAreaView mainAreaView; 
 
-		public MainAreaView MainAreaView { 
+		public IMainAreaView MainAreaView { 
 			set { 
 				mainAreaView = value; 
 				mainAreaView.Control = DEFAULT_CONTROL;
@@ -30,44 +26,25 @@ namespace Wallet
 			} 
 		}
 
-		public IVerticalMenu VerticalMenuView { 
-			private get { 
-				return verticalMenu; 
-			} 
-			set { 
-				verticalMenu = value; 
-				value.Default = DEFAULT_MENU_LEFT_IDX; 
-			} 
-		}
-
-		public static MainAreaController GetInstance() {
-			if (instance == null) {
-				instance = new MainAreaController ();
-			}
-
-			return instance;
-		}
+		public void Spend() { }
 
 		public String MainAreaSelected { 
 			set {
 			switch (value) {
+				case "Wallet":
+					mainAreaView.Control = typeof(WalletLayout);
+					break;
 				case "Portfolio":
 					mainAreaView.Control = typeof(Portfolio);
-					MainView.SideMenuVisible = false;
 					break;
-				case "Wallet":
-					VerticalMenuView.AllVisible = true;
+				case "History":
 					mainAreaView.Control = typeof(Wallet);
-					MainView.SideMenuVisible = true;
 					break;
 				case "Contract":
 					mainAreaView.Control = typeof(Contract);
-					MainView.SideMenuVisible = false;
 					break;
 				case "Balance":
-					VerticalMenuView.AllVisible = false;
-					mainAreaView.Control = typeof(Log);
-					MainView.SideMenuVisible = true;
+					mainAreaView.Control = typeof(LogLayout);
 					break;
 				}
 			}

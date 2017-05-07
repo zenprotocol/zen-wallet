@@ -5,13 +5,14 @@ using Wallet.Domain;
 
 namespace Wallet
 {	
-	public interface TransactionsView {
+	public interface ITransactionsView {
 		List<TransactionItem> TransactionsList { set; }
 		void AddTransactionItem (TransactionItem transaction);
+		void Clear();
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class Transactions : FocusableWidget, TransactionsView
+	public partial class Transactions : FocusableWidget, ITransactionsView
 	{
 		private bool setFocus = false;
 
@@ -24,15 +25,13 @@ namespace Wallet
 			typeof (bool), 
 			typeof(TransactionItem)
 		);
-		
-		private WalletController WalletController = WalletController.GetInstance ();
 
 		TreeView list;
 		public Transactions ()
 		{
 			this.Build ();
 
-			WalletController.TransactionsView = this;
+			WalletController.Instance.TransactionsView = this;
 
 			ScrolledWindow sw = new ScrolledWindow();
 
@@ -49,7 +48,6 @@ namespace Wallet
 
 			list.RulesHint = true; //alternating colors
 			list.Selection.Mode = SelectionMode.Single;
-			list.HoverSelection = true;
 			list.Selection.Changed += OnSelectionChanged;
 			list.BorderWidth = 0;
 			list.HeadersVisible = false;
@@ -108,6 +106,11 @@ namespace Wallet
 					AddTransactionItem(transactionItem);
 				}
 			}
+		}
+
+		public void Clear()
+		{
+			listStore.Clear();
 		}
 
 		public void AddTransactionItem(TransactionItem transactionItem)

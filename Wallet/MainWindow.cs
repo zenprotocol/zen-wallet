@@ -4,7 +4,6 @@ using Gtk;
 namespace Wallet
 {
 	public interface MainView {
-		Boolean SideMenuVisible { set; }
 	}
 
 	public partial class MainWindow : Gtk.Window, MainView
@@ -13,7 +12,7 @@ namespace Wallet
 			base (Gtk.WindowType.Toplevel)
 		{
 			this.Build ();
-			MainAreaController.GetInstance().MainView = this;
+			MainAreaController.Instance.MainView = this;
 
 //			Gdk.Pixbuf one= Gdk.Pixbuf.LoadFromResource ("Wallet.portfolio.png");
 //			one = 
@@ -33,17 +32,8 @@ namespace Wallet
 
 		protected void OnDeleteEvent (object sender, DeleteEventArgs a)
 		{
-			Program.CloseApp ();
 			a.RetVal = true;
-		}
-
-		public Boolean SideMenuVisible { 
-			set {
-				Container c = (Container)Children [0];
-				c = (Container)c.Children [2];
-
-				((VerticalMenu)c.Children [0]).Visible = value;
-			}
+			App.Instance.Quit();
 		}
 	}
 }

@@ -1,0 +1,252 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{6B1189D4-2B5A-4764-A1D7-6E8258730303}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Wallet</RootNamespace>
+    <AssemblyName>Wallet</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>glib-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glade-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>glade-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="Mono.Posix" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="Mono.Cairo" />
+    <Reference Include="FSharp.Core" />
+    <Reference Include="QRCoder">
+      <HintPath>..\packages\QRCoder.1.2.6\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\logosmall.png" />
+    <EmbeddedResource Include="Assets\Portfolio_on.png" />
+    <EmbeddedResource Include="Assets\Portfolio_off.png" />
+    <EmbeddedResource Include="Assets\Wallet_off.png" />
+    <EmbeddedResource Include="Assets\Wallet_on.png" />
+    <EmbeddedResource Include="Assets\Contract_on.png" />
+    <EmbeddedResource Include="Assets\Contract_off.png" />
+    <EmbeddedResource Include="Assets\Market_on.png" />
+    <EmbeddedResource Include="Assets\Market_off.png" />
+    <EmbeddedResource Include="Assets\Bitcoin_off.png" />
+    <EmbeddedResource Include="Assets\Bitcoin_on.png" />
+    <EmbeddedResource Include="Assets\Ether_on.png" />
+    <EmbeddedResource Include="Assets\Lite_off.png" />
+    <EmbeddedResource Include="Assets\Lite_on.png" />
+    <EmbeddedResource Include="Assets\Zen_off.png" />
+    <EmbeddedResource Include="Assets\Zen_on.png" />
+    <EmbeddedResource Include="Assets\misc\arrowdown.png" />
+    <EmbeddedResource Include="Assets\misc\arrows.png" />
+    <EmbeddedResource Include="Assets\misc\arrowup.png" />
+    <EmbeddedResource Include="Assets\misc\receive.png" />
+    <EmbeddedResource Include="Assets\misc\send.png" />
+    <EmbeddedResource Include="Assets\Ether_off.png" />
+    <EmbeddedResource Include="Assets\misc\Bitcoin.png" />
+    <EmbeddedResource Include="Assets\misc\Ether.png" />
+    <EmbeddedResource Include="Assets\misc\Lite.png" />
+    <EmbeddedResource Include="Assets\misc\Zen.png" />
+    <EmbeddedResource Include="Assets\Contract\Create.png" />
+    <EmbeddedResource Include="Assets\Contract\Load.png" />
+    <EmbeddedResource Include="Assets\Contract\Verify.png" />
+    <EmbeddedResource Include="Assets\Balance_off.png" />
+    <EmbeddedResource Include="Assets\Balance_on.png" />
+    <EmbeddedResource Include="Assets\misc\send_dialog.png" />
+    <EmbeddedResource Include="Assets\History_off.png" />
+    <EmbeddedResource Include="Assets\History_on.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Widgets\Menu\MainMenu.cs" />
+    <Compile Include="Widgets\Menu\VerticalMenu.cs" />
+    <Compile Include="gtk-gui\Wallet.VerticalMenu.cs" />
+    <Compile Include="Widgets\Menu\MenuButton.cs" />
+    <Compile Include="Widgets\Menu\ImageButton.cs" />
+    <Compile Include="gtk-gui\Wallet.ImageButton.cs" />
+    <Compile Include="Widgets\Wallet\ActionBar.cs" />
+    <Compile Include="gtk-gui\Wallet.ActionBar.cs" />
+    <Compile Include="Controllers\WalletController.cs" />
+    <Compile Include="gtk-gui\Wallet.Wallet.cs" />
+    <Compile Include="Widgets\Wallet\Wallet.cs" />
+    <Compile Include="MainWindow.cs" />
+    <Compile Include="Widgets\MainArea.cs" />
+    <Compile Include="gtk-gui\Wallet.MainArea.cs" />
+    <Compile Include="Widgets\Wallet\Transactions.cs" />
+    <Compile Include="Domain\TransactionItem.cs" />
+    <Compile Include="Widgets\Contract\Contract.cs" />
+    <Compile Include="gtk-gui\Wallet.Contract.cs" />
+    <Compile Include="Controllers\ContractController.cs" />
+    <Compile Include="Controllers\MainAreaController.cs" />
+    <Compile Include="gtk-gui\Wallet.MainWindow.cs" />
+    <Compile Include="gtk-gui\Wallet.MainMenu.cs" />
+    <Compile Include="gtk-gui\Wallet.MenuButton.cs" />
+    <Compile Include="gtk-gui\Wallet.Transactions.cs" />
+    <Compile Include="Widgets\WidgetBase.cs" />
+    <Compile Include="Widgets\Menu\MenuBase.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Widgets\RendererHelper.cs" />
+    <Compile Include="Widgets\FocusableWidget.cs" />
+    <Compile Include="Widgets\WidgetCache.cs" />
+    <Compile Include="Widgets\TextRenderer.cs" />
+    <Compile Include="Domain\LogEntry.cs" />
+    <Compile Include="Domain\DirectionEnum.cs" />
+    <Compile Include="Widgets\Log\Log.cs" />
+    <Compile Include="gtk-gui\Wallet.Log.cs" />
+    <Compile Include="Widgets\Log\LogCellRenderer.cs" />
+    <Compile Include="Widgets\Log\LogEntryRow.cs" />
+    <Compile Include="Controllers\BalancesController.cs" />
+    <Compile Include="Widgets\Log\ILogEntryRow.cs" />
+    <Compile Include="Widgets\Log\LogSummaryRow.cs" />
+    <Compile Include="Widgets\Log\LogHeaderRow.cs" />
+    <Compile Include="LayoutHelper.cs" />
+    <Compile Include="Widgets\Portfolio\Portfolio.cs" />
+    <Compile Include="gtk-gui\Wallet.Portfolio.cs" />
+    <Compile Include="Widgets\Menu\TextButton.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioItem.cs" />
+    <Compile Include="gtk-gui\Wallet.PortfolioItem.cs" />
+    <Compile Include="gtk-gui\Wallet.SendDialog.cs" />
+    <Compile Include="Widgets\DialogBase.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="Widgets\SendDialog\SendDialog.cs" />
+    <Compile Include="Widgets\SendDialog\DialogField.cs" />
+    <Compile Include="gtk-gui\Wallet.DialogField.cs" />
+    <Compile Include="Widgets\SendDialog\SendDialogStep1.cs" />
+    <Compile Include="gtk-gui\Wallet.SendDialogStep1.cs" />
+    <Compile Include="Widgets\SendDialog\SendDialogWaiting.cs" />
+    <Compile Include="gtk-gui\Wallet.SendDialogWaiting.cs" />
+    <Compile Include="Widgets\SendDialog\SendDialogStep2.cs" />
+    <Compile Include="gtk-gui\Wallet.SendDialogStep2.cs" />
+    <Compile Include="App.cs" />
+    <Compile Include="Widgets\ReceiveDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.ReceiveDialog.cs" />
+    <Compile Include="Widgets\KeysDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.KeysDialog.cs" />
+    <Compile Include="Widgets\AddKeyDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.AddKeyDialog.cs" />
+    <Compile Include="Widgets\MessageBox.cs" />
+    <Compile Include="gtk-gui\Wallet.MessageBox.cs" />
+    <Compile Include="Widgets\Contract\ContractActivation.cs" />
+    <Compile Include="gtk-gui\Wallet.ContractActivation.cs" />
+    <Compile Include="Widgets\SendDialog\SendRaw.cs" />
+    <Compile Include="gtk-gui\Wallet.SendRaw.cs" />
+    <Compile Include="Widgets\SendDialog\DialogComboField.cs" />
+    <Compile Include="gtk-gui\Wallet.DialogComboField.cs" />
+    <Compile Include="Widgets\Log\LogLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.LogLayout.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Controllers\PortfolioController.cs" />
+    <Compile Include="Widgets\Portfolio\IPortfolioVIew.cs" />
+    <Compile Include="Widgets\Wallet\ExpandingCellRenderer.cs" />
+    <Compile Include="Widgets\Portfolio\RowRenderer.cs" />
+    <Compile Include="Wallet\WalletLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletLayout.cs" />
+    <Compile Include="Wallet\WalletReceiveLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletReceiveLayout.cs" />
+    <Compile Include="IControlInit.cs" />
+    <Compile Include="Wallet\WalletSendLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletSendLayout.cs" />
+    <Compile Include="Wallet\WalletSendConfirmationLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.WalletSendConfirmationLayout.cs" />
+    <Compile Include="ImagesCache.cs" />
+    <Compile Include="Domain\Zen.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="todo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Widgets\Log\" />
+    <Folder Include="Widgets\Portfolio\" />
+    <Folder Include="Widgets\SendDialog\" />
+    <Folder Include="Wallet\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
+      <Name>Infrastructure</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
+      <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
+      <Name>Infrastructure.TestingGtk</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Store\Store.csproj">
+      <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
+      <Name>Store</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Consensus\Consensus.fsproj">
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Network\Network.csproj">
+      <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
+      <Name>Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ContractGenerator\ContractGenerator.csproj">
+      <Project>{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}</Project>
+      <Name>ContractGenerator</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
