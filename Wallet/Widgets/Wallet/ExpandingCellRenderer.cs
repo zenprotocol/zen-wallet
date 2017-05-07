@@ -16,29 +16,14 @@ namespace Wallet
 
 		public TransactionItem TransactionItem { private get; set; }
 
-		private String GetTimeDescription() {
-			TimeSpan timeSpan = DateTime.Now - TransactionItem.Date;
-
-			int monthsDiff = (DateTime.Now.Month - TransactionItem.Date.Month) + 12 * (DateTime.Now.Year - TransactionItem.Date.Year);
-
-			if (monthsDiff >= 1) {
-				return Constants.Strings.MonthsAgo (monthsDiff); 
-			}
-					
-			if (timeSpan.TotalDays >= 1) {
-				return Constants.Strings.DaysAgo((int)timeSpan.TotalDays);
-			}
-
-			return TransactionItem.Date.ToString ();
-		}
-
 		private String GetDescrption() {
-			return String.Format("{0} {1} {2} ({3} {4})", 
+			return String.Format("{0} {1} {2} ({3} {4}) {5}",
 				TransactionItem.Direction == DirectionEnum.Recieved ? Constants.Strings.Received : Constants.Strings.Sent,
-				TransactionItem.Amount,
+             	new Zen(TransactionItem.Amount).ToString(),
 				TransactionItem.Asset,
 				"0.34",
-				"USD"
+				"USD",
+				 TransactionItem.TxState
 			);
 		}
 
@@ -84,7 +69,7 @@ namespace Wallet
 			int TEXT_PADDING = 12;
 			int TEXT_PADDING_LEFT = 70;
 
-			textRenderer.RenderLayoutText (context, GetTimeDescription(), 0, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Right, Pango.EllipsizeMode.End);
+			textRenderer.RenderLayoutText (context, TransactionItem.Date.TimeAgo(), 0, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Right, Pango.EllipsizeMode.End, -20);
 			textRenderer.RenderLayoutText (context, GetDescrption(), TEXT_PADDING_LEFT, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 
 			int EXPANTION_SPACE = 50;

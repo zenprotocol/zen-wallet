@@ -3,14 +3,13 @@ using Gtk;
 
 namespace Wallet
 {
-	public interface IMainMenuView : IMenu {
+	public interface IMainMenuView {
+		int Default { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class MainMenu : MenuBase, IMainMenuView
 	{
-		MainAreaController MainAreaController = MainAreaController.GetInstance();
-
 		public MainMenu ()
 		{
 			this.Build ();
@@ -19,14 +18,14 @@ namespace Wallet
 				((MenuButton)widget).ImageName = widget.Name;
 			}
 
-			MainAreaController.MainMenuView = this;
+			MainAreaController.Instance.MainMenuView = this;
 
 			HeightRequest = 100;
 		}
 
 		public override MenuButton Selection { 
 			set {
-				MainAreaController.MainAreaSelected = value.Name;
+				MainAreaController.Instance.MainAreaSelected = value.Name;
 			}
 		}
 	}

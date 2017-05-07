@@ -22,12 +22,17 @@ namespace Wallet.Constants
 		public static Color Base = new Color (0x024, 0x030, 0x03e);
 		public static Color ButtonUnselected = new Color(0x01d,0x025,0x030);
 		public static Color ButtonSelected = new Color(0x028,0x02f,0x037);
-	}
+		public static Color Textbox = new Color(0x034,0x047,0x05a);
+		public static Color DialogBackground = new Color(0x022,0x02c,0x039);
+		public static Color Error = new Color(0x0ff, 0x00, 0x00);
+		public static Color Success = new Color(0x00, 0x0ff, 0x00);
+}
 
 	public class Fonts
 	{
 		public static Pango.FontDescription ActionBarBig = Pango.FontDescription.FromString ("Aharoni CLM 30");
-		public static Pango.FontDescription ActionBarSmall = Pango.FontDescription.FromString ("Aharoni CLM 15");
+		public static Pango.FontDescription ActionBarSmall = Pango.FontDescription.FromString("Aharoni CLM 15");
+		public static Pango.FontDescription ActionBarIntermediate  = Pango.FontDescription.FromString("Aharoni CLM 16");
 		public static Pango.FontDescription LogHeader = Pango.FontDescription.FromString ("Aharoni CLM 14");
 		public static Pango.FontDescription LogText = Pango.FontDescription.FromString ("Aharoni CLM 12");
 		public static Pango.FontDescription DialogHeader = Pango.FontDescription.FromString ("Aharoni CLM 20");
@@ -43,19 +48,6 @@ namespace Wallet.Constants
 	{
 		public static String Received = "Received";
 		public static String Sent = "Sent";
-		public static String DaysAgo(int days) { 
-			switch (days) {
-			case 0:
-				return "today";
-			case 1:
-				return "yesterday";
-			}
-			return String.Format ("{0} days ago", days);
-		}
-		public static String MonthsAgo(int months) { 
-			return String.Format ("{0} months ago", months);
-		}
-
 		public static String Date = "Date";
 		public static String Balance = "Balance";
 		public static String TransactionId = "Transaction ID";

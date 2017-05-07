@@ -1,6 +1,0 @@
-/Users/topynate/Projects/zen-wallet/Compatibility/obj/x86/Debug/.NETFramework,Version=v4.5.1.AssemblyAttribute.cs
-/Users/topynate/Projects/zen-wallet/Compatibility/bin/Debug/Compatibility.exe.mdb
-/Users/topynate/Projects/zen-wallet/Compatibility/bin/Debug/Compatibility.exe
-/Users/topynate/Projects/zen-wallet/Compatibility/obj/x86/Debug/Compatibility.exe
-/Users/topynate/Projects/zen-wallet/Compatibility/obj/x86/Debug/Compatibility.exe.mdb
-/Users/topynate/Projects/zen-wallet/Compatibility/bin/Debug/LightningDB.dll

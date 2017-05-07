@@ -1,105 +1,124 @@
 ﻿using System;
-using System.Threading;
 using Wallet.Domain;
 using Wallet.core;
+using Infrastructure;
+using System.Linq;
 
 namespace Wallet
 {
-	public class WalletController
+	public class WalletController : Singleton<WalletController>
 	{
-		private static WalletController instance = null;
+		AssetDeltas _AssetDeltas = new AssetDeltas();
+		TxDeltaItemsEventArgs _TxDeltas;
+		ITransactionsView _ITransactionsView;
 
-		private ActionBarView _actionBarView;
-		public ActionBarView ActionBarView {
-			get {
-				return _actionBarView;
-			}
-			set {
-				_actionBarView = value;
-			//	ActionBarView.Asset = CurrencyEnum.Zen;
-			}
-		}
-
-		public SendStub SendStub = new SendStub ();
-
-		public TransactionsView TransactionsView { get; set; }
-		public IWalletView WalletView { get; set; }
-
-		//public CurrencyEnum currency;
-		//public String currencyStr;
-
-		private AssetType asset = AssetsManager.Assets["zen"];
-
-		private Thread tempThread;
-		private bool stopping = false;
-
-		public static WalletController GetInstance() {
-			if (instance == null) {
-				instance = new WalletController ();
-			}
-
-			return instance;
-		}
-
-		public AssetType Asset { 
-			set {
-				asset = value;
-				ActionBarView.Asset = value;
-				WalletView.ActionBar = !(value is AssetTypeAll);
-			} get {
-				return asset;
-			}
-		}
-
-		public WalletController ()
+		public WalletController()
 		{
-			tempThread = new Thread (Reset);
-			tempThread.Start ();
+			Asset = Consensus.Tests.zhash;
 		}
 
-		public void Send(Decimal amount) {
-		}
+		public ITransactionsView TransactionsView
+		{
+			set
+			{
+				_ITransactionsView = value;
+				_TxDeltas = App.Instance.Wallet.TxDeltaList;
+				Apply();
 
-		public void Quit() {
-			stopping = true;
-			tempThread.Join ();
-		}
-
-		private void Reset() {
-			int i = 0;
-
-			while (!stopping) {
-				UpdateUI ();
-
-				if (i++ > 10) {
-					break;
-				}
-
-				Thread.Sleep(100);
+				App.Instance.Wallet.OnReset -= Wallet_OnReset; // ensure single registration
+				App.Instance.Wallet.OnReset += Wallet_OnReset;
+				App.Instance.Wallet.OnItems -= Wallet_OnItems; // ensure single registration
+				App.Instance.Wallet.OnItems += Wallet_OnItems;
 			}
 		}
 
-		Random random = new Random();
+		void Wallet_OnReset(ResetEventArgs args)
+		{
+			_ITransactionsView.Clear();
+			_TxDeltas = args.TxDeltaList;
+			Apply();
+		}
 
-		public void UpdateUI() {
-			Gtk.Application.Invoke(delegate {
-				if (ActionBarView != null) {
-					//Alternative: Runtime.DispatchService.GuiDispatch (new StatefulMessageHandler (UpdateGui), n);
-					ActionBarView.Total = (decimal)random.Next(1, 1000) / 10000;
-					ActionBarView.Rate = (decimal)random.Next(1, 1000) / 10000;
+		void Wallet_OnItems(TxDeltaItemsEventArgs args)
+		{
+			_TxDeltas = args;
+			Apply();
+		}
+
+		IWalletView _WalletView;
+		public IWalletView WalletView { 
+			get {
+				return _WalletView;
+			} 
+			set {
+				_WalletView = value;
+				//UpdateActionBar();
+			} 
+		}
+
+		byte[] _Asset;
+		public byte[] Asset
+		{
+			set
+			{
+				_Asset = value;
+
+				AssetsMetadata assetsMetadata = App.Instance.Wallet.AssetsMetadata;
+				AssetType = assetsMetadata[value];
+
+				if (_ITransactionsView != null)
+				{
+					_ITransactionsView.Clear();
+					Apply();
 				}
+			}
+		}
 
-				if (TransactionsView != null) {
+		public AssetType AssetType { get; private set; }
 
-					DirectionEnum direcion = random.Next(0, 10) > 5 ? DirectionEnum.Sent : DirectionEnum.Recieved;
-					Decimal amount = (Decimal)random.Next(1, 100000) / 1000000;
-					Decimal fee = (Decimal)random.Next(1, 100) / 1000000;
-					DateTime date = DateTime.Now.AddDays(-1 * random.Next(0, 100));
+		void Apply()
+		{
+			_AssetDeltas.Clear();
 
-					TransactionsView.AddTransactionItem(new TransactionItem(amount, direcion, asset, date, Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), fee));
-				}
+			Gtk.Application.Invoke(delegate
+			{
+				_TxDeltas.ForEach(u => u.AssetDeltas.Where(b => b.Key.SequenceEqual(_Asset)).ToList().ForEach(b => {
+					if (!_AssetDeltas.ContainsKey(b.Key))
+						_AssetDeltas[b.Key] = 0;
+
+					_AssetDeltas[b.Key] += b.Value;
+
+					_ITransactionsView.AddTransactionItem(new TransactionItem(
+						Math.Abs(b.Value),
+						b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+						App.Instance.Wallet.AssetsMetadata[b.Key],
+						u.Time,
+						Guid.NewGuid().ToString("N"),
+						BitConverter.ToString(u.TxHash),
+						0,
+						u.TxState)
+					 );
+				}));
+
+				//UpdateActionBar();
 			});
 		}
+
+		//void UpdateActionBar()
+		//{
+		//	//bool hidden = AssetType is AssetTypeAll;
+
+		//	if (WalletView == null)
+		//		return;
+			
+		//	//WalletView.ActionBar = !hidden;
+
+		//	//if (!hidden)
+		//	//{
+		//		ActionBarView.Asset = AssetType;
+		//		ActionBarView.Total = _AssetDeltas.ContainsKey(_Asset) ? _AssetDeltas[_Asset] : 0;
+		//	//}
+		//}
 	}
 }
 

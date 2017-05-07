@@ -7,14 +7,24 @@ namespace Wallet
 	{
 		private Dialog dialog;
 
-		public void ShowDialog(Window parent) {
-			dialog = new Dialog (null, parent, DialogFlags.Modal | DialogFlags.DestroyWithParent);
-			dialog.Decorated = false;
-			dialog.Modal = true;
-			Gdk.GC gc = parent.Style.TextGC(StateType.Normal);
-			gc.RgbFgColor = Constants.Colors.Text.Gdk;
+		public static Window parent;
 
-			dialog.ModifyBg (Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
+		public void Resize() {
+			if (dialog != null) {
+				dialog.Resize(1, 1); // A hah
+			}
+		}
+	
+		public void ShowDialog(/*Window parent*/) {
+			dialog = new Dialog (null, parent, DialogFlags.DestroyWithParent);
+			dialog.Decorated = true;
+
+			dialog.AllowGrow = false;
+			dialog.AllowShrink = false;
+			dialog.HasSeparator = false;
+			dialog.Resizable = false;
+
+			dialog.ModifyBg (Gtk.StateType.Normal, Constants.Colors.DialogBackground.Gdk);
 			dialog.VBox.PackStart (this, false, false, 0);
 
 //			dialog.ExposeEvent += (o, a) => {
@@ -81,11 +91,20 @@ namespace Wallet
 
 			ShowAll ();
 
-			dialog.Run ();
+		 	dialog.Run ();
+			dialog.Destroy();
 		}
 
 		protected void CloseDialog() {
 			dialog.Destroy ();
+		}
+
+		protected Widget CloseControl {
+			set {
+				value.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => {
+					CloseDialog();
+				};
+			}
 		}
 	}
 }
