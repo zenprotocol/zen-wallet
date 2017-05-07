@@ -1,5 +1,6 @@
 ﻿using System;
 using Gtk;
+using Wallet.core;
 
 namespace Wallet
 {
@@ -12,12 +13,12 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class ActionBar : WidgetBase, ActionBarView
 	{
-		private WalletController WalletController = WalletController.GetInstance ();
+		private WalletController WalletController = WalletController.Instance ;
 
 		public ActionBar ()
 		{
 			this.Build ();
-			WalletController.ActionBarView = this;
+			//WalletController.ActionBarView = this;
 
 			Apply ((Label label) => {
 				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
@@ -30,7 +31,12 @@ namespace Wallet
 			}, labelAmount, labelAmountConverted);
 
 			ButtonPressEvent (eventboxSend, () => {
-				new SendDialog(WalletController.GetInstance().Asset).ShowDialog(Program.MainWindow);
+				new SendDialog(WalletController.Instance.AssetType).ShowDialog();
+			});
+
+			ButtonPressEvent(eventboxReceive, () =>
+			{
+				new ReceiveDialog().ShowDialog();
 			});
 
 			HeightRequest = 130;
@@ -44,21 +50,29 @@ namespace Wallet
 
 		public Decimal Total {
 			set {
-				labelAmountConverted.Text = value.ToString();
-				labelCurrencyConverted.Text = "USD";
+				labelAmount.Text = value.ToString();
 			}
 		}
 
 		public AssetType Asset {
 			set {
+				if (value == null)
+					return;
+				
 				labelCurrency.Text = value.Caption;
-				image2.Pixbuf = Utils.ToPixbuf(Constants.Images.AssetLogo(value.Image));
+				if (value.Image != null) {
+					try
+					{
+						image2.Pixbuf = new Gdk.Pixbuf(value.Image);
+						image2.Pixbuf = image2.Pixbuf.ScaleSimple(64, 64, Gdk.InterpType.Hyper);
+					}
+					catch
+					{
+					}
+				}
+				else
+					image2.Pixbuf = null;
 			}
-		}
-
-		protected void Send (object sender, EventArgs e)
-		{
-			WalletController.Send (400);
 		}
 	}
 }

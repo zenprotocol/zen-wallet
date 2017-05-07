@@ -9,6 +9,8 @@ namespace Wallet
 	public interface ILogView {
 		List<LogEntryItem> LogEntryList { set; }
 		void AddLogEntryItem (LogEntryItem logEntryItem);
+		void Totals(decimal sent, decimal recieved, decimal total);
+		void Clear();
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -31,16 +33,16 @@ namespace Wallet
 		{
 			this.Build ();
 
-			LogController.GetInstance().LogView = this;
+			BalancesController.Instance.LogView = this;
 
 			initList (listHeaders, FactorStore (new LogHeaderRow (0, Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)));
 			initList (listSummary, logSummaryStore);
-			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.Sent, Strings.Received, Strings.Balance)));
+			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.TotalSent, Strings.TotalReceived, Strings.TotalBalance)));
 			initList (listTransactions, logEntryStore);
 
-			ExposeEvent += (object o, ExposeEventArgs args) => {
-				listSummaryHeader.Hide ();
-			};
+			//ExposeEvent += (object o, ExposeEventArgs args) => {
+			//	listSummaryHeader.Hide ();
+			//};
 
 			foreach (Widget w in new Widget[] { eventbox1, eventbox2, eventbox3, eventbox4, eventbox5, eventbox6, eventbox7 }) {
 				w.ModifyBg (Gtk.StateType.Normal, Colors.Base.Gdk);
@@ -132,23 +134,26 @@ namespace Wallet
 			}
 		}
 
+		public void Clear() { 
+			logEntryStore.Clear();
+		} 
+
 		public void AddLogEntryItem (LogEntryItem logEntryItem) {			
 			logEntryStore.AppendValues(new LogEntryRow(logEntryItem));
-			AddToTotals (logEntryItem);
 		}
 
-		private void AddToTotals(LogEntryItem logEntryItem) {
+		public void Totals(decimal sent, decimal recieved, decimal total)
+		{
 			TreeIter storeIter;
-			logSummaryStore.GetIterFirst (out storeIter);
+			logSummaryStore.GetIterFirst(out storeIter);
 
-			LogSummaryRow logSummaryRow = (LogSummaryRow) logSummaryStore.GetValue (storeIter, 0);
+			var logSummaryRow = (LogSummaryRow)logSummaryStore.GetValue(storeIter, 0);
 
-			Decimal value = (logEntryItem.Direction ==  DirectionEnum.Recieved ? 1 : -1) * logEntryItem.Amount;
+			logSummaryRow[0] = sent;
+			logSummaryRow[1] = recieved;
+			logSummaryRow[2] = total;
 
-			logSummaryRow[value > 0 ? 1 : 0] += value;
-			logSummaryRow[2] += value;
-
-			logSummaryStore.SetValue (storeIter, 0, logSummaryRow);
+			logSummaryStore.SetValue(storeIter, 0, logSummaryRow);
 		}
 	}
 }

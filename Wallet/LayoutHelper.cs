@@ -17,7 +17,7 @@ namespace Wallet
 		{
 			if (value.GetType () == typeof(String)) {
 				return new LayoutHelper(value.ToString (), Pango.Alignment.Right);
-			} if (value.GetType () == typeof(Decimal) || value.GetType () == typeof(Double) || value.GetType () == typeof(int)) {
+			} if (value.GetType() == typeof(long) || value.GetType() == typeof(ulong) || value.GetType () == typeof(Decimal) || value.GetType () == typeof(Double) || value.GetType () == typeof(int)) {
 				if (value.ToString() != "0") {
 					return new LayoutHelper(String.Format(Formats.Money, value), Pango.Alignment.Right);
 				} else {

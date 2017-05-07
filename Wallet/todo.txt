@@ -1,0 +1,1 @@
+﻿rename all namespaces from Wallet to GUI

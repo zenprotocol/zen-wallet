@@ -5,32 +5,84 @@ namespace Wallet
 	public partial class Portfolio
 	{
 		private global::Gtk.VBox vbox1;
-		
+
 		private global::Gtk.VBox vboxOthers;
 
-		protected virtual void Build ()
+		private global::Gtk.Label label2;
+
+		private global::Gtk.Label labelZen;
+
+		private global::Gtk.Label label3;
+
+		private global::Gtk.ScrolledWindow GtkScrolledWindow;
+
+		private global::Gtk.TreeView treeview1;
+
+		protected virtual void Build()
 		{
-			global::Stetic.Gui.Initialize (this);
+			global::Stetic.Gui.Initialize(this);
 			// Widget Wallet.Portfolio
-			global::Stetic.BinContainer.Attach (this);
+			global::Stetic.BinContainer.Attach(this);
 			this.Name = "Wallet.Portfolio";
 			// Container child Wallet.Portfolio.Gtk.Container+ContainerChild
-			this.vbox1 = new global::Gtk.VBox ();
+			this.vbox1 = new global::Gtk.VBox();
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			this.vbox1.BorderWidth = ((uint)(10));
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.vboxOthers = new global::Gtk.VBox ();
+			this.vboxOthers = new global::Gtk.VBox();
 			this.vboxOthers.Name = "vboxOthers";
 			this.vboxOthers.Spacing = 6;
-			this.vbox1.Add (this.vboxOthers);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.vboxOthers]));
+			// Container child vboxOthers.Gtk.Box+BoxChild
+			this.label2 = new global::Gtk.Label();
+			this.label2.Name = "label2";
+			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString("Your Zen balance:");
+			this.vboxOthers.Add(this.label2);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vboxOthers[this.label2]));
 			w1.Position = 0;
-			this.Add (this.vbox1);
-			if ((this.Child != null)) {
-				this.Child.ShowAll ();
+			w1.Expand = false;
+			w1.Fill = false;
+			// Container child vboxOthers.Gtk.Box+BoxChild
+			this.labelZen = new global::Gtk.Label();
+			this.labelZen.Name = "labelZen";
+			this.vboxOthers.Add(this.labelZen);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vboxOthers[this.labelZen]));
+			w2.Position = 1;
+			w2.Expand = false;
+			w2.Fill = false;
+			w2.Padding = ((uint)(10));
+			// Container child vboxOthers.Gtk.Box+BoxChild
+			this.label3 = new global::Gtk.Label();
+			this.label3.Name = "label3";
+			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString("Your other assets:");
+			this.vboxOthers.Add(this.label3);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vboxOthers[this.label3]));
+			w3.Position = 2;
+			w3.Expand = false;
+			w3.Fill = false;
+			w3.Padding = ((uint)(10));
+			this.vbox1.Add(this.vboxOthers);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.vboxOthers]));
+			w4.Position = 0;
+			w4.Expand = false;
+			w4.Fill = false;
+			// Container child vbox1.Gtk.Box+BoxChild
+			this.GtkScrolledWindow = new global::Gtk.ScrolledWindow();
+			this.GtkScrolledWindow.Name = "GtkScrolledWindow";
+			// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
+			this.treeview1 = new global::Gtk.TreeView();
+			this.treeview1.CanFocus = true;
+			this.treeview1.Name = "treeview1";
+			this.GtkScrolledWindow.Add(this.treeview1);
+			this.vbox1.Add(this.GtkScrolledWindow);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow]));
+			w6.Position = 1;
+			this.Add(this.vbox1);
+			if ((this.Child != null))
+			{
+				this.Child.ShowAll();
 			}
-			this.Hide ();
+			this.Hide();
 		}
 	}
 }

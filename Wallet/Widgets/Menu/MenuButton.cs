@@ -26,19 +26,43 @@ namespace Wallet
 			}
 		}
 
-		private Image image = null;
-		private String imageSource = null;
-		private Label label = null;
+		Image image = null;
+		String imageSource = null;
+		String imageSourceFile = null;
+		Label label = null;
+
+		public object Data { get; set; }
 
 		public String ImageName { 
-			set 
-			{ 
-				image = new Image ();
+			set
+			{
+				if (value != null)
+				{
+					image = new Image();
 
-				imageSource = value;
-				image.Pixbuf = Utils.ToPixbuf(Constants.Images.Button(value, false));
+					imageSource = value;
+					image.Pixbuf = Utils.ToPixbuf(Constants.Images.Button(value, false));
 
-				hbox1.PackStart(image, true, true, 0);
+					vbox1.PackEnd(image, true, true, 0);
+					image.Show();
+				}
+			}
+		}
+
+		public String ImageFileName
+		{
+			set
+			{
+				if (value != null && System.IO.File.Exists(value))
+				{
+					image = new Image();
+
+					imageSourceFile = value;
+					image.Pixbuf = new Gdk.Pixbuf(value);
+
+					vbox1.PackEnd(image, true, true, 0);
+					image.Show();
+				}
 			}
 		}
 
@@ -49,8 +73,9 @@ namespace Wallet
 
 				label.Text = value;
 
-				hbox1.PackStart(label, true, true, 0);
-				 //else bold or not
+				vbox1.PackStart(label, true, true, 0);
+				//else bold or not
+				label.Show();
 			}
 		}
 
@@ -59,7 +84,15 @@ namespace Wallet
 			{
 				if (image != null) {
 					try {
-						image.Pixbuf = Gdk.Pixbuf.LoadFromResource (Constants.Images.Button (imageSource, value));
+						if (imageSource != null)
+						{
+							image.Pixbuf = Gdk.Pixbuf.LoadFromResource(Constants.Images.Button(imageSource, value));
+						}
+						else if (imageSourceFile != null)
+						{
+							image.Pixbuf = new Gdk.Pixbuf(imageSourceFile);
+							image.Pixbuf = image.Pixbuf.ScaleSimple(64, 64, Gdk.InterpType.Hyper);
+						}
 					} catch {
 						Console.WriteLine ("missing " + Constants.Images.Button (imageSource, value));
 					}

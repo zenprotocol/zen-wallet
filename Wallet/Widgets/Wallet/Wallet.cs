@@ -4,7 +4,7 @@ using Gtk;
 namespace Wallet
 {
 	public interface IWalletView {
-		bool ActionBar { set; }
+		//bool ActionBar { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -14,7 +14,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			WalletController.GetInstance ().WalletView = this;
+			WalletController.Instance.WalletView = this;
 
 //			ExposeEvent += (object o, ExposeEventArgs args) => {
 //				ActionBar actionBar = FindChild<ActionBar>();
@@ -23,24 +23,24 @@ namespace Wallet
 //			};
 		}
 
-		public bool ActionBar { 
-			set {
-				//What a superb implementation for setting visiblity of ActionBar!
+		//public bool ActionBar { 
+		//	set {
+		//		//What a superb implementation for setting visiblity of ActionBar!
 
-				ActionBar actionBar = FindChild<ActionBar>();
-				Transactions transactions = FindChild<Transactions>();
+		//		ActionBar actionBar = FindChild<ActionBar>();
+		//		Transactions transactions = FindChild<Transactions>();
 
-				foreach (Widget widget in vbox1.AllChildren) {
-					vbox1.Remove (widget);
-				}
+		//		foreach (Widget widget in vbox1.AllChildren) {
+		//			vbox1.Remove (widget);
+		//		}
 
-				if (value) {
-					vbox1.PackStart(actionBar, false, false, 0);
-				}
+		//		if (value) {
+		//			vbox1.PackStart(actionBar, false, false, 0);
+		//		}
 
-				vbox1.PackStart(transactions, true, true, 0);
-			}
-		}
+		//		vbox1.PackStart(transactions, true, true, 0);
+		//	}
+		//}
 	}
 }
 

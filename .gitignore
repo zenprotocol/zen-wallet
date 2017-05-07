@@ -1,5 +1,8 @@
 *.userprefs
 packages
 .vs
-UsingFSharp/
+bin
+obj
+Store/bin
+Store/obj
 
