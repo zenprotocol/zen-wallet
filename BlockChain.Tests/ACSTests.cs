@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using NUnit.Framework;
 
@@ -8,18 +8,51 @@ namespace BlockChain
 	{
 		byte[] compiledContract;
 
-		string contractFsCode = @"
+#if CSHARP_CONTRACTS
+			string contractCode = @"
+    using System;
+	using System.Collections.Generic;
+	using static Consensus.Types;
+    using Microsoft.FSharp.Core;
+
+    public class Test
+    {
+        public static Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, FSharpOption<ExtendedContract>> run(
+			byte[] contractHash,
+			SortedDictionary<Outpoint, Output> utxos,
+			byte[] message
+		) {
+			var outpoints = new List<Outpoint>();
+			foreach (var item in utxos)
+			{
+				outpoints.Add(item.Key);
+			}
+
+			var outputs = new List<Output>();
+			foreach (var item in utxos)
+			{
+				outputs.Add(item.Value);
+			}
+
+			return new Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, FSharpOption<ExtendedContract>>(
+				outpoints, outputs, FSharpOption<ExtendedContract>.None
+			);
+        }
+    }";
+#else
+		string contractCode = @"
 module Test
 open Consensus.Types
-let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+let run (hash : byte[], utxos: Map<Outpoint, Output>, message: byte[]) = (utxos |> Map.toSeq |> Seq.map fst, utxos |> Map.toSeq |> Seq.map snd, Option<ExtendedContract>.None)
 ";
+#endif
 
 		[SetUp]
 		public void Setup()
 		{
 			OneTimeSetUp();
 
-			compiledContract = GetCompliedContract(contractFsCode);
+			compiledContract = GetCompliedContract(contractCode);
 			BlockChainTrace.SetTag(compiledContract, "Contract");
 			var contractLockOutput = Utils.GetContractOutput(compiledContract, null, Consensus.Tests.zhash, 100);
 			var tx = Utils.GetTx().AddOutput(contractLockOutput).Tag("Tx");
@@ -30,7 +63,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		[Test]
 		public void ShouldExpireAfterOneBlock()
 		{
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber + 1);
 
 			var bk = _GenesisBlock;
 
@@ -51,7 +84,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		[Test]
 		public void ShouldExpireAfterTwoBlocks()
 		{
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 2);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber + 2);
 
 			var bk = _GenesisBlock;
 
@@ -81,7 +114,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		public void ShouldExtendContract()
 		{
 			ACSItem acsItem = null;
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber + 1);
 
 			ulong blocksToExtend = 2;
 
@@ -113,7 +146,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		public void ShouldNotExtendInactiveContract()
 		{
 			ACSItem acsItem = null;
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber + 1);
 
 			ulong blocksToExtend = 2;
 
@@ -155,7 +188,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		[Test]
 		public void ShouldAcceptTxGenereatedByActiveContract()
 		{
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber + 1);
 
 			var tx = ExecuteContract(compiledContract);
 
@@ -165,7 +198,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		[Test]
 		public void ShouldAcceptTxGenereatedByActiveContract2()
 		{
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 2);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber + 2);
 
 			var tx = ExecuteContract(compiledContract);
 
@@ -177,7 +210,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		[Test]
 		public void ShouldBeOrphanOfInactiveContract()
 		{
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber);
 			BlockChainTrace.SetTag(compiledContract, "contract");
 			var tx = ExecuteContract(compiledContract).Tag("tx");
 
@@ -189,7 +222,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		public void ShouldUndoExtendOnReorder()
 		{
 			ACSItem acsItem = null;
-			AddToACS(compiledContract, contractFsCode, _GenesisBlock.header.blockNumber + 1);
+			AddToACS(compiledContract, contractCode, _GenesisBlock.header.blockNumber + 1);
 
 			ulong blocksToExtend = 20;
 
@@ -206,7 +239,7 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), "Contract should be active", Is.True);
+				Assert.That(new ActiveContractSet().IsActive(dbTx, compiledContract), Is.True, "Contract should be active");
 			}
 
 			using (var dbTx = _BlockChain.GetDBTransaction())
@@ -238,9 +271,9 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		[Test]
 		public void ShouldNotActivateUnderSacrificedContract()
 		{
-			var kalapasPerBlock = (ulong)contractFsCode.Length * 1000;
+			var kalapasPerBlock = (ulong)contractCode.Length * 1000;
 			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, kalapasPerBlock)).SetContract(
-				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractFsCode), new byte[] { }, new byte[] { }));
+				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractCode), new byte[] { }, new byte[] { }));
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 
@@ -273,9 +306,9 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		[Test]
 		public void ShouldActivateContractOfSameTx()
 		{
-			var kalapasPerBlock = (ulong)contractFsCode.Length * 1000 * 2;
+			var kalapasPerBlock = (ulong)contractCode.Length * 1000 * 2;
 			var tx = Utils.GetTx().AddOutput(Utils.GetContractSacrificeLock(new byte[] { }, kalapasPerBlock)).SetContract(
-				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractFsCode), new byte[] { }, new byte[] { }));
+				new Consensus.Types.Contract(Encoding.ASCII.GetBytes(contractCode), new byte[] { }, new byte[] { }));
 
 			Assert.That(_BlockChain.HandleBlock(_GenesisBlock.Child().AddTx(tx)), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 

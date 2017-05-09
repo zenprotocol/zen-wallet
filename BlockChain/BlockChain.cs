@@ -226,7 +226,7 @@ namespace BlockChain
 								BlockChainTrace.Information("tx invalid - universal", ptx);
 								return TxResultEnum.Invalid;
 							}
-							if (!IsContractGeneratedTransactionValid(dbTx, ptx, contractHash))
+							if (!IsValidTransaction(dbTx, ptx, contractHash))
 							{
 								BlockChainTrace.Information("tx invalid - invalid contract", ptx);
 								return TxResultEnum.Invalid;
@@ -327,15 +327,25 @@ namespace BlockChain
 				EvictTxToMempool(dbTx, unconfirmedTxs);
 				RemoveConfirmedTxFromMempool(confirmedTxs);
 
-				var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
-
-				foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
-				{
-					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
-				}
-
-				memPool.ICTxPool.Purge(activeContracts, utxos, Tip.Value.header);
+				PurgeICTxPool(activeContracts, dbTx, Tip.Value.header);
 				memPool.TxPool.MoveToICTxPool(activeContracts);
+			}
+		}
+
+		public void PurgeICTxPool(HashSet activeContracts, TransactionContext dbTx, Types.BlockHeader blockHeader)
+		{
+			foreach (var item in memPool.ICTxPool.ToList())
+			{
+				var contractHash = ((Types.OutputLock.ContractLock)item.Value.pInputs.Head.Item2.@lock).contractHash;
+
+				if (activeContracts.Contains(contractHash) && IsValidTransaction(dbTx, item.Value, contractHash))
+				{
+					memPool.ICTxPool.Remove(item.Key);
+					memPool.TxPool.Add(item.Key, item.Value);
+					new TxMessage(item.Key, item.Value, TxStateEnum.Unconfirmed).Publish();
+					new HandleOrphansOfTxAction(item.Key).Publish();
+					// todo check if ptx **activates a contract** and update contractpool if it does
+				}
 			}
 		}
 
@@ -458,6 +468,56 @@ namespace BlockChain
 			return true;
 		}
 
+		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash)
+		{
+			var witnessIdx = -1;
+			byte[] message = null;
+
+			for (var i = 0; i < ptx.witnesses.Length; i++)
+			{
+				if (ptx.witnesses[i].Length > 0)
+					witnessIdx = i;
+			}
+
+			if (witnessIdx == 0)
+			{
+				message = ptx.witnesses[0];
+			}
+			else if (witnessIdx == -1)
+			{
+				var contractLock = ptx.pInputs[0].Item2.@lock as Types.OutputLock.ContractLock;
+
+				if (contractLock == null)
+				{
+					BlockChainTrace.Information("expected ContractLock, tx invalid");
+					return false;
+				}
+
+				message = contractLock.data;
+			}
+
+			Types.Transaction tx;
+
+			var utxos = new SortedDictionary<Types.Outpoint, Types.Output>();
+
+			foreach (var item in UTXOStore.All(dbTx, null, false).Where(t =>
+			{
+				var contractLock = t.Item2.@lock as Types.OutputLock.ContractLock;
+				return contractLock != null && contractLock.contractHash.SequenceEqual(contractHash);
+			})) {
+				utxos[item.Item1] = item.Item2;	
+			}
+
+			var isExecutionSuccessful = ContractHelper.Execute(out tx, new ContractArgs()
+			{
+				ContractHash = contractHash,
+				Utxos = utxos,
+				Message = message
+			});
+
+			return isExecutionSuccessful && tx != null && TransactionValidation.unpoint(ptx).Equals(tx);
+		}
+
 		public static IsContractGeneratedTxResult IsContractGeneratedTx(TransactionValidation.PointedTransaction ptx, out byte[] contractHash)
 		{
 			contractHash = null;
@@ -486,24 +546,12 @@ namespace BlockChain
 		// TODO replace with two functions:
 		// IsContractActive(contractHash), which checks if the contract is in the ACS on disk or in the contractpool;
 		// bool IsContractGeneratedTransactionValid(dbtx, contracthash, ptx), which raises an exception if called with a missing contract
-		public static bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash)
-		{
-			/// TODO: cache
-			var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
-
-			foreach (var item in new UTXOStore().All(dbTx, null, false).Where(t =>
-			{
-				var contractLock = t.Value.@lock as Types.OutputLock.ContractLock;
-				return contractLock != null && contractLock.contractHash.SequenceEqual(contractHash); 
-			}))
-			{
-				utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
-			}
-
-			var chainTip = new ChainTip().Context(dbTx).Value;
-			var tipBlockHeader = chainTip == null ? null : new BlockStore().GetBlock(dbTx, chainTip).Value.header;
-			return ContractHelper.IsTxValid(ptx, contractHash, utxos, tipBlockHeader);
-		}
+		//public static bool IsContractGeneratedTransactionValid(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash)
+		//{
+		//	var chainTip = new ChainTip().Context(dbTx).Value;
+		//	var tipBlockHeader = chainTip == null ? null : new BlockStore().GetBlock(dbTx, chainTip).Value.header;
+		//	return xValid(ptx, contractHash, utxos, tipBlockHeader);
+		//}
 
 		public TransactionContext GetDBTransaction()
 		{
@@ -585,13 +633,13 @@ namespace BlockChain
 			{
 				foreach (var item in UTXOStore.All(context, predicate, true))
 				{
-					if (!txOutputs.ContainsKey(item.Key.txHash))
+					if (!txOutputs.ContainsKey(item.Item1.txHash))
 					{
-						txOutputs[item.Key.txHash] = new List<Types.Output>();
+						txOutputs[item.Item1.txHash] = new List<Types.Output>();
 					}
 
-					txOutputs[item.Key.txHash].Add(item.Value);
-					txs[item.Key.txHash] = BlockStore.TxStore.Get(context, item.Key.txHash).Value;
+					txOutputs[item.Item1.txHash].Add(item.Item2);
+					txs[item.Item1.txHash] = BlockStore.TxStore.Get(context, item.Item1.txHash).Value;
 				}
 			}
 		}

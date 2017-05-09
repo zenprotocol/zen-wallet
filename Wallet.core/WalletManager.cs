@@ -53,13 +53,13 @@ namespace Wallet.core
 
 				_TxStore.All(dbTx).ToList().ForEach(item =>
 				{
-					switch (item.Value.TxState)
+					switch (item.Item2.TxState)
 					{
 						case TxStateEnum.Confirmed:
-							TxDeltaList.Add(new TxDelta(item.Value.TxState, item.Value.TxHash, item.Value.Tx, item.Value.AssetDeltas, item.Value.DateTime));
+							TxDeltaList.Add(new TxDelta(item.Item2.TxState, item.Item2.TxHash, item.Item2.Tx, item.Item2.AssetDeltas, item.Item2.DateTime));
 							break;
 						case TxStateEnum.Unconfirmed:
-							purgeList.Add(item.Key);
+							purgeList.Add(item.Item1);
 							//TODO: implement 'smarter' mode: only after the node has been synced and is up-to-date, try to revalidate
 							//_BlockChain.HandleTransaction(txData.Tx);
 							break;
@@ -299,7 +299,7 @@ namespace Wallet.core
 
 			var spendableOutputs = new List<Types.Output>();
 
-			_TxStore.All(dbTx).Select(t=>t.Value).ToList().ForEach(txData =>
+			_TxStore.All(dbTx).Select(t=>t.Item2).ToList().ForEach(txData =>
 			{
 				uint idx = 0;
 				txData.Tx.outputs.ToList().ForEach(o =>

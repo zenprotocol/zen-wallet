@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using BlockChain.Data;
+using Microsoft.FSharp.Core;
 
 namespace BlockChain
 {
@@ -277,7 +278,8 @@ namespace BlockChain
 					i++;
 				}
 
-				var contractSacrifices = new HashDictionary<ulong>();
+				var contractExtendSacrifices = new HashDictionary<ulong>();
+				var contractActivationSacrifices = new HashDictionary<ulong>();
 
 				i = 0;
 				foreach (var output in ptx.outputs)
@@ -293,23 +295,25 @@ namespace BlockChain
 						if (contractLock.IsHighVLock)
 							continue; // not current version
 
-						byte[] contractKey = null;
-
-						if (contractLock.Item.lockData[0] != null && contractLock.Item.lockData[0].Length > 0)
+						if (contractLock.Item.lockData.Length > 0 && contractLock.Item.lockData[0].Length > 0)
 						{
-							contractKey = contractLock.Item.lockData[0]; // output-lock-level indicated contract
+							var contractKey = contractLock.Item.lockData[0]; // output-lock-level indicated contract
+
+							contractExtendSacrifices[contractKey] =
+								(contractExtendSacrifices.ContainsKey(contractKey) ? contractExtendSacrifices[contractKey] : 0) +
+								output.spend.amount;
 						}
-						else if (transaction.contract.Value != null)
+						else if (FSharpOption<Types.ExtendedContract>.get_IsSome (transaction.contract))
 						{
 							if (transaction.contract.Value.IsHighVContract)
 								continue; // not current version
 
-							contractKey = ((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code;
-						}
+							var contractCode = ((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code;
 
-						contractSacrifices[contractKey] =
-							(contractSacrifices.ContainsKey(contractKey) ? contractSacrifices[contractKey] : 0) +
-							output.spend.amount;
+							contractActivationSacrifices[contractCode] =
+								(contractActivationSacrifices.ContainsKey(contractCode) ? contractActivationSacrifices[contractCode] : 0) +
+								output.spend.amount;
+						}
 					}
 
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
@@ -321,23 +325,33 @@ namespace BlockChain
 					i++;
 				}
 
-				foreach (var item in contractSacrifices)
-				{
-					if (new ActiveContractSet().IsActive(_DbTx, item.Key))
+                Action<byte[]> actionACSSnapshot = t =>
+                {
+					if (blockUndoData.ACSDeltas.ContainsKey(t))
 					{
-						// snapshot only if first time (not snapshoted before)
-						if (!blockUndoData.ACSDeltas.ContainsKey(item.Key))
-						{
-							blockUndoData.ACSDeltas.Add(item.Key,
-								  new ActiveContractSet().Get(_DbTx, item.Key).Value);
-						}
+						return;
+					}
 
-						new ActiveContractSet().Extend(_DbTx, item.Key, item.Value);
-					}
-					else
+					var current = new ActiveContractSet().Get(_DbTx, t);
+
+					if (current != null)
 					{
-						new ActiveContractSet().Activate(_DbTx, item.Key, item.Value);
+						blockUndoData.ACSDeltas.Add(t, current.Value);
 					}
+				};
+
+				foreach (var item in contractActivationSacrifices)
+				{
+                    actionACSSnapshot(item.Key);
+					//TODO: handle result. should try extend if activation failed?
+					new ActiveContractSet().TryActivate(_DbTx, item.Key, item.Value);
+				}
+
+				foreach (var item in contractExtendSacrifices)
+				{
+					actionACSSnapshot(item.Key);
+                    //TODO: handle result.
+                    new ActiveContractSet().TryExtend(_DbTx, item.Key, item.Value);
 				}
 			}
 
@@ -443,7 +457,7 @@ namespace BlockChain
 						BlockChainTrace.Information("tx invalid - universal", ptx);
 						return false;
 					}
-					if (!BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx, contractHash))
+					if (!_BlockChain.IsValidTransaction(_DbTx, ptx, contractHash))
 					{
 						BlockChainTrace.Information("tx invalid - invalid contract", ptx);
 						return false;

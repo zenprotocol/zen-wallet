@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Consensus;
 using Microsoft.FSharp.Collections;
@@ -21,35 +21,31 @@ namespace BlockChain
 
 		protected Types.Transaction ExecuteContract(byte[] compiledContract)
 		{
-			var output = Utils.GetOutput(Key.Create().Address, Consensus.Tests.zhash, 10);
+			var utxos = new SortedDictionary<Types.Outpoint, Types.Output>();
 
-			var outputs = new List<Types.Output>();
-
-			outputs.Add(output);
-
-			var utxos = new List<Tuple<Types.Outpoint, Types.Output>>();
-
-			using (var context = _BlockChain.GetDBTransaction())
+			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
-				foreach (var item in _BlockChain.UTXOStore.All(context, null, false).Where(t => t.Value.@lock is Types.OutputLock.ContractLock))
+				foreach (var item in _BlockChain.UTXOStore.All(dbTx, null, false).Where(t =>
 				{
-					utxos.Add(new Tuple<Types.Outpoint, Types.Output>(item.Key, item.Value));
+					var contractLock = t.Item2.@lock as Types.OutputLock.ContractLock;
+					return contractLock != null && contractLock.contractHash.SequenceEqual(compiledContract);
+				}))
+				{
+					utxos[item.Item1] = item.Item2;
 				}
 			}
 
 			Types.Transaction contractCreatedTransaction;
-			Assert.That(ContractHelper.Execute(compiledContract, out contractCreatedTransaction, new ContractArgs()
+			Assert.That(ContractHelper.Execute(out contractCreatedTransaction, new ContractArgs()
 			{
-				context = new Types.ContractContext(compiledContract, new FSharpMap<Types.Outpoint, Types.Output>(utxos), _BlockChain.Tip.Value.header),
-				witnesses = new List<byte[]>(),
-				outputs = outputs,
-				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { }, new byte[] { }, new byte[] { }))
-			}), "Should execute", Is.True);
+				ContractHash = compiledContract,
+				Utxos = utxos
+			}), Is.True);
 
 			return contractCreatedTransaction;
 		}
 
-		protected void AddToACS(byte[] compiledContract, string contractFsCode, UInt32 lastBlock)
+		protected void AddToACS(byte[] compiledContract, string contractCode, UInt32 lastBlock)
 		{
 			using (var dbTx = _BlockChain.GetDBTransaction())
 			{
@@ -57,7 +53,7 @@ namespace BlockChain
 				{
 					Hash = compiledContract,
 					LastBlock = lastBlock,
-					KalapasPerBlock = (ulong)contractFsCode.Length * 1000
+					KalapasPerBlock = (ulong)contractCode.Length * 1000
 				});
 				dbTx.Commit();
 			}

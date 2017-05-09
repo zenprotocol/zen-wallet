@@ -51,7 +51,7 @@ namespace Store
 		//	}
 		//}
 
-		public IEnumerable<Keyed<TKey, TValue>> All(TransactionContext transactionContext, Func<TValue, bool> predicate = null, bool syncronized = false)
+		public IEnumerable<Tuple<TKey, TValue>> All(TransactionContext transactionContext, Func<TValue, bool> predicate = null, bool syncronized = false)
 		{
 			if (syncronized)
 			{
@@ -78,7 +78,7 @@ namespace Store
 
 				if (valid && (predicate == null || predicate(value)))
 				{
-					yield return new Keyed<TKey, TValue>(key, value);
+					yield return new Tuple<TKey, TValue>(key, value);
 				}
 			}
 		}

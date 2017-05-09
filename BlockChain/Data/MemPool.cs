@@ -9,7 +9,7 @@ namespace BlockChain.Data
 
 		public MemPool()
 		{
-			ICTxPool.TxPool = TxPool;
+			//ICTxPool.TxPool = TxPool;
 			ICTxPool.ContractPool = ContractPool;
 			ICTxPool.OrphanTxPool = OrphanTxPool;
 

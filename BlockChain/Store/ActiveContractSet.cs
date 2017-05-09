@@ -4,6 +4,7 @@ using Store;
 using System.Linq;
 using BlockChain.Data;
 using System.Text;
+using Consensus;
 
 namespace BlockChain
 {
@@ -18,6 +19,8 @@ namespace BlockChain
 
 	public class ActiveContractSet : MsgPackStore<ACSItem>
 	{
+		private const int KALAPAS_PER_BYTE = 1000;
+
 		public ActiveContractSet() : base("contract-set") { }
 
 		public void Add(TransactionContext dbTx, ACSItem item)
@@ -27,7 +30,7 @@ namespace BlockChain
 
 		public HashSet Keys(TransactionContext dbTx)
 		{
-			return new HashSet(All(dbTx).Select(t => t.Value.Hash));
+			return new HashSet(All(dbTx).Select(t => t.Item2.Hash));
 		}
 
 		public bool IsActive(TransactionContext dbTx, byte[] contractHash)
@@ -40,32 +43,33 @@ namespace BlockChain
 			return Get(dbTx, contractHash).Value.LastBlock;
 		}
 
-		public void Extend(TransactionContext dbTx, byte[] contractHash, ulong kalapas)
+		public bool TryExtend(TransactionContext dbTx, byte[] contractHash, ulong kalapas)
 		{
+			if (!IsActive(dbTx, contractHash))
+			{
+				return false;
+			}	
+
 			var acsItem = Get(dbTx, contractHash);
 			acsItem.Value.LastBlock += (uint)(kalapas / acsItem.Value.KalapasPerBlock);
 
 			Add(dbTx, acsItem.Value);
+
+			return true;
 		}
 
-		public static ulong KalapasPerBlock(string fsharpCode)
-		{
-			if (string.IsNullOrEmpty(fsharpCode))
-				return 0;
-			
-			return KalapasPerBlock(Encoding.ASCII.GetBytes(fsharpCode));
+		public static ulong KalapasPerBlock(byte[] serializedContract)
+		{			
+			return (ulong)serializedContract.Length * KALAPAS_PER_BYTE;
 		}
 
-		public static ulong KalapasPerBlock(byte[] fsharpCode)
+		public bool TryActivate(TransactionContext dbTx, byte[] contractCode, ulong kalapas)
 		{
-			if (fsharpCode == null)
-				return 0;
-			
-			return (ulong)fsharpCode.Length * 1000;
-		}
+			if (IsActive(dbTx, Merkle.innerHash(contractCode)))
+			{
+				return false;
+			}	
 
-		public bool Activate(TransactionContext dbTx, byte[] contractCode, ulong kalapas)
-		{
 			byte[] fsharpCode;
 			ContractHelper.Extract(contractCode, out fsharpCode);
 			//	var fsharpCode = new StrongBox<byte[]>();
@@ -98,14 +102,14 @@ namespace BlockChain
 		public HashDictionary<ACSItem> GetExpiringList(TransactionContext dbTx, uint blockNumber)
 		{
 #if TRACE
-			All(dbTx).Where(t => t.Value.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}", t.Key));
+			All(dbTx).Where(t => t.Item2.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}", t.Item1));
 #endif
 
 			var values = new HashDictionary<ACSItem>();
 
-			foreach (var contract in All(dbTx).Where(t => t.Value.LastBlock <= blockNumber))
+			foreach (var contract in All(dbTx).Where(t => t.Item2.LastBlock <= blockNumber))
 			{
-				values[contract.Key] = contract.Value;
+				values[contract.Item1] = contract.Item2;
 			}
 
 			return values;

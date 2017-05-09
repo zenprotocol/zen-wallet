@@ -25,6 +25,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Network", "Network\Network.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractGenerator", "ContractGenerator\ContractGenerator.csproj", "{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RPC.Tests", "RPC.Tests\RPC.Tests.csproj", "{29094D86-1727-4D05-8D67-3458DB0A4DB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RPC", "RPC\RPC.csproj", "{02F37948-6E69-464D-AD54-D31FBCE932E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -79,5 +83,13 @@ Global
 		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Debug|x86.Build.0 = Debug|Any CPU
 		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Release|x86.ActiveCfg = Release|Any CPU
 		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Release|x86.Build.0 = Release|Any CPU
+		{29094D86-1727-4D05-8D67-3458DB0A4DB4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{29094D86-1727-4D05-8D67-3458DB0A4DB4}.Debug|x86.Build.0 = Debug|Any CPU
+		{29094D86-1727-4D05-8D67-3458DB0A4DB4}.Release|x86.ActiveCfg = Release|Any CPU
+		{29094D86-1727-4D05-8D67-3458DB0A4DB4}.Release|x86.Build.0 = Release|Any CPU
+		{02F37948-6E69-464D-AD54-D31FBCE932E9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{02F37948-6E69-464D-AD54-D31FBCE932E9}.Debug|x86.Build.0 = Debug|Any CPU
+		{02F37948-6E69-464D-AD54-D31FBCE932E9}.Release|x86.ActiveCfg = Release|Any CPU
+		{02F37948-6E69-464D-AD54-D31FBCE932E9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

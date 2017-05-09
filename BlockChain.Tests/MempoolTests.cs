@@ -8,6 +8,45 @@ namespace BlockChain
 {
 	public class MempoolTests : BlockChainContractTestsBase
 	{
+#if CSHARP_CONTRACTS
+			string contractCode = @"
+    using System;
+    using System.Collections.Generic;
+	using Microsoft.FSharp.Core;
+	using static Consensus.Types;
+
+    public class Test
+    {
+        public static Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, FSharpOption<ExtendedContract>> run(
+			byte[] contractHash,
+			SortedDictionary<Outpoint, Output> utxos,
+			byte[] message
+		) {
+			var outpoints = new List<Outpoint>();
+			foreach (var item in utxos)
+			{
+				outpoints.Add(item.Key);
+			}
+
+			var outputs = new List<Output>();
+			foreach (var item in utxos)
+			{
+				outputs.Add(item.Value);
+			}
+
+			return new Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, FSharpOption<ExtendedContract>>(
+				outpoints, outputs, FSharpOption<ExtendedContract>.None
+			);
+        }
+    }";
+#else
+	string contractCode = @"
+module Test
+open Consensus.Types
+let run (hash : byte[], utxos: Map<Outpoint, Output>, message: byte[]) = (utxos |> Map.toSeq |> Seq.map fst, utxos |> Map.toSeq |> Seq.map snd, Option<ExtendedContract>.None)
+";
+#endif
+
 		[SetUp]
 		public void SetUp()
 		{
@@ -157,15 +196,9 @@ namespace BlockChain
 		{
 			var key = Key.Create();
 
-			string contractFsCode = @"
-module Test
-open Consensus.Types
-let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
-";
-
-			var contractHash = GetCompliedContract(contractFsCode);
+			var contractHash = GetCompliedContract(contractCode);
 			BlockChainTrace.SetTag(contractHash, "contract");
-			//			AddToACS(contractHash, contractFsCode, _GenesisBlock.header.blockNumber + 2);
+			//			AddToACS(contractHash, contractCode, _GenesisBlock.header.blockNumber + 2);
 
 			var contractOutput1 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 11);
 
@@ -189,15 +222,9 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 		{
 			var key = Key.Create();
 
-			string contractFsCode = @"
-module Test
-open Consensus.Types
-let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
-";
-
-			var contractHash = GetCompliedContract(contractFsCode);
+			var contractHash = GetCompliedContract(contractCode);
 			BlockChainTrace.SetTag(contractHash, "contract");
-			AddToACS(contractHash, contractFsCode, _GenesisBlock.header.blockNumber + 1);
+			AddToACS(contractHash, contractCode, _GenesisBlock.header.blockNumber + 1);
 
 			var contractOutput1 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 11);
 
@@ -225,15 +252,15 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 //		{
 //			var key = Key.Create();
 
-//			string contractFsCode = @"
+//			string contractCode = @"
 //module Test
 //open Consensus.Types
-//let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
+//let run (context : ContractContext, message: byte[], outputs: Output list) = (context.utxo |> Map.toSeq |> Seq.map fst, outputs)
 //";
 
-//			var contractHash = GetCompliedContract(contractFsCode);
+//			var contractHash = GetCompliedContract(contractCode);
 //			BlockChainTrace.SetTag(contractHash, "contract");
-//		//	AddToACS(contractHash, contractFsCode, _GenesisBlock.header.blockNumber + 2);
+//		//	AddToACS(contractHash, contractCode, _GenesisBlock.header.blockNumber + 2);
 
 //			var contractOutput1 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 11);
 //			var contractOutput2 = Utils.GetContractOutput(contractHash, new byte[] { }, Consensus.Tests.zhash, 12);
