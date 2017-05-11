@@ -66,7 +66,8 @@ namespace Wallet.core.Data
 			}
 			else 
 			{
-				throw new NotImplementedException();
+				return false;
+				//throw new NotImplementedException();
 			}
 		}
 

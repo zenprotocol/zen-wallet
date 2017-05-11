@@ -14,6 +14,8 @@ namespace Zen
 			bool show_help = false;
 			bool headless = false;
 			bool tui = false;
+			bool rpcServer = false;
+
 			string script = null;
 
 			var p = new OptionSet() {
@@ -47,6 +49,9 @@ namespace Zen
 
 				{ "m|miner", "enable miner",
 					v => app.MinerEnabled = true },
+
+				{ "rpc", "enable RPC",
+					v => rpcServer = true },
 
 				//{ "o|output=", "add a genesis block transaction output (address, amount)",
 				//	v => app.Settings.AddOutput(v) },
@@ -94,6 +99,13 @@ namespace Zen
 				}
 			}
 
+			Server server;
+			if (rpcServer)
+			{
+				server = new Server(app);
+				server.Start();
+			}
+
 			if (tui)
 			{
 				TUI.Start(app, script);
@@ -118,11 +130,6 @@ namespace Zen
 			Console.WriteLine ();
 			Console.WriteLine ("Options:");
 			p.WriteOptionDescriptions (Console.Out);
-			Console.WriteLine ();
-			Console.WriteLine ("Examples:");
-			Console.WriteLine (" Run using internal IP but don't act as server (to be used for testing purposes, when several nodes on a single machine)");
-			Console.WriteLine ();
-			Console.WriteLine ("mono --debug Zen.exe --internal --ip=");
 			Console.WriteLine ();
 		}
 

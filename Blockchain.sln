@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Network", "Network\Network.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractGenerator", "ContractGenerator\ContractGenerator.csproj", "{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC.Common", "Zen.RPC.Common\Zen.RPC.Common.csproj", "{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -79,5 +81,9 @@ Global
 		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Debug|x86.Build.0 = Debug|Any CPU
 		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Release|x86.ActiveCfg = Release|Any CPU
 		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Release|x86.Build.0 = Release|Any CPU
+		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Debug|x86.Build.0 = Debug|Any CPU
+		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Release|x86.ActiveCfg = Release|Any CPU
+		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

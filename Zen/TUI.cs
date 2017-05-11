@@ -35,6 +35,7 @@ namespace Zen
 			options["main"].Add("Reset Blockchain DB");
 			options["main"].Add("Reset Wallet DB");
 			options["main"].Add("Generate Graph");
+			options["main"].Add("Active Contract Set");
 			options["main"].Add("Stop");
 			options["main"].Add("Exit");
 
@@ -70,6 +71,13 @@ namespace Zen
 			}
 			options["tests"].Add("Back");
 
+			options["acs"] = new List<string>();
+
+			foreach (var contractHash in app.GetActiveContacts())
+			{
+				options["acs"].Add(new Address(contractHash, AddressType.Contract).ToString());
+			}
+			options["acs"].Add("Back");
 
 			var actions = new Dictionary<string, Action<string>>();
 			Action<string> menu = (s) =>
@@ -206,7 +214,6 @@ namespace Zen
 						menu("blockchain");
 						break;
 					case "Miner Menu":
-						//menu("miner");
 						showMinerDialog();
 						break;
 					case "Reconnect":
@@ -225,6 +232,9 @@ namespace Zen
 						break;
 					case "Generate Graph":
 						app.Dump();
+						break;
+					case "Active Contract Set":
+                        menu("acs");
 						break;
 					case "Reset Blockchain DB":
 						app.ResetBlockChainDB();
@@ -288,6 +298,19 @@ namespace Zen
 						object result;
 						ScriptRunner.Execute(app, Path.Combine("Scripts", a), out result);
 						listTrace.Items.Add(result);	
+						break;
+				}
+			};
+
+			actions["acs"] = a =>
+			{
+				switch (a)
+				{
+					case "Back":
+                        menu("main");
+						break;
+					default:
+						Console.WriteLine(app.GetContractCode(new Address(a).Bytes));
 						break;
 				}
 			};

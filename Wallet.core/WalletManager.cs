@@ -294,7 +294,7 @@ namespace Wallet.core
 		/// <param name="asset">Asset.</param>
 		/// <param name="amount">Amount.</param>
 		private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, out Assets assets)
-		{
+			{
 			var matchingAssets = new Assets();
 
 			var spendableOutputs = new List<Types.Output>();
@@ -398,14 +398,13 @@ namespace Wallet.core
 			}
 		}
 
-		/// <summary>
-		/// Constract and sign a transaction satisfying amount of asset
-		/// </summary>
-		/// <returns>The sign.</returns>
-		/// <param name="address">Address.</param>
-		/// <param name="asset">Asset.</param>
-		/// <param name="amount">Amount.</param>
 		public bool Sign(Address address, byte[] asset, ulong amount, out Types.Transaction signedTx)
+		{
+			var output = new Types.Output(address.GetLock(), new Types.Spend(Tests.zhash, amount));
+			return Sign(output, asset, amount, out signedTx);
+		}
+
+		bool Sign(Types.Output output, byte[] asset, ulong amount, out Types.Transaction signedTx)
 		{
 			ulong change;
 			Assets assets;
@@ -433,7 +432,7 @@ namespace Wallet.core
 				}
 			}
 
-			outputs.Add(new Types.Output(address.GetLock(), new Types.Spend(Tests.zhash, amount)));
+			outputs.Add(output);
 
 			signedTx = TransactionValidation.signTx(new Types.Transaction(
 				1,

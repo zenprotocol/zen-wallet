@@ -8,7 +8,7 @@ let run (app: App) =
 
     app.SetWallet("test1")
     app.ResetWalletDB()
-    app.Acuire(0)
+    app.Acquire(0)
     app.Reconnect()
     let x = app.Spend(1000, 0)
     0

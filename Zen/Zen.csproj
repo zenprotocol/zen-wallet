@@ -14,7 +14,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG; TRACE;</DefineConstants>
+    <DefineConstants>DEBUG; TRACE; CSHARP_CONTRACTS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
@@ -37,7 +37,6 @@
     <Reference Include="NDesk.Options">
       <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core" />
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
@@ -55,11 +54,16 @@
       <HintPath>..\packages\NetMQ.4.0.0.1\lib\net40\NetMQ.dll</HintPath>
     </Reference>
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TUI.cs" />
-    <Compile Include="App.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="AppTraceListener.cs" />
     <Compile Include="Tests\UITests.cs" />
@@ -69,6 +73,12 @@
     <Compile Include="BlockChainDumper.cs" />
     <Compile Include="ScriptRunner.cs" />
     <Compile Include="Server.cs" />
+    <Compile Include="App.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="TestContracts\TestContract.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -151,14 +161,15 @@
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>Network</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Zen.StockAPI.Google\Zen.StockAPI.Google.csproj">
-      <Project>{00B5F4CD-E9DD-4C12-A73F-A0258C440589}</Project>
-      <Name>Zen.StockAPI.Google</Name>
+    <ProjectReference Include="..\Zen.RPC.Common\Zen.RPC.Common.csproj">
+      <Project>{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}</Project>
+      <Name>Zen.RPC.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tests\" />
     <Folder Include="Data\" />
     <Folder Include="Scripts\" />
+    <Folder Include="TestContracts\" />
   </ItemGroup>
 </Project>
