@@ -64,6 +64,7 @@ namespace Zen
 		BlockChain.BlockChain _BlockChain = null;
 		WalletManager _WalletManager = null;
 		NodeManager _NodeManager = null;
+		Server _Server = null;
 
 		BlockChain.BlockChain BlockChain_ //TODO: refactor class name - conflicts with namespace/member
 		{
@@ -146,6 +147,8 @@ namespace Zen
 					_NodeManager.Miner.Enabled = value;
 			}
 		}
+
+		internal bool RPCEnabled { get; set; }
 
 		public bool AddGenesisBlock()
 		{
@@ -265,6 +268,12 @@ namespace Zen
 		public void Stop() {
 			//stopEvent.Set();
 
+			if (RPCEnabled && _Server != null)
+			{
+				_Server.Stop();
+				_Server = null;
+			}
+
 			if (_NodeManager != null)
 			{
 				_NodeManager.Dispose();
@@ -331,10 +340,16 @@ namespace Zen
 
 		public async Task Reconnect()
 		{
+            Stop();
+
+			if (RPCEnabled)
+			{
+				_Server = new Server(this);
+				_Server.Start();
+			}
+
 			if (!Settings.DisableNetworking)
 			{
-				Stop();
-
 				await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
 			}
 		}
@@ -448,6 +463,16 @@ namespace Zen
 
 				return _GenesisBlock;
 			}
+		}
+
+		public void SendContract(byte[] contractHash, byte[] data)
+		{
+			Consensus.Types.Transaction tx;
+			BlockChain.ContractHelper.Execute(out tx, new BlockChain.ContractArgs()
+			{
+				ContractHash = contractHash,
+				Message = data
+			});
 		}
 	}
 }

@@ -31,6 +31,7 @@ namespace BlockChain
 		static readonly string[] _Dependencies = new string[] {
 #if CSHARP_CONTRACTS
             "System.dll",
+            "System.Core.dll",
             "FSharp.Core.dll",
 #else
 #endif
@@ -40,10 +41,9 @@ namespace BlockChain
 			"../../../Consensus/bin/Debug/BouncyCastle.Crypto.dll"
 		}; //TODO
 
-		//static string _CompilerPath = "/usr/lib/mono/4.5/fsc.exe"; 
-		static string _CompilerPath = "";
+		static string _CompilerPath = "/usr/lib/mono/4.5/"; //TODO
 
-		public static bool Execute(out Types.Transaction transaction, ContractArgs contractArgs)
+		public static bool Execute(out Types.Transaction transaction, ContractArgs contractArgs, bool isWitness)
 		{
 			try
 			{
@@ -62,13 +62,12 @@ namespace BlockChain
 				};
 				var result = method.Invoke(null, args);
 				var txSkeleton = result as Tuple<IEnumerable<Types.Outpoint>, IEnumerable<Types.Output>, FSharpOption<Types.ExtendedContract>>;
-				var _txSkeleton = result as Tuple<IEnumerable<Types.Outpoint>, IEnumerable<Types.Output>>;
 
-				transaction = result == null ? null :
+				transaction = txSkeleton == null || txSkeleton.Item1.Count() == 0 || txSkeleton.Item2.Count() == 0 ? null :
 					new Types.Transaction(
 						Tests.tx.version,
 						ListModule.OfSeq(txSkeleton.Item1),
-						ListModule.OfSeq<byte[]>(new byte[][] { }),
+                      	ListModule.OfSeq<byte[]>(isWitness ? new byte[][] { contractArgs.Message } : new byte[][] { }),
 						ListModule.OfSeq(txSkeleton.Item2),
 						txSkeleton.Item3
 					);

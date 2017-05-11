@@ -10,6 +10,8 @@ using BlockChain.Data;
 using System.Threading.Tasks.Dataflow;
 using System.Threading.Tasks;
 using System.Collections;
+using Microsoft.FSharp.Core;
+using System.Text;
 
 namespace BlockChain
 {
@@ -470,6 +472,7 @@ namespace BlockChain
 
 		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash)
 		{
+			var isWitness = false;
 			var witnessIdx = -1;
 			byte[] message = null;
 
@@ -496,7 +499,8 @@ namespace BlockChain
 				message = contractLock.data;
 			}
 
-			Types.Transaction tx;
+			isWitness = witnessIdx == 0;
+
 
 			var utxos = new SortedDictionary<Types.Outpoint, Types.Output>();
 
@@ -508,12 +512,27 @@ namespace BlockChain
 				utxos[item.Item1] = item.Item2;	
 			}
 
+			foreach (var item in memPool.TxPool)
+			{
+				uint i = 0;
+				foreach (var output in item.Value.outputs)
+				{
+					var contractLock = output.@lock as Types.OutputLock.ContractLock;
+					if (contractLock != null)
+					{
+						utxos[new Types.Outpoint(item.Key, i)] = output;
+					}
+					i++;
+				}
+			}	
+
+			Types.Transaction tx;
 			var isExecutionSuccessful = ContractHelper.Execute(out tx, new ContractArgs()
 			{
 				ContractHash = contractHash,
 				Utxos = utxos,
 				Message = message
-			});
+			}, isWitness);
 
 			return isExecutionSuccessful && tx != null && TransactionValidation.unpoint(ptx).Equals(tx);
 		}
@@ -621,6 +640,29 @@ namespace BlockChain
 
 				return null;
 			}
+		}
+
+		public string GetContractCode(byte[] contractHash)
+		{
+			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
+			{
+				var result = ContractsTxsStore.Get(dbTx.Transaction, contractHash);
+
+				if (result != null && BlockStore.TxStore.ContainsKey(dbTx, result))
+				{
+					var transaction = BlockStore.TxStore.Get(dbTx, result).Value;
+
+					if (FSharpOption<Types.ExtendedContract>.get_IsSome(transaction.contract))
+					{
+						if (transaction.contract.Value.IsContract)
+						{
+							return Encoding.ASCII.GetString((transaction.contract.Value as Types.ExtendedContract.Contract).Item.code);
+						}
+					}
+				}
+			}
+
+			return "";
 		}
 
 		// TODO: use linq, return enumerator, remove predicate

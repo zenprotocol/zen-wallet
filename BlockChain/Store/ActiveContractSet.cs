@@ -63,8 +63,10 @@ namespace BlockChain
 			return (ulong)serializedContract.Length * KALAPAS_PER_BYTE;
 		}
 
-		public bool TryActivate(TransactionContext dbTx, byte[] contractCode, ulong kalapas)
+		public bool TryActivate(TransactionContext dbTx, byte[] contractCode, ulong kalapas, out byte[] contractHash)
 		{
+			contractHash = null;
+
 			if (IsActive(dbTx, Merkle.innerHash(contractCode)))
 			{
 				return false;
@@ -75,7 +77,6 @@ namespace BlockChain
 			//	var fsharpCode = new StrongBox<byte[]>();
 			//	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
 
-			byte[] contractHash;
 			if (ContractHelper.Compile(contractCode, out contractHash))
 			{
 				var kalapasPerBlock = KalapasPerBlock(fsharpCode);

@@ -14,7 +14,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;TEST</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;TEST;CSHARP_CONTRACTS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -68,6 +68,7 @@
     <Compile Include="Data\TxPoolBase.cs" />
     <Compile Include="Data\OrphanTxPool.cs" />
     <Compile Include="Data\ContractsPoolItem.cs" />
+    <Compile Include="Store\ContractsTxsStore.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

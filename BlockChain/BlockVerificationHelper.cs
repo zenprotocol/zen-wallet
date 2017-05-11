@@ -344,7 +344,11 @@ namespace BlockChain
 				{
                     actionACSSnapshot(item.Key);
 					//TODO: handle result. should try extend if activation failed?
-					new ActiveContractSet().TryActivate(_DbTx, item.Key, item.Value);
+					byte[] contractHash;
+					if (new ActiveContractSet().TryActivate(_DbTx, item.Key, item.Value, out contractHash))
+					{
+						ContractsTxsStore.Add(_DbTx.Transaction, contractHash, txHash);
+					}
 				}
 
 				foreach (var item in contractExtendSacrifices)
