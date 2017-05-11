@@ -91,7 +91,7 @@ let run (hash : byte[], utxos: Map<Outpoint, Output>, message: byte[]) = (utxos 
 			{
 				ContractHash = compiledContract,
 				Utxos = utxos
-			}), Is.True);
+			}, false), Is.True);
 		}
 
 		[Test, Order(3)]

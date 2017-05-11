@@ -40,7 +40,7 @@ namespace BlockChain
 			{
 				ContractHash = compiledContract,
 				Utxos = utxos
-			}), Is.True);
+			}, false), Is.True);
 
 			return contractCreatedTransaction;
 		}
