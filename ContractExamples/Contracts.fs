@@ -32,15 +32,18 @@ let maybe = MaybeWorkflow.maybe
 
 type InvokeMessage = byte * Outpoint list
 
-let simplePackOutpoint : Outpoint -> byte list = fun p ->
+let simplePackOutpoint : Outpoint -> byte[] = fun p ->
     match p with
     | {txHash=txHash;index=index} ->
         if index > 255u then failwith "oops!"
         else
-            (byte)index :: Array.toList txHash
+            let res = Array.zeroCreate 33
+            res.[0] <- (byte)index
+            Array.blit txHash 0 res 1 32
+            res
 
-let packManyOutpoints : Outpoint list -> byte list = fun ps ->
-    List.concat (List.map simplePackOutpoint ps)
+let packManyOutpoints : Outpoint list -> byte[] = fun ps ->
+    ps |> List.map simplePackOutpoint |> Array.concat
 
 let tryParseInvokeMessage (message:byte[]) =
     let makeOutpoint (outpointb:byte[]) = {txHash=outpointb.[1..]; index = (uint32)outpointb.[0]}
