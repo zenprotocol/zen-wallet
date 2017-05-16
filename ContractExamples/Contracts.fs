@@ -3,7 +3,20 @@
 open Consensus.Types
 open Authentication
 
-type ContractFunction = byte list * byte[] * Map<Outpoint, Output> -> Outpoint list * Output list * byte[]
+type ContractFunctionInput = byte[] * Hash * Map<Outpoint, Output>
+type TransactionSkeleton = Outpoint list * Output list * byte[]
+type ContractFunction = ContractFunctionInput -> TransactionSkeleton
+
+type CallOptionParameters =
+    {
+        numeraire: Hash;
+        controlAsset: Hash;
+        controlAssetReturn: Hash;
+        oracle: Hash;
+        underlying: string;
+        price: uint64;
+        minimumCollateralRatio: decimal
+    }
 
 type CallMessage =
     | Collateralize of pubkeysig:byte[]
@@ -29,23 +42,20 @@ let simplePackOutpoint : Outpoint -> byte list = fun p ->
 let packManyOutpoints : Outpoint list -> byte list = fun ps ->
     List.concat (List.map simplePackOutpoint ps)
 
-let tryParseInvokeMessage message =
-    let makeOutpoint = function
-    | (h::t) -> {txHash = List.toArray t; index = (uint32)h}
-    | _ -> failwith "Should never happen!"
-
-    let tryMapOutpoints blist = maybe {
-        let chunks = List.chunkBySize 33 blist
-        let! lastChunk = List.tryLast chunks
-        if List.length lastChunk <> 33 then return! None
-        else return List.map makeOutpoint chunks
-    }
-
+let tryParseInvokeMessage (message:byte[]) =
+    let makeOutpoint (outpointb:byte[]) = {txHash=outpointb.[1..]; index = (uint32)outpointb.[0]}
     maybe {
-        let! opcode = List.tryHead message
-        let! outpoints = tryMapOutpoints <| List.tail message
-        return opcode, outpoints
+        try
+            let opcode, rest = message.[0], message.[1..]
+            let outpointbytes = Array.chunkBySize 33 rest
+            if outpointbytes |> Array.last |> Array.length <> 33 then
+                failwith "last output has wrong length"
+            let outpoints = Array.map makeOutpoint outpointbytes
+            return opcode, outpoints
+        with _ ->
+            return! None
     }
+
 
 type DataFormat = uint64 * uint64 * uint64 // tokens issued, quantity of collateral, authenticated use counter
 let bytesToUInt64 : seq<byte> -> uint64 = fun bs ->
@@ -65,16 +75,19 @@ let tryParseData (data:seq<byte>) =
     }
 
 let returnToSender (opoint:Outpoint, oput:Output) = List.singleton opoint, List.singleton oput, Array.empty<byte>
-//let collateralize pubkey pubsig (spend:Spend) (data:byte[]) funds =
-    //maybe {
-    //    let msg = Array.append [|0uy|] data.[16..]
-    //    try
-    //        if not <| verify pubsig msg pubkey then
-    //            failwith "message not verified"
-    //        if spend.
-    //}
+
+let collateralize pubkey pubsig (spend:Spend) (data:byte[]) funds =
+    maybe {
+        let msg = Array.append [|0uy|] data.[16..]
+        try
+            if not <| verify pubsig msg pubkey then
+                failwith "message not verified"
+            if spend.asset <> [|0uy|] then failwith "bam"
+        with _ ->
+            return! None
+    } |> ignore
     //verify pubsig msg pubkey |> fun b -> if b then () else ()
-    //()
+    ()
 
 
 // Usage: Take three outpoints, only the first of which matters, and make a list.
@@ -87,7 +100,7 @@ let basicOption : ContractFunction = fun (message, contracthash, utxos) ->
         let! opcode, outpoints = tryParseInvokeMessage message
         let! commandLoc, dataLoc, fundsLoc =
             match outpoints with
-            | [a;b;c] -> Some (a, b, c)
+            | [|a;b;c|] -> Some (a, b, c)
             | _ -> None
         // try to get the outputs. Fail early if they aren't there!
         let! commandOutput = utxos.TryFind commandLoc
@@ -106,18 +119,20 @@ let basicOption : ContractFunction = fun (message, contracthash, utxos) ->
         return returnToSender (commandLoc, oput)
     } |> Option.defaultValue BadTx
 
-let callOption : ContractFunction = fun (message,contracthash,utxos) ->
-    let controlAsset :Hash = Array.create 32 1uy
-    let controlAssetReturnPK = Array.create 32 2uy
-    let numeraire : Hash = Array.zeroCreate<byte>(32)
-    let oracle : Hash = Array.create 32 3uy
-    let underlying = "GOOG"
+let callOptionFactory : CallOptionParameters -> ContractFunction = fun optParams (message,contracthash,utxos) ->
+    let controlAsset = optParams.controlAsset
+    let controlAssetReturn = optParams.controlAssetReturn
+    let numeraire = optParams.numeraire
+    let oracle = optParams.oracle
+    let underlying = optParams.underlying
+    let price = optParams.price
+    let minimumCollateralRatio = optParams.minimumCollateralRatio
     let command = maybe {
         // parse message, obtaining opcode and three outpoints
         let! opcode, outpoints = tryParseInvokeMessage message
         let! commandLoc, dataLoc, fundsLoc =
             match outpoints with
-            | [a;b;c] -> Some (a, b, c)
+            | [|a;b;c|] -> Some (a, b, c)
             | _ -> None
         // try to get the outputs. Fail early if they aren't there!
         let! commandOutput = utxos.TryFind commandLoc
