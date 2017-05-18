@@ -370,8 +370,15 @@ type OracleParameters =
 
 let oracle : OracleParameters -> ContractFunction = fun oParams (message,contracthash,utxos)  ->
     maybe {
-        if message.Length <> 97 then return! None
-         
-    }
-    [], [], [||]
+        if message.Length <> 129 then return! None
+        let m, s = message.[0..64], message.[65..128]
+        if not <| verify s m oParams.ownerPubKey then return! None
+        let opoint = {txHash=m.[1..32]; index = (uint32)m.[0]}
+        let! oput = utxos.TryFind opoint
+        let dataOutput = {
+            spend={asset=contracthash; amount=1UL};
+            lock=ContractLock (contracthash, m.[33..64])
+        }
+        return ([opoint;], [oput; dataOutput], [||])
+    } |> Option.defaultValue BadTx
 
