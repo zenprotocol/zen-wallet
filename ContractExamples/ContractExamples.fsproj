@@ -65,6 +65,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="MaybeWorkflow.fs" />
     <Compile Include="Authentication.fs" />
+    <Compile Include="Merkle.fs" />
     <Compile Include="Contracts.fs" />
     <None Include="packages.config" />
   </ItemGroup>
