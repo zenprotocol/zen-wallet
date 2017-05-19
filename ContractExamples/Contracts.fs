@@ -3,7 +3,8 @@
 open Consensus.Types
 open Authentication
 
-type ContractFunctionInput = byte[] * Hash * Map<Outpoint, Output>
+
+type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
 type TransactionSkeleton = Outpoint list * Output list * byte[]
 type ContractFunction = ContractFunctionInput -> TransactionSkeleton
 
@@ -264,9 +265,9 @@ let basicOption : ContractFunction = fun (message, contracthash, utxos) ->
             | [|a;b;c|] -> Some (a, b, c)
             | _ -> None
         // try to get the outputs. Fail early if they aren't there!
-        let! commandOutput = utxos.TryFind commandLoc
-        let! dataOutput = utxos.TryFind dataLoc
-        let! fundsOutput = utxos.TryFind fundsLoc
+        let! commandOutput = utxos commandLoc
+        let! dataOutput = utxos dataLoc
+        let! fundsOutput = utxos fundsLoc
         let! commandData, commandSpend =
             match commandOutput with
             | {
@@ -289,9 +290,9 @@ let callOptionFactory : CallOptionParameters -> ContractFunction = fun optParams
             | [|a;b;c|] -> Some (a, b, c)
             | _ -> None
         // try to get the outputs. Fail early if they aren't there!
-        let! commandOutput = utxos.TryFind commandLoc
-        let! dataOutput = utxos.TryFind dataLoc
-        let! fundsOutput = utxos.TryFind fundsLoc
+        let! commandOutput = utxos commandLoc
+        let! dataOutput = utxos dataLoc
+        let! fundsOutput = utxos fundsLoc
         // the contract's data output must own the control token
         let! optionsOwnData =
             match dataOutput with
@@ -374,7 +375,7 @@ let oracle : OracleParameters -> ContractFunction = fun oParams (message,contrac
         let m, s = message.[0..64], message.[65..128]
         if not <| verify s m oParams.ownerPubKey then return! None
         let opoint = {txHash=m.[1..32]; index = (uint32)m.[0]}
-        let! oput = utxos.TryFind opoint
+        let! oput = utxos opoint
         let dataOutput = {
             spend={asset=contracthash; amount=1UL};
             lock=ContractLock (contracthash, m.[33..64])
