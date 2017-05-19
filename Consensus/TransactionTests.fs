@@ -10,3 +10,9 @@ open TransactionValidation
 [<Test>]
 let ``Signed transaction validates``()=
     Assert.IsTrue(true)
+
+let kp = Sodium.PublicKeyBox.GenerateKeyPair()
+
+[<Test>]
+let ``Sodium works``()=
+    Assert.That(kp, Is.Not.Null)
