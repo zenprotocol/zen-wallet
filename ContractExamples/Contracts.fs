@@ -252,22 +252,11 @@ let close : CallOptionParameters ->
             let returnOutput = { lock=PKLock returnHash; spend=b.spend }
             returnToSender (x, returnOutput)
         
-// Usage: Take three outpoints, only the first of which matters, and make a list.
-// Then invoke packManyOutpoints to get the "message". Using this message as a
-// witness will create an autotransaction which consumes the first outpoint
-// and has one output, locked to whatever hash is in the first outpoint's data field.
 let basicOption : ContractFunction = fun (message, contracthash, utxos) ->
     maybe {
-        // parse message, obtaining opcode and three outpoints
         let! opcode, outpoints = tryParseInvokeMessage message
-        let! commandLoc, dataLoc, fundsLoc =
-            match outpoints with
-            | [|a;b;c|] -> Some (a, b, c)
-            | _ -> None
-        // try to get the outputs. Fail early if they aren't there!
+        let! commandLoc = Array.tryHead outpoints
         let! commandOutput = utxos commandLoc
-        let! dataOutput = utxos dataLoc
-        let! fundsOutput = utxos fundsLoc
         let! commandData, commandSpend =
             match commandOutput with
             | {
@@ -278,7 +267,9 @@ let basicOption : ContractFunction = fun (message, contracthash, utxos) ->
             | _ -> None
         // whatever data is present is used as the return address of the spend
         let oput = {lock=PKLock commandData; spend=commandSpend}
-        return returnToSender (commandLoc, oput)
+        // send a contract token as well
+        let cput = {lock=PKLock commandData; spend={asset=contracthash; amount=1000UL}}
+        return ([commandLoc;],[oput; cput;],[||])
     } |> Option.defaultValue BadTx
 
 let callOptionFactory : CallOptionParameters -> ContractFunction = fun optParams (message,contracthash,utxos) ->
