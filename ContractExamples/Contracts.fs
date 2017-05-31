@@ -255,7 +255,7 @@ let close : CallOptionParameters ->
 let basicOption : ContractFunction = fun (message, contracthash, utxos) ->
     maybe {
         let! opcode, outpoints = tryParseInvokeMessage message
-        let! commandLoc = Array.tryHead outpoints
+        let! commandLoc = Array.tryHead outpoints   
         let! commandOutput = utxos commandLoc
         let! commandData, commandSpend =
             match commandOutput with
