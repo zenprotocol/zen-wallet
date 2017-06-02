@@ -28,6 +28,8 @@ open MBrace.FsPickler.Combinators
 open Consensus.Types
 open Authentication
 
+let auth = sign
+
 
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
 type TransactionSkeleton = Outpoint list * Output list * byte[]
@@ -79,46 +81,128 @@ let uint64ToBytes : uint64 -> byte[] = fun v ->
         Array.rev sysbytes
     else
         sysbytes
-
-type CallOptionParameters =
-    {
-        numeraire: Hash;
-        controlAsset: Hash;
-        controlAssetReturn: Hash;
-        oracle: Hash;
-        underlying: string;
-        price: decimal;
-        minimumCollateralRatio: decimal;
-        ownerPubKey: byte[]
-    }
-   
-let BadTx : Expr<TransactionSkeleton> = <@ [], [], [||] @>
-
-type DataFormat = uint64 * uint64 * uint64 // tokens issued, quantity of collateral, authenticated use counter
-
-let tryParseData (data:byte[]) =
-    maybe {
-        try
-            if data.Length <> 24 then
-                failwith "data of wrong length"
-            let tokens, collateral, counter = data.[0..7], data.[8..15], data.[16..23]
-            return (bytesToUInt64 tokens, bytesToUInt64 collateral, bytesToUInt64 counter)
-        with _ ->
-            return! None
-    }
-let makeData (tokens, collateral, counter) = Array.concat <| List.map uint64ToBytes [tokens; collateral; counter]
-
-let returnToSender (opoint:Outpoint, oput:Output) = List.singleton opoint, List.singleton oput, Array.empty<byte>
+let BadTx : TransactionSkeleton = [], [], [||]
 
 //End of repeated code
 
 let quotePickler = Pickler.auto<Expr<Contracts.ContractFunction>>
+let pickler = Pickler.auto<Contracts.ContractFunction>
 
-let quotedToString qc = qc |> Json.pickle quotePickler
+let quotedToString qc = qc |> Json.pickle quotePickler |> (fun s -> "QQQ\n" + s)
 
-let compileContract (code:string) = code |> Json.unpickle quotePickler |> eval
+let compileQuotedContract (code:string) = code |> Json.unpickle quotePickler |> eval
 
-//let compile (code:string) =
-    //match code with
-    //| "QQQ\n" -> ()
-    //| _ -> ()
+let (|Prefix|_|) (p:string) (s:string) =
+    if s.StartsWith(p) then
+        Some(s.Substring(p.Length))
+    else
+        None
+
+let compilationTemplate = """
+module Zen.Main
+open Microsoft.FSharp.Quotations
+open MBrace.FsPickler.Combinators
+
+// Repeated code
+open Consensus.Types
+open ContractExamples.Authentication
+let pickler = Pickler.auto<ContractExamples.Contracts.ContractFunction>
+
+
+type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
+type TransactionSkeleton = Outpoint list * Output list * byte[]
+type ContractFunction = ContractFunctionInput -> TransactionSkeleton
+
+let maybe = ContractExamples.MaybeWorkflow.maybe
+type InvokeMessage = byte * Outpoint list
+
+let simplePackOutpoint : Outpoint -> byte[] = fun p ->
+    match p with
+    | {txHash=txHash;index=index} ->
+        if index > 255u then failwith "oops!"
+        else
+            let res = Array.zeroCreate 33
+            res.[0] <- (byte)index
+            Array.blit txHash 0 res 1 32
+            res
+
+let packManyOutpoints : Outpoint list -> byte[] = fun ps ->
+    ps |> List.map simplePackOutpoint |> Array.concat
+
+let makeOutpoint (outpointb:byte[]) = {txHash=outpointb.[1..]; index = (uint32)outpointb.[0]}
+
+let tryParseInvokeMessage (message:byte[]) =
+    maybe {
+        try
+            let opcode, rest = message.[0], message.[1..]
+            let outpointbytes = Array.chunkBySize 33 rest
+            if outpointbytes |> Array.last |> Array.length <> 33 then
+                failwith "last output has wrong length"
+            let outpoints = Array.map makeOutpoint outpointbytes
+            return opcode, outpoints
+        with _ ->
+            return! None
+    }
+
+let bytesToUInt64 : byte[] -> uint64 = fun bs ->
+    if bs.Length <> 8 then failwith "wrong length byte array for uint64"
+    let sysbytes =
+        if System.BitConverter.IsLittleEndian then
+            Array.rev bs
+        else
+            Array.copy bs
+    System.BitConverter.ToUInt64 (sysbytes, 0)
+
+let uint64ToBytes : uint64 -> byte[] = fun v ->
+    let sysbytes = System.BitConverter.GetBytes v
+    if System.BitConverter.IsLittleEndian then
+        Array.rev sysbytes
+    else
+        sysbytes
+
+   
+let BadTx : TransactionSkeleton = [], [], [||]
+
+
+let contract:ContractFunction = %%%SRC%%%
+let pickledContract = Binary.pickle pickler contract
+"""
+
+open Microsoft.FSharp.Compiler.SourceCodeServices
+open System.IO
+open System.Reflection
+let checker = FSharpChecker.Create ()
+
+let assemblies = System.Reflection.Assembly.GetExecutingAssembly().GetReferencedAssemblies()
+let assemblyNames = assemblies |>
+                        Array.filter (fun a -> a.Name <> "mscorlib" && a.Name <> "FSharp.Core") |>
+                        Array.map (fun a -> Assembly.ReflectionOnlyLoad(a.FullName).Location) |> 
+                        Array.toList
+                        |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
+
+let compile (code:string) = maybe {
+    match code with
+    | Prefix "QQQ\n" rest -> return rest |> compileQuotedContract |> Binary.pickle pickler
+    | _ ->
+        let source = compilationTemplate.Replace (@"%%%SRC%%%", code)
+        let fn = Path.GetTempFileName()
+        let fni = Path.ChangeExtension(fn, ".fs")
+        let fno = Path.ChangeExtension(fn, ".dll")
+        File.WriteAllText(fni, source)
+        let assemblyParameters = List.foldBack (fun x xs -> "-r" :: x :: xs) assemblyNames []
+        let compilationParameters = ["-o"; fno; "-a"; fni; "--lib:" + System.AppDomain.CurrentDomain.BaseDirectory] @ assemblyParameters |> List.toArray
+        let compilationResult =
+            checker.CompileToDynamicAssembly(compilationParameters, Some(stdout, stderr))
+        let errors, exitCode, dynamicAssembly = Async.RunSynchronously compilationResult
+        if errors.Length <> 0 then return! None
+        match dynamicAssembly with
+        | None -> return! None
+        | Some asm ->
+            let m = Array.head <| asm.GetModules()
+            let pickled = m.GetTypes().[0].GetProperty("pickledContract").GetValue(m) :?> byte[]
+            printfn "Length: %d" pickled.Length
+            return pickled
+    }
+
+let deserialize (bs:byte[]) = bs |> Binary.unpickle pickler
+
