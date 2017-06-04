@@ -15,8 +15,7 @@ open Consensus.Merkle
 // TODO: Move to constants module
 let MaxTransactionSize = pown 2 20
 let zhash = Array.zeroCreate<byte>(32)
-// TODO: Insert underscore separators when F# 4.1 is released
-let MaxKalapa = 21UL * 1000000UL * 100000000UL
+let MaxKalapa = 100_000_000UL * 100_000_000UL
 
 let toOpt f x =
     try
