@@ -30,13 +30,13 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="FSharp.Core" />
-    <Reference Include="MsgPack">
-      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
-    </Reference>
-    <Reference Include="DBreeze">
-      <HintPath>..\packages\DBreeze.1.82.0\lib\net45\DBreeze.dll</HintPath>
-    </Reference>
     <Reference Include="System.Threading.Tasks.Dataflow" />
+    <Reference Include="DBreeze">
+      <HintPath>..\packages\DBreeze.1.86.0\lib\net461\DBreeze.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -66,9 +66,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Store\" />
   </ItemGroup>
@@ -85,5 +82,8 @@
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

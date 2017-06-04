@@ -200,7 +200,6 @@ let compile (code:string) = maybe {
         | Some asm ->
             let m = Array.head <| asm.GetModules()
             let pickled = m.GetTypes().[0].GetProperty("pickledContract").GetValue(m) :?> byte[]
-            printfn "Length: %d" pickled.Length
             return pickled
     }
 
