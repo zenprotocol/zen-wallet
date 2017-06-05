@@ -1,0 +1,22 @@
+﻿@model ContractsDiscovery.Web.App_Data.ContractInteraction
+
+@using (@Html.BeginForm("Action", "ContractInteraction", FormMethod.Post))
+{
+    @Html.HiddenFor(m => m.Action)
+    @Html.HiddenFor(m => m.Address)
+
+    switch (Model.Action)
+    {
+        case "Buy":
+            <div class="form-group">
+                <label for="buy-amount">Amount:</label>
+			    <input type="number" class="form-control" id="buy-amount" name="buy-amount" placeholder="Amount">
+            </div>
+            <div class="form-group">
+                <label for="buy-send-address">Send to public key address:</label>
+                <input type="text" class="form-control" id="buy-send-address" name="buy-send-address" placeholder="Address">
+            </div>
+            break;
+    }
+    <button type="submit" class="btn btn-primary" name="doAction">Submit</button>
+}

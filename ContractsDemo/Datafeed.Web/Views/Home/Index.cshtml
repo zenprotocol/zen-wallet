@@ -1,0 +1,27 @@
+﻿@using Datafeed.Web.App_Data
+@model IEnumerable<Commitment>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <!--th>Count</th-->
+            <th>Data</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td><p class="text-left">@Html.ActionLink(@item.Time, "Index", "Commitment", new { @commitmentId = @item.Id }, null)</p></td>
+            <!--td><p class="text-left">@item.Count</p></td-->
+            <td><p class="text-left">@item.Data</p></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@using (Html.BeginForm("Generate", "Home", FormMethod.Post))
+{
+    <input type="submit" value="Generate" />
+}   

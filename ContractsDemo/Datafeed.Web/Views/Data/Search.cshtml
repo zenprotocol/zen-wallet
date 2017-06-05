@@ -1,0 +1,23 @@
+﻿@using Datafeed.Web.App_Data
+@model CommitmentData
+
+<form>
+	<div class="form-group">
+	    <label for="time">Time:</label>
+	    <input readonly type="text" class="form-control" id="time" name="time" value="@Model.Time">
+	</div>
+	<div class="form-group">
+	    <label for="ticker">Ticker:</label>
+	    <input readonly type="text" class="form-control" id="ticker" name="ticker" value="@Model.Ticker">
+	</div>
+	<div class="form-group">
+	    <label for="value">Value:</label>
+	    <input readonly type="text" class="form-control" id="value" name="value" value="@Model.Value">
+	</div>
+    <div class="form-group">
+        <label for="data">Data:</label>
+        <input readonly type="text" class="form-control" id="data" name="data" value="@Model.Data">
+    </div>
+</form>
+
+<button type="button" class="btn btn-primary" onclick="window.history.back();">Back</button>

@@ -1,0 +1,22 @@
+﻿@using ContractsDiscovery.Web.App_Data
+@model IEnumerable<ActiveContract>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Address</th>
+            <th>Type</th>
+			<th>Last Block</th>
+		</tr>
+	</thead>
+    <tbody>
+	@foreach (var item in Model)
+	{
+		<tr>
+			<td><p class="text-left">@Html.ActionLink(@item.Address, "Index", "ActiveContract", new { @id = @item.AddressUrl }, null)</p></td>
+            <td><p class="text-left">@item.Type</p></td>
+			<td><p class="text-left">@item.LastBlock</p></td>
+		</tr>
+    }
+	</tbody>
+</table>
