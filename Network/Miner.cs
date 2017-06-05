@@ -84,75 +84,71 @@ namespace Network
 			var random = new Random();
 			var time = DateTime.Now.ToUniversalTime();
 
-			while (!_Stopping)
+			var tip = BlockChain_.Tip;
+
+			if (tip == null || BlockChain_.memPool.TxPool.Count == 0)
 			{
-				var tip = BlockChain_.Tip;
+                return;
+			}
 
-				if (tip == null || BlockChain_.memPool.TxPool.Count == 0)
-				{
-					Thread.Sleep(10);
-					continue;
-				}
+			var txs = BlockChain_.memPool.TxPool.Select(t => TransactionValidation.unpoint(t.Value));
+			var txsList = ListModule.OfSeq(txs);
 
-				var txs = BlockChain_.memPool.TxPool.Select(t => TransactionValidation.unpoint(t.Value));
-				var txsList = ListModule.OfSeq(txs);
+			var txMerkleRoot = Merkle.merkleRoot(
+				new byte[] { },
+				Merkle.transactionHasher,
+				txsList
+			);
 
-				var txMerkleRoot = Merkle.merkleRoot(
-					new byte[] { },
-					Merkle.transactionHasher,
-					txsList
-				);
+			random.NextBytes(nonce);
 
-				random.NextBytes(nonce);
+			var blockHeader = new Types.BlockHeader(
+				version,
+				tip.Key,
+				tip.Value.header.blockNumber + 1,
+				txMerkleRoot,
+				new byte[] { },
+				new byte[] { },
+				ListModule.OfSeq<byte[]>(new List<byte[]>()),
+				DateTime.Now.ToUniversalTime().Ticks,
+				0,
+				nonce
+			);
 
-				var blockHeader = new Types.BlockHeader(
-					version,
-					tip.Key,
-					tip.Value.header.blockNumber + 1,
-					txMerkleRoot,
-					new byte[] { },
-					new byte[] { },
-					ListModule.OfSeq<byte[]>(new List<byte[]>()),
-					DateTime.Now.ToUniversalTime().Ticks,
-					0,
-					nonce
-				);
+			var bkHash = Merkle.blockHeaderHasher.Invoke(blockHeader);
 
-				var bkHash = Merkle.blockHeaderHasher.Invoke(blockHeader);
+			var c = 0;
 
-				var c = 0;
+			if (difficulty != 0)
+			{
+				var bits = new BitArray(bkHash);
+				var len = bits.Length - 1;
+				for (var i = 0; i < len; i++)
+					if (bits[len - i])
+						c++;
+					else
+						break;
+			}
 
-				if (difficulty != 0)
-				{
-					var bits = new BitArray(bkHash);
-					var len = bits.Length - 1;
-					for (var i = 0; i < len; i++)
-						if (bits[len - i])
-							c++;
-						else
-							break;
-				}
+			if (c >= difficulty)
+			{
+				var log = new MinerLogData();
+				var block = new Types.Block(blockHeader, txsList);
 
-				if (c >= difficulty)
-				{
-					var log = new MinerLogData();
-					var block = new Types.Block(blockHeader, txsList);
+				log.TimeToMine = (DateTime.Now.ToUniversalTime() - time).TotalSeconds;
+				log.BlockNumber = block.header.blockNumber;
+				log.Transactions = block.transactions.Count();
 
-					log.TimeToMine = (DateTime.Now.ToUniversalTime() - time).TotalSeconds;
-					log.BlockNumber = block.header.blockNumber;
-					log.Transactions = block.transactions.Count();
+				var accpeted = BlockChain_.HandleBlock(block);
+				log.Status = accpeted;
 
-					var accpeted = BlockChain_.HandleBlock(block);
-					log.Status = accpeted;
+				if (accpeted == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted && BlockBroadcastHub != null)
+					BlockBroadcastHub.BroadcastBlockAsync(block);
 
-					if (accpeted == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted && BlockBroadcastHub != null)
-						BlockBroadcastHub.BroadcastBlockAsync(block);
+				if (OnMinedBlock != null)
+					OnMinedBlock(log);
 
-					if (OnMinedBlock != null)
-						OnMinedBlock(log);
-
-					return;
-				}
+				return;
 			}
 		}
 	}
