@@ -74,6 +74,12 @@ namespace Infrastructure
 		}
 
 		public void Save() {
+            var dir = Path.GetDirectoryName(_FileName);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
 			File.WriteAllText(_FileName, JsonConvert.SerializeObject(_Value, Formatting.Indented));
 			                   
 			_Corrupt = false;
