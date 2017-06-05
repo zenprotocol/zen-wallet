@@ -26,17 +26,7 @@ namespace Wallet.core.Data
 				case AddressType.PK:
 					return Types.OutputLock.NewPKLock(Bytes);
 				case AddressType.Contract:
-					if (Data != null)
-					{
-						return Types.OutputLock.NewContractLock(Bytes, Data);
-					}
-					//case AddressType.ContractSacrifice:
-					else
-					{
-						return Types.OutputLock.NewContractSacrificeLock(
-							new Types.LockCore(0, ListModule.OfSeq(new byte[][] { Bytes }))
-						);
-					}
+					return Types.OutputLock.NewContractLock(Bytes, Data);
 			}
 
 			return null;
