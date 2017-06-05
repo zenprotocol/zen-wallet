@@ -295,7 +295,7 @@ namespace BlockChain
 						if (contractLock.IsHighVLock)
 							continue; // not current version
 
-						if (contractLock.Item.lockData.Length > 0 && contractLock.Item.lockData[0].Length > 0)
+						if (contractLock.Item.lockData.Length > 0 && contractLock.Item.lockData[0] != null && contractLock.Item.lockData[0].Length > 0)
 						{
 							var contractKey = contractLock.Item.lockData[0]; // output-lock-level indicated contract
 
@@ -345,7 +345,7 @@ namespace BlockChain
                     actionACSSnapshot(item.Key);
 					//TODO: handle result. should try extend if activation failed?
 					byte[] contractHash;
-					if (new ActiveContractSet().TryActivate(_DbTx, item.Key, item.Value, out contractHash))
+					if (new ActiveContractSet().TryActivate(_DbTx, item.Key, item.Value, out contractHash, _Bk.header.blockNumber))
 					{
 						ContractsTxsStore.Add(_DbTx.Transaction, contractHash, txHash);
 					}
@@ -461,7 +461,7 @@ namespace BlockChain
 						BlockChainTrace.Information("tx invalid - universal", ptx);
 						return false;
 					}
-					if (!_BlockChain.IsValidTransaction(_DbTx, ptx, contractHash))
+					if (!_BlockChain.IsValidTransaction(_DbTx, ptx, contractHash, true))
 					{
 						BlockChainTrace.Information("tx invalid - invalid contract", ptx);
 						return false;

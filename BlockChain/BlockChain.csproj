@@ -14,7 +14,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;TEST;CSHARP_CONTRACTS</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;TEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -42,6 +42,7 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -90,6 +91,14 @@
     <ProjectReference Include="..\Consensus\Consensus.fsproj">
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ContractsUtils\ContractsUtils.fsproj">
+      <Project>{D87C2E33-669C-4041-A59C-27A563B1A638}</Project>
+      <Name>ContractsUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
+      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
+      <Name>ContractExamples</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -63,7 +63,7 @@ namespace BlockChain
 			return (ulong)serializedContract.Length * KALAPAS_PER_BYTE;
 		}
 
-		public bool TryActivate(TransactionContext dbTx, byte[] contractCode, ulong kalapas, out byte[] contractHash)
+		public bool TryActivate(TransactionContext dbTx, byte[] contractCode, ulong kalapas, out byte[] contractHash, uint blockNumber)
 		{
 			contractHash = null;
 
@@ -90,7 +90,7 @@ namespace BlockChain
 				{
 					Hash = contractHash,
 					KalapasPerBlock = kalapasPerBlock,
-					LastBlock = Convert.ToUInt32(kalapas / kalapasPerBlock)
+					LastBlock = blockNumber + Convert.ToUInt32(kalapas / kalapasPerBlock)
 				});
 
 				return true;

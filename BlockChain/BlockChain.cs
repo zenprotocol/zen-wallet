@@ -470,7 +470,48 @@ namespace BlockChain
 			return true;
 		}
 
-		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash)
+        public Types.Output GetUTXO(Types.Outpoint outpoint, TransactionContext dbTx, bool IsInBlock)
+        {
+            try
+            {
+                if (!IsInBlock)
+                {
+                    foreach (var item in memPool.TxPool)
+                    {
+                        foreach (var pInput in item.Value.pInputs)
+                        {
+                            if (outpoint == pInput.Item1)
+                                return null;
+                        }
+                    }
+                }
+
+                var result = UTXOStore.Get(dbTx, outpoint);
+
+                if (result != null)
+                    return result.Value;
+
+                if (!IsInBlock && memPool.TxPool.Contains(outpoint.txHash))
+                {
+                    var tx = memPool.TxPool[outpoint.txHash];
+
+                    if (tx.outputs.Count() > outpoint.index)
+                    {
+                        return tx.outputs[(int)outpoint.index];
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                BlockChainTrace.Error("GetUTXO", e);
+            }
+
+            BlockChainTrace.Information("Could not find UTXO!");
+
+            return null;
+		}
+
+		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash, bool IsInBlock = false)
 		{
 			var isWitness = false;
 			var witnessIdx = -1;
@@ -501,36 +542,16 @@ namespace BlockChain
 
 			isWitness = witnessIdx == 0;
 
-
-			var utxos = new SortedDictionary<Types.Outpoint, Types.Output>();
-
-			foreach (var item in UTXOStore.All(dbTx, null, false).Where(t =>
-			{
-				var contractLock = t.Item2.@lock as Types.OutputLock.ContractLock;
-				return contractLock != null && contractLock.contractHash.SequenceEqual(contractHash);
-			})) {
-				utxos[item.Item1] = item.Item2;	
-			}
-
-			foreach (var item in memPool.TxPool)
-			{
-				uint i = 0;
-				foreach (var output in item.Value.outputs)
-				{
-					var contractLock = output.@lock as Types.OutputLock.ContractLock;
-					if (contractLock != null)
-					{
-						utxos[new Types.Outpoint(item.Key, i)] = output;
-					}
-					i++;
-				}
-			}	
+            Func<Types.Outpoint, FSharpOption<Types.Output>> getUTXO = t =>
+            {
+                return GetUTXO(t, dbTx, IsInBlock);
+            };
 
 			Types.Transaction tx;
 			var isExecutionSuccessful = ContractHelper.Execute(out tx, new ContractArgs()
-			{
-				ContractHash = contractHash,
-				Utxos = utxos,
+            {
+                ContractHash = contractHash,
+                tryFindUTXOFunc = getUTXO,
 				Message = message
 			}, isWitness);
 
@@ -642,7 +663,7 @@ namespace BlockChain
 			}
 		}
 
-		public string GetContractCode(byte[] contractHash)
+		public byte[] GetContractCode(byte[] contractHash)
 		{
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
@@ -656,13 +677,47 @@ namespace BlockChain
 					{
 						if (transaction.contract.Value.IsContract)
 						{
-							return Encoding.ASCII.GetString((transaction.contract.Value as Types.ExtendedContract.Contract).Item.code);
+							return (transaction.contract.Value as Types.ExtendedContract.Contract).Item.code;
 						}
 					}
 				}
 			}
 
-			return "";
+			return null;
+		}
+
+		public Tuple<ulong, ulong> GetTotalAssets(byte[] contractHash)
+		{
+			ulong confirmed = 0;
+			ulong unconfirmed = 0;
+
+			using (var dbTx = GetDBTransaction())
+			{
+				var x = UTXOStore.All(dbTx, null, false).ToList();
+
+				foreach (var item in UTXOStore.All(dbTx, null, false).Where(t =>
+				{
+					var contractLock = t.Item2.@lock as Types.OutputLock.ContractLock;
+					return contractLock != null; // && contractLock.contractHash.SequenceEqual(contractHash);
+				}))
+				{
+					confirmed += item.Item2.spend.amount;
+				}	
+			}
+
+			foreach (var item in memPool.TxPool)
+			{
+				foreach (var output in item.Value.outputs)
+				{
+					var contractLock = output.@lock as Types.OutputLock.ContractLock;
+					if (contractLock != null)
+					{
+						confirmed += output.spend.amount;
+					}
+				}
+			}
+
+			return new Tuple<ulong, ulong>(confirmed, unconfirmed);
 		}
 
 		// TODO: use linq, return enumerator, remove predicate
