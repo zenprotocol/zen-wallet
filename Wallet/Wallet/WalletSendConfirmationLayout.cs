@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Gdk;
 using Gtk;
+using System.Linq;
+using Consensus;
 
 namespace Wallet
 {
@@ -44,17 +46,33 @@ namespace Wallet
 			buttonBack.Clicked += Back;
 
 			buttonTransmit.Clicked += delegate {
-				WalletSendLayout.SendInfo.Result = App.Instance.Node.Transmit(WalletSendLayout.Tx);
+				WalletSendLayout.SendInfo.TxResult = App.Instance.Node.Transmit(WalletSendLayout.Tx);
+
+                if (WalletSendLayout.SendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted && WalletSendLayout.SendInfo.NeedAutoTx)
+				{
+					var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
+					var outpoint = new Consensus.Types.Outpoint(Consensus.Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
+					var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
+
+
+					byte[] witnessData = new byte[] { WalletSendLayout.SendInfo.WitnessData[0] }.Concat(outpointBytes).ToArray();
+					witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Skip(1)).ToArray();
+
+					Types.Transaction autoTx;
+					WalletSendLayout.SendInfo.AutoTxCreated = App.Instance.Wallet.SendContract(WalletSendLayout.SendInfo.Destination.Bytes, witnessData, out autoTx);
+					WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTx);
+				}
+
 				UpdateStatus();
 			};
 		}
 
-		public void Init()
+		public async void Init()
 		{
-			var assetType = App.Instance.Wallet.AssetsMetadata[WalletSendLayout.SendInfo.Asset];
+            var assetName = await App.Instance.Wallet.AssetsMetadata.Get(WalletSendLayout.SendInfo.Asset);
 
-			imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
-			labelSelectedAsset.Text = labelSelectedAsset1.Text = assetType.Caption;
+		//	imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
+			labelSelectedAsset.Text = labelSelectedAsset1.Text = assetName;
 
 			labelAmountValue.Text = WalletSendLayout.SendInfo.Amount.ToString();
 			entryDestination.Text = WalletSendLayout.SendInfo.Destination.ToString();
@@ -69,32 +87,62 @@ namespace Wallet
 
 		void UpdateStatus()
 		{
-			if (WalletSendLayout.SendInfo.Result == null)
+            var error = false;
+            var messasge = string.Empty;
+            var sendInfo = WalletSendLayout.SendInfo;
+                
+			if (sendInfo.Signed)
 			{
-				if (WalletSendLayout.SendInfo.Signed)
-				{
-					labelStatus.Text = "Transaction signed successfully.";
-					labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Success.Gdk);
-				}
-				else
-				{
-					labelStatus.Text = "Transaction signing error.";
-					labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
-				}
+				messasge += "Transaction signed successfully. ";
 			}
 			else
 			{
-				if (WalletSendLayout.SendInfo.Result == BlockChain.BlockChain.TxResultEnum.Accepted)
-				{
-					labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Success.Gdk);
-					labelStatus.Text = "Transaction broadcasted successfully.";
-				}
-				else
-				{
-					labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
-					labelStatus.Text = "Transaction bbvoardcast failed, reason: " + WalletSendLayout.SendInfo.Result;
-				}
-			}
+				messasge += "Transaction signing error. ";
+                error = true;
+            }
+
+            if (sendInfo.NeedAutoTx)
+            {
+                if (sendInfo.AutoTxCreated)
+                {
+                    messasge += "AutoTX created successfully. ";
+                }
+                else
+                {
+                    messasge += "Error creating AutoTX. ";
+                    error = true;
+                }
+            }
+
+            if (sendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
+            {
+                messasge += "Transaction broadcasted successfully.";
+            }
+            else
+            {
+                messasge += "Transaction broadcasted failed, reason: " + WalletSendLayout.SendInfo.TxResult;
+                error = true;
+            }
+
+            if (sendInfo.NeedAutoTx)
+            {
+                if (sendInfo.AutoTxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
+                {
+                    messasge += "AutoTX broadcasted successfully.";
+                }
+                else
+                {
+                    messasge += "AutoTX broadcasted failed, reason: " + WalletSendLayout.SendInfo.AutoTxResult;
+                    error = true;
+                }
+            }
+
+            labelStatus.Text = messasge;
+
+			if (error)
+				labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
+			else
+                labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Success.Gdk);
 		}
 	}
 }

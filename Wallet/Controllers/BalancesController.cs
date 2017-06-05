@@ -64,7 +64,7 @@ namespace Wallet
 					_LogView.AddLogEntryItem(new LogEntryItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-					App.Instance.Wallet.AssetsMetadata[b.Key],
+					b.Key,
 					u.Time,
 					"TODO",
 					BitConverter.ToString(u.TxHash),

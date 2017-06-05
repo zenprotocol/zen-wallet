@@ -62,11 +62,19 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cairo" />
-    <Reference Include="FSharp.Core" />
     <Reference Include="QRCoder">
       <HintPath>..\packages\QRCoder.1.2.6\lib\net40\QRCoder.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Sodium">
+      <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -202,6 +210,8 @@
     <Compile Include="gtk-gui\Wallet.WalletSendConfirmationLayout.cs" />
     <Compile Include="ImagesCache.cs" />
     <Compile Include="Domain\Zen.cs" />
+    <Compile Include="Widgets\SignMessageDialog.cs" />
+    <Compile Include="gtk-gui\Wallet.SignMessageDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -249,4 +259,5 @@
       <Name>ContractGenerator</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.1.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.1.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
 </Project>

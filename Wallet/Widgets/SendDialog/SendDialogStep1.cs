@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Consensus;
 using Wallet.core.Data;
+using System.Linq;
 
 namespace Wallet
 {
@@ -21,22 +22,22 @@ namespace Wallet
 			var i = 0;
 			int selectedIdx = 0;
 			var keys = new Dictionary<string, byte[]>();
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata)
-			{
-				keys[_asset.Value.Caption] = _asset.Key;
+   //         foreach (var _asset in App.Instance.Wallet.AssetsMetadata.Keys)
+			//{
+			//	keys[_asset.Item2] = _asset.Item1;
 
-				if (WalletController.Instance.AssetType.Caption == _asset.Value.Caption)
-				{
-					selectedIdx = i;
-					asset = _asset.Key;
-				}
-				else
-				{
-					i++;
-				}
+   //             if (_asset.Item1.SequenceEqual(WalletController.Instance.Asset))
+			//	{
+			//		selectedIdx = i;
+			//		asset = _asset.Item1;
+			//	}
+			//	else
+			//	{
+			//		i++;
+			//	}
 
-				dialogcombofieldAsset.ComboBox.AppendText(_asset.Value.Caption);
-			}
+			//	dialogcombofieldAsset.ComboBox.AppendText(_asset.Item2);
+			//}
 
 			Gtk.TreeIter iter;
 			dialogcombofieldAsset.ComboBox.Model.IterNthChild(out iter, selectedIdx);
@@ -95,7 +96,7 @@ namespace Wallet
 				}
 				else
 				{
-					labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[asset];
+                    labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.Get(asset).Result;
 				}
 			};
 

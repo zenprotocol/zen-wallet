@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Gtk;
 using Wallet.core;
 
@@ -9,7 +10,7 @@ namespace Wallet
 	public partial class Portfolio : WidgetBase, IPortfolioVIew
 	{
 		ListStore listStore = new ListStore(
-			typeof(byte[]),
+			typeof(string),
 			typeof(long)
 		);
 
@@ -33,26 +34,38 @@ namespace Wallet
 	
 			ConfigureList();
 
-			var x = new byte[Consensus.Tests.zhash.Length];
-			Consensus.Tests.zhash.CopyTo(x, 0);
-			x[x.Length - 1] = 0x01;
-			listStore.AppendValues(x, 10);
+			///////////////////////////////
 
-			var y = new byte[Consensus.Tests.zhash.Length];
-			Consensus.Tests.zhash.CopyTo(y, 0);
-			y[x.Length - 1] = 0x02;
-			listStore.AppendValues(y, 20);
+			//listStore.RowInserted += async (o, args) =>
+			//{
+   //             var store = (ListStore) o;
+   //             var asset = (byte[])store.GetValue(args.Iter, 0);
+   //             if (asset != null)
+   //             {
+   //                 var assetName = await App.Instance.Wallet.AssetsMetadata.Get(asset);
+   //                 listStore.SetValue(args.Iter, 2, assetName);
+   //             }
+			//};
 
-			var z = new byte[Consensus.Tests.zhash.Length];
-			Consensus.Tests.zhash.CopyTo(z, 0);
-			z[x.Length - 1] = 0x03;
-			listStore.AppendValues(z, 30);
+			//var x = new byte[Consensus.Tests.zhash.Length];
+			//Consensus.Tests.zhash.CopyTo(x, 0);
+			//x[x.Length - 1] = 0x01;
+			//listStore.AppendValues(x, 10);
 
-			var t = new byte[Consensus.Tests.zhash.Length];
-			Consensus.Tests.zhash.CopyTo(t, 0);
-			t[x.Length - 1] = 0x04;
-			listStore.AppendValues(t, 40);
+			//var y = new byte[Consensus.Tests.zhash.Length];
+			//Consensus.Tests.zhash.CopyTo(y, 0);
+			//y[x.Length - 1] = 0x02;
+			//listStore.AppendValues(y, 20);
 
+			//var z = new byte[Consensus.Tests.zhash.Length];
+			//Consensus.Tests.zhash.CopyTo(z, 0);
+			//z[x.Length - 1] = 0x03;
+			//listStore.AppendValues(z, 30);
+
+			//var t = new byte[Consensus.Tests.zhash.Length];
+			//Consensus.Tests.zhash.CopyTo(t, 0);
+			//t[x.Length - 1] = 0x04;
+			//listStore.AppendValues(t, 40);
 		}
 
 		private void ConfigureList()
@@ -80,11 +93,11 @@ namespace Wallet
 		{
 		}
 
-		private void RenderCell(Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)
+		void RenderCell(Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)
 		{
 			var rowRenderer = cellRenderer as RowRenderer;
 
-			rowRenderer.Asset = (byte[])model.GetValue(iter, 0);
+            rowRenderer.Asset = (string)model.GetValue(iter, 0);
 			rowRenderer.Value = new Zen((long)model.GetValue(iter, 1)).Value;
 		}
 
@@ -102,17 +115,21 @@ namespace Wallet
 
 		public void SetDeltas(AssetDeltas assetDeltas)
 		{
-			foreach (var item in assetDeltas)
-			{
-				if (item.Key.SequenceEqual(Consensus.Tests.zhash))
-				{
-					labelZen.Text = new Zen(item.Value).Value + " " + App.Instance.Wallet.AssetsMetadata[item.Key];
-				}
-				else
-				{
-					listStore.AppendValues(item.Key, new Zen(item.Value).Value);
-				}
-			}
+            foreach (var item in assetDeltas)
+            {
+                if (item.Key.SequenceEqual(Consensus.Tests.zhash))
+                {
+                    labelZen.Text = new Zen(item.Value).Value + " " + App.Instance.Wallet.AssetsMetadata.Get(item.Key).Result;
+                }
+                else
+                {
+                    var iter = listStore.AppendValues(Convert.ToBase64String(item.Key), item.Value);
+                    App.Instance.Wallet.AssetsMetadata.Get(item.Key).ContinueWith(t =>
+                    {
+                        listStore.SetValue(iter, 0, t.Result);
+                    });
+                }
+            }
 		}
 	}
 }

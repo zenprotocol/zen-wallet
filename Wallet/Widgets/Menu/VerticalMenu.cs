@@ -19,17 +19,17 @@ namespace Wallet
 		{
 			Build ();
 
-			AssetsMetadata.AssetChanged += a =>
-			{
-				Application.Invoke(delegate
-				{
-					AddButton(a, AssetsMetadata[a]);
-				});
-			};
+			//AssetsMetadata.AssetChanged += a =>
+			//{
+			//	Application.Invoke(delegate
+			//	{
+			//		AddButton(a, AssetsMetadata[a]);
+			//	});
+			//};
 
-			foreach (var item in AssetsMetadata) {
-				AddButton(item.Key, item.Value);
-			}
+			//foreach (var item in AssetsMetadata) {
+			//	AddButton(item.Key, item.Value);
+			//}
 
 			WidthRequest = 170;
 		}

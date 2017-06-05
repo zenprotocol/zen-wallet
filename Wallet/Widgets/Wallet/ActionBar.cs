@@ -31,7 +31,7 @@ namespace Wallet
 			}, labelAmount, labelAmountConverted);
 
 			ButtonPressEvent (eventboxSend, () => {
-				new SendDialog(WalletController.Instance.AssetType).ShowDialog();
+				new SendDialog(WalletController.Instance.Asset).ShowDialog();
 			});
 
 			ButtonPressEvent(eventboxReceive, () =>

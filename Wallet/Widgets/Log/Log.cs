@@ -40,9 +40,9 @@ namespace Wallet
 			initList (listSummaryHeader, FactorStore (new LogHeaderRow (2, Strings.TotalSent, Strings.TotalReceived, Strings.TotalBalance)));
 			initList (listTransactions, logEntryStore);
 
-			//ExposeEvent += (object o, ExposeEventArgs args) => {
-			//	listSummaryHeader.Hide ();
-			//};
+            //ExposeEvent += (object o, ExposeEventArgs args) => {
+            //	listSummaryHeader.Hide ();
+            //};
 
 			foreach (Widget w in new Widget[] { eventbox1, eventbox2, eventbox3, eventbox4, eventbox5, eventbox6, eventbox7 }) {
 				w.ModifyBg (Gtk.StateType.Normal, Colors.Base.Gdk);

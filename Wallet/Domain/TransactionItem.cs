@@ -7,7 +7,7 @@ namespace Wallet.Domain
 	public class TransactionItem
 	{
 		public long Amount { get; set; }
-		public AssetType Asset { get; set; }
+		public byte[] Asset { get; set; }
 		public DirectionEnum Direction { get; set; }
 		public DateTime Date { get; set; }
 		public String To { get; set; }
@@ -16,7 +16,7 @@ namespace Wallet.Domain
 
 		public TxStateEnum TxState { get; set; }
 
-		public TransactionItem(long Amount, DirectionEnum Direction, AssetType Asset, DateTime Date, String To, String Id, Decimal Fee, TxStateEnum txState) {
+        public TransactionItem(long Amount, DirectionEnum Direction, byte[] Asset, DateTime Date, String To, String Id, Decimal Fee, TxStateEnum txState) {
 			this.Amount = Amount;
 			this.Direction = Direction;
 			this.Asset = Asset;

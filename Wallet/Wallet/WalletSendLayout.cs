@@ -13,7 +13,12 @@ namespace Wallet
 	public class SendInfo
 	{
 		public bool Signed { get; set; }
-		public BlockChain.BlockChain.TxResultEnum? Result { get; set; }
+		public bool AutoTxCreated { get; set; }
+        public bool NeedAutoTx = false;
+        public byte[] WitnessData { get; set; }
+
+		public BlockChain.BlockChain.TxResultEnum? TxResult { get; set; }
+		public BlockChain.BlockChain.TxResultEnum? AutoTxResult { get; set; }
 
 		public byte[] Asset
 		{
@@ -26,6 +31,11 @@ namespace Wallet
 		}
 	
 		public Address Destination
+		{
+			get; set;
+		}
+
+		public string Data
 		{
 			get; set;
 		}
@@ -43,10 +53,13 @@ namespace Wallet
 			}
 		}
 
-		public SendInfo()
+		public void Reset()
 		{
 			Signed = false;
-			Result = null;
+            NeedAutoTx = false;
+			TxResult = null;
+            AutoTxResult = null;
+            WitnessData = null;
 		}
 	}
 
@@ -86,12 +99,38 @@ namespace Wallet
 				}
 			};
 
+			buttonPasteData.Clicked += delegate
+			{
+				var clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
+				var target = Gdk.Atom.Intern("text/plain", true);
+				var selection = clipboard.WaitForContents(target);
+
+				if (selection != null)
+				{
+					entryData.Text = System.Text.Encoding.UTF8.GetString(selection.Data, 0, selection.Data.Length);
+				}
+			};
+
+			vboxData.Visible = false; // just hide the f@cking thing already
+			vboxData.Hide(); // just hide the f@cking thing already
+
 			entryDestination.Changed += (sender, e) =>
 			{
 				try
 				{
-					SendInfo.Destination = new Address(((Entry)sender).Text);
-					labelDestinationError.Text = "";
+					var address = new Address(((Entry)sender).Text);
+                    SendInfo.Destination = address;
+                    labelDestinationError.Text = "";
+
+                    switch (address.AddressType)
+                    {
+                        case AddressType.Contract:
+                            vboxData.Visible = true;
+                            break;
+                        case AddressType.PK:
+                            vboxData.Visible = false;
+							break;
+                    }
 				}
 				catch
 				{
@@ -101,6 +140,13 @@ namespace Wallet
 
 				buttonSignAndReview.Sensitive = SendInfo.Valid;
 			};
+
+            entryData.Changed += (sender, e) =>
+            {
+                var text = ((Entry)sender).Text;
+
+                SendInfo.Data = text;
+            };
 
 			entryAmount.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
 			entryAmount.ModifyFont(Constants.Fonts.ActionBarSmall);
@@ -115,14 +161,15 @@ namespace Wallet
 				}
 				else
 				{
-					if (!Zen.IsValidText(text))
+                    Zen zen;
+					if (!Zen.IsValidText(text, out zen))
 					{
 						SendInfo.Amount = 0;
 						labelAmountError.Text = "Invalid amount";
 					}
 					else
 					{
-						SendInfo.Amount = new Zen(text).Kalapas;
+						SendInfo.Amount = zen.Kalapas;
 						CheckAssetAmount();
 					}
 				}
@@ -139,13 +186,13 @@ namespace Wallet
 			Apply((EventBox eventbox) =>
 			{
 				eventbox.ModifyBg(StateType.Normal, Constants.Colors.Textbox.Gdk);
-			}, eventboxDestination, eventboxAsset, eventboxAmount);
+            }, eventboxDestination, eventboxData, eventboxAsset, eventboxAmount);
 
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarIntermediate);
-			}, labelDestination, labelAsset, labelAmount, labelBalanceValue);
+			}, labelDestination, labelData, labelAsset, labelAmount, labelBalanceValue);
 
 			Apply((Label label) =>
 			{
@@ -157,20 +204,24 @@ namespace Wallet
 			{
 				entry.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
 				entry.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, entryDestination);	
+            }, entryDestination, entryData);	
 
 			buttonBack.Clicked += Back;
 
+			var comboboxStore = new ListStore(typeof(byte[]), typeof(string));
+
 			var i = 0;
 			int selectedIdx = 0;
-			var keys = new Dictionary<string, byte[]>();
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata)
-			{
-				keys[_asset.Value.Caption] = _asset.Key;
 
-				if (WalletController.Instance.AssetType.Caption == _asset.Value.Caption)
+			comboboxAsset.Model = comboboxStore;
+			var textRenderer = new CellRendererText();
+			comboboxAsset.PackStart(textRenderer, false);
+			comboboxAsset.AddAttribute(textRenderer, "text", 1);
+
+			foreach (var _asset in App.Instance.Wallet.AssetsMetadata.Keys)
+			{
+				if (_asset.SequenceEqual(WalletController.Instance.Asset))
 				{
-					SendInfo.Asset = _asset.Key;
 					selectedIdx = i;
 				}
 				else
@@ -178,26 +229,32 @@ namespace Wallet
 					i++;
 				}
 
-				comboboxAsset.AppendText(_asset.Value.Caption);
+				var _iter = comboboxStore.AppendValues(_asset, Convert.ToBase64String(_asset));
+				App.Instance.Wallet.AssetsMetadata.Get(_asset).ContinueWith(t =>
+				{
+					Gtk.Application.Invoke(delegate
+					{
+						comboboxStore.SetValue(_iter, 1, t.Result);
+					});
+				});
 			}
-
 			TreeIter iter;
 			comboboxAsset.Model.IterNthChild(out iter, selectedIdx);
 			comboboxAsset.SetActiveIter(iter);
 
-			comboboxAsset.Changed += (sender, e) =>
+			comboboxAsset.Changed += async (sender, e) =>
 			{
 				var comboBox = sender as Gtk.ComboBox;
 
 				comboBox.GetActiveIter(out iter);
 				var value = new GLib.Value();
 				comboBox.Model.GetValue(iter, 0, ref value);
+                byte[] _asset = value.Val as byte[];
+				SendInfo.Asset = _asset; 
 
-				SendInfo.Asset = keys[value.Val as string]; 
-				var assetType = App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
-
-				labelSelectedAsset.Text = labelSelectedAsset1.Text = assetType.Caption;
-				imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
+                var assetName = await App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset);
+				labelSelectedAsset.Text = labelSelectedAsset1.Text = assetName;
+			//	imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
 
 				UpdateBalance();
 			};
@@ -205,24 +262,43 @@ namespace Wallet
 			UpdateBalance();
 
 			buttonSignAndReview.Clicked += delegate {
-				SendInfo.Result = null;
+                SendInfo.Reset();
 
-				SendInfo.Signed = App.Instance.Wallet.Sign(
-					SendInfo.Destination,
-					SendInfo.Asset,
-					SendInfo.Amount,
-					out _Tx
-				);
+                switch (SendInfo.Destination.AddressType)
+                {
+                    case AddressType.Contract:
+						var parts = SendInfo.Data.Split(null);
 
-				if (SendInfo.Signed)
+                        SendInfo.Destination.Data = Convert.FromBase64String(parts[0]);
+
+                        switch (parts.Length) {
+                            case 1:
+								break;
+                            case 2:
+                                SendInfo.WitnessData = Convert.FromBase64String(parts[1]);
+                                SendInfo.NeedAutoTx = true;
+                                break;
+                        }
+                        break;
+                    case AddressType.PK:
+                        break;
+                }
+
+                SendInfo.Signed = App.Instance.Wallet.Sign(
+                    SendInfo.Destination,
+                    SendInfo.Asset,
+                    SendInfo.Amount,
+                    out _Tx
+                );
+
+				if (!SendInfo.Signed)
 				{
-					FindParent<Notebook>().Page = 3;
-					FindParent<WalletLayout>().FindChild<WalletSendConfirmationLayout>().Init();
+                    labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset).Result;
+					return;
 				}
-				else
-				{
-					labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
-				}
+
+                FindParent<Notebook>().Page = 3;
+                FindParent<WalletLayout>().FindChild<WalletSendConfirmationLayout>().Init();
 			};
 
 			PortfolioController.Instance.AddVIew(this);
@@ -246,6 +322,11 @@ namespace Wallet
 
 		void UpdateBalance()
 		{
+            if (SendInfo.Asset == null)
+            {
+                SendInfo.Asset = Consensus.Tests.zhash;
+            }
+
 			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];
 
 			string value;
@@ -259,7 +340,7 @@ namespace Wallet
 				value = String.Format(Formats.Money, _AssetBalance);
 			}
 
-			labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
+            labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset).Result}";
 			CheckAssetAmount();
 		}
 
@@ -269,7 +350,7 @@ namespace Wallet
 
 			if (!SendInfo.HasEnough)
 			{
-				labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+                labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset).Result;
 			}
 			else
 			{

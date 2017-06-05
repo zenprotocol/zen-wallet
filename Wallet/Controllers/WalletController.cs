@@ -63,18 +63,17 @@ namespace Wallet
 			{
 				_Asset = value;
 
-				AssetsMetadata assetsMetadata = App.Instance.Wallet.AssetsMetadata;
-				AssetType = assetsMetadata[value];
-
 				if (_ITransactionsView != null)
 				{
 					_ITransactionsView.Clear();
 					Apply();
 				}
 			}
+            get 
+            {
+                return _Asset;
+            }
 		}
-
-		public AssetType AssetType { get; private set; }
 
 		void Apply()
 		{
@@ -91,7 +90,7 @@ namespace Wallet
 					_ITransactionsView.AddTransactionItem(new TransactionItem(
 						Math.Abs(b.Value),
 						b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-						App.Instance.Wallet.AssetsMetadata[b.Key],
+                        _Asset,
 						u.Time,
 						Guid.NewGuid().ToString("N"),
 						BitConverter.ToString(u.TxHash),

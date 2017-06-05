@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using BlockChain;
 using Consensus;
 using Gtk;
-using Microsoft.FSharp.Collections;
 
 namespace Wallet
 {
@@ -14,7 +13,7 @@ namespace Wallet
 		byte[] _Hash;
 		byte[] _Code;
 		ulong _KalapasPerBlock;
-		ulong _ZenAmount;
+		ulong _TotalKalapas;
 
 		public ContractActivation()
 		{
@@ -30,7 +29,7 @@ namespace Wallet
 
 			buttonApply.Clicked += delegate {
 				Types.Transaction tx;
-				if (!App.Instance.Wallet.SacrificeToContract(_Hash, _Code, _ZenAmount, out tx))
+                if (!App.Instance.Wallet.SacrificeToContract(_Hash, _Code, _TotalKalapas, out tx))
 				{
 					hboxStatus.Visible = true;
 					labelStatus.Text = "Not enougn Zen";
@@ -57,12 +56,12 @@ namespace Wallet
 
 		void UpdateZenAmount(SpinButton button)
 		{
-			_ZenAmount = (ulong)(button.Value * _KalapasPerBlock / Math.Pow(10, 3)); //TODO: kalapas per zen?
+            _TotalKalapas = (ulong)button.Value * _KalapasPerBlock;
 
-			if (App.Instance.Wallet.CanSpend(Tests.zhash, _ZenAmount))
+			if (App.Instance.Wallet.CanSpend(Tests.zhash, _TotalKalapas))
 			{
 				buttonApply.Sensitive = true;
-				labelKalapas.Text = _ZenAmount + " Zen";
+                labelKalapas.Text = new Zen(_TotalKalapas) + " Zen";
 			}
 			else
 			{
