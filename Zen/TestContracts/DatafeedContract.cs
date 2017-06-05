@@ -1,55 +1,40 @@
-﻿// { "message": "This is a demo call-option", "publicKey": "xxxx", "type": "call-option", "expiry": 1, "strike": 1.34, "oracle": "xxx", "underlying": "GOOG" }
+﻿// { "message": "This is a demo oracle datafeed (oracle) contract", "type": "oracle-datafeed" }
 
 using System;
 using System.Collections.Generic;
 using static Consensus.Types;
-using Microsoft.FSharp.Core;
 using System.Linq;
+using Microsoft.FSharp.Core;
+using Consensus;
 
-public class Test
+public class DatafeedContract
 {
 	public static Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, byte[]> main(
 		List<byte> message,
 		byte[] contractHash,
-		SortedDictionary<Outpoint, Output> utxos
+        Func<Outpoint, FSharpOption<Types.Output>> tryFindUTXO
 	)
 	{
-		Console.WriteLine($"Hello, world! i can see { utxos.Keys.Count } utxo(s)");
-		var messageStr = BitConverter.ToString(message.ToArray());
-		Console.WriteLine("my message is: " + messageStr);
-		foreach (var item in utxos)
-		{
-			Console.WriteLine($" data: { System.Text.Encoding.UTF8.GetString(((OutputLock.ContractLock) item.Value.@lock).data) } with amount of { item.Value.spend.amount }");
-		}
-
 		var outputs = new List<Output>();
 		var outpoints = new List<Outpoint>();
 
-	//	var output = utxos[new Outpoint(message, 0)];
+		var data = message.Take(32).ToArray();
+		var index = message.Skip(32).Take(1).ToArray()[0];
+		var txHash = message.Skip(33).Take(32).ToArray();
 
-	//	outpoints.Add(new Outpoint(message, 0));
-	//	outputs.Add(output);
-		//if (messageStr == "issue_token")
-		//{
-			foreach (var item in utxos)
-			{
-				if (item.Key.txHash.SequenceEqual(message)) {
-					Console.WriteLine("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-					var data = ((OutputLock.ContractLock)item.Value.@lock).data;
-					outputs.Add(new Output(OutputLock.NewPKLock(contractHash), new Spend(item.Value.spend.asset, item.Value.spend.amount)));
-					outputs.Add(new Output(OutputLock.NewPKLock(data), new Spend(contractHash, item.Value.spend.amount)));
-					outpoints.Add(item.Key);
-				}
-			}
+		var outpointToSpend = new Outpoint(txHash, (uint)index);
+        var utxo = tryFindUTXO(outpointToSpend);
 
+        if (FSharpOption<Types.Output>.get_IsSome(utxo))
+        {
+            outpoints.Add(outpointToSpend);
+            outputs.Add(utxo.Value);
 
-
-				//var data = System.Text.Encoding.UTF8.GetString(((OutputLock.ContractLock)item.Value.@lock).data);
- 			//	var data = ((OutputLock.ContractLock)item.Value.@lock).data;
-				//outputs.Add(new Output(OutputLock.NewPKLock(data), new Spend(item.Value.spend.asset, item.Value.spend.amount)));
-				//outpoints.Add(item.Key);
-		//	}
-		//}
+            outputs.Add(
+                new Output(OutputLock.NewContractLock(contractHash, data),
+                   new Spend(contractHash, 0))
+            );
+        }
 
 		return new Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, byte[]>(
             outpoints, outputs, new byte[] {}

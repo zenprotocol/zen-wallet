@@ -11,7 +11,7 @@ public class TestContract
 	public static Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, byte[]> main(
 		List<byte> message,
 		byte[] contractHash,
-		Func<Outpoint, Output> tryFindUTXO
+		Func<Outpoint, FSharpOption<Types.Output>> tryFindUTXO
 	)
 	{
 		Console.WriteLine($"Hello, world!");

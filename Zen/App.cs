@@ -16,6 +16,7 @@ using System.Configuration;
 using Newtonsoft.Json;
 using System.Text;
 using System.Linq;
+using BlockChain;
 
 namespace Zen
 {
@@ -178,12 +179,35 @@ namespace Zen
 			return Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]).Address;
 		}
 
-		public bool Spend(ulong amount, Address address = null, byte[] data = null)
+		public bool Spend(Address address, ulong amount, byte[] data = null, byte[] asset = null)
 		{
-			address.Data = data;// Encoding.ASCII.GetBytes(data);
-			Types.Transaction tx;
+			address.Data = data;
+            Consensus.Types.Transaction tx;
 
-			if (WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx))
+            if (asset == null)
+            {
+                asset = Consensus.Tests.zhash;
+            }
+
+			if (WalletManager.Sign(address, asset, amount, out tx))
+			{
+				return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+			}
+
+			return false;
+		}
+
+        //TODO: refactor
+        public bool Spend(Address address, ulong amount, byte[] data, byte[] asset, out Types.Transaction tx)
+		{
+			address.Data = data;
+
+			if (asset == null)
+			{
+				asset = Consensus.Tests.zhash;
+			}
+
+			if (WalletManager.Sign(address, asset, amount, out tx))
 			{
 				return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
@@ -199,6 +223,12 @@ namespace Zen
 		internal bool Transmit(Types.Transaction tx)
 		{
 			return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+		}
+
+		internal bool Transmit(Types.Transaction tx, out BlockChain.BlockChain.TxResultEnum result)
+		{
+			result = NodeManager.Transmit(tx);
+			return result == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal long AssetMount()
@@ -331,11 +361,11 @@ namespace Zen
 			WalletManager.Import(Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]));
 		}
 
-		public HashSet GetActiveContacts()
+		public List<ACSItem> GetActiveContacts()
 		{
 			using (var dbTx = BlockChain_.GetDBTransaction())
 			{
-				return new BlockChain.ActiveContractSet().Keys(dbTx);
+				return new ActiveContractSet().All(dbTx).Select(t => t.Item2).ToList();
 			}
 		}
 
@@ -356,10 +386,10 @@ namespace Zen
 
 		public void Dump()
 		{
-			var blockChainDumper = new BlockChainDumper(BlockChain_);
+            var blockChainDumper = new BlockChainDumper(BlockChain_, WalletManager);
 			try
 			{
-				blockChainDumper.Populate(WalletManager, BlockChain_);
+				blockChainDumper.Populate();
 				var jsonString = blockChainDumper.Generate();
 
 				File.WriteAllText("nodes.js", "var graph = " + jsonString);
@@ -375,9 +405,30 @@ namespace Zen
 			}
 		}
 
-		public string GetContractCode(byte[] contractHash)
+        public void PurgeAssetsCache()
+        {
+            var assetsDir = ConfigurationManager.AppSettings.Get("assetsDir");
+
+            if (Directory.Exists(assetsDir))
+                Directory.Delete(assetsDir, true);
+        }
+
+		public void PurgeContracts()
+		{
+			//var contactsDir = ConfigurationManager.AppSettings.Get("contracts");
+
+			if (Directory.Exists("contracts"))
+				Directory.Delete("contracts", true);
+		}
+
+		public byte[] GetContractCode(byte[] contractHash)
 		{
 			return BlockChain_.GetContractCode(contractHash);
+		}
+
+		public Tuple<UInt64, UInt64> GetTotalAssets(byte[] contractHash)
+		{
+			return BlockChain_.GetTotalAssets(contractHash);	
 		}
 
 		public void Dispose()
@@ -467,12 +518,17 @@ namespace Zen
 
 		public bool ActivateTestContract(string name, int blocks)
 		{
+			string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
+
+			return ActivateTestContractCode(contractCode, blocks);
+		}
+
+		public bool ActivateTestContractCode(string contractCode, int blocks)
+		{
 			var outputs = new List<Types.Output>();
 			var inputs = new List<Types.Outpoint>();
 			var hashes = new List<byte[]>();
 			var version = (uint)1;
-
-			string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
 
 			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
 			var kalapasPerBlock = (ulong)(contractCode.Length * 1000 * blocks);
@@ -498,32 +554,64 @@ namespace Zen
 					))
 				);
 
-			return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+            if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
+            {
+                return false;
+            }
+
+            return true;
 		}
+
+        public byte[] GetContractHash(string contractCode)
+        {
+            return Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
+        }
 
 		public Address GetTestContractAddress(string name)
 		{
 			string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
-			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
+
+            return GetTestContractAddress(Encoding.ASCII.GetBytes(contractCode));
+		}
+
+		public Address GetTestContractAddress(byte[] contractHash)
+		{
 			return new Address(contractHash, AddressType.Contract);
 		}
 
-		public bool SendTestContract(string name, ulong amount, byte[] data)
+        public Types.Outpoint GetFirstContractLockOutpoint(Types.Transaction tx)
+        {
+			int i = 0;
+			for (; i < tx.outputs.Length; i++)
+			{
+				if (tx.outputs[i].@lock is Consensus.Types.OutputLock.ContractLock)
+					break;
+			}
+
+			return new Consensus.Types.Outpoint(Consensus.Merkle.transactionHasher.Invoke((tx)), (uint)i);
+		}
+
+        public byte[] GetOutpointBytes(Types.Outpoint outpoint)
+        {
+            return new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
+        }
+
+		public bool SendTestContractTx(string name, ulong amount, byte[] data)
 		{
-			var address = GetTestContractAddress("TestContract.cs");
+			var address = GetTestContractAddress(name);
 
 			//byte[] dataCombined = new byte[data.Sum(a => a.Length)];
 			//int offset = 0;
-		 //   foreach (byte[] array in data) {
-		 //       System.Buffer.BlockCopy(array, 0, dataCombined, offset, array.Length);
-		 //       offset += array.Length;
-		 //   }
+			//   foreach (byte[] array in data) {
+			//       System.Buffer.BlockCopy(array, 0, dataCombined, offset, array.Length);
+			//       offset += array.Length;
+			//   }
 
 			address.Data = data;
 
-			Consensus.Types.Transaction tx;
+			Types.Transaction tx;
 
-			if (!WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx))
+			if (!WalletManager.Sign(address, Tests.zhash, amount, out tx))
 				return false;
 
 			if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
@@ -531,63 +619,149 @@ namespace Zen
 				return false;
 			}
 
-			return SendTestContract(name, Merkle.transactionHasher.Invoke(tx));
+            Types.Transaction autoTx;
+
+            if (!WalletManager.SendContract(address.Bytes, Merkle.transactionHasher.Invoke(tx), out autoTx))
+            {
+                return false;
+            }
+
+            return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
-		public bool SendTestContract(string name, byte[] data)
-		{
-			string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
-			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-			var contractAddress = new Address(contractHash, AddressType.Contract);
+        public bool SendTestContract(string name, byte[] data)
+        {
+            string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
+            var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
 
-			var utxos = new SortedDictionary<Types.Outpoint, Types.Output>();
+            Types.Transaction autoTx;
 
-			using (var dbTx = _BlockChain.GetDBTransaction())
+			if (!WalletManager.SendContract(contractHash, data, out autoTx))
 			{
-				foreach (var item in _BlockChain.UTXOStore.All(dbTx, null, false).Where(t =>
-				{
-					var contractLock = t.Item2.@lock as Types.OutputLock.ContractLock;
-					return contractLock != null && contractLock.contractHash.SequenceEqual(contractHash);
-				}))
-				{
-					utxos[item.Item1] = item.Item2;
-				}	
+				return false;
 			}
 
-			foreach (var item in _BlockChain.memPool.TxPool)
-			{
-				uint i = 0;
-				foreach (var output in item.Value.outputs)
-				{
-					var contractLock = output.@lock as Types.OutputLock.ContractLock;
-					if (contractLock != null)
-					{
-						utxos[new Types.Outpoint(item.Key, i)] = output;
-					}
-					i++;
-				}
-			}	
+			return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+        }
 
-			Types.Transaction tx;
-			var result = BlockChain.ContractHelper.Execute(out tx, new BlockChain.ContractArgs()
-			{
-				Utxos = utxos,
-				ContractHash = contractHash,
-				Message = data
-			}, true);
-
-			return result && tx != null && NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
-		}
-
-		public void SendContract(byte[] contractHash, byte[] data)
+		public bool SendTestQuotedContract(byte[] contractHash, byte[] data)
 		{
-			//Consensus.Types.Transaction tx;
-			//BlockChain.ContractHelper.Execute(out tx, new BlockChain.ContractArgs()
-			//{
-			//	ContractHash = contractHash,
-			//	Message = data
-			//});
+			Types.Transaction autoTx;
+
+			if (!WalletManager.SendContract(contractHash, data, out autoTx))
+			{
+				return false;
+			}
+
+			return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
+
+        public Types.Outpoint FindOutpoint(Address address, byte[] asset)
+		{
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				foreach (var item in _BlockChain.UTXOStore.All(dbTx, null, false))
+				{
+					if (!item.Item2.spend.asset.SequenceEqual(asset))
+						continue;
+
+					byte[] _address = null;
+
+					if (item.Item2.@lock is Types.OutputLock.ContractLock)
+					{
+						if (address.AddressType != AddressType.Contract)
+							continue;
+						else
+							_address = ((Types.OutputLock.ContractLock)item.Item2.@lock).contractHash;
+					}
+
+					if (item.Item2.@lock is Types.OutputLock.PKLock)
+					{
+						if (address.AddressType != AddressType.PK)
+							continue;
+						else
+							_address = ((Types.OutputLock.PKLock)item.Item2.@lock).pkHash;
+					}
+
+					if (!_address.SequenceEqual(address.Bytes))
+						continue;
+
+                    return item.Item1;
+				}
+			}
+
+			////TODO: handle UTXOs consumed by mempool entries
+			//foreach (var item in _BlockChain.memPool.TxPool)
+			//{
+			//	uint i = 0;
+			//	foreach (var output in item.Value.outputs)
+			//	{
+			//		var contractLock = output.@lock as Types.OutputLock.ContractLock;
+			//		if (contractLock != null)
+			//		{
+			//			utxos[new Types.Outpoint(item.Key, i)] = output;
+			//		}
+			//		i++;
+			//	}
+			//}
+
+			return null;
+		}
+
+		public Tuple<Types.Outpoint, Types.Output> FindPointedOutpoint(Address address, byte[] asset)
+		{
+			using (var dbTx = _BlockChain.GetDBTransaction())
+			{
+				foreach (var item in _BlockChain.UTXOStore.All(dbTx, null, false))
+				{
+					if (!item.Item2.spend.asset.SequenceEqual(asset))
+						continue;
+
+					byte[] _address = null;
+
+					if (item.Item2.@lock is Types.OutputLock.ContractLock)
+					{
+						if (address.AddressType != AddressType.Contract)
+							continue;
+						else
+							_address = ((Types.OutputLock.ContractLock)item.Item2.@lock).contractHash;
+					}
+
+					if (item.Item2.@lock is Types.OutputLock.PKLock)
+					{
+						if (address.AddressType != AddressType.PK)
+							continue;
+						else
+							_address = ((Types.OutputLock.PKLock)item.Item2.@lock).pkHash;
+					}
+
+					if (!_address.SequenceEqual(address.Bytes))
+						continue;
+
+					return new Tuple<Types.Outpoint, Types.Output>(item.Item1, item.Item2);
+				}
+			}
+
+			////TODO: handle UTXOs consumed by mempool entries
+			//foreach (var item in _BlockChain.memPool.TxPool)
+			//{
+			//  uint i = 0;
+			//  foreach (var output in item.Value.outputs)
+			//  {
+			//      var contractLock = output.@lock as Types.OutputLock.ContractLock;
+			//      if (contractLock != null)
+			//      {
+			//          utxos[new Types.Outpoint(item.Key, i)] = output;
+			//      }
+			//      i++;
+			//  }
+			//}
+
+			return null;
+		}
+
+		//public void CreateQuotedTestContract(string 
+
 	}
 }
 

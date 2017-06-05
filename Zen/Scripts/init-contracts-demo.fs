@@ -9,6 +9,7 @@ let run (app: App) =
     app.AddGenesisBlock()
     app.ResetWalletDB()
     app.ActivateTestContract(contract, 10)
+    app.ActivateTestContract("MockCallOption.cs", 10)
     app.MineBlock()
     app.Acquire(0)
     Assert.IsTrue(app.Spend(app.GetTestContractAddress(contract), 2500000UL))

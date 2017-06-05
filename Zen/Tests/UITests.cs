@@ -107,16 +107,18 @@ namespace Zen
 
 			app.Reconnect();
 
+			var address = Key.Create().Address;
+
 			Task.Run(() =>
 			{
 				Thread.Sleep(1000);
-				Assert.That(app.Spend(2), Is.True);
+				Assert.That(app.Spend(address, 2), Is.True);
 				Thread.Sleep(1000);
-				Assert.That(app.Spend(3), Is.True);
+				Assert.That(app.Spend(address, 3), Is.True);
 				Thread.Sleep(1000);
-				Assert.That(app.Spend(4), Is.True);
+				Assert.That(app.Spend(address, 4), Is.True);
 				Thread.Sleep(1000);
-				Assert.That(app.Spend(500), Is.False);
+				Assert.That(app.Spend(address, 500), Is.False);
 			});
 
 			Task.Run(() =>

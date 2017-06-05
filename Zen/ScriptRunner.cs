@@ -7,11 +7,13 @@ namespace Zen
 {
 	public static class ScriptRunner
 	{
-		static string _CompilerPath = "/usr/lib/mono/4.5/"; //TODO
 		const string DEPENCENCY_OPTION = " -r ";
 		static readonly string[] _Dependencies = new string[] { 
 			Assembly.GetExecutingAssembly().Location,
 			"nunit.framework.dll",
+            "Consensus.dll",
+            "ContractExamples.dll",
+            "Wallet.dll"
 		};
 
 		public static bool Execute(App app, string fileName, out object result)
@@ -24,13 +26,8 @@ namespace Zen
 
 			if (IsRunningOnMono())
 			{
-#if LINUX
-				process.StartInfo.FileName = "mono";
-				process.StartInfo.Arguments = $"{ Path.Combine(_CompilerPath, "fsc.exe") } -o { dllFile } -a {fileName}{DEPENCENCY_OPTION + string.Join(DEPENCENCY_OPTION, _Dependencies)}";
-#else
 				process.StartInfo.FileName = "fsharpc";
 				process.StartInfo.Arguments = $"-o { dllFile } -a {fileName}{DEPENCENCY_OPTION + string.Join(DEPENCENCY_OPTION, _Dependencies)}";
-#endif
 			}
 			else
 			{
@@ -73,8 +70,10 @@ namespace Zen
 				Console.WriteLine(e.Message);
 				return false;
 			}
-
-			File.Delete(dllFile);
+			finally
+			{
+				File.Delete(dllFile);
+			}
 
 			return true;
 		}

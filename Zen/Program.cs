@@ -1,6 +1,7 @@
 ﻿using System;
 using NDesk.Options;
 using System.IO;
+using System.Linq;
 
 namespace Zen
 {
@@ -35,11 +36,11 @@ namespace Zen
 				//{ "save_settings", "save general settings profile (to be used with settings option)",
 				//	v => app.Settings.SaveSettings = v != null },
 
-				{ "wallet=", "specify wallet", 
+				{ "wallet=", "wallet DB", 
 					v => app.Settings.WalletDB = v },
 
-				{ "db=", "Wallet DB",
-					v => app.Settings.WalletDB = v },
+				{ "blockchain=", "blockchain DB suffix",
+					v => app.Settings.BlockChainDBSuffix = v },
 
 				{ "d|disable-network", "disable networking",
 					v => app.Settings.DisableNetworking = true },
@@ -50,7 +51,7 @@ namespace Zen
 				{ "m|miner", "enable miner",
 					v => app.MinerEnabled = true },
 
-				{ "rpc", "enable RPC",
+				{ "r|rpc", "enable RPC",
 					v => rpcServer = true },
 
 				//{ "o|output=", "add a genesis block transaction output (address, amount)",
@@ -81,6 +82,13 @@ namespace Zen
 				return;
 			}
 
+			Server server;
+			if (rpcServer)
+			{
+				server = new Server(app);
+				server.Start();
+			}
+
 			if (script != null)
 			{
 				object result;
@@ -93,18 +101,53 @@ namespace Zen
 				}
 				else
 				{
+					Console.WriteLine("Script error.");
 					Console.ReadKey();
-					app.Dispose();
-					return;
+					//app.Dispose();
+					//return;
 				}
 			}
 
-			Server server;
-			if (rpcServer)
-			{
-				server = new Server(app);
-				server.Start();
-			}
+
+ 
+            ///////////////////////////////////////
+            /*
+
+            var data = ContractExamples.Temp.makeData(0, 0, 0);
+            var contract = "Contracts.fs";
+
+            app.ResetBlockChainDB();
+            app.AddGenesisBlock();
+            app.ResetWalletDB();
+            app.ActivateTestContract(contract, 10);
+            app.MineBlock();
+            app.Acquire(0);
+			app.Acquire(1);
+
+
+            Consensus.Types.Transaction tx;
+            if (!app.Spend(app.GetTestContractAddress(contract), 1, app.GetTestAddress(1).Bytes, null, out tx))
+				throw new Exception();
+
+            app.MineBlock();
+
+            int i = 0;
+            for (; i < tx.outputs.Length; i++)
+            {
+                if (tx.outputs[i].@lock is Consensus.Types.OutputLock.ContractLock)
+                    break;
+            }
+
+            var outpoint = new Consensus.Types.Outpoint(Consensus.Merkle.transactionHasher.Invoke((tx)), (uint)i);
+
+            var data1 = new byte[] { 0x00 }.Concat(new byte[] { (byte)outpoint.index });
+            data1 = data1.Concat(outpoint.txHash);
+            if (!app.SendTestContract(contract, data1.ToArray()))
+                throw new Exception();
+
+            */
+            /////////////////////////////////////////////////////////
+
 
 			if (tui)
 			{
@@ -120,6 +163,7 @@ namespace Zen
 			else
 			{
 				app.Reconnect();
+                Console.ReadKey();
 			}
 		}
 

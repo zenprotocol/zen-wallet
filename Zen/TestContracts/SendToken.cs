@@ -5,27 +5,20 @@ using System.Collections.Generic;
 using static Consensus.Types;
 using Microsoft.FSharp.Core;
 using System.Linq;
+using Consensus;
 
 public class TestContract
 {
 	public static Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, byte[]> main(
 		List<byte> message,
 		byte[] contractHash,
-		Func<Outpoint, Output> tryFindUTXO
+		Func<Outpoint, FSharpOption<Types.Output>> tryFindUTXO
 	)
 	{
 		var outputs = new List<Output>();
 		var outpoints = new List<Outpoint>();
 
-		//foreach (var item in utxos)
-		//{
-		//	if (item.Key.txHash.SequenceEqual(message)) {
-		//		var data = ((OutputLock.ContractLock)item.Value.@lock).data;
-		//		outputs.Add(new Output(OutputLock.NewPKLock(contractHash), new Spend(item.Value.spend.asset, item.Value.spend.amount)));
-		//		outputs.Add(new Output(OutputLock.NewPKLock(data), new Spend(contractHash, item.Value.spend.amount)));
-		//		outpoints.Add(item.Key);
-		//	}
-		//}
+        outputs.Add(new Output(OutputLock.NewPKLock(message.ToArray()), new Spend(contractHash, 5555)));
 
 		return new Tuple<IEnumerable<Outpoint>, IEnumerable<Output>, byte[]>(
             outpoints, outputs, new byte[] {}

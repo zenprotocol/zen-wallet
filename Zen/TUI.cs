@@ -10,6 +10,8 @@ using System.Globalization;
 using Wallet.Constants;
 using Wallet.core;
 using Network;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Zen
 {
@@ -71,13 +73,6 @@ namespace Zen
 			}
 			options["tests"].Add("Back");
 
-			options["acs"] = new List<string>();
-
-			foreach (var contractHash in app.GetActiveContacts())
-			{
-				options["acs"].Add(new Address(contractHash, AddressType.Contract).ToString());
-			}
-			options["acs"].Add("Back");
 
 			var actions = new Dictionary<string, Action<string>>();
 			Action<string> menu = (s) =>
@@ -92,12 +87,18 @@ namespace Zen
 
 			#region Send Dialog
 			var sendDialog = new Dialog(root) { Text = "Send", Width = 70, Height = 18, Top = 4, Left = 4, Border = BorderStyle.Thick, Visible = false };
-			new Label(sendDialog) { Top = 1, Left = 1, Width = 66, Text = "Destination" };
+
+            new Label(sendDialog) { Top = 1, Left = 1, Width = 66, Text = "Destination" };
 			var address = new SingleLineTextbox(sendDialog) { Top = 3, Left = 1, Width = 65 };
-			new Label(sendDialog) { Top = 5, Left = 1, Width = 66, Text = "Amount" };
+			
+            new Label(sendDialog) { Top = 5, Left = 1, Width = 66, Text = "Amount" };
 			var amount = new SingleLineTextbox(sendDialog) { Top = 7, Left = 1, Width = 65 };
-			var sendDialogSendButton = new Button(sendDialog) { Top = 10, Left = 1, Width = 15, Text = "Send" };
-			var sendDialogCloseButton = new Button(sendDialog) { Top = 10, Left = 20, Width = 15, Text = "Close" };
+
+			new Label(sendDialog) { Top = 9, Left = 1, Width = 66, Text = "Data" };
+			var data = new SingleLineTextbox(sendDialog) { Top = 11, Left = 1, Width = 65 };
+
+			var sendDialogSendButton = new Button(sendDialog) { Top = 14, Left = 1, Width = 15, Text = "Send" };
+			var sendDialogCloseButton = new Button(sendDialog) { Top = 14, Left = 20, Width = 15, Text = "Close" };
 			var status = new Label(sendDialog) { Top = 16, Left = 1, Width = 40, Text = "", Background = ConsoleColor.Black };
 
 			sendDialogCloseButton.Clicked += (sender, e) =>
@@ -132,11 +133,22 @@ namespace Zen
 					return;
 				}
 
-				if (!app.Spend(_amount, _address))
-				{
-					status.Text = "Could not spend";
-					return;
-				}
+                if (string.IsNullOrEmpty(data.Text))
+                {
+                    if (!app.Spend(_address, _amount))
+                    {
+                        status.Text = "Could not spend";
+                        return;
+                    }
+                }
+                else
+                {
+     //               if (!app.SendContract(_address.Bytes, _amount, Convert.FromBase64String(data.Text)))
+					//{
+					//	status.Text = "Could not spend";
+					//	return;
+					//}
+                }
 
 				status.Text = "Success";
 			};
@@ -234,6 +246,18 @@ namespace Zen
 						app.Dump();
 						break;
 					case "Active Contract Set":
+						options["acs"] = new List<string>();
+
+						foreach (var contractData in app.GetActiveContacts())
+						{
+							var info = new Address(contractData.Hash, AddressType.Contract) + " " + contractData.LastBlock;
+
+							info += app.GetTotalAssets(contractData.Hash);
+
+							options["acs"].Add(info);
+						}
+						options["acs"].Add("Back");
+
                         menu("acs");
 						break;
 					case "Reset Blockchain DB":
@@ -369,7 +393,7 @@ namespace Zen
 
 						foreach (var txDelta in app.WalletManager.TxDeltaList)
 						{
-							listMenu.Items.Add(GetTxDeltaInfo(txDelta));
+							listMenu.Items.Add(GetTxDeltaInfo(app, txDelta));
 						}
 						listMenu.Items.Add("Back");
 						break;
@@ -422,13 +446,13 @@ namespace Zen
 			Action<ResetEventArgs> wallet_OnReset = a =>
 			{
 				foreach (var txDelta in a.TxDeltaList)
-					listTrace.Items.Add(GetTxDeltaInfo(txDelta, "Wallet reset"));
+					listTrace.Items.Add(GetTxDeltaInfo(app,txDelta, "Wallet reset"));
 			};
 
 			Action<TxDeltaItemsEventArgs> wallet_OnItems = a =>
 		   	{
 				foreach (var txDelta in a)
-					listTrace.Items.Add(GetTxDeltaInfo(txDelta, "Wallet item"));
+					listTrace.Items.Add(GetTxDeltaInfo(app, txDelta, "Wallet item"));
 		   	};
 
 			app.WalletOnItemsHandler = wallet_OnItems;
@@ -438,31 +462,47 @@ namespace Zen
 			root.Run();
 		}
 
-        static string GetTxDeltaInfo(TxDelta txDelta, string prefix = null)
+        static string GetTxDeltaInfo(App app, TxDelta txDelta, string prefix = null)
 		{
-			string info = (prefix == null ? "" : prefix + ": ") + txDelta.TxState.ToString();
-
+            string info = (prefix == null ? "" : prefix + ": ") + txDelta.TxState.ToString().Substring(0, 1);
 			info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
-			if (txDelta.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
-			{
-				var value = txDelta.AssetDeltas[Consensus.Tests.zhash];
-				info += ", " + value;
-			}
-			else
-			{
-				info += ", " + "Other asset";
-			}
 
-			return info;
+            string assets = string.Empty;
+
+            foreach (var item in txDelta.AssetDeltas)
+            {
+                assets += (assets == string.Empty ? "" : ", ") + item.Value;
+                assets += " " + app.WalletManager.AssetsMetadata.Get(item.Key).Result;
+            }
+
+			return info + " " + assets;
 		}
 						                
 		public static void WriteColor(string message, ConsoleColor color)
-		{
+		{			
 			if (listTrace != null)
 			{
-				listTrace.Items.Add(message.Split('\n')[0]);
+                try
+                {
+					var lines = message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None); // just split the thing alreadymessage.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[0]); // just split the thing already
+					var line = lines[0];
 
-				listTrace.SelectedIndex = listTrace.Items.Count - 1;
+					if (line.Length > 75)
+					{
+						line = message.Substring(0, 75);
+						line += "...\n";
+					}
+
+					line = line.Replace("{", "");
+					line = line.Replace("}", "");
+
+					listTrace.Items.Add(line);
+
+					listTrace.SelectedIndex = listTrace.Items.Count - 1;
+                } catch (Exception e) {
+					Console.ForegroundColor = color;
+					Console.WriteLine("error writing message");
+				}
 			}
 			else
 			{

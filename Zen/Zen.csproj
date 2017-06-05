@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -8,13 +7,14 @@
     <RootNamespace>Zen</RootNamespace>
     <AssemblyName>zen</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <UseMSBuildEngine>false</UseMSBuildEngine>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG; TRACE; CSHARP_CONTRACTS</DefineConstants>
+    <DefineConstants>DEBUG; TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
@@ -64,7 +64,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TUI.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="AppTraceListener.cs" />
     <Compile Include="Tests\UITests.cs" />
     <Compile Include="Data\Keys.cs" />
@@ -76,7 +75,7 @@
     <Compile Include="App.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
-    <Compile Include="TestContracts\TestContract.cs">
+    <Compile Include="TestContracts\SendToken.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
@@ -85,6 +84,7 @@
     <None Include="packages.config" />
     <None Include="app.config" />
     <None Include="readme.md" />
+    <Compile Include="Program.cs" />
     <None Include="Reset.txt" />
     <None Include="ResetAcquireAndSend.txt" />
     <None Include="genesis_outputs.json">
@@ -105,9 +105,6 @@
     <None Include="testnet_host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="graph.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Scripts\reset.fs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -120,8 +117,44 @@
     <None Include="Scripts\lan_receiver.fs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="graph.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="d3.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestContracts\Contracts.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\test-datafeed.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="contracts-demo-seed.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\init-contracts-demo.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestContracts\DatafeedContract.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestContracts\MockCallOption.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\init-faucet.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\reset %28copy%29.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\test-send-token.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestContracts\TestContract.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Scripts\test-send-token-fsharp.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -136,10 +169,6 @@
     <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>Network</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
-      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
-      <Name>BlockChain</Name>
     </ProjectReference>
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
@@ -164,6 +193,22 @@
     <ProjectReference Include="..\Zen.RPC.Common\Zen.RPC.Common.csproj">
       <Project>{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}</Project>
       <Name>Zen.RPC.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TestFSharpContracts\TestFSharpContracts.fsproj">
+      <Project>{263938DE-7648-481A-A549-CDA75F5CE3B0}</Project>
+      <Name>TestFSharpContracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ContractsUtils\ContractsUtils.fsproj">
+      <Project>{D87C2E33-669C-4041-A59C-27A563B1A638}</Project>
+      <Name>ContractsUtils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
+      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
+      <Name>ContractExamples</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
