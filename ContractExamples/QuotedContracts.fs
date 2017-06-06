@@ -6,9 +6,9 @@ open Consensus.Types
 open Authentication
 
 
-type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
-type TransactionSkeleton = Outpoint list * Output list * byte[]
-type ContractFunction = ContractFunctionInput -> TransactionSkeleton
+type ContractFunctionInput = Contracts.ContractFunctionInput
+type TransactionSkeleton = Contracts.TransactionSkeleton
+type ContractFunction = Contracts.ContractFunction
 
 let maybe = MaybeWorkflow.maybe
 type InvokeMessage = byte * Outpoint list
@@ -127,7 +127,7 @@ let makeCloseData returnPubKeyHash counter (keypair:Sodium.KeyPair) =
 
 let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun optParams ->
     <@
-    let contractType = "call"
+    let contractType = "calloption"
     let meta = optParams
     let (|Collateralize|_|) (data:byte[]) =
         maybe {

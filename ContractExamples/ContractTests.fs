@@ -30,7 +30,7 @@ let callParams = {
     ownerPubKey=keypair.PublicKey
     }
 
-let quotedOracle = oracle oracleParams
+let quotedOracle = oracleFactory oracleParams
 let quotedCall = callOptionFactory callParams
 
 let compiledOracle = Swensen.Unquote.Operators.eval quotedOracle
@@ -232,3 +232,9 @@ let ``Compiled raw contract deserialized correctly``() =
         let f:ContractFunction = Execution.deserialize c
         let x = f ([||],[||],fun _ -> None)
         Assert.That((x=BadTx), Is.True)
+
+[<Test>]
+let ``Quoted contract metadata extracts``()=
+    let callStr = Execution.quotedToString quotedCall
+    let m = Execution.metadata callStr
+    Assert.That(m, Is.Not.EqualTo(None))

@@ -207,6 +207,7 @@ let compile (code:string) = maybe {
 let deserialize (bs:byte[]) = bs |> Binary.unpickle pickler
 
 type ContractMetadata =
+    public
     | Oracle of ContractExamples.QuotedContracts.OracleParameters
     | CallOption of ContractExamples.QuotedContracts.CallOptionParameters
     | SecureToken of ContractExamples.QuotedContracts.SecureTokenParameters
@@ -221,6 +222,9 @@ let (|ContractMetadata|_|) (name:string) (parameters:obj) =
         Some <| SecureToken (sparams)
     | _ -> None
 
+let tryParseContractMetadata (s:string) =
+    None // Not implemented
+
 let metadata (s:string) =
     match s with
     | Prefix "QQQ\n" rest ->
@@ -231,4 +235,5 @@ let metadata (s:string) =
             | ContractMetadata cType md -> Some md
             | _ -> None
         | _ -> None
-    | _ -> None // Not implemented
+    | _ ->
+        tryParseContractMetadata s
