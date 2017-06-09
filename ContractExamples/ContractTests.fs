@@ -50,7 +50,7 @@ let oracleOutpointSerialized = simplePackOutpoint oracleOutpoint
 let oracleData = Array.zeroCreate<byte> 32
 Random(1234).NextBytes oracleData
 let oracleMsg = Array.append oracleOutpointSerialized oracleData
-let oracleSig = Authentication.sign oracleMsg keypair.PrivateKey
+let oracleSig = Consensus.Authentication.sign oracleMsg keypair.PrivateKey
 let oracleWit = Array.append oracleMsg oracleSig
 let oracleOutput:Output = {lock=ContractLock (fakeOracle,[||]);spend={asset=zenAsset; amount = 50000UL}}
 let oracleOutputMap = Map.add oracleOutpoint oracleOutput Map.empty

@@ -3,7 +3,7 @@
 open Microsoft.FSharp.Quotations
 
 open Consensus.Types
-open Authentication
+open Consensus.Authentication
 
 
 type ContractFunctionInput = Contracts.ContractFunctionInput

@@ -27,7 +27,7 @@ open MBrace.FsPickler.Combinators
 
 // Repeated code
 open Consensus.Types
-open Authentication
+open Consensus.Authentication
 
 let auth = sign
 
@@ -106,7 +106,7 @@ open MBrace.FsPickler.Combinators
 
 // Repeated code
 open Consensus.Types
-open ContractExamples.Authentication
+open Consensus.Authentication
 let pickler = Pickler.auto<ContractExamples.Contracts.ContractFunction>
 
 

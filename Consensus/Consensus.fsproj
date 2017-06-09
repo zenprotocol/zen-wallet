@@ -66,8 +66,9 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <None Include="packages.config" />
-    <Compile Include="Types.fs" />
     <Compile Include="Utilities.fs" />
+    <Compile Include="Authentication.fs" />
+    <Compile Include="Types.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="Tree.fs" />
     <Compile Include="Merkle.fs" />

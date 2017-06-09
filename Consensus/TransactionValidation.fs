@@ -10,7 +10,7 @@ open Consensus.Serialization
 open Consensus.Tree
 open Consensus.Merkle
 //open Consensus.SparseMerkleTree
-
+open Consensus.Authentication
 
 // TODO: Move to constants module
 let MaxTransactionSize = pown 2 20
@@ -41,39 +41,39 @@ let guardedDeserialise<'V> s =
         failwith "Non-canonical object"
     res
 
-let contextlessValidate =
-    let nonEmptyInputOutputs tx =
-        not tx.inputs.IsEmpty && not tx.outputs.IsEmpty
-    let txSizeLimit (txb:byte[]) =
-        txb.Length <= MaxTransactionSize
-    let legalSpendAmount oput =
-        oput.spend.asset <> zhash || oput.spend.amount <= MaxKalapa
-    fun (tx:Transaction, txbytes: byte[]) ->
-        nonEmptyInputOutputs tx &&
-        txSizeLimit txbytes &&
-        List.forall legalSpendAmount tx.outputs &&
-        tx.outputs.Length = tx.witnesses.Length
+//let contextlessValidate =
+    //let nonEmptyInputOutputs tx =
+    //    not tx.inputs.IsEmpty && not tx.outputs.IsEmpty
+    //let txSizeLimit (txb:byte[]) =
+    //    txb.Length <= MaxTransactionSize
+    //let legalSpendAmount oput =
+    //    oput.spend.asset <> zhash || oput.spend.amount <= MaxKalapa
+    //fun (tx:Transaction, txbytes: byte[]) ->
+        //nonEmptyInputOutputs tx &&
+        //txSizeLimit txbytes &&
+        //List.forall legalSpendAmount tx.outputs &&
+        //tx.outputs.Length = tx.witnesses.Length
 
-let matchingSpends ispends ospends =
-    let incSpendMap (smap:Map<Hash,uint64>) spend =
-        let v = match smap.TryFind(spend.asset) with
-                | None -> spend.amount
-                | Some v -> v + spend.amount
-        smap.Add (spend.asset, v)
-    let spendMap = List.fold incSpendMap Map.empty<Hash,uint64> 
-    let iMap = spendMap ispends
-    let oMap = spendMap ospends
-    List.forall2 (=) <| Map.toList iMap <| Map.toList oMap
+//let matchingSpends ispends ospends =
+    //let incSpendMap (smap:Map<Hash,uint64>) spend =
+    //    let v = match smap.TryFind(spend.asset) with
+    //            | None -> spend.amount
+    //            | Some v -> v + spend.amount
+    //    smap.Add (spend.asset, v)
+    //let spendMap = List.fold incSpendMap Map.empty<Hash,uint64> 
+    //let iMap = spendMap ispends
+    //let oMap = spendMap ospends
+    //List.forall2 (=) <| Map.toList iMap <| Map.toList oMap
 
-let spendTransferLimit spends (limit:uint64) =
-    let incSpendMap (smap:Map<Hash,bigint>) spend =
-        let v = match smap.TryFind(spend.asset) with
-                | None -> bigint spend.amount
-                | Some v -> v + bigint spend.amount
-        smap.Add (spend.asset, v)
-    let spendMap = List.fold incSpendMap Map.empty<Hash,bigint>
-    let m = spendMap spends
-    List.forall (fun (_,v) -> v < bigint limit) <| Map.toList m
+//let spendTransferLimit spends (limit:uint64) =
+    //let incSpendMap (smap:Map<Hash,bigint>) spend =
+    //    let v = match smap.TryFind(spend.asset) with
+    //            | None -> bigint spend.amount
+    //            | Some v -> v + bigint spend.amount
+    //    smap.Add (spend.asset, v)
+    //let spendMap = List.fold incSpendMap Map.empty<Hash,bigint>
+    //let m = spendMap spends
+    //List.forall (fun (_,v) -> v < bigint limit) <| Map.toList m
 
 type PointedInput = Outpoint * Output
 
@@ -89,65 +89,65 @@ let toPointedTransaction tx (inputs : _ list) =
 let unpoint {version=version;pInputs=pInputs;witnesses=witnesses;outputs=outputs;contract=contract} =
     {version=version;inputs=List.map fst pInputs;witnesses=witnesses;outputs=outputs;contract=contract}
 
-let nonCoinbaseValidate ptx =
-    List.forall <|
-    ((function
-        | CoinbaseLock _ -> false
-        | _ -> true) << (fun oput -> oput.lock) << snd
-    ) <| ptx.pInputs
+//let nonCoinbaseValidate ptx =
+    //List.forall <|
+    //((function
+    //    | CoinbaseLock _ -> false
+    //    | _ -> true) << (fun oput -> oput.lock) << snd
+    //) <| ptx.pInputs
 
 // TODO: use in matchingSpends
-let spendMap =
-    let incSpendMap (smap:Map<Hash,uint64>) spend =
-        let v = match smap.TryFind(spend.asset) with
-                | None -> spend.amount
-                | Some v -> v + spend.amount
-        smap.Add (spend.asset, v)
-    List.fold incSpendMap Map.empty<Hash,uint64> 
+//let spendMap =
+    //let incSpendMap (smap:Map<Hash,uint64>) spend =
+    //    let v = match smap.TryFind(spend.asset) with
+    //            | None -> spend.amount
+    //            | Some v -> v + spend.amount
+    //    smap.Add (spend.asset, v)
+    //List.fold incSpendMap Map.empty<Hash,uint64> 
 
-let sumMap (ml:Map<'K,bigint>) (mr:Map<'K,bigint>) =
-    let incMap (m:Map<'K,bigint>) (k,v) =
-        let newV = match m.TryFind(k) with
-                   | None -> v
-                   | Some oldV -> oldV + v
-        m.Add (k,newV)
-    List.fold incMap ml (Map.toList mr)
+//let sumMap (ml:Map<'K,bigint>) (mr:Map<'K,bigint>) =
+//    let incMap (m:Map<'K,bigint>) (k,v) =
+//        let newV = match m.TryFind(k) with
+//                   | None -> v
+//                   | Some oldV -> oldV + v
+//        m.Add (k,newV)
+//    List.fold incMap ml (Map.toList mr)
 
-let mapToBigInt (m:Map<'K,uint64>) =
-    Map.map (fun _ (v:uint64) -> bigint v) m
+//let mapToBigInt (m:Map<'K,uint64>) =
+//    Map.map (fun _ (v:uint64) -> bigint v) m
 
-let isNotLessThan (ml:Map<'K,bigint>) (mr:Map<'K,bigint>) =
-    mr |>
-    Map.forall (fun k v ->
-        if v = 0I then
-             true
-        else
-            (ml.TryFind k) |>
-            Option.map ((<=) v) |>
-            ((=) (Some true))
-        )
+//let isNotLessThan (ml:Map<'K,bigint>) (mr:Map<'K,bigint>) =
+    //mr |>
+    //Map.forall (fun k v ->
+        //if v = 0I then
+        //     true
+        //else
+        //    (ml.TryFind k) |>
+        //    Option.map ((<=) v) |>
+        //    ((=) (Some true))
+        //)
 
 // nb generating a POINTED transaction for the coinbase is done differently
-let validateCoinbase ptx feeMap claimableSacMap (reward:uint64) =
-   let bfm = mapToBigInt feeMap
-   let bcsm = mapToBigInt claimableSacMap
-   let breward = bigint reward
-   let allCoinbase = lazy (
-       (ptx.pInputs, ptx.witnesses) ||>
-       List.forall2 (fun inp wit ->
-           wit.Length = 0 &&
-           match snd inp with
-           | {lock=CoinbaseLock _} -> true
-           | _ -> false
-           ))
-   let inputSpendMap = lazy (
-       ptx.pInputs |> List.map (fun (_,{spend=spend}) -> spend) |> spendMap
-   )
-   let claimableMap = bfm |> sumMap <| bcsm |> sumMap <| Map [(zhash,breward)]
-   match allCoinbase, inputSpendMap with
-   | Lazy false, _ -> false
-   | Lazy true, Lazy inputSpendMap ->
-       claimableMap |> isNotLessThan <| (mapToBigInt inputSpendMap)
+//let validateCoinbase ptx feeMap claimableSacMap (reward:uint64) =
+   //let bfm = mapToBigInt feeMap
+   //let bcsm = mapToBigInt claimableSacMap
+   //let breward = bigint reward
+   //let allCoinbase = lazy (
+   //    (ptx.pInputs, ptx.witnesses) ||>
+   //    List.forall2 (fun inp wit ->
+   //        wit.Length = 0 &&
+   //        match snd inp with
+   //        | {lock=CoinbaseLock _} -> true
+   //        | _ -> false
+   //        ))
+   //let inputSpendMap = lazy (
+   //    ptx.pInputs |> List.map (fun (_,{spend=spend}) -> spend) |> spendMap
+   //)
+   //let claimableMap = bfm |> sumMap <| bcsm |> sumMap <| Map [(zhash,breward)]
+   //match allCoinbase, inputSpendMap with
+   //| Lazy false, _ -> false
+   //| Lazy true, Lazy inputSpendMap ->
+       //claimableMap |> isNotLessThan <| (mapToBigInt inputSpendMap)
 
 type SigHashOutputType =
     | SigHashAll
@@ -213,6 +213,9 @@ let reducedTx tx index (SigHashType (itype, otype)) =
 
 let txDigest tx index hashtype = transactionHasher << reducedTx tx index <| hashtype
 
+//let txDigest tx =
+    //mutable cachedDigest
+
 let goodOutputVersions {version=version; pInputs=pInputs} =
     not <| List.exists (fun (_,{lock=lock}) -> lockVersion lock > version) pInputs
 
@@ -237,9 +240,9 @@ let validateAtIndex ptx index =
         match ptx.pInputs.[index] with
         | (_,{lock=lock}) -> lock
     match olock with
-    | CoinbaseLock _ // even if high version
-    | FeeLock _ // ditto
-    | ContractSacrificeLock _ -> false // ditto
+    | CoinbaseLock _                    // even if high version
+    | FeeLock _                         // ditto
+    | ContractSacrificeLock _ -> false  // ditto
     | HighVLock _ -> true
     | PKLock pkHash ->
         validatePKLockAtIndex ptx index pkHash
@@ -260,3 +263,41 @@ let signTx (tx:Transaction) outputkeys =
         outputkeys
     {tx with witnesses=witnesses}
 
+let spendMap (outputs:seq<Output>) =
+    let emptyMap = Map.empty<Hash,uint64>
+    let folder m output =
+        match output with
+        | {spend={asset=asset;amount=amount}} ->
+            let v = Map.tryFind asset m |> Option.defaultValue 0UL
+            Map.add asset (v+amount) m
+    Seq.fold folder emptyMap outputs
+
+let checkUserTransactionAmounts (ptx:PointedTransaction) =
+    match ptx with
+    | {pInputs=pInputs; outputs=outputs} ->
+        let ins = List.map (fun (_,output) -> output) pInputs
+        let inList = spendMap ins |> Map.toList
+        let outList = spendMap outputs |> Map.toList
+        List.forall2 (=) inList outList
+
+let checkAutoTransactionAmounts (ptx:PointedTransaction) (contract:Hash) =
+    match ptx with
+    | {pInputs=pInputs; outputs=outputs} ->
+        let ins = List.map (fun (_,output) -> output) pInputs
+        let inList = spendMap ins |> Map.remove contract |> Map.toList
+        let outList = spendMap outputs |> Map.remove contract |> Map.toList
+        List.forall2 (=) inList outList
+
+let checkCoinbaseTransactionAmounts (ptx:PointedTransaction) (claimable:Map<Hash,uint64>) =
+    match ptx with
+    | {pInputs=pInputs; outputs=outputs} ->
+        let ins = List.map (fun (_,output) -> output) pInputs
+        let addToMap m k claim =
+            let v = Map.tryFind k m |> Option.defaultValue 0UL
+            Map.add k (v+claim) m
+        let totals = Map.fold addToMap (spendMap ins) claimable
+        let inList = totals |> Map.toList
+        let outList = spendMap outputs |> Map.toList
+        List.forall2 (>=) inList outList
+
+//let validateAsUser ptx =
