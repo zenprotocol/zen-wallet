@@ -8,8 +8,8 @@ open Wallet.core.Data
 
 let maybe = MaybeWorkflow.maybe
 
-let getString = System.Text.Encoding.ASCII.GetString
-let getBytes:string->byte[] = System.Text.Encoding.ASCII.GetBytes
+let getString = System.Convert.ToBase64String
+let getBytes:string->byte[] = System.Convert.FromBase64String
 
 [<Literal>]
 let dataSamples = """
