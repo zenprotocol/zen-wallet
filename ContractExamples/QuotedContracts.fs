@@ -90,26 +90,28 @@ let returnToSender (opoint:Outpoint, oput:Output) = List.singleton opoint, List.
 type SecureTokenParameters = {destination: Hash}
         
 let secureTokenFactory : SecureTokenParameters -> Expr<ContractFunction> = fun p ->
-    <@ fun (message, contracthash, utxos) ->
+    <@
     let contractType = "securetoken"
     let meta = p
-    maybe {
-        let! opcode, outpoints = tryParseInvokeMessage message
-        let! fundsLoc = Array.tryHead outpoints   
-        let! funds = utxos fundsLoc
-        let! commandSpend =
-            match funds with
-            | {
-                lock=ContractLock (contractHash=contractHash);
-                spend=spend
-              } when contractHash=contracthash
-                -> Some spend
-            | _ -> None
-        let oput = {lock=PKLock p.destination; spend=commandSpend}
-        // send a contract token as well
-        let cput = {lock=PKLock p.destination; spend={asset=contracthash; amount=1000UL}}
-        return ([fundsLoc;],[oput; cput;],[||])
-    } |> Option.defaultValue %BadTx @>
+    fun (message, contracthash, utxos) ->
+        maybe {
+            let! opcode, outpoints = tryParseInvokeMessage message
+            let! fundsLoc = Array.tryHead outpoints   
+            let! funds = utxos fundsLoc
+            let! commandSpend =
+                match funds with
+                | {
+                    lock=ContractLock (contractHash=contractHash);
+                    spend=spend
+                  } when contractHash=contracthash
+                    -> Some spend
+                | _ -> None
+            let oput = {lock=PKLock p.destination; spend=commandSpend}
+            // send a contract token as well
+            let cput = {lock=PKLock p.destination; spend={asset=contracthash; amount=1000UL}}
+            return ([fundsLoc;],[oput; cput;],[||])
+        } |> Option.defaultValue %BadTx @>
+
 
 let makeCollateralizeData (returnPubKeyHash:Hash) (counter:uint64) (keypair:Sodium.KeyPair) =
     let toSign = Array.append [|0uy|] <| uint64ToBytes counter

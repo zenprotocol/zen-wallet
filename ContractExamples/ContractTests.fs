@@ -29,12 +29,16 @@ let callParams = {
     minimumCollateralRatio=0.2M;
     ownerPubKey=keypair.PublicKey
     }
+let secureParams = {destination= Consensus.Merkle.innerHash keypair.PublicKey}
+
 
 let quotedOracle = oracleFactory oracleParams
 let quotedCall = callOptionFactory callParams
+let quotedSecure = secureTokenFactory secureParams
 
 let compiledOracle = Swensen.Unquote.Operators.eval quotedOracle
 let compiledCall = Swensen.Unquote.Operators.eval quotedCall
+let compiledSecure = Swensen.Unquote.Operators.eval quotedSecure
 
 let BadTx = Swensen.Unquote.Operators.eval QuotedContracts.BadTx
 let utxosOf (d:Map<Outpoint, Output>) k = d.TryFind(k)
@@ -237,4 +241,10 @@ let ``Compiled raw contract deserialized correctly``() =
 let ``Quoted contract metadata extracts``()=
     let callStr = Execution.quotedToString quotedCall
     let m = Execution.metadata callStr
+    Assert.That(m, Is.Not.EqualTo(None))
+
+[<Test>]
+let ``Quoted secure token metadata extracts``()=
+    let secureStr = Execution.quotedToString quotedSecure
+    let m = Execution.metadata secureStr
     Assert.That(m, Is.Not.EqualTo(None))
