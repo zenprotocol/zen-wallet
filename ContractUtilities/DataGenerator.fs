@@ -123,7 +123,7 @@ let makeData :  Execution.ContractMetadata -> (Outpoint*Output) seq -> byte -> M
             | Execution.SecureToken _ ->
                 Some <|
                 ContractJsonData.Root (
-                        ContractJsonData.StringOrFirst (),
+                        ContractJsonData.StringOrFirst (""),
                         Some <| ContractJsonData.Second (getString [|opcode|],""))
         return json.JsonValue.ToString ()
         }
