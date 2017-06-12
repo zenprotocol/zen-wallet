@@ -6,7 +6,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>ContractExamples</RootNamespace>
     <AssemblyName>ContractExamples</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -77,9 +77,6 @@
     <Reference Include="FSharp.Compiler.Service.MSBuild.v12">
       <HintPath>..\packages\FSharp.Compiler.Service.12.0.8\lib\net45\FSharp.Compiler.Service.MSBuild.v12.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.2.0\lib\net45\FSharp.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -92,6 +89,9 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
@@ -101,6 +101,8 @@
     <Compile Include="QuotedContracts.fs" />
     <Compile Include="Execution.fs" />
     <Compile Include="ContractTests.fs" />
+    <Compile Include="MerkleTests.fs" />
+    <Compile Include="Oracle.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
