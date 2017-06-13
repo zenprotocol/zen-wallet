@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractGenerator", "Contra
 EndProject
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractExamples", "ContractExamples\ContractExamples.fsproj", "{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}"
 EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractUtilities", "ContractUtilities\ContractUtilities.fsproj", "{52C99661-71D0-4037-858E-B605CE5F562C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -85,5 +87,9 @@ Global
 		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Debug|x86.Build.0 = Debug|Any CPU
 		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Release|x86.ActiveCfg = Release|Any CPU
 		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Release|x86.Build.0 = Release|Any CPU
+		{52C99661-71D0-4037-858E-B605CE5F562C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{52C99661-71D0-4037-858E-B605CE5F562C}.Debug|x86.Build.0 = Debug|Any CPU
+		{52C99661-71D0-4037-858E-B605CE5F562C}.Release|x86.ActiveCfg = Release|Any CPU
+		{52C99661-71D0-4037-858E-B605CE5F562C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
