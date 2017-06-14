@@ -7,6 +7,6 @@ let run (app: App) =
     app.ResetBlockChainDB()
     app.AddGenesisBlock()
     app.ResetWalletDB()
-    app.Reconnect()
+    app.Connect()
     app.Acquire(0)
     "script succeeded"

@@ -63,16 +63,21 @@ namespace Zen
 		}
 
 		BlockChain.BlockChain _BlockChain = null;
+		object _BlockChainSync = new object();
 		WalletManager _WalletManager = null;
 		NodeManager _NodeManager = null;
-		Server _Server = null;
+        Server _Server = null;
+		bool _CanConnect = true;
 
-		BlockChain.BlockChain BlockChain_ //TODO: refactor class name - conflicts with namespace/member
+		BlockChain.BlockChain AppBlockChain
 		{
 			get
 			{
-				if (_BlockChain == null)
-					_BlockChain = new BlockChain.BlockChain(BlockChainDB, GenesisBlock.Key);
+				lock (_BlockChainSync)
+				{
+					if (_BlockChain == null)
+						_BlockChain = new BlockChain.BlockChain(BlockChainDB, GenesisBlock.Key);
+				}
 
 				// init wallet after having initialized blockchain
 				//if (_WalletManager !== null)
@@ -87,7 +92,7 @@ namespace Zen
 			get
 			{
 				if (_WalletManager == null)
-					_WalletManager = GetWalletManager(BlockChain_);
+					_WalletManager = GetWalletManager(AppBlockChain);
 
 				return _WalletManager;
 			}
@@ -105,14 +110,20 @@ namespace Zen
 			return walletManager;
 		}
 
-		public List<MinerLogData> MinerLogData { get; private set; }
+        internal void StartRPCServer()
+        {
+            _Server = new Server(this);
+            _Server.Start();
+        }
+
+        public List<MinerLogData> MinerLogData { get; private set; }
 		public NodeManager NodeManager
 		{
 			get
 			{
 				if (_NodeManager == null)
 				{
-					_NodeManager = new NodeManager(BlockChain_);
+					_NodeManager = new NodeManager(AppBlockChain);
 					_NodeManager.Miner.Enabled = _MinerEnabled;
 
 					_NodeManager.Miner.OnMinedBlock -= MinedBlockHandler;
@@ -135,6 +146,7 @@ namespace Zen
 
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
 			JsonLoader<Keys>.Instance.FileName = "keys.json";
+
 		}
 
 		bool _MinerEnabled;
@@ -156,7 +168,7 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
-			return BlockChain_.HandleBlock(block) == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+			return AppBlockChain.HandleBlock(block).Result == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
 		public void Acquire(int utxoIndex)
@@ -164,9 +176,9 @@ namespace Zen
 			WalletManager.Import(Key.Create(JsonLoader<Outputs>.Instance.Value.Values[utxoIndex].Key));
 		}
 
-		public void MineBlock()
+		public void MineTestBlock()
 		{
-			NodeManager.Miner.Mine();
+			NodeManager.Miner.MineTestBlock();
 		}
 
 		public void SetMinerEnabled(bool enabled)
@@ -272,7 +284,7 @@ namespace Zen
 			{
 				return Path.Combine(
 					Setting("dbDir"),
-					"blockchain" + (string.IsNullOrWhiteSpace(Settings.BlockChainDBSuffix) ? "" : Settings.BlockChainDBSuffix)
+					"blockchain" + (string.IsNullOrWhiteSpace(Settings.BlockChainDBSuffix) ? "" : "_" + Settings.BlockChainDBSuffix)
 				);
 			}
 		}
@@ -295,7 +307,7 @@ namespace Zen
 
 		public void Stop()
 		{
-			//stopEvent.Set();
+            //stopEvent.Set();
 
 			if (_NodeManager != null)
 			{
@@ -314,6 +326,8 @@ namespace Zen
 				_WalletManager.Dispose();
 				_WalletManager = null;
 			}
+
+			_CanConnect = true;
 		}
 
 		public void ResetBlockChainDB()
@@ -361,22 +375,10 @@ namespace Zen
 			WalletManager.Import(Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]));
 		}
 
-		public List<ACSItem> GetActiveContacts()
+		public async Task Connect()
 		{
-			using (var dbTx = BlockChain_.GetDBTransaction())
-			{
-				return new ActiveContractSet().All(dbTx).Select(t => t.Item2).ToList();
-			}
-		}
-
-		public async Task Reconnect()
-		{
-			Stop();
-
-			if (!Settings.DisableNetworking)
-			{
-				await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
-			}
+			_CanConnect = false;
+			await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
 		}
 
 		public void GUI()
@@ -386,7 +388,7 @@ namespace Zen
 
 		public void Dump()
 		{
-            var blockChainDumper = new BlockChainDumper(BlockChain_, WalletManager);
+            var blockChainDumper = new BlockChainDumper(AppBlockChain, WalletManager);
 			try
 			{
 				blockChainDumper.Populate();
@@ -413,26 +415,14 @@ namespace Zen
                 Directory.Delete(assetsDir, true);
         }
 
-		public void PurgeContracts()
-		{
-			//var contactsDir = ConfigurationManager.AppSettings.Get("contracts");
-
-			if (Directory.Exists("contracts"))
-				Directory.Delete("contracts", true);
-		}
-
-		public byte[] GetContractCode(byte[] contractHash)
-		{
-			return BlockChain_.GetContractCode(contractHash);
-		}
-
-		public Tuple<UInt64, UInt64> GetTotalAssets(byte[] contractHash)
-		{
-			return BlockChain_.GetTotalAssets(contractHash);	
-		}
-
 		public void Dispose()
 		{
+			if (_Server != null)
+			{
+				_Server.Stop();
+				_Server = null;
+			}
+
 			Stop();
 		}
 
@@ -516,12 +506,12 @@ namespace Zen
 			}
 		}
 
-		public bool ActivateTestContract(string name, int blocks)
-		{
-			string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
+		//public bool ActivateTestContract(string name, int blocks)
+		//{
+		//	string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
 
-			return ActivateTestContractCode(contractCode, blocks);
-		}
+		//	return ActivateTestContractCode(contractCode, blocks);
+		//}
 
 		public bool ActivateTestContractCode(string contractCode, int blocks)
 		{
@@ -531,13 +521,13 @@ namespace Zen
 			var version = (uint)1;
 
 			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-			var kalapasPerBlock = (ulong)(contractCode.Length * 1000 * blocks);
+			var kalapas = (ulong)(contractCode.Length * 1 * blocks);
 
 			outputs.Add(new Types.Output(
 				Types.OutputLock.NewContractSacrificeLock(
 					new Types.LockCore(0, ListModule.OfSeq(new byte[][] { }))
 				),
-				new Types.Spend(Tests.zhash, kalapasPerBlock)
+				new Types.Spend(Tests.zhash, kalapas)
 			));
 
 			var tx = new Types.Transaction(version,
@@ -655,112 +645,6 @@ namespace Zen
 
 			return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
-
-        public Types.Outpoint FindOutpoint(Address address, byte[] asset)
-		{
-			using (var dbTx = _BlockChain.GetDBTransaction())
-			{
-				foreach (var item in _BlockChain.UTXOStore.All(dbTx, null, false))
-				{
-					if (!item.Item2.spend.asset.SequenceEqual(asset))
-						continue;
-
-					byte[] _address = null;
-
-					if (item.Item2.@lock is Types.OutputLock.ContractLock)
-					{
-						if (address.AddressType != AddressType.Contract)
-							continue;
-						else
-							_address = ((Types.OutputLock.ContractLock)item.Item2.@lock).contractHash;
-					}
-
-					if (item.Item2.@lock is Types.OutputLock.PKLock)
-					{
-						if (address.AddressType != AddressType.PK)
-							continue;
-						else
-							_address = ((Types.OutputLock.PKLock)item.Item2.@lock).pkHash;
-					}
-
-					if (!_address.SequenceEqual(address.Bytes))
-						continue;
-
-                    return item.Item1;
-				}
-			}
-
-			////TODO: handle UTXOs consumed by mempool entries
-			//foreach (var item in _BlockChain.memPool.TxPool)
-			//{
-			//	uint i = 0;
-			//	foreach (var output in item.Value.outputs)
-			//	{
-			//		var contractLock = output.@lock as Types.OutputLock.ContractLock;
-			//		if (contractLock != null)
-			//		{
-			//			utxos[new Types.Outpoint(item.Key, i)] = output;
-			//		}
-			//		i++;
-			//	}
-			//}
-
-			return null;
-		}
-
-		public Tuple<Types.Outpoint, Types.Output> FindPointedOutpoint(Address address, byte[] asset)
-		{
-			using (var dbTx = _BlockChain.GetDBTransaction())
-			{
-				foreach (var item in _BlockChain.UTXOStore.All(dbTx, null, false))
-				{
-					if (!item.Item2.spend.asset.SequenceEqual(asset))
-						continue;
-
-					byte[] _address = null;
-
-					if (item.Item2.@lock is Types.OutputLock.ContractLock)
-					{
-						if (address.AddressType != AddressType.Contract)
-							continue;
-						else
-							_address = ((Types.OutputLock.ContractLock)item.Item2.@lock).contractHash;
-					}
-
-					if (item.Item2.@lock is Types.OutputLock.PKLock)
-					{
-						if (address.AddressType != AddressType.PK)
-							continue;
-						else
-							_address = ((Types.OutputLock.PKLock)item.Item2.@lock).pkHash;
-					}
-
-					if (!_address.SequenceEqual(address.Bytes))
-						continue;
-
-					return new Tuple<Types.Outpoint, Types.Output>(item.Item1, item.Item2);
-				}
-			}
-
-			////TODO: handle UTXOs consumed by mempool entries
-			//foreach (var item in _BlockChain.memPool.TxPool)
-			//{
-			//  uint i = 0;
-			//  foreach (var output in item.Value.outputs)
-			//  {
-			//      var contractLock = output.@lock as Types.OutputLock.ContractLock;
-			//      if (contractLock != null)
-			//      {
-			//          utxos[new Types.Outpoint(item.Key, i)] = output;
-			//      }
-			//      i++;
-			//  }
-			//}
-
-			return null;
-		}
-
-		//public void CreateQuotedTestContract(string 
 
 	}
 }

@@ -10,8 +10,8 @@ let run (app: App) =
     app.ResetWalletDB()
     app.ActivateTestContract(contract, 10)
     app.ActivateTestContract("MockCallOption.cs", 10)
-    app.MineBlock()
+    app.MineTestBlock()
     app.Acquire(0)
     Assert.IsTrue(app.Spend(app.GetTestContractAddress(contract), 2500000UL))
-    app.MineBlock()
+    app.MineTestBlock()
     "script succeeded"

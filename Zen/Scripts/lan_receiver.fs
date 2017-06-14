@@ -9,5 +9,6 @@ let run (app: App) =
     app.SetWallet("test2")
     app.ResetWalletDB()
     app.AddKey(0)
-    app.Reconnect()
+    app.Connect()
+    app.SetMinerEnabled(true)
     0

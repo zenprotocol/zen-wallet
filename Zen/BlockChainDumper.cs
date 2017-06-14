@@ -145,7 +145,7 @@ namespace Zen
 
 					lastKey = bkHash;
 					bkHash = bk.header.parent;
-					bk = _BlockChain.GetBlock(bkHash);
+					bk = new GetBlockAction() { BkHash = bkHash }.Publish().Result;
 				}
 			}
 
@@ -198,7 +198,11 @@ namespace Zen
 		{
 			HashDictionary<List<Types.Output>> txOutputs;
 			HashDictionary<Types.Transaction> txs;
-			_BlockChain.GetUTXOSet(null, out txOutputs, out txs); // TODO: use linq, return enumerator, remove predicate
+
+			var result = new GetUTXOSetAction() { Predicate = null }.Publish().Result;
+
+			txOutputs = result.Item1;
+			txs = result.Item2;
 
 			foreach (var tx in _Txs)
 			{
@@ -223,9 +227,9 @@ namespace Zen
 			{
 				var outputHash = Consensus.Merkle.outputHasher.Invoke(output);
 
-				string text = "";
+				string text = output.@lock.IsContractLock ? "C" : "P";
 
-                text = _WalletManager.AssetsMetadata.Get(output.spend.asset).Result;
+                text += " " + _WalletManager.AssetsMetadata.Get(output.spend.asset).Result;
                 text += " " + output.spend.amount;
 
 				if (output.spend.asset.SequenceEqual(Consensus.Tests.zhash))

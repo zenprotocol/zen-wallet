@@ -12,8 +12,8 @@ let run (app: App) =
 
     let contract = "SendToken.cs"
     app.ActivateTestContract(contract, 10)
-    app.MineBlock()
+    app.MineTestBlock()
 
     app.SendTestContract(contract, app.GetTestAddress(0).Bytes)
-    app.MineBlock()
+    app.MineTestBlock()
     "script succeeded"

@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Zen.RPC.Common;
 using System.Linq;
 using Wallet.core.Data;
+using BlockChain.Data;
 
 namespace Zen
 {
@@ -34,6 +35,7 @@ namespace Zen
 					return;
 
 				_Thread = new Thread(Listen);
+                _Thread.Name = "RPCListener";
 
 				_Thread.Start();
 				_Started = true;
@@ -59,31 +61,36 @@ namespace Zen
 
 			    while (!_Stopping)
 			    {
-					ResultPayload resultPayload = null;
+					BasePayload request = null;
+					ResultPayload response = null;
 
 					try
 					{
 						var message = server.ReceiveFrameString();
 						var basePayload = JsonConvert.DeserializeObject<BasePayload>(message);
 
-						Console.WriteLine("RPCServer got a " + basePayload.Type + " request");
+						request = (BasePayload)JsonConvert.DeserializeObject(message, basePayload.Type);
 
-						var payload = (BasePayload)JsonConvert.DeserializeObject(message, basePayload.Type);
-
-						resultPayload = GetResult(payload);
+						TUI.WriteColor($"{request}->", ConsoleColor.Blue);
+						response = GetResult(request);
 					}
 					catch (Exception e)
 					{
-						resultPayload = new ResultPayload() { Success = false, Message = e.Message };
+						response = new ResultPayload() { Success = false, Message = e.Message };
 					}
-					finally
-					{
-						if (resultPayload != null)
-						{
-							Console.WriteLine("RPCServer reply: " + (resultPayload.Success ? "Succeess" : "Failure") + " message: " + resultPayload.Message);
-							server.SendFrame(JsonConvert.SerializeObject(resultPayload));
+
+                    if (response != null)
+                    {
+                        try
+                        {
+							TUI.WriteColor($"<-{response}", ConsoleColor.Blue);
+                            server.SendFrame(JsonConvert.SerializeObject(response));
+                        } catch (Exception e)
+                        {
+                            TUI.WriteColor($"RPCServer could not reply to a {request} payload, got exception: {e.Message}", ConsoleColor.Red);
 						}
-					}
+                    }
+					
 			    }
 			}
 		}
@@ -92,9 +99,17 @@ namespace Zen
 		{
 			var type = payload.Type;
 
+			if (type == typeof(SpendPayload))
+			{
+				var spendPayload = (SpendPayload)payload;
+
+				var _result = _App.Spend(new Address(spendPayload.Address), spendPayload.Amount);
+
+				return new ResultPayload() { Success = _result };
+			}
+
 			if (type == typeof(SendContractPayload))
 			{
-				var result = new ResultPayload();
 				var sendContractPayload = (SendContractPayload)payload;
 
                 Consensus.Types.Transaction autoTx;
@@ -111,17 +126,28 @@ namespace Zen
 				}
 
 				return new ResultPayload() { Success = true };
-			} 
+			}
+
+			if (type == typeof(ActivateContractPayload))
+			{
+				var activateContractPayload = (ActivateContractPayload)payload;
+
+				var _result = _App.ActivateTestContractCode(
+					activateContractPayload.Code,
+					activateContractPayload.Blocks
+				);
+
+				return new ResultPayload() { Success = _result };
+			}
 
 			if (type == typeof(GetACSPayload))
 			{
 				return new GetACSResultPayload() { 
 					Success = true,
-					Contracts = _App.GetActiveContacts().Select(t => new ContractData() {
+					Contracts = new GetActiveContactsAction().Publish().Result.Select(t => new ContractData() {
 						Hash = t.Hash,
 						LastBlock = t.LastBlock,
-						Code = _App.GetContractCode(t.Hash),
-
+						Code = new GetContractCodeAction(t.Hash).Publish().Result
 					}).ToArray() 
 				};
 			} 
@@ -131,50 +157,34 @@ namespace Zen
 				return new HelloResultPayload();
 			}
 
-			if (type == typeof(GetContractCodePayload))
-			{
-				var contractHash = ((GetContractCodePayload)payload).Hash;
-				return new GetContractCodeResultPayload() { Code = _App.GetContractCode(contractHash) };
-			}
+			//if (type == typeof(GetContractCodePayload))
+			//{
+			//	var contractHash = ((GetContractCodePayload)payload).Hash;
+   //             return new GetContractCodeResultPayload() { Success = true, Code = _App.GetContractCode(contractHash) };
+			//}
 
 			if (type == typeof(GetContractTotalAssetsPayload))
 			{
 				var contractHash = ((GetContractTotalAssetsPayload)payload).Hash;
-				var totals = _App.GetTotalAssets(contractHash);
+			//	var totals = _App.GetTotalAssets(contractHash);
 				return new GetContractTotalAssetsResultPayload() { 
-					Confirmed = totals.Item1, 
-					Unconfirmed = totals.Item2
+					Confirmed = 999, // totals.Item1, 
+					Unconfirmed = 999 // totals.Item2
 				};
 			}
 
-			if (type == typeof(GetOutpointPayload))
+            if (type == typeof(GetContractPointedOutputsPayload))
 			{
-				var _payload = (GetOutpointPayload)payload;
-				var address = _payload.Address;
-				var result = _App.FindOutpoint(new Address(address, _payload.IsContract ? AddressType.Contract : AddressType.PK ), _payload.Asset);
+				var _payload = (GetContractPointedOutputsPayload)payload;
+				var result = new GetContractPointedOutputsAction(_payload.ContractHash).Publish().Result;
 
-				return result == null ? new GetOutpointResultPayload() : new GetOutpointResultPayload()
+                return new GetContractPointedOutputsResultPayload
 				{
                     Success = true,
-                    Index = result.index,
-                    TXHash = result.txHash,
+                    PointedOutputs = GetContractPointedOutputsResultPayload.Pack(result)
 				};
 			}
-
-			if (type == typeof(GetPointedOutpointPayload))
-			{
-				var _payload = (GetPointedOutpointPayload)payload;
-				var address = _payload.Address;
-				var result = _App.FindPointedOutpoint(new Address(address, _payload.IsContract ? AddressType.Contract : AddressType.PK), _payload.Asset);
-
-				return result == null ? new GetPointedOutpointResultPayload() : new GetPointedOutpointResultPayload()
-				{
-					Success = true,
-					Outpoint = result.Item1,
-                    Output = result.Item2,
-				};
-			}
-
+		
 			if (type == typeof(MakeTransactionPayload))
 			{
 				var _payload = (MakeTransactionPayload)payload;

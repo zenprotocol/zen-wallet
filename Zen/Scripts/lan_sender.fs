@@ -1,4 +1,5 @@
 ﻿module Test
+open NUnit.Framework
 open Zen
 let run (app: App) = 
     app.SetNetwork("lan_client")
@@ -9,6 +10,7 @@ let run (app: App) =
     app.SetWallet("test1")
     app.ResetWalletDB()
     app.Acquire(0)
-    app.Reconnect()
-    let x = app.Spend(1000, 0)
+    app.Connect()
+    app.SetMinerEnabled(true)
+    Assert.IsTrue(app.Spend(app.GetTestAddress(0), 1000000UL))
     0

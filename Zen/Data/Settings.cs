@@ -26,8 +26,6 @@ namespace Zen.Data
 		}
 
 		public String SettingsProfile { get; set; }
-		public bool SaveSettings { get; set; }
-		public bool DisableNetworking { get; set; }
 
 		public Settings() {
 			WalletDB = null;

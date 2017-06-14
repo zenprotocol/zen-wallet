@@ -12,12 +12,12 @@ let run (app: App) =
 
     app.ActivateTestContract(contract, 10)
     
-    app.MineBlock()
+    app.MineTestBlock()
     app.Acquire(0)
 
     //let buyCommandData = Array.concat [ [|0uy|] ; app.GetTestAddress(1).Bytes ]
     //Assert.IsTrue(app.Spend(app.GetTestContractAddress(contract), 250000000UL, buyCommandData ))
-    //app.MineBlock()
+    //app.MineTestBlock()
 
 
 
@@ -25,13 +25,13 @@ let run (app: App) =
 
 
     //Assert.IsTrue(app.SendTestContract(contract, buyCommandData ))
-    //app.MineBlock()
+    //app.MineTestBlock()
 
     //app.SetWallet("test1")
     //app.ResetWalletDB()
     //app.AddKey(0)
 
-    //app.MineBlock()
+    //app.MineTestBlock()
     //app.Dump()
 
     //app.SetWallet("default")

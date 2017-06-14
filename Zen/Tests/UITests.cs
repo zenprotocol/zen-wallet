@@ -50,7 +50,7 @@ namespace Zen
 
 			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
 
-			app.Reconnect();
+			app.Connect();
 
 			new Thread(() =>
 			{
@@ -83,7 +83,7 @@ namespace Zen
 
 			Assert.That(app.AssetMount(), Is.EqualTo(expectedAmount));
 			      
-			app.Reconnect();
+			app.Connect();
 
 			new Thread(() =>
 			{
@@ -105,7 +105,7 @@ namespace Zen
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
-			app.Reconnect();
+			app.Connect();
 
 			var address = Key.Create().Address;
 
@@ -146,7 +146,7 @@ namespace Zen
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
-			app.Reconnect();
+			app.Connect();
 
 			Task.Run(() =>
 			{
@@ -201,7 +201,7 @@ namespace Zen
 
 			JsonLoader<Outputs>.Instance.Value.Values.ForEach(o => app.WalletManager.Import(Key.Create(o.Key)));
 
-			app.Reconnect();
+			app.Connect();
 
 			Task.Run(() =>
 			{

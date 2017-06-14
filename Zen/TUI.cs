@@ -12,6 +12,7 @@ using Wallet.core;
 using Network;
 using System.Linq;
 using System.Threading.Tasks;
+using BlockChain.Data;
 
 namespace Zen
 {
@@ -28,7 +29,7 @@ namespace Zen
 			var options = new Dictionary<string, List<string>>();
 
 			options["main"] = new List<string>();
-			options["main"].Add("Reconnect");
+			options["main"].Add("Connect");
 			options["main"].Add("Start GUI");
 			options["main"].Add("Wallet Menu");
 			options["main"].Add("BlockChain Menu");
@@ -191,7 +192,7 @@ namespace Zen
 
 			minerDialogMinerButton.Clicked += (sender, e) =>
 			{
-				app.MineBlock();
+				app.MineTestBlock();
 			};
 
 			Action showMinerDialog = () =>
@@ -228,8 +229,8 @@ namespace Zen
 					case "Miner Menu":
 						showMinerDialog();
 						break;
-					case "Reconnect":
-						await app.Reconnect();
+					case "Connect":
+						await app.Connect();
 						break;
 					case "Start GUI":
 						app.GUI();
@@ -248,11 +249,11 @@ namespace Zen
 					case "Active Contract Set":
 						options["acs"] = new List<string>();
 
-						foreach (var contractData in app.GetActiveContacts())
+						foreach (var contractData in new GetActiveContactsAction().Publish().Result)
 						{
 							var info = new Address(contractData.Hash, AddressType.Contract) + " " + contractData.LastBlock;
 
-							info += app.GetTotalAssets(contractData.Hash);
+						//	info += app.GetTotalAssets(contractData.Hash);
 
 							options["acs"].Add(info);
 						}
@@ -303,7 +304,7 @@ namespace Zen
 						app.MinerEnabled = false;
 						break;
 					case "Mine Block":
-						app.MineBlock();
+						app.MineTestBlock();
 						break;
 					case "Back":
 						menu("main");
@@ -334,7 +335,7 @@ namespace Zen
                         menu("main");
 						break;
 					default:
-						Console.WriteLine(app.GetContractCode(new Address(a).Bytes));
+						Console.WriteLine(new GetContractCodeAction(new Address(a).Bytes).Publish().Result);
 						break;
 				}
 			};
@@ -507,6 +508,12 @@ namespace Zen
 			else
 			{
 				Console.ForegroundColor = color;
+
+                if (!message.EndsWith("\n"))
+                {
+                    message += "\n";
+                }
+
 				Console.Write(message);
 			}
 		}
