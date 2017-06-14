@@ -250,7 +250,7 @@ namespace NBitcoin.Protocol
 								var payload = WireSerialization.Instance.Unpack(stream);
 
 								//if(NodeServerTrace.Trace.Switch.ShouldTrace(TraceEventType.Verbose))
-								NodeServerTrace.Information("Receiving " + payload + " from " + _Node.RemoteSocketAddress);
+                                NodeServerTrace.Verbose("Receiving " + payload + " from " + _Node.RemoteSocketAddress);
 
 								Node.LastSeen = DateTimeOffset.UtcNow;
 								//Node.Counter.Add(counter);

@@ -8,6 +8,7 @@ using NBitcoin;
 using NBitcoin.Protocol.Behaviors;
 using System.Net;
 using Consensus;
+using BlockChain.Data;
 
 namespace Network
 {
@@ -31,6 +32,8 @@ namespace Network
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
 			Miner = new Miner();
+
+            OwnResource(Miner);
 			Miner.BlockChain_ = blockChain;
 		}
 
@@ -131,7 +134,7 @@ namespace Network
 		/// </summary>
 		public BlockChain.BlockChain.TxResultEnum Transmit(Types.Transaction tx)
 		{
-			var result = _BlockChain.HandleTransaction(tx);
+			var result = new HandleTransactionAction() { Tx = tx } .Publish().Result;
 
 			if (result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
 				_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);

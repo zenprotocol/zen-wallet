@@ -3,6 +3,7 @@ using Consensus;
 using System.Linq;
 using System;
 using System.Collections.Generic;
+using BlockChain.Data;
 
 namespace NBitcoin.Protocol.Behaviors
 {
@@ -47,9 +48,10 @@ namespace NBitcoin.Protocol.Behaviors
 
 		void AttachedNode_MessageReceived(Node node, IncomingMessage message)
 		{
-			message.IfPayloadIs<Types.Block>(bk =>
+			message.IfPayloadIs<Types.Block>(async bk =>
 			{
-				switch (_BlockChain.HandleBlock(bk))
+				var result = await _BlockChain.HandleBlock(bk);
+				switch (result)
 				{
 					case BlockChain.BlockVerificationHelper.BkResultEnum.Accepted:
 						foreach (var other in Nodes)
@@ -80,7 +82,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 				if (tip != null)
 				{
-					var bk = _BlockChain.GetBlock(tip.Key);
+					var bk = new GetBlockAction() { BkHash = tip.Key }.Publish().Result;
 
 					if (bk != null)
 					{
@@ -102,7 +104,7 @@ namespace NBitcoin.Protocol.Behaviors
 			{
 				foreach (var inventory in getData.Inventory.Where(i => i.Type == InventoryType.MSG_BLOCK))
 				{
-					var bk = _BlockChain.GetBlock(inventory.Hash);
+					var bk = new GetBlockAction() { BkHash = inventory.Hash }.Publish().Result;
 
 					if (bk != null)
 					{

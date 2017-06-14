@@ -6,6 +6,8 @@ using Microsoft.FSharp.Collections;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using NBitcoin.Protocol;
+using System.Threading.Tasks;
 
 namespace Network
 {
@@ -17,7 +19,7 @@ namespace Network
 		public BlockChain.BlockVerificationHelper.BkResultEnum Status { get; set; }
 	}
 
-	public class Miner
+    public class Miner : IDisposable
 	{
 		Thread _Thread;
 		bool _Enabled;
@@ -57,7 +59,7 @@ namespace Network
 
 		public Miner()
 		{
-			Difficulty = (int) (8 * 3.5);
+			Difficulty = 1; // (int) (8 * 3.5);
 
 			_Thread = new Thread(() =>
 			{
@@ -66,30 +68,47 @@ namespace Network
 					while (!_Stopping)
 					{
 						Mine(Difficulty);
+						Thread.Sleep(10);
 					}
 				}
 				catch (ThreadInterruptedException tie)
 				{
+					Console.WriteLine(tie.Message);
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e.Message);
 				}
 			});
+
+			_Thread.Name = "Miner";
 		}
 
 #if DEBUG
-		public
-#endif
-		void Mine(int difficulty = 0)
+		public void MineTestBlock()
 		{
+			Mine(0);
+		}
+#endif
+
+		bool Mine(int difficulty)
+		{
+			if (BlockChain_.memPool.TxPool.Count == 0)
+			{
+				return false;
+			}
+
+			var tip = BlockChain_.Tip;
+
+			if (tip == null)
+			{
+				return false;
+			}
+
 			uint version = 1;
 			var nonce = new byte[10];
 			var random = new Random();
 			var time = DateTime.Now.ToUniversalTime();
-
-			var tip = BlockChain_.Tip;
-
-			if (tip == null || BlockChain_.memPool.TxPool.Count == 0)
-			{
-                return;
-			}
 
 			var txs = BlockChain_.memPool.TxPool.Select(t => TransactionValidation.unpoint(t.Value));
 			var txsList = ListModule.OfSeq(txs);
@@ -132,6 +151,8 @@ namespace Network
 
 			if (c >= difficulty)
 			{
+				NodeServerTrace.Information("Block puzzle solved!");
+
 				var log = new MinerLogData();
 				var block = new Types.Block(blockHeader, txsList);
 
@@ -139,18 +160,31 @@ namespace Network
 				log.BlockNumber = block.header.blockNumber;
 				log.Transactions = block.transactions.Count();
 
-				var accpeted = BlockChain_.HandleBlock(block);
-				log.Status = accpeted;
+				var result = BlockChain_.HandleBlock(block).Result;
 
-				if (accpeted == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted && BlockBroadcastHub != null)
+				var accepted = result == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+				log.Status = result;
+
+				if (accepted && BlockBroadcastHub != null)
+				{
 					BlockBroadcastHub.BroadcastBlockAsync(block);
+				}
 
 				if (OnMinedBlock != null)
 					OnMinedBlock(log);
 
-				return;
+				return accepted;
+			}
+			else
+			{
+				return false;
 			}
 		}
-	}
+
+        public void Dispose()
+        {
+            _Stopping = true;
+        }
+    }
 }
 
