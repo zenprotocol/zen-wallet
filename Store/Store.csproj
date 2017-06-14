@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Store</RootNamespace>
     <AssemblyName>Store</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,13 +28,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="MsgPack">
-      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="DBreeze">
-      <HintPath>..\packages\DBreeze.1.82.0\lib\net45\DBreeze.dll</HintPath>
+      <HintPath>..\packages\DBreeze.1.87.0\lib\net462\DBreeze.dll</HintPath>
     </Reference>
-    <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
