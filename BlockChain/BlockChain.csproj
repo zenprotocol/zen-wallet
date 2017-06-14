@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Net.Compilers.2.3.0-beta1\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.3.0-beta1\build\Microsoft.Net.Compilers.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>BlockChain</RootNamespace>
     <AssemblyName>BlockChain</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -18,6 +18,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <LangVersion>Default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -26,27 +27,27 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <LangVersion>Default</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="MsgPack">
-      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
-    </Reference>
-    <Reference Include="DBreeze">
-      <HintPath>..\packages\DBreeze.1.82.0\lib\net45\DBreeze.dll</HintPath>
-    </Reference>
     <Reference Include="System.Threading.Tasks.Dataflow" />
+    <Reference Include="System.Web" />
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
     <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web" />
+    <Reference Include="DBreeze">
+      <HintPath>..\packages\DBreeze.1.87.0\lib\net462\DBreeze.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BlockChain.cs" />
     <Compile Include="Store\BlockNumberDifficulties.cs" />
     <Compile Include="Store\BlockStore.cs" />
     <Compile Include="Data\HashDictionary.cs" />
@@ -55,7 +56,7 @@
     <Compile Include="Store\ConsensusTypeStore.cs" />
     <Compile Include="BlockVerificationHelper.cs" />
     <Compile Include="Store\ChainTip.cs" />
-    <Compile Include="ContractHelper.cs" />
+    <Compile Include="BlockChain.cs" />
     <Compile Include="Data\BlockTimestamps.cs" />
     <Compile Include="Data\BlockChainMessage.cs" />
     <Compile Include="Data\Action.cs" />
@@ -73,9 +74,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Store\" />
   </ItemGroup>
@@ -92,13 +90,12 @@
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ContractsUtils\ContractsUtils.fsproj">
-      <Project>{D87C2E33-669C-4041-A59C-27A563B1A638}</Project>
-      <Name>ContractsUtils</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
       <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
       <Name>ContractExamples</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

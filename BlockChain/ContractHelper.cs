@@ -50,7 +50,7 @@ namespace BlockChain
 			{
 				var fileName = HttpServerUtility.UrlTokenEncode(contractArgs.ContractHash);
 				var contractCode = File.ReadAllText(Path.Combine(_OutputPath, Path.ChangeExtension(fileName, ".fs")));
-				var func = ContractExamples.Execution.compileContract(contractCode);
+				var func = ContractExamples.Execution.compileQuotedContract(contractCode);
 
                 var result = func.Invoke(new Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>(
                     contractArgs.Message,
@@ -162,13 +162,13 @@ namespace BlockChain
 			return false;
 		}
 
-		public static bool Compile(byte[] fsharpCode, out byte[] contractHash)
+		public static bool Compile(byte[] fsharpCode, byte[] contractHash)
 		{
-			return Compile(Encoding.ASCII.GetString(fsharpCode), out contractHash);
+			return Compile(Encoding.ASCII.GetString(fsharpCode), contractHash);
 		}
 
 		//		public async static Task<bool> Extract(byte[] fstarCode, StrongBox<byte[]> fsharpCode)
-		public static bool Extract(byte[] fstarCode, out byte[] fsharpCode)
+        public static bool Extract(string fstarCode, out string fsharpCode)
 		{
 			//	await Task.Delay(1000);
 //			var fsharpCodeExtracted = @"
@@ -222,7 +222,7 @@ namespace BlockChain
 			return true;
 		}
 #else
-        public static bool Compile(String fsharpCode, out byte[] contractHash)
+        public static bool Compile(String fsharpCode, byte[] contractHash)
         {
 			contractHash = GetHash(fsharpCode);
 

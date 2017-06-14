@@ -12,9 +12,17 @@ using System.Threading.Tasks;
 using System.Collections;
 using Microsoft.FSharp.Core;
 using System.Text;
+using static BlockChain.BlockVerificationHelper;
 
 namespace BlockChain
 {
+	public class ContractArgs
+	{
+		public byte[] ContractHash { get; set; }
+		public Func<Types.Outpoint, FSharpOption<Types.Output>> tryFindUTXOFunc { get; set; }
+		public byte[] Message { get; set; }
+	}
+
 	public class BlockChain : ResourceOwner
 	{
 #if TEST
@@ -24,7 +32,8 @@ namespace BlockChain
 #endif
 
 		readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
-		readonly DBContext _DBContext;
+
+		DBContext _DBContext = null;
 
 		public MemPool memPool { get; set; }
 		public UTXOStore UTXOStore { get; set; }
@@ -58,17 +67,8 @@ namespace BlockChain
 			Invalid,
 		}
 
-#if DEBUG
-		// for unit tests
-		public void WaitDbTxs()
-		{
-			_DBContext.Wait();
-		}
-#endif
-
 		public BlockChain(string dbName, byte[] genesisBlockHash)
 		{
-			_DBContext = new DBContext(dbName);
 			memPool = new MemPool();
 			UTXOStore = new UTXOStore();
 			BlockStore = new BlockStore();
@@ -76,6 +76,9 @@ namespace BlockChain
 			ChainTip = new ChainTip();
 			Timestamps = new BlockTimestamps();
 			GenesisBlockHash = genesisBlockHash;
+
+			_DBContext = new DBContext(dbName);
+			OwnResource(_DBContext);
 
 			using (var context = _DBContext.GetTransactionContext())
 			{
@@ -87,30 +90,66 @@ namespace BlockChain
 
 			InitBlockTimestamps();
 
-			var buffer = new BufferBlock<QueueAction>();
-			QueueAction.Target = buffer;
-			var consumer = ConsumeAsync(buffer);
+			var listener = new EventLoopMessageListener<QueueAction>(HandleQueueAction, "BlockChain listener");
 
-			OwnResource(_DBContext);
+			MessageProducer<QueueAction>.Instance.AddMessageListener(listener);
+
+			OwnResource(listener);
 		}
 
-		async Task ConsumeAsync(ISourceBlock<QueueAction> source)
+		void HandleQueueAction(QueueAction action)
 		{
-			while (await source.OutputAvailableAsync())
+			try
 			{
-				var action = source.Receive();
+				//((dynamic)this).Handle((dynamic)action);
 
-				try
+				if (action is HandleBlockAction)
+					((HandleBlockAction)action).SetResult(HandleBlock(action as HandleBlockAction));
+				else if (action is GetActiveContactsAction)
+					((GetActiveContactsAction)action).SetResult(GetActiveContacts());
+				else if (action is GetContractPointedOutputsAction)
+					((GetContractPointedOutputsAction)action).SetResult(GetContractPointedOutputs(
+						((GetContractPointedOutputsAction)action).ContractHash));
+				else if (action is HandleOrphansOfTxAction)
+					HandleOrphansOfTransaction(action as HandleOrphansOfTxAction);
+				else if (action is GetIsContractActiveAction)
+					((GetIsContractActiveAction)action).SetResult(IsContractActive(
+						((GetIsContractActiveAction)action).ContractHash));
+				else if (action is GetUTXOAction)
+					((GetUTXOAction)action).SetResult(GetUTXO(((GetUTXOAction)action).Outpoint, ((GetUTXOAction)action).IsInBlock));
+				else if (action is GetIsConfirmedUTXOExistAction)
 				{
-					if (action is HandleBlockAction)
-						HandleBlock(action as HandleBlockAction);
-					else if (action is HandleOrphansOfTxAction)
-						HandleOrphansOfTransaction(action as HandleOrphansOfTxAction);
+					var outpoint = ((GetIsConfirmedUTXOExistAction)action).Outpoint;
+					((GetIsConfirmedUTXOExistAction)action).SetResult(IsConfirmedUTXOExist(outpoint));
 				}
-				catch (Exception e)
+				else if (action is GetContractCodeAction)
+					((GetContractCodeAction)action).SetResult(GetContractCode(
+						((GetContractCodeAction)action).ContractHash));
+				else if (action is HandleTransactionAction)
+					((HandleTransactionAction)action).SetResult(HandleTransaction(((HandleTransactionAction)action).Tx));
+				else if (action is GetBlockAction)
+					((GetBlockAction)action).SetResult(GetBlock(((GetBlockAction)action).BkHash));
+				else if (action is GetTxAction)
+					((GetTxAction)action).SetResult(GetTransaction(((GetTxAction)action).TxHash));
+				else if (action is ExecuteContractAction)
 				{
-					BlockChainTrace.Error("action consumer", e);
+					var executeContractAction = ((ExecuteContractAction)action);
+					Types.Transaction tx;
+					var result = ExecuteContract(executeContractAction.ContractHash, executeContractAction.Message, out tx, executeContractAction.Message != null, false);
+					((ExecuteContractAction)action).SetResult(new Tuple<bool, Types.Transaction>(result, tx));
 				}
+				else if (action is GetUTXOSetAction)
+				{
+					var getUTXOSetAction = (GetUTXOSetAction)action;
+					HashDictionary<List<Types.Output>> txOutputs;
+					HashDictionary<Types.Transaction> txs;
+					GetUTXOSet(getUTXOSetAction.Predicate, out txOutputs, out txs);
+					getUTXOSetAction.SetResult(new Tuple<HashDictionary<List<Types.Output>>, HashDictionary<Types.Transaction>>(txOutputs, txs));
+				}
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("BlockChain handler", e);
 			}
 		}
 
@@ -161,7 +200,7 @@ namespace BlockChain
 		/// <summary>
 		/// Handles a new transaction from network or wallet. 
 		/// </summary>
-		public TxResultEnum HandleTransaction(Types.Transaction tx)
+		TxResultEnum HandleTransaction(Types.Transaction tx)
 		{
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
@@ -265,13 +304,9 @@ namespace BlockChain
 			return true;
 		}
 
-		/// <summary>
-		/// Handles a block from network.
-		/// </summary>
-		/// <returns><c>true</c>, if new block was acceped, <c>false</c> rejected.</returns>
-		public BlockVerificationHelper.BkResultEnum HandleBlock(Types.Block bk)
+		public Task<BkResultEnum> HandleBlock(Types.Block bk)
 		{
-			return HandleBlock(new HandleBlockAction(bk));
+			return new HandleBlockAction(bk).Publish();
 		}
 
 		BlockVerificationHelper.BkResultEnum HandleBlock(HandleBlockAction a)
@@ -287,7 +322,7 @@ namespace BlockChain
 					a.Bk,
 					a.IsOrphan
 				);
-				
+
 				switch (action.Result)
 				{
 					case BlockVerificationHelper.BkResultEnum.AcceptedOrphan:
@@ -325,7 +360,7 @@ namespace BlockChain
 
 				var activeContracts = new ActiveContractSet().Keys(dbTx);
 				activeContracts.AddRange(memPool.ContractPool.Keys);
-				               
+
 				EvictTxToMempool(dbTx, unconfirmedTxs);
 				RemoveConfirmedTxFromMempool(confirmedTxs);
 
@@ -387,7 +422,7 @@ namespace BlockChain
 
 			foreach (var ptx in confirmedTxs.Values)
 			{
-				spentOutputs.AddRange(ptx.pInputs.Select(t=>t.Item1));
+				spentOutputs.AddRange(ptx.pInputs.Select(t => t.Item1));
 			}
 
 			foreach (var item in confirmedTxs)
@@ -425,7 +460,8 @@ namespace BlockChain
 				if (UTXOStore.ContainsKey(dbTx, input))
 				{
 					outputs.Add(UTXOStore.Get(dbTx, input).Value);
-				} else if (memPool.TxPool.Contains(input.txHash))
+				}
+				else if (memPool.TxPool.Contains(input.txHash))
 				{
 					if (input.index < memPool.TxPool[input.txHash].outputs.Length)
 					{
@@ -470,45 +506,53 @@ namespace BlockChain
 			return true;
 		}
 
-        public Types.Output GetUTXO(Types.Outpoint outpoint, TransactionContext dbTx, bool IsInBlock)
-        {
-            try
-            {
-                if (!IsInBlock)
-                {
-                    foreach (var item in memPool.TxPool)
-                    {
-                        foreach (var pInput in item.Value.pInputs)
-                        {
-                            if (outpoint == pInput.Item1)
-                                return null;
-                        }
-                    }
-                }
+		Types.Output GetUTXO(Types.Outpoint outpoint, bool IsInBlock)
+		{
+			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
+			{
+				return GetUTXO(outpoint, dbTx, IsInBlock);
+			}
+		}
+					
+		Types.Output GetUTXO(Types.Outpoint outpoint, TransactionContext dbTx, bool IsInBlock)
+		{
+			try
+			{
+				if (!IsInBlock)
+				{
+					foreach (var item in memPool.TxPool)
+					{
+						foreach (var pInput in item.Value.pInputs)
+						{
+							if (outpoint == pInput.Item1)
+								return null;
+						}
+					}
+				}
 
-                var result = UTXOStore.Get(dbTx, outpoint);
+				var result = UTXOStore.Get(dbTx, outpoint);
 
-                if (result != null)
-                    return result.Value;
+				if (result != null)
+					return result.Value;
 
-                if (!IsInBlock && memPool.TxPool.Contains(outpoint.txHash))
-                {
-                    var tx = memPool.TxPool[outpoint.txHash];
+				if (!IsInBlock && memPool.TxPool.Contains(outpoint.txHash))
+				{
+					var tx = memPool.TxPool[outpoint.txHash];
 
-                    if (tx.outputs.Count() > outpoint.index)
-                    {
-                        return tx.outputs[(int)outpoint.index];
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                BlockChainTrace.Error("GetUTXO", e);
-            }
+					if (tx.outputs.Count() > outpoint.index)
+					{
+						return tx.outputs[(int)outpoint.index];
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("GetUTXO", e);
+			}
 
-            BlockChainTrace.Information("Could not find UTXO!");
+			BlockChainTrace.Information("Could not find UTXO!");
 
-            return null;
+			return null;
 		}
 
 		public bool IsValidTransaction(TransactionContext dbTx, TransactionValidation.PointedTransaction ptx, byte[] contractHash, bool IsInBlock = false)
@@ -542,18 +586,8 @@ namespace BlockChain
 
 			isWitness = witnessIdx == 0;
 
-            Func<Types.Outpoint, FSharpOption<Types.Output>> getUTXO = t =>
-            {
-                return GetUTXO(t, dbTx, IsInBlock);
-            };
-
 			Types.Transaction tx;
-			var isExecutionSuccessful = ContractHelper.Execute(out tx, new ContractArgs()
-            {
-                ContractHash = contractHash,
-                tryFindUTXOFunc = getUTXO,
-				Message = message
-			}, isWitness);
+			var isExecutionSuccessful = ExecuteContract(dbTx, contractHash, message, out tx, isWitness, IsInBlock);
 
 			return isExecutionSuccessful && tx != null && TransactionValidation.unpoint(ptx).Equals(tx);
 		}
@@ -593,11 +627,6 @@ namespace BlockChain
 		//	return xValid(ptx, contractHash, utxos, tipBlockHeader);
 		//}
 
-		public TransactionContext GetDBTransaction()
-		{
-			return _DBContext.GetTransactionContext();
-		}
-
 		public void InitBlockTimestamps()
 		{
 			if (Tip != null)
@@ -625,7 +654,7 @@ namespace BlockChain
 		//TODO: refactor
 		public Keyed<Types.Block> Tip { get; set; }
 
-		public Types.Transaction GetTransaction(byte[] key) //TODO: make concurrent
+		Types.Transaction GetTransaction(byte[] key) //TODO: make concurrent
 		{
 			if (memPool.TxPool.Contains(key))
 			{
@@ -646,7 +675,7 @@ namespace BlockChain
 		}
 
 		//TODO: should asset that the block came from main?
-		public Types.Block GetBlock(byte[] key)
+		Types.Block GetBlock(byte[] key)
 		{
 			using (TransactionContext context = _DBContext.GetTransactionContext())
 			{
@@ -663,7 +692,7 @@ namespace BlockChain
 			}
 		}
 
-		public byte[] GetContractCode(byte[] contractHash)
+		byte[] GetContractCode(byte[] contractHash)
 		{
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
@@ -686,42 +715,42 @@ namespace BlockChain
 			return null;
 		}
 
-		public Tuple<ulong, ulong> GetTotalAssets(byte[] contractHash)
-		{
-			ulong confirmed = 0;
-			ulong unconfirmed = 0;
+		//public Tuple<ulong, ulong> GetTotalAssets(byte[] contractHash)
+		//{
+		//	ulong confirmed = 0;
+		//	ulong unconfirmed = 0;
 
-			using (var dbTx = GetDBTransaction())
-			{
-				var x = UTXOStore.All(dbTx, null, false).ToList();
+		//	using (var dbTx = GetDBTransaction())
+		//	{
+		//		var x = UTXOStore.All(dbTx, null, false).ToList();
 
-				foreach (var item in UTXOStore.All(dbTx, null, false).Where(t =>
-				{
-					var contractLock = t.Item2.@lock as Types.OutputLock.ContractLock;
-					return contractLock != null; // && contractLock.contractHash.SequenceEqual(contractHash);
-				}))
-				{
-					confirmed += item.Item2.spend.amount;
-				}	
-			}
+		//		foreach (var item in UTXOStore.All(dbTx, null, false).Where(t =>
+		//		{
+		//			var contractLock = t.Item2.@lock as Types.OutputLock.ContractLock;
+		//			return contractLock != null; // && contractLock.contractHash.SequenceEqual(contractHash);
+		//		}))
+		//		{
+		//			confirmed += item.Item2.spend.amount;
+		//		}
+		//	}
 
-			foreach (var item in memPool.TxPool)
-			{
-				foreach (var output in item.Value.outputs)
-				{
-					var contractLock = output.@lock as Types.OutputLock.ContractLock;
-					if (contractLock != null)
-					{
-						confirmed += output.spend.amount;
-					}
-				}
-			}
+		//	foreach (var item in memPool.TxPool)
+		//	{
+		//		foreach (var output in item.Value.outputs)
+		//		{
+		//			var contractLock = output.@lock as Types.OutputLock.ContractLock;
+		//			if (contractLock != null)
+		//			{
+		//				confirmed += output.spend.amount;
+		//			}
+		//		}
+		//	}
 
-			return new Tuple<ulong, ulong>(confirmed, unconfirmed);
-		}
+		//	return new Tuple<ulong, ulong>(confirmed, unconfirmed);
+		//}
 
 		// TODO: use linq, return enumerator, remove predicate
-		public void GetUTXOSet(Func<Types.Output, bool> predicate, out HashDictionary<List<Types.Output>> txOutputs, out HashDictionary<Types.Transaction> txs)
+		void GetUTXOSet(Func<Types.Output, bool> predicate, out HashDictionary<List<Types.Output>> txOutputs, out HashDictionary<Types.Transaction> txs)
 		{
 			txOutputs = new HashDictionary<List<Types.Output>>();
 			txs = new HashDictionary<Types.Transaction>();
@@ -738,6 +767,144 @@ namespace BlockChain
 					txOutputs[item.Item1.txHash].Add(item.Item2);
 					txs[item.Item1.txHash] = BlockStore.TxStore.Get(context, item.Item1.txHash).Value;
 				}
+			}
+		}
+
+		bool ExecuteContract(byte[] contractHash, byte[] message, out Types.Transaction transaction, bool isWitness, bool isInBlock)
+		{
+			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
+			{
+				return ExecuteContract(dbTx, contractHash, message, out transaction, isWitness, isInBlock);
+			}
+		}
+
+		bool ExecuteContract(TransactionContext dbTx, byte[] contractHash, byte[] message, out Types.Transaction transaction, bool isWitness, bool isInBlock)
+		{
+			try
+			{
+				if (!new ActiveContractSet().IsActive(dbTx, contractHash))
+				{
+					transaction = null;
+					return false;
+				}
+
+				Func<Types.Outpoint, FSharpOption<Types.Output>> getUTXO = t =>
+				{
+					return GetUTXO(t, dbTx, isInBlock);
+				};
+
+				var contractArgs = new ContractArgs()
+				{
+					ContractHash = contractHash,
+					Message = message,
+					tryFindUTXOFunc = getUTXO
+				};
+
+				var acsItem = new ActiveContractSet().Get(dbTx, contractHash);
+
+				if (acsItem.Value != null)
+				{
+					var func = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+
+					var result = func.Invoke(new Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>(
+						contractArgs.Message,
+						contractArgs.ContractHash,
+						FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>.FromConverter(t => contractArgs.tryFindUTXOFunc(t))));
+
+					var txSkeleton = result as Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
+
+					transaction = txSkeleton == null || txSkeleton.Item2.Count() == 0 ? null :
+						new Types.Transaction(
+							Tests.tx.version,
+							txSkeleton.Item1,
+							ListModule.OfSeq<byte[]>(isWitness ? new byte[][] { contractArgs.Message } : new byte[][] { }),
+							txSkeleton.Item2,
+							FSharpOption<Types.ExtendedContract>.None //TODO: get from txSkeleton.Item3
+						);
+
+					return true;
+				}
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("Error executing contract", e);
+			}
+
+			transaction = null;
+			return false;
+		}
+
+		List<ACSItem> GetActiveContacts()
+		{
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				return new ActiveContractSet().All(dbTx).Select(t => t.Item2).ToList();
+			}
+		}
+
+		List<Tuple<Types.Outpoint, Types.Output>> GetContractPointedOutputs(byte[] contractHash)
+		{
+			var result = new List<Tuple<Types.Outpoint, Types.Output>>();
+
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				foreach (var item in UTXOStore.All(dbTx, t => t.@lock is Types.OutputLock.ContractLock, false))
+				{
+					var lockContractHash = ((Types.OutputLock.ContractLock)item.Item2.@lock).contractHash;
+
+					if (contractHash.SequenceEqual(lockContractHash))
+						result.Add(item);
+				}
+			}
+
+			foreach (var item in memPool.TxPool)
+			{
+				uint i = 0;
+				foreach (var output in item.Value.outputs)
+				{
+					if (output.@lock is Types.OutputLock.ContractLock)
+					{
+						var lockContractHash = ((Types.OutputLock.ContractLock)output.@lock).contractHash;
+
+						if (contractHash.SequenceEqual(lockContractHash))
+						{
+							result.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(item.Key, i), output));
+						}
+					}
+
+					i++;
+				}
+			}
+
+			foreach (var item in memPool.TxPool)
+			{
+				foreach (var input in item.Value.pInputs)
+				{
+					result.RemoveAll(t => t.Item1.Equals(input.Item1));
+				}
+			}
+
+			return result;
+		}
+
+		bool IsContractActive(byte[] contractHash)
+		{
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				return new ActiveContractSet().IsActive(dbTx, contractHash);
+			}
+
+			//TODO: get number of blocks
+			//var lastBlock = new ActiveContractSet().LastBlock(dbTx, contractHash);
+			//var currentHeight = Tip == null ? 0 : Tip.Value.header.blockNumber;
+			//return nextBlocks > currentHeight - lastBlock;
+		}
+
+		bool IsConfirmedUTXOExist(Types.Outpoint outpoint)
+		{
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+				return UTXOStore.ContainsKey(dbTx, outpoint);
 			}
 		}
 	}

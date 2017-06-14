@@ -250,6 +250,7 @@ namespace BlockChain
 
 			var confirmedTxs = new HashDictionary<TransactionValidation.PointedTransaction>();
 
+
 			//TODO: lock with mempool
 			foreach (var transaction in _Bk.transactions)
 			{
@@ -279,40 +280,32 @@ namespace BlockChain
 				}
 
 				var contractExtendSacrifices = new HashDictionary<ulong>();
-				var contractActivationSacrifices = new HashDictionary<ulong>();
+                var activationSacrifice = 0UL;
 
 				i = 0;
 				foreach (var output in ptx.outputs)
 				{
-					// extending a contract?
 					if (output.@lock.IsContractSacrificeLock)
 					{
 						if (!output.spend.asset.SequenceEqual(Tests.zhash))
 							continue; // not Zen
 
-						var contractLock = (Types.OutputLock.ContractSacrificeLock)output.@lock;
+                        var contractSacrificeLock = (Types.OutputLock.ContractSacrificeLock)output.@lock;
 
-						if (contractLock.IsHighVLock)
+						if (contractSacrificeLock.IsHighVLock)
 							continue; // not current version
 
-						if (contractLock.Item.lockData.Length > 0 && contractLock.Item.lockData[0] != null && contractLock.Item.lockData[0].Length > 0)
+						if (contractSacrificeLock.Item.lockData.Length > 0 && contractSacrificeLock.Item.lockData[0] != null && contractSacrificeLock.Item.lockData[0].Length > 0)
 						{
-							var contractKey = contractLock.Item.lockData[0]; // output-lock-level indicated contract
+							var contractKey = contractSacrificeLock.Item.lockData[0]; // output-lock-level indicated contract
 
 							contractExtendSacrifices[contractKey] =
 								(contractExtendSacrifices.ContainsKey(contractKey) ? contractExtendSacrifices[contractKey] : 0) +
 								output.spend.amount;
 						}
-						else if (FSharpOption<Types.ExtendedContract>.get_IsSome (transaction.contract))
+                        else if (contractSacrificeLock.Item.lockData.Length == 0)
 						{
-							if (transaction.contract.Value.IsHighVContract)
-								continue; // not current version
-
-							var contractCode = ((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code;
-
-							contractActivationSacrifices[contractCode] =
-								(contractActivationSacrifices.ContainsKey(contractCode) ? contractActivationSacrifices[contractCode] : 0) +
-								output.spend.amount;
+                            activationSacrifice += output.spend.amount;
 						}
 					}
 
@@ -325,37 +318,31 @@ namespace BlockChain
 					i++;
 				}
 
-                Action<byte[]> actionACSSnapshot = t =>
+                if (FSharpOption<Types.ExtendedContract>.get_IsSome(transaction.contract) && !transaction.contract.Value.IsHighVContract)
                 {
-					if (blockUndoData.ACSDeltas.ContainsKey(t))
-					{
-						return;
-					}
+                    var codeBytes = ((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code;
+                    var contractHash = Merkle.innerHash(codeBytes);
+                    var contractCode = System.Text.Encoding.ASCII.GetString(codeBytes);
 
-					var current = new ActiveContractSet().Get(_DbTx, t);
-
-					if (current != null)
+					if (new ActiveContractSet().TryActivate(_DbTx, contractCode, activationSacrifice, contractHash, _Bk.header.blockNumber))
 					{
-						blockUndoData.ACSDeltas.Add(t, current.Value);
-					}
-				};
-
-				foreach (var item in contractActivationSacrifices)
-				{
-                    actionACSSnapshot(item.Key);
-					//TODO: handle result. should try extend if activation failed?
-					byte[] contractHash;
-					if (new ActiveContractSet().TryActivate(_DbTx, item.Key, item.Value, out contractHash, _Bk.header.blockNumber))
-					{
+                        blockUndoData.ACSDeltas.Add(contractHash, new ACSUndoData());
 						ContractsTxsStore.Add(_DbTx.Transaction, contractHash, txHash);
 					}
-				}
+                }
 
 				foreach (var item in contractExtendSacrifices)
 				{
-					actionACSSnapshot(item.Key);
-                    //TODO: handle result.
-                    new ActiveContractSet().TryExtend(_DbTx, item.Key, item.Value);
+                    var currentACSItem = new ActiveContractSet().Get(_DbTx, item.Key);
+
+                    if (currentACSItem.Value != null)
+                    {
+                        if (new ActiveContractSet().TryExtend(_DbTx, item.Key, item.Value))
+                        {
+                            if (!blockUndoData.ACSDeltas.ContainsKey(item.Key))
+                                blockUndoData.ACSDeltas.Add(item.Key, new ACSUndoData() { LastBlock = currentACSItem.Value.LastBlock });
+                        }
+                    }
 				}
 			}
 
@@ -363,7 +350,8 @@ namespace BlockChain
 
 			foreach (var acsItem in expiringContracts)
 			{
-				blockUndoData.ACSDeltas.Add(acsItem.Key, acsItem.Value);
+                if (!blockUndoData.ACSDeltas.ContainsKey(acsItem.Key))
+                    blockUndoData.ACSDeltas.Add(acsItem.Key, new ACSUndoData() { ACSItem = acsItem.Value });
 			}
 
 			_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
@@ -636,7 +624,28 @@ namespace BlockChain
 
 				foreach (var item in blockUndoData.ACSDeltas)
 				{
-					new ActiveContractSet().Add(_DbTx, item.Value);
+                    if (item.Value.LastBlock.HasValue) // restore last block - undo extend
+                    {
+                        var current = new ActiveContractSet().Get(_DbTx, item.Key);
+
+						if (current != null)
+						{
+                            current.Value.LastBlock = item.Value.LastBlock.Value;
+                            new ActiveContractSet().Add(_DbTx, current.Value);
+						}
+                        else
+                        {
+                            BlockChainTrace.Error("missing ACS item!", new Exception());
+                        }
+                    }
+                    else if (item.Value.ACSItem != null) // restore entire item - undo expire
+					{
+                        new ActiveContractSet().Add(_DbTx, item.Value.ACSItem);
+                    }
+                    else // remove item - undo activate
+                    {
+                        new ActiveContractSet().Remove(_DbTx, item.Key);
+                    }
 				}
 			}
 

@@ -5,99 +5,111 @@ using System.Linq;
 using BlockChain.Data;
 using System.Text;
 using Consensus;
+using Microsoft.FSharp.Core;
 
 namespace BlockChain
 {
 	public class ACSItem
 	{
 		public byte[] Hash { get; set; }
-		public string AssemblyFile { get; set; }
+		public byte[] CompiledContract { get; set; }
+        public string Code { get; set; }
 		public byte[] CostFn { get; set; }
 		public ulong KalapasPerBlock { get; set; }
 		public UInt32 LastBlock { get; set; }
 	}
 
-	public class ActiveContractSet : MsgPackStore<ACSItem>
-	{
-		private const int KALAPAS_PER_BYTE = 1000;
+    public class ActiveContractSet : MsgPackStore<ACSItem>
+    {
+        private const int KALAPAS_PER_BYTE = 1;
 
-		public ActiveContractSet() : base("contract-set") { }
+        public ActiveContractSet() : base("contract-set") { }
 
-		public void Add(TransactionContext dbTx, ACSItem item)
-		{
-			Put(dbTx, item.Hash, item);
-		}
+        public void Add(TransactionContext dbTx, ACSItem item)
+        {
+            Put(dbTx, item.Hash, item);
+        }
 
-		public HashSet Keys(TransactionContext dbTx)
-		{
-			return new HashSet(All(dbTx).Select(t => t.Item2.Hash));
-		}
+        public HashSet Keys(TransactionContext dbTx)
+        {
+            return new HashSet(All(dbTx).Select(t => t.Item2.Hash));
+        }
 
-		public bool IsActive(TransactionContext dbTx, byte[] contractHash)
-		{
-			return ContainsKey(dbTx, contractHash);
-		}
+        public bool IsActive(TransactionContext dbTx, byte[] contractHash)
+        {
+            return ContainsKey(dbTx, contractHash);
+        }
 
-		public UInt32 LastBlock(TransactionContext dbTx, byte[] contractHash)
-		{
-			return Get(dbTx, contractHash).Value.LastBlock;
-		}
+        public UInt32 LastBlock(TransactionContext dbTx, byte[] contractHash)
+        {
+            return Get(dbTx, contractHash).Value.LastBlock;
+        }
 
-		public bool TryExtend(TransactionContext dbTx, byte[] contractHash, ulong kalapas)
-		{
-			if (!IsActive(dbTx, contractHash))
-			{
-				return false;
-			}	
+        public bool TryExtend(TransactionContext dbTx, byte[] contractHash, ulong kalapas)
+        {
+            if (!IsActive(dbTx, contractHash))
+            {
+                return false;
+            }
 
-			var acsItem = Get(dbTx, contractHash);
-			acsItem.Value.LastBlock += (uint)(kalapas / acsItem.Value.KalapasPerBlock);
+            var acsItem = Get(dbTx, contractHash);
+            acsItem.Value.LastBlock += (uint)(kalapas / acsItem.Value.KalapasPerBlock);
 
-			Add(dbTx, acsItem.Value);
+            Add(dbTx, acsItem.Value);
 
-			return true;
-		}
+            return true;
+        }
 
-		public static ulong KalapasPerBlock(byte[] serializedContract)
-		{			
-			return (ulong)serializedContract.Length * KALAPAS_PER_BYTE;
-		}
+        public static ulong KalapasPerBlock(string serializedContract)
+        {
+            return (ulong)serializedContract.Length * KALAPAS_PER_BYTE;
+        }
 
-		public bool TryActivate(TransactionContext dbTx, byte[] contractCode, ulong kalapas, out byte[] contractHash, uint blockNumber)
-		{
-			contractHash = null;
+        public bool TryActivate(TransactionContext dbTx, string contractCode, ulong kalapas, byte[] contractHash, uint blockNumber)
+        {
+            if (IsActive(dbTx, contractHash))
+            {
+                return false;
+            }
 
-			if (IsActive(dbTx, Merkle.innerHash(contractCode)))
-			{
-				return false;
-			}	
+          //  string fsharpCode;
+          //  ContractHelper.Extract(contractCode, out fsharpCode);
+            //	var fsharpCode = new StrongBox<byte[]>();
+            //	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
 
-			byte[] fsharpCode;
-			ContractHelper.Extract(contractCode, out fsharpCode);
-			//	var fsharpCode = new StrongBox<byte[]>();
-			//	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
+            FSharpOption<byte[]> compiledCodeOpt;
 
-			if (ContractHelper.Compile(contractCode, out contractHash))
-			{
-				var kalapasPerBlock = KalapasPerBlock(fsharpCode);
+            try
+            {
+                compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
 
-				if (kalapas < kalapasPerBlock)
-				{
-					return false;
-				}
+            if (FSharpOption<byte[]>.get_IsNone(compiledCodeOpt))
+                return false;
+            
+            var compiledCode = compiledCodeOpt.Value;
 
-				Add(dbTx, new ACSItem()
-				{
-					Hash = contractHash,
-					KalapasPerBlock = kalapasPerBlock,
-					LastBlock = blockNumber + Convert.ToUInt32(kalapas / kalapasPerBlock)
-				});
+            var kalapasPerBlock = KalapasPerBlock(contractCode);
 
-				return true;
-			}
-			//	}, TaskContinuationOptions.OnlyOnRanToCompletion).Wait();
+            if (kalapas < kalapasPerBlock)
+            {
+                return false;
+            }
 
-			return false;
+            Add(dbTx, new ACSItem()
+            {
+                Hash = contractHash,
+                KalapasPerBlock = kalapasPerBlock,
+                LastBlock = blockNumber + Convert.ToUInt32(kalapas / kalapasPerBlock),
+                Code = contractCode,
+                CompiledContract = compiledCode
+            });
+
+            return true;
 		}
 
 		public HashDictionary<ACSItem> GetExpiringList(TransactionContext dbTx, uint blockNumber)
