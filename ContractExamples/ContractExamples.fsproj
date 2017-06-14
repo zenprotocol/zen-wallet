@@ -101,12 +101,12 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="MaybeWorkflow.fs" />
     <Compile Include="Merkle.fs" />
+    <Compile Include="Oracle.fs" />
     <Compile Include="Contracts.fs" />
     <Compile Include="QuotedContracts.fs" />
     <Compile Include="Execution.fs" />
     <Compile Include="ContractTests.fs" />
     <Compile Include="MerkleTests.fs" />
-    <Compile Include="Oracle.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
