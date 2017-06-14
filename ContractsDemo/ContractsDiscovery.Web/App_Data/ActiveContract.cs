@@ -13,6 +13,7 @@ namespace ContractsDiscovery.Web.App_Data
 		public string Oracle { get; set; }
 		public string Underlying { get; set; }
 		public string Type { get; set; }
+		public string Description { get; set; }
         public UInt64 TotalAssets { get; set; }
 
 		public string AssetName { get; set; }

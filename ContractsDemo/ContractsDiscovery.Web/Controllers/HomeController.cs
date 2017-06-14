@@ -11,6 +11,7 @@ using System.Web.Mvc;
 using System.Web.Mvc.Ajax;
 using BlockChain.Data;
 using ContractsDiscovery.Web.App_Data;
+using Microsoft.FSharp.Core;
 using Newtonsoft.Json;
 using Zen.RPC;
 using Zen.RPC.Common;
@@ -38,7 +39,7 @@ namespace ContractsDiscovery.Web.Controllers
 					string key = HttpServerUtility.UrlTokenEncode(acs.Hash);
 					contractsData[acs.Hash] = acs;
 
-					string file = Path.Combine("db", "contracts", $"{key}.json");
+                    string file = Path.ChangeExtension(Path.Combine("db", "contracts", $"{key}"), ".txt");
 
 					if (!System.IO.File.Exists(file))
 					{
@@ -46,7 +47,7 @@ namespace ContractsDiscovery.Web.Controllers
 					}
 				}
 
-                var model = Directory.GetFiles(Path.Combine("db", "contracts"), "*.json").Select(t => 
+                var model = Directory.GetFiles(Path.Combine("db", "contracts"), "*.txt").Select(t => 
 				{
 					var hash = HttpServerUtility.UrlTokenDecode(System.IO.Path.GetFileNameWithoutExtension(t));
 					var code = System.IO.File.ReadAllText(t);
@@ -62,24 +63,7 @@ namespace ContractsDiscovery.Web.Controllers
 						activeContract.LastBlock = contractData.LastBlock;
 					}
 
-					try
-					{
-						var header = code.Split(Environment.NewLine.ToCharArray())[0].Substring(2).Trim();
-						dynamic headerJson = JsonConvert.DeserializeObject(header);
-
-						activeContract.AuthorMessage = headerJson.message;
-						activeContract.Type = headerJson.type;
-                            
-						//Expiry = headerJson.expiry,
-						//Strike = headerJson.strike,
-						//Underlying = headerJson.underlying,
-						//Oracle = headerJson.oracle,
-						//Code = code
-					}
-					catch //(Exception e)
-					{
-						activeContract.Type = "Bad header";
-					}
+					Utils.SetContractInfo(activeContract, code);
 
 					return activeContract;
                 });

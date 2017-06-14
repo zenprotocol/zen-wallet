@@ -35,14 +35,14 @@ namespace ContractsDiscovery.Web.Controllers
 
             var contractCode = Utils.Dos2Unix(Request["contractCode"]);
             var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-            var file = $"{HttpServerUtility.UrlTokenEncode(contractHash)}.json";
+            var file = $"{HttpServerUtility.UrlTokenEncode(contractHash)}";
 
             if (!System.IO.File.Exists(file))
             {
-    			System.IO.File.WriteAllText(Path.Combine("db", "contracts", file), contractCode);			
+    			System.IO.File.WriteAllText(Path.ChangeExtension(Path.Combine("db", "contracts", file), ".txt"), contractCode);			
             }
 
-            System.IO.File.WriteAllText(Path.Combine("db", "asset-metadata", file), JsonConvert.SerializeObject(new AssetMetadata()
+            System.IO.File.WriteAllText(Path.ChangeExtension(Path.Combine("db", "asset-metadata", file), ".json"), JsonConvert.SerializeObject(new AssetMetadata()
 			{
 				name = Request["assetName"],
 				imageUrl = Request["assetImageURL"],

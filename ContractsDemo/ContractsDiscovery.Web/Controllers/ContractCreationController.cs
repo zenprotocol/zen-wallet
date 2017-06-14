@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Configuration;
 using System.Web.Mvc;
 using System.Web.Mvc.Ajax;
 using BlockChain.Data;
@@ -26,10 +22,22 @@ namespace ContractsDiscovery.Web.Controllers
 
 		public ActionResult FromTemplate(string id)
 		{
-			if (id == "CallOption")
-				return View(new CreateCallOption());
-			
-			return View();
+			object model = null;
+
+			switch (id)
+			{
+				case "CallOption":
+					model = new CreateCallOption();
+					break;
+				case "TokenGenerator":
+					model = new CreateTokenGenerator();
+					break;
+				case "Oracle":
+					model = new CreateOracle();
+					break;
+			}
+
+			return View(id, model);
 		}
 
 		public ActionResult CallOption()
@@ -47,7 +55,7 @@ namespace ContractsDiscovery.Web.Controllers
 
 			if (createCallOption.Invalid)
             {
-                return View("FromTemplate", createCallOption);
+                return View("CallOption", createCallOption);
             }
             else
             {
@@ -64,25 +72,85 @@ namespace ContractsDiscovery.Web.Controllers
 
                     var contract = ContractExamples.QuotedContracts.callOptionFactory(callOptionParameters);
                     var contractCode = ContractExamples.Execution.quotedToString(contract);
+					
+                    var code = Utils.Dos2Unix(contractCode);
+                    var hash = Convert.ToBase64String(Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)));
 
-					var json = JsonConvert.SerializeObject(new
-					{
-						message = "This is a generated call-option",
-						publicKey = "xxx",
-						type = "call-option",
-						strike = "",
-						oracle = createCallOption.Oracle.Address.ToString(),
-						underlying = createCallOption.Underlying.Value,
-						controlAsset = createCallOption.ControlAsset.Address.ToString(),
-						numeraire = createCallOption.Numeraire.Address.ToString()
-					});
-
-                    var code = Utils.Dos2Unix("// " + json + "\n\n" + contractCode);
-
-                    ViewBag.Code = code;
+					ViewBag.Code = code;
+					ViewBag.Hash = hash;
                 } catch (Exception e) {
                     ViewBag.Message = "Error creating contract: " + e.Message;
                 }
+
+				return View("Result");
+			}
+		}
+
+		public ActionResult Oracle()
+		{
+			var createOracle = new CreateOracle();
+
+			createOracle.OwnerPubKey.SetValue(Request["ownerPubKey"]);
+
+			if (createOracle.Invalid)
+			{
+				return View("Oracle", createOracle);
+			}
+			else
+			{
+				try
+				{
+					var oracleParameters = new ContractExamples.QuotedContracts.OracleParameters(
+						createOracle.OwnerPubKey.Address.Bytes);
+
+                    var contract = ContractExamples.QuotedContracts.oracleFactory(oracleParameters);
+					var contractCode = ContractExamples.Execution.quotedToString(contract);
+
+					var code = Utils.Dos2Unix(contractCode);
+					var hash = Convert.ToBase64String(Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)));
+
+					ViewBag.Code = code;
+					ViewBag.Hash = hash;
+				}
+				catch (Exception e)
+				{
+					ViewBag.Message = "Error creating contract: " + e.Message;
+				}
+
+				return View("Result");
+			}
+		}
+
+		public ActionResult TokenGenerator()
+		{
+			var createTokenGenerator = new CreateTokenGenerator();
+
+			createTokenGenerator.Destination.SetValue(Request["destination"]);
+
+			if (createTokenGenerator.Invalid)
+			{
+				return View("TokenGenerator", createTokenGenerator);
+			}
+			else
+			{
+				try
+				{
+					var secureTokenParameters = new ContractExamples.QuotedContracts.SecureTokenParameters(
+											createTokenGenerator.Destination.Address.Bytes);
+
+					var contract = ContractExamples.QuotedContracts.secureTokenFactory(secureTokenParameters);
+					var contractCode = ContractExamples.Execution.quotedToString(contract);
+
+					var code = Utils.Dos2Unix(contractCode);
+					var hash = Convert.ToBase64String(Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)));
+
+					ViewBag.Code = code;
+                    ViewBag.Hash = hash;
+				}
+				catch (Exception e)
+				{
+					ViewBag.Message = "Error creating contract: " + e.Message;
+				}
 
 				return View("Result");
 			}

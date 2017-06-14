@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Datafeed.Web</RootNamespace>
     <AssemblyName>Datafeed.Web</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -69,9 +69,6 @@
     <Reference Include="System.Web.Http.WebHost">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Wallet.core">
       <HintPath>..\..\Wallet.core\bin\Debug\Wallet.core.dll</HintPath>
     </Reference>
@@ -85,19 +82,25 @@
     <Reference Include="Consensus">
       <HintPath>..\..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="Sodium">
+      <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\" />
     <Folder Include="Models\" />
     <Folder Include="Scripts\" />
     <Folder Include="App_Data\" />
-    <Folder Include="Views\Commitment\" />
     <Folder Include="Views\Data\" />
     <Folder Include="assets\" />
   </ItemGroup>
@@ -108,7 +111,6 @@
     </Compile>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\CommitmentController.cs" />
     <Compile Include="StockAPI.cs" />
     <Compile Include="App_Data\Commitment.cs" />
     <Compile Include="Models\Commitment.cs" />
@@ -125,9 +127,9 @@
     <Content Include="Global.asax" />
     <Content Include="packages.config" />
     <Content Include="Views\Home\Generate.cshtml" />
-    <Content Include="Views\Commitment\Index.cshtml" />
     <Content Include="Views\Data\Index.cshtml" />
     <Content Include="Views\Data\Search.cshtml" />
+    <Content Include="Views\Data\Display.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
@@ -138,6 +140,14 @@
       <Project>{396B8253-5F0E-4DB4-9A06-505DE88E89B7}</Project>
       <Name>Zen.RPC</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\ContractExamples\ContractExamples.fsproj">
+      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
+      <Name>ContractExamples</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Zen.Services.Oracle.Common\Zen.Services.Oracle.Common.csproj">
+      <Project>{52AA2809-D59A-4546-A124-D028E5DC4E20}</Project>
+      <Name>Zen.Services.Oracle.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -147,4 +157,5 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.1.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.1.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
 </Project>

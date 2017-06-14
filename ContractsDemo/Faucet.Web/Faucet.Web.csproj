@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Faucet.Web</RootNamespace>
     <AssemblyName>Faucet.Web</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

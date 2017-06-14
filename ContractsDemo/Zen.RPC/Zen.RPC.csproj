@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Zen.RPC</RootNamespace>
     <AssemblyName>Zen.RPC</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <UseMSBuildEngine>false</UseMSBuildEngine>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

@@ -13,8 +13,8 @@
 	@foreach (var item in Model)
 	{
 		<tr>
-			<td><p class="text-left">@Html.ActionLink(@item.Address, "Index", "ActiveContract", new { @id = @item.AddressUrl }, null)</p></td>
-            <td><p class="text-left">@item.Type</p></td>
+			<td><p class="text-left">@Html.ActionLink(@item.Address, "Index", "Contract", new { @id = @item.AddressUrl }, null)</p></td>
+            <td><p class="text-left">@item.Description</p></td>
 			<td><p class="text-left">@item.LastBlock</p></td>
 		</tr>
     }

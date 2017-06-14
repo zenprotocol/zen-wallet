@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using ContractsDiscovery.Web.App_Data;
+using Microsoft.FSharp.Core;
 
 namespace ContractsDiscovery.Web
 {
@@ -55,6 +56,50 @@ namespace ContractsDiscovery.Web
 			ms.Position = 0;
 			var sr = new StreamReader(ms);
 			return sr.ReadToEnd();
+		}
+
+		public static void SetContractInfo(ActiveContract activeContract, string contractCode)
+		{
+			try
+			{
+				var metadata = ContractExamples.Execution.metadata(contractCode);
+
+				if (FSharpOption<ContractExamples.Execution.ContractMetadata>.get_IsSome(metadata))
+				{
+					if (metadata.Value.IsCallOption)
+					{
+                        var callOptionParameters = ((ContractExamples.Execution.ContractMetadata.CallOption)metadata.Value).Item;
+
+                        activeContract.Underlying = callOptionParameters.underlying;
+
+						activeContract.Type = "call-option";
+						activeContract.Description = "Call Option";
+					}
+					else if (metadata.Value.IsOracle)
+					{
+						activeContract.Type = "oracle";
+						activeContract.Description = "Oracle";
+					}
+					else if (metadata.Value.IsSecureToken)
+					{
+						activeContract.Type = "secure-token-generator";
+						activeContract.Description = "Secure Token Generator";
+					}
+					else
+					{
+						activeContract.Type = "";
+						activeContract.Description = "Unrecognized";
+					}
+				}
+				else
+				{
+					activeContract.Type = "Unknown";
+				}
+			}
+			catch (Exception e)
+			{
+				activeContract.Type = "Error getting metadata";
+			}
 		}
     }
 }

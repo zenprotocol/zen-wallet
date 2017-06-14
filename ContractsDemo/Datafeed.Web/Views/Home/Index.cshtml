@@ -6,18 +6,31 @@
         <tr>
             <th>Time</th>
             <!--th>Count</th-->
-            <th>Data</th>
+            <!--th>Data</th-->
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td><p class="text-left">@Html.ActionLink(@item.Time, "Index", "Commitment", new { @commitmentId = @item.Id }, null)</p></td>
-            <!--td><p class="text-left">@item.Count</p></td-->
-            <td><p class="text-left">@item.Data</p></td>
-        </tr>
-    }
+
+	@if (!string.IsNullOrEmpty(@ViewBag.Message))
+	{
+	    <div class="form-group">@ViewBag.Message</div>
+	}
+	else
+	{
+		<div class="form-group">
+			<small id="help" class="form-text text-muted">Contact Address</small>
+			<input type="text" class="form-control" id="data" aria-describedby="help" value="@ViewBag.Address">
+		</div>
+
+	    foreach (var item in Model)
+	    {
+	        <tr>
+	            <td><p class="text-left">@Html.ActionLink(@item.Time, "Display", "Data", new { @id = @item.Id }, null)</p></td>
+	            <!--td><p class="text-left">@item.Count</p></td-->
+	            <!--td><p class="text-left">@item.Data</p></td-->
+	        </tr>
+	    }
+	}
     </tbody>
 </table>
 

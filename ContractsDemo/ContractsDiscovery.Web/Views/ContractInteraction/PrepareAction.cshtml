@@ -7,6 +7,17 @@
 
     switch (Model.Action)
     {
+        case "Exercise":
+            <div class="form-group">
+                <label>Click submit to query the oracle for data.</label>
+            </div>
+            break;
+    	case "Collateralize":
+            <div class="form-group">
+                <label for="return-address">Return address:</label>
+                <input type="text" class="form-control" id="return-address" name="return-address" placeholder="Return Address">
+            </div>
+    		break;
         case "Buy":
             <div class="form-group">
                 <label for="buy-amount">Amount:</label>
@@ -15,6 +26,11 @@
             <div class="form-group">
                 <label for="buy-send-address">Send to public key address:</label>
                 <input type="text" class="form-control" id="buy-send-address" name="buy-send-address" placeholder="Address">
+            </div>
+            break;
+        case "GetTokens":
+            <div class="form-group">
+                <label>Click submit to have generated tokes sent to the address specified within the contract.</label>
             </div>
             break;
     }

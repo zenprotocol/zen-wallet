@@ -6,7 +6,7 @@ namespace ContractsDiscovery.Web.App_Data
 		public string Action { get; set; }
 		public string Address { get; set; }
 		public string Data { get; set; }
-		public string Amount { get; set; }
+	//	public string Amount { get; set; }
         public string Message { get; set; }
 	}
 }

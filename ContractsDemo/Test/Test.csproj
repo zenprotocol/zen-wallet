@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Test</RootNamespace>
     <AssemblyName>Test</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <UseMSBuildEngine>false</UseMSBuildEngine>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -35,10 +35,27 @@
     <Reference Include="BlockChain">
       <HintPath>..\..\BlockChain\bin\Debug\BlockChain.dll</HintPath>
     </Reference>
+    <Reference Include="Wallet.core">
+      <HintPath>..\..\Wallet.core\bin\Debug\Wallet.core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Zen.RPC\Zen.RPC.csproj">
+      <Project>{396B8253-5F0E-4DB4-9A06-505DE88E89B7}</Project>
+      <Name>Zen.RPC</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
+      <Project>{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}</Project>
+      <Name>Zen.RPC.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Consensus\Consensus.fsproj">
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
