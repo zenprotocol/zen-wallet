@@ -10,6 +10,7 @@ using BlockChain.Data;
 using BlockChain;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
+using Sodium;
 
 namespace Wallet.core
 {
@@ -95,11 +96,16 @@ namespace Wallet.core
                 context.Commit();
             }
 
+			//TODO: store the key in DB?
             _Keys.Add(key);
 
             HashDictionary<List<Types.Output>> txOutputs;
             HashDictionary<Types.Transaction> txs;
-            _BlockChain.GetUTXOSet(IsMatch, out txOutputs, out txs); // TODO: use linq, return enumerator, remove predicate
+
+			var result = new GetUTXOSetAction() { Predicate = IsMatch }.Publish().Result;
+
+			txOutputs = result.Item1;
+			txs = result.Item2;
 
             TxDeltaList.Clear();
 
@@ -335,32 +341,30 @@ namespace Wallet.core
 
             var unspentMatchingAssets = new Assets();
 
-            using (TransactionContext context = _BlockChain.GetDBTransaction())
-            {
-                foreach (Asset matchingAsset in matchingAssets)
-                {
-                    bool canSpend = false;
-                    switch (matchingAsset.TxState)
-                    {
-                        case TxStateEnum.Confirmed:
-                            canSpend = _BlockChain.UTXOStore.ContainsKey(
-                                context, matchingAsset.Outpoint.txHash, matchingAsset.Outpoint.index) &&
-                                !_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint);
-                            break;
-                        case TxStateEnum.Unconfirmed:
-                            canSpend = !_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint) &&
-                                _BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash);
-                            break;
-                    }
+			foreach (Asset matchingAsset in matchingAssets)
+			{
+				bool canSpend = false;
+				switch (matchingAsset.TxState)
+				{
+					case TxStateEnum.Confirmed:
+						var isConfirmedUTXOExist = new GetIsConfirmedUTXOExistAction() { Outpoint = matchingAsset.Outpoint }.Publish().Result;
 
-                    WalletTrace.Information($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
+						canSpend = isConfirmedUTXOExist &&
+							!_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint);
+						break;
+					case TxStateEnum.Unconfirmed:
+						canSpend = !_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint) &&
+							_BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash);
+						break;
+				}
 
-                    if (canSpend)
-                    {
-                        unspentMatchingAssets.Add(matchingAsset);
-                    }
-                }
-            }
+				WalletTrace.Information($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
+
+				if (canSpend)
+				{
+					unspentMatchingAssets.Add(matchingAsset);
+				}
+			}
 
             ulong total = 0;
             assets = new Assets();
@@ -458,7 +462,7 @@ namespace Wallet.core
         /// <param name="address">Address.</param>
         /// <param name="asset">Asset.</param>
         /// <param name="amount">Amount.</param>
-        public bool SacrificeToContract(byte[] contractHash, byte[] code, ulong zenAmount, out Types.Transaction signedTx)
+        public bool SacrificeToContract(byte[] code, ulong zenAmount, out Types.Transaction signedTx)
         {
             ulong change;
             Assets assets;
@@ -488,7 +492,7 @@ namespace Wallet.core
 
             var output = new Types.Output(
                 Types.OutputLock.NewContractSacrificeLock(
-                    new Types.LockCore(0, ListModule.OfSeq(new byte[][] { contractHash }))
+                    new Types.LockCore(0, ListModule.OfSeq(new byte[][] { }))
                 ),
                 new Types.Spend(Tests.zhash, zenAmount)
             );
@@ -508,34 +512,13 @@ namespace Wallet.core
             return true;
         }
 
-        public bool SendContract(byte[] contractHash, byte[] data, out Types.Transaction autoTx)
-        {
-            //TODO: refactor
-            using (TransactionContext dbTx = _BlockChain.GetDBTransaction())
-            {
-                if (!new ActiveContractSet().IsActive(dbTx, contractHash))
-                {
-                    autoTx = null;
-                    return false;
-                }
-            }
+		public bool SendContract(byte[] contractHash, byte[] data, out Types.Transaction autoTx)
+		{
+			var result = new ExecuteContractAction() { ContractHash = contractHash, Message = data }.Publish().Result;
 
-            Func<Types.Outpoint, FSharpOption<Types.Output>> getUTXO = t =>
-            {
-                using (TransactionContext dbTx = _BlockChain.GetDBTransaction())
-                {
-                    return _BlockChain.GetUTXO(t, dbTx, false);
-                }
-            };
+			autoTx = result.Item2;
 
-            var result = ContractHelper.Execute(out autoTx, new BlockChain.ContractArgs()
-            {
-                tryFindUTXOFunc = getUTXO,
-                ContractHash = contractHash,
-                Message = data
-            }, data != null);
-
-            return result && autoTx != null;
+			return result.Item1 && autoTx != null;
         }
 
         public Key GetUnusedKey()
@@ -556,26 +539,23 @@ namespace Wallet.core
 
         public bool IsContractActive(byte[] contractHash)
         {
-            using (var dbTx = _BlockChain.GetDBTransaction())
-            {
-                return new ActiveContractSet().IsActive(dbTx, contractHash);
-            }
+			return new GetIsContractActiveAction(contractHash).Publish().Result;
         }
 
-        public bool IsContractActive(byte[] contractHash, out UInt32 nextBlocks)
-        {
-            using (var dbTx = _BlockChain.GetDBTransaction())
+		public bool SignData(byte[] publicKey, byte[] data, out byte[] result)
+		{
+			var key = _Keys.Find(t => t.Public.SequenceEqual(publicKey));
+
+            if (key == null)
             {
-                bool isActive = new ActiveContractSet().IsActive(dbTx, contractHash);
-
-                var lastBlock = isActive ? new ActiveContractSet().LastBlock(dbTx, contractHash) : 0;
-
-                var currentHeight = _BlockChain.Tip == null ? 0 : _BlockChain.Tip.Value.header.blockNumber;
-
-                nextBlocks = currentHeight - lastBlock;
-
-                return isActive;
+                result = null;
+                return false;
             }
-        }
+            else
+            {
+                result = PublicKeyAuth.SignDetached(data, key.Private);
+                return true;
+            }
+		}
     }
 }

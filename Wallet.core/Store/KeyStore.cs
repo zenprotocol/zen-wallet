@@ -15,7 +15,7 @@ namespace Wallet.core.Store
 
 	public class KeyStore : MsgPackStore<Key>
 	{
-		public KeyStore() : base("key")
+		public KeyStore() : base("wallet-key")
 		{
 		}
 

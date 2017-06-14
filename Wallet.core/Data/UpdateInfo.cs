@@ -50,7 +50,7 @@ namespace Wallet.core
 		public AssetDeltas AssetDeltas { get; set; }
 		public DateTime Time { get; set; }
 
-		public TxDelta(TxStateEnum txState, byte[] txHash, Types.Transaction transaction, AssetDeltas assetDeltas) : this(txState, txHash, transaction, assetDeltas, DateTime.Now)
+		public TxDelta(TxStateEnum txState, byte[] txHash, Types.Transaction transaction, AssetDeltas assetDeltas) : this(txState, txHash, transaction, assetDeltas, DateTime.Now.ToUniversalTime())
 		{
 		}
 

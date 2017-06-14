@@ -65,6 +65,8 @@ namespace Wallet.core
 
             //    ProcessURLAsync(item.Key, item.Value);
             //}
+
+            Keys.Add(Consensus.Tests.zhash);
         }
 
 		//public IEnumerable<Tuple<byte[], string>> Assets
@@ -91,7 +93,7 @@ namespace Wallet.core
                 return _Cache.Value[key].name;
             }
 
-			//await Add(asset);
+			Add(asset);
 			return await pendingTasks[asset];
         }
 
@@ -129,8 +131,6 @@ namespace Wallet.core
 
             var response = await new HttpClient().GetAsync(uri.AbsoluteUri);
 
-            await Task.Delay(5000);
-
             if (response.IsSuccessStatusCode)
 			{
 			    remoteString = await response.Content.ReadAsStringAsync();
@@ -155,28 +155,32 @@ namespace Wallet.core
                 return "Error";
 			}
 
-            if (remoteVersion > currentVersion)
-            {
-                WalletTrace.Information($"Updating asset metadata: {remoteJson.name}");
+			if (remoteVersion > currentVersion)
+			{
+				WalletTrace.Information($"Updating asset metadata: {remoteJson.name}");
 
-                lock (_Cache)
-                {
-                    _Cache.Value[_hash] = remoteJson;
-                    _Cache.Save();
-                }
+				lock (_Cache)
+				{
+					_Cache.Value[_hash] = remoteJson;
+					_Cache.Save();
+				}
 
-                WalletTrace.Information($"New asset metadata: {remoteJson.name}");
-                //Update(hash, remoteJson.name, null);
+				WalletTrace.Information($"New asset metadata: {remoteJson.name}");
+				//Update(hash, remoteJson.name, null);
 
-                if (!string.IsNullOrEmpty(remoteJson.imageUrl))
-                {
-           //         ProcessImageAsync(hash, remoteJson);
-                }
-            }
-            else
-            {
-                WalletTrace.Information($"Asset metadata is alreay up to date: {remoteJson.name}");
-            }
+				if (!string.IsNullOrEmpty(remoteJson.imageUrl))
+				{
+					//         ProcessImageAsync(hash, remoteJson);
+				}
+			}
+			else if (remoteVersion.Build != -1)
+			{
+				WalletTrace.Information($"Asset metadata is alreay up to date: {remoteJson.name}");
+			}
+			else
+			{ 
+				WalletTrace.Information($"Asset metadata not found: {Convert.ToBase64String(hash)}");
+			}
 
             return remoteJson.name ?? Convert.ToBase64String(hash);
         }
