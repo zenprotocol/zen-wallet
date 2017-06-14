@@ -51,12 +51,11 @@ namespace Wallet
                 if (WalletSendLayout.SendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted && WalletSendLayout.SendInfo.NeedAutoTx)
 				{
 					var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
-					var outpoint = new Consensus.Types.Outpoint(Consensus.Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
+					var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
 					var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
 
-
-					byte[] witnessData = new byte[] { WalletSendLayout.SendInfo.WitnessData[0] }.Concat(outpointBytes).ToArray();
-					witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Skip(1)).ToArray();
+                    byte[] witnessData = WalletSendLayout.SendInfo.WitnessData.Initial.Concat(outpointBytes).ToArray();
+					witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Final).ToArray();
 
 					Types.Transaction autoTx;
 					WalletSendLayout.SendInfo.AutoTxCreated = App.Instance.Wallet.SendContract(WalletSendLayout.SendInfo.Destination.Bytes, witnessData, out autoTx);

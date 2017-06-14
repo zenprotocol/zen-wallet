@@ -1,20 +1,53 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Consensus;
 using ContractGenerator;
 using Gtk;
 using Infrastructure;
 
 namespace Wallet
 {
+    public class ContractActivationResult
+    {
+        public enum ResultEnum
+        {
+            Success,
+            NotEngoughZen,
+            Error,
+        }
+
+        public ResultEnum Result { get; set; }
+        public BlockChain.BlockChain.TxResultEnum TxResult { get; set; }
+    }
+
 	public class ContractController : Singleton<ContractController>
 	{
 		byte[] _Code;
 		byte[] _Hash;
 		public ContractView ContractView { set; get; }
 
+        Func<ulong, byte[], ContractActivationResult> ActivateContract = (kalapas, code) =>
+        {
+            Types.Transaction tx;
+            if (!App.Instance.Wallet.SacrificeToContract(code, kalapas, out tx))
+            {
+                return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.NotEngoughZen };
+            }
+
+            var txResult = App.Instance.Node.Transmit(tx);
+
+            if (txResult != BlockChain.BlockChain.TxResultEnum.Accepted)
+            {
+                return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.Error, TxResult = txResult };
+            }
+
+            return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.Success };
+        };
+
 		public void CreateOrExtend() {
-			new ContractActivation().ShowDialog(_Hash, _Code);
+			new ContractActivation().ShowDialog(_Hash, _Code, ActivateContract);
 		}
 
 		public void UpdateContractInfo(string contractText)

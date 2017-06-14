@@ -7,15 +7,25 @@ using Wallet.core;
 using Wallet.core.Data;
 using Consensus;
 using Wallet.Constants;
+using Newtonsoft.Json.Converters;
+using System.Dynamic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Wallet
 {
+    public class WitnessData
+    {
+		public byte[] Initial { get; set; }
+		public byte[] Final { get; set; }
+	}
+
 	public class SendInfo
 	{
 		public bool Signed { get; set; }
 		public bool AutoTxCreated { get; set; }
         public bool NeedAutoTx = false;
-        public byte[] WitnessData { get; set; }
+        public WitnessData WitnessData { get; set; }
 
 		public BlockChain.BlockChain.TxResultEnum? TxResult { get; set; }
 		public BlockChain.BlockChain.TxResultEnum? AutoTxResult { get; set; }
@@ -35,7 +45,12 @@ namespace Wallet
 			get; set;
 		}
 
-		public string Data
+		public dynamic Data
+		{
+			get; set;
+		}
+
+		public bool DataValid
 		{
 			get; set;
 		}
@@ -49,7 +64,7 @@ namespace Wallet
 		{
 			get
 			{
-				return Amount > 0 && Destination != null && Asset != null && HasEnough;
+				return Amount > 0 && Destination != null && Asset != null && HasEnough && DataValid;
 			}
 		}
 
@@ -88,49 +103,46 @@ namespace Wallet
 			_Tx = null;
 			buttonSignAndReview.Sensitive = false;
 
-			buttonPaste.Clicked += delegate {
-				var clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
-				var target = Gdk.Atom.Intern("text/plain", true);
-				var selection = clipboard.WaitForContents(target);
-
-				if (selection != null)
+			buttonPaste.Clicked += delegate
+			{
+				try
 				{
-					entryDestination.Text = System.Text.Encoding.UTF8.GetString(selection.Data, 0, selection.Data.Length);
+					var clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", true));
+					entryDestination.Text = clipboard.WaitForText();
 				}
+				catch { }
 			};
 
 			buttonPasteData.Clicked += delegate
 			{
-				var clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
-				var target = Gdk.Atom.Intern("text/plain", true);
-				var selection = clipboard.WaitForContents(target);
-
-				if (selection != null)
+				try
 				{
-					entryData.Text = System.Text.Encoding.UTF8.GetString(selection.Data, 0, selection.Data.Length);
+					var clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", true));
+					txtData.Buffer.Text = clipboard.WaitForText();
 				}
+				catch { }
 			};
 
-			vboxData.Visible = false; // just hide the f@cking thing already
-			vboxData.Hide(); // just hide the f@cking thing already
+			vboxMainInner.Remove(eventboxData);
 
 			entryDestination.Changed += (sender, e) =>
 			{
 				try
 				{
 					var address = new Address(((Entry)sender).Text);
-                    SendInfo.Destination = address;
-                    labelDestinationError.Text = "";
+					SendInfo.Destination = address;
+					labelDestinationError.Text = "";
 
-                    switch (address.AddressType)
-                    {
-                        case AddressType.Contract:
-                            vboxData.Visible = true;
-                            break;
-                        case AddressType.PK:
-                            vboxData.Visible = false;
+					switch (address.AddressType)
+					{
+						case AddressType.Contract:
+							vboxMainInner.Add(eventboxData);
+							vboxMainInner.ReorderChild(eventboxData, 1);
 							break;
-                    }
+						case AddressType.PK:
+							vboxMainInner.Remove(eventboxData);
+							break;
+					}
 				}
 				catch
 				{
@@ -141,11 +153,32 @@ namespace Wallet
 				buttonSignAndReview.Sensitive = SendInfo.Valid;
 			};
 
-            entryData.Changed += (sender, e) =>
-            {
-                var text = ((Entry)sender).Text;
+			txtData.Buffer.Changed += (sender, e) =>
+			{
+                var text = ((TextBuffer)sender).Text;
 
-                SendInfo.Data = text;
+				if (string.IsNullOrWhiteSpace(text) || text.Trim().Length == 0)
+				{
+					SendInfo.Data = null;
+					SendInfo.DataValid = true;
+				}
+				else
+				{
+					try
+					{
+						SendInfo.Data = JObject.Parse(text); //TODO: deeper validation
+						SendInfo.DataValid = true;
+                        labelDataError.Text = "";
+					}
+					catch
+					{
+						SendInfo.Data = null;
+						SendInfo.DataValid = false;
+						labelDataError.Text = "Invalid data";
+					}
+				}
+
+				buttonSignAndReview.Sensitive = SendInfo.Valid;
             };
 
 			entryAmount.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
@@ -177,11 +210,11 @@ namespace Wallet
 				buttonSignAndReview.Sensitive = SendInfo.Valid;
 			};
 
-			Apply((Label label) =>
-			{
-				label.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
-				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, labelDestinationError, labelAmountError);
+            Apply((Label label) =>
+            {
+                label.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
+                label.ModifyFont(Constants.Fonts.ActionBarSmall);
+            }, labelDestinationError, labelDataError, labelAmountError);
 
 			Apply((EventBox eventbox) =>
 			{
@@ -204,7 +237,10 @@ namespace Wallet
 			{
 				entry.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
 				entry.ModifyFont(Constants.Fonts.ActionBarSmall);
-            }, entryDestination, entryData);	
+            }, entryDestination);
+
+            txtData.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
+            txtData.ModifyFont(Constants.Fonts.ActionBarSmall);
 
 			buttonBack.Clicked += Back;
 
@@ -264,24 +300,51 @@ namespace Wallet
 			buttonSignAndReview.Clicked += delegate {
                 SendInfo.Reset();
 
-                switch (SendInfo.Destination.AddressType)
+                if (SendInfo.Destination.AddressType == AddressType.Contract && SendInfo.Data != null)
                 {
-                    case AddressType.Contract:
-						var parts = SendInfo.Data.Split(null);
+                    try
+                    {
+                        var data = SendInfo.Data;
 
-                        SendInfo.Destination.Data = Convert.FromBase64String(parts[0]);
+                        byte[] firstData = null;
 
-                        switch (parts.Length) {
-                            case 1:
-								break;
-                            case 2:
-                                SendInfo.WitnessData = Convert.FromBase64String(parts[1]);
-                                SendInfo.NeedAutoTx = true;
-                                break;
+                        if (data.first is JObject)
+                        {
+                            byte[] signedData;
+
+                            var pubkey = Convert.FromBase64String(data.first.pubkey.ToString());
+                            var toSign = Convert.FromBase64String(data.first.toSign.ToString());
+
+                            if (!App.Instance.Wallet.SignData(pubkey, toSign, out signedData))
+                            {
+                                labelDataError.Text = "Could not sign data";
+                                return;
+                            }
+
+                            firstData = signedData.Concat(signedData).ToArray();
                         }
-                        break;
-                    case AddressType.PK:
-                        break;
+                        else
+                        {
+                            var firstStr = data.first.ToString();
+                            firstData = firstStr.Length == 0 ? null : Convert.FromBase64String(firstStr);
+                        }
+
+                        SendInfo.Destination.Data = firstData;
+
+                        if (data.second is JObject)
+                        {
+                            SendInfo.WitnessData = new WitnessData()
+                            {
+                                Initial = Convert.FromBase64String(data.second.initial.ToString()),
+                                Final = Convert.FromBase64String(data.second.final.ToString())
+                            };
+
+                            SendInfo.NeedAutoTx = true;
+                        }
+                    } catch {
+                        labelDataError.Text = "Could not parse data";
+                        return;
+                    }
                 }
 
                 SendInfo.Signed = App.Instance.Wallet.Sign(

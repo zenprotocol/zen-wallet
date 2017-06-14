@@ -14,6 +14,7 @@ namespace Wallet
 		byte[] _Code;
 		ulong _KalapasPerBlock;
 		ulong _TotalKalapas;
+        Func<ulong, byte[], ContractActivationResult> _ActivateFunc;
 
 		public ContractActivation()
 		{
@@ -28,24 +29,22 @@ namespace Wallet
 			};
 
 			buttonApply.Clicked += delegate {
-				Types.Transaction tx;
-                if (!App.Instance.Wallet.SacrificeToContract(_Hash, _Code, _TotalKalapas, out tx))
-				{
-					hboxStatus.Visible = true;
-					labelStatus.Text = "Not enougn Zen";
-					return;
-				}
+                var result = _ActivateFunc(_TotalKalapas, _Code);
 
-				var txResult = App.Instance.Node.Transmit(tx);
-
-				if (txResult != BlockChain.BlockChain.TxResultEnum.Accepted)
-				{
-					hboxStatus.Visible = true;
-					labelStatus.Text = "Error transmiting tx: " + txResult;
-					return;
-				}
-
-				CloseDialog();
+                switch (result.Result)
+                {
+					case ContractActivationResult.ResultEnum.Error:
+						hboxStatus.Visible = true;
+						labelStatus.Text = "Error transmiting tx: " + result.TxResult;
+						break;
+					case ContractActivationResult.ResultEnum.NotEngoughZen:
+						hboxStatus.Visible = true;
+						labelStatus.Text = "Not enougn Zen";
+						break;
+					case ContractActivationResult.ResultEnum.Success:
+                        CloseDialog();
+						break;
+                }
 			};
 
 			spinBlocks.Changed += (sender, e) =>
@@ -70,17 +69,19 @@ namespace Wallet
 			}
 		}
 
-		public void ShowDialog(byte[] hash, byte[] code)
+        public void ShowDialog(byte[] hash, byte[] code, Func<ulong, byte[], ContractActivationResult> activateFunc)
 		{
-			UInt32 nextBlocks;
-			_IsActive = App.Instance.Wallet.IsContractActive(hash, out nextBlocks);
-			_KalapasPerBlock = ActiveContractSet.KalapasPerBlock(code);
+			//UInt32 nextBlocks;
+			_IsActive = App.Instance.Wallet.IsContractActive(hash/*, out nextBlocks*/);
+            _KalapasPerBlock = ActiveContractSet.KalapasPerBlock(System.Text.Encoding.ASCII.GetString(code));
 			_Code = code;
+            _ActivateFunc = activateFunc;
 
 			if (_IsActive)
 			{
 				labelHeader.Text = buttonApply.Label = "Extend a Contract";
-				txtContent.Buffer.Text = $"Contract active for the next {nextBlocks} blocks.\nCost to extend is {_KalapasPerBlock} Kalapas/block";
+//				txtContent.Buffer.Text = $"Contract active for the next {nextBlocks} blocks.\nCost to extend is {_KalapasPerBlock} Kalapas/block";
+				txtContent.Buffer.Text = $"Contract active.\nCost to extend is {_KalapasPerBlock} Kalapas/block";
 			}
 			else
 			{

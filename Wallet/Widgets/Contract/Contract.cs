@@ -111,7 +111,7 @@ namespace Wallet
 		{
 			set
 			{
-				_Hash = BitConverter.ToString(value).Replace("-", string.Empty);
+				_Hash = Convert.ToBase64String(value);
 				txtContractHash.Text = _Hash;
 				UpdateStatus();
 			}

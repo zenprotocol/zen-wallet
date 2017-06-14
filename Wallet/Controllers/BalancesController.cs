@@ -13,6 +13,7 @@ namespace Wallet
 		AssetDeltas _AssetDeltasTotal = new AssetDeltas();
 		TxDeltaItemsEventArgs _TxDeltas;
 		ILogView _LogView;
+		IAssetsView _AssetsView;
 
 		public BalancesController()
 		{
@@ -28,6 +29,27 @@ namespace Wallet
 				Apply();
 				App.Instance.Wallet.OnReset += delegate { value.Clear(); };
 				App.Instance.Wallet.OnItems += a => { _TxDeltas = a; Apply(); };
+			}
+		}
+
+		public IAssetsView AssetsView
+		{
+			set
+			{
+				_AssetsView = value;
+
+                _AssetsView.Assets = App.Instance.Wallet.AssetsMetadata.Keys.Select(t => new Tuple<byte[], string>(t, Convert.ToBase64String(t)));
+
+                foreach (var asset in App.Instance.Wallet.AssetsMetadata.Keys)
+                {
+                    App.Instance.Wallet.AssetsMetadata.Get(asset).ContinueWith(t =>
+                    {
+                        Gtk.Application.Invoke(delegate
+                        {
+                            _AssetsView.Asset = new Tuple<byte[], string>(asset, t.Result);
+                        });
+                    });
+				}
 			}
 		}
 
@@ -61,13 +83,13 @@ namespace Wallet
 					var total = _AssetDeltasTotal.ContainsKey(_Asset) ? new Zen(_AssetDeltasTotal[_Asset]).Value : 0;
 					var decTotal = Convert.ToDecimal(total);
 
-					_LogView.AddLogEntryItem(new LogEntryItem(
+                    _LogView.AddLogEntryItem(u.TxHash, new LogEntryItem(
 					Math.Abs(b.Value),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					b.Key,
 					u.Time,
 					"TODO",
-					BitConverter.ToString(u.TxHash),
+                    u.TxState.ToString(), //Convert.ToBase64String(u.TxHash),
 					decTotal
 					));
 				}));

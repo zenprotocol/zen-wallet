@@ -1,14 +1,14 @@
 ﻿using System;
 using Gtk;
 using Wallet.Domain;
-using System.Collections.Generic;
+using System.Linq;
 using Wallet.Constants;
 
 namespace Wallet
 {
 	public interface ILogView {
-		List<LogEntryItem> LogEntryList { set; }
-		void AddLogEntryItem (LogEntryItem logEntryItem);
+		//List<LogEntryItem> LogEntryList { set; }
+		void AddLogEntryItem (byte[] Key, LogEntryItem logEntryItem);
 		void Totals(decimal sent, decimal recieved, decimal total);
 		void Clear();
 	}
@@ -124,22 +124,38 @@ namespace Wallet
 			list.AppendColumn (col);
 		}
 
-		public List<LogEntryItem> LogEntryList { 
-			set {
-				logEntryStore.Clear ();
+		//public List<LogEntryItem> LogEntryList { 
+		//	set {
+		//		logEntryStore.Clear ();
 
-				foreach (LogEntryItem logEntryItem in value) {
-					AddLogEntryItem (logEntryItem);
-				}
-			}
-		}
+		//		foreach (LogEntryItem logEntryItem in value) {
+		//			AddLogEntryItem (logEntryItem);
+		//		}
+		//	}
+		//}
 
 		public void Clear() { 
 			logEntryStore.Clear();
 		} 
 
-		public void AddLogEntryItem (LogEntryItem logEntryItem) {			
-			logEntryStore.AppendValues(new LogEntryRow(logEntryItem));
+		public void AddLogEntryItem (byte[] key, LogEntryItem logEntryItem) {
+            TreeIter iter;
+
+            if (logEntryStore.GetIterFirst(out iter))
+            {
+                do
+                {
+                    var value = logEntryStore.GetValue(iter, 0) as ILogEntryRow;
+
+                    if (value.Key.SequenceEqual(key))
+                    {
+                        logEntryStore.SetValues(iter, new LogEntryRow(key, logEntryItem));
+                        return;
+                    }
+                } while (logEntryStore.IterNext(ref iter));
+            }
+
+			logEntryStore.AppendValues(new LogEntryRow(key, logEntryItem));
 		}
 
 		public void Totals(decimal sent, decimal recieved, decimal total)

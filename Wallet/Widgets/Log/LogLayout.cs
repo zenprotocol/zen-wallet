@@ -5,47 +5,32 @@ using Gtk;
 
 namespace Wallet
 {
-	[System.ComponentModel.ToolboxItem(true)]
-	public partial class LogLayout : Gtk.Bin
+	public interface IAssetsView
 	{
+		IEnumerable<Tuple<byte[], String>> Assets { set; }
+		Tuple<byte[], String> Asset { set; }
+	}
+	
+	[System.ComponentModel.ToolboxItem(true)]
+	public partial class LogLayout : Gtk.Bin, IAssetsView
+	{
+		int _SelectedIdx = 0;
+		ListStore _ComboboxStore;
+
 		public LogLayout()
 		{
 			this.Build();
 			label1.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text.Gdk);
 
-            var comboboxStore = new ListStore(typeof(byte[]), typeof(string));
+            _ComboboxStore = new ListStore(typeof(byte[]), typeof(string));
 
-			var i = 0;
-			int selectedIdx = 0;
-
-            comboboxAsset.Model = comboboxStore;
+            comboboxAsset.Model = _ComboboxStore;
 			var textRenderer = new CellRendererText();
             comboboxAsset.PackStart(textRenderer, false);
 			comboboxAsset.AddAttribute(textRenderer, "text", 1);
 
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata.Keys)
-			{
-				if (_asset.SequenceEqual(WalletController.Instance.Asset))
-				{
-					selectedIdx = i;
-				}
-				else
-				{
-					i++;
-				}
-
-                var _iter = comboboxStore.AppendValues(_asset, Convert.ToBase64String(_asset));
-				App.Instance.Wallet.AssetsMetadata.Get(_asset).ContinueWith(t =>
-				{
-					Gtk.Application.Invoke(delegate
-					{
-						comboboxStore.SetValue(_iter, 1, t.Result);
-					});
-				});
-			}
-
 			Gtk.TreeIter iter;
-			comboboxAsset.Model.IterNthChild(out iter, selectedIdx);
+			comboboxAsset.Model.IterNthChild(out iter, _SelectedIdx);
 			comboboxAsset.SetActiveIter(iter);
 
 			comboboxAsset.Changed += (sender, e) =>
@@ -58,6 +43,52 @@ namespace Wallet
                 byte[] _asset = value.Val as byte[];
                 BalancesController.Instance.Asset = _asset;
 			};
+
+			BalancesController.Instance.AssetsView = this;
+		}
+
+		public Tuple<byte[], string> Asset
+		{
+			set
+			{
+				TreeIter iter;
+				_ComboboxStore.GetIterFirst(out iter);
+
+				do
+				{
+					var key = new GLib.Value();
+					_ComboboxStore.GetValue(iter, 0, ref key);
+					byte[] _asset = key.Val as byte[];
+
+					if (_asset.SequenceEqual(value.Item1))
+					{
+						_ComboboxStore.SetValue(iter, 1, value.Item2);
+						break;
+					}
+				} while (_ComboboxStore.IterNext(ref iter));
+			}
+		}
+
+		public IEnumerable<Tuple<byte[], string>> Assets
+		{
+			set
+			{
+				var i = 0;
+
+				foreach (var _asset in value)
+				{
+					if (_asset.Item1.SequenceEqual(WalletController.Instance.Asset))
+					{
+						_SelectedIdx = i;
+					}
+					else
+					{
+						i++;
+					}
+
+					_ComboboxStore.AppendValues(_asset.Item1, _asset.Item2);
+				}
+			}
 		}
 	}
 }
