@@ -64,7 +64,7 @@ namespace Wallet
 		{
 			get
 			{
-				return Amount > 0 && Destination != null && Asset != null && HasEnough && DataValid;
+                return Amount > 0 && Destination != null && Asset != null && HasEnough && (Data == null || DataValid);
 			}
 		}
 
