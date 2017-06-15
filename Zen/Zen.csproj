@@ -185,10 +185,6 @@
       <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
       <Name>Infrastructure.TestingGtk</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BlockChain.Tests\BlockChain.Tests.csproj">
-      <Project>{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}</Project>
-      <Name>BlockChain.Tests</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Network\Network.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>Network</Name>
