@@ -8,92 +8,82 @@ using Zen.RPC.Common;
 using System.Linq;
 using Wallet.core.Data;
 using BlockChain.Data;
+using System.Threading.Tasks;
 
 namespace Zen
 {
-	public class Server
-	{
-		readonly int PORT = 5555;
-		readonly int TIMEOUT = 2 * 1000;
+    public class Server
+    {
+        readonly int PORT = 5555;
+        readonly int TIMEOUT = 2 * 1000;
 
+        App _App;
+        NetMQPoller _poller = new NetMQPoller();
+        ResponseSocket _responseSocket = new ResponseSocket();
 		bool _Started = false;
 		bool _Stopping = false;
 		Thread _Thread;
 		object _Sync = new object();
-		App _App;
 
-		public Server(App app)
-		{
-			_App = app;
+        public Server(App app)
+        {
+            _App = app;
+
+			_poller = new NetMQPoller();
+			_responseSocket = new ResponseSocket();
+			_responseSocket.ReceiveReady += OnReceiveReady;
+			_poller.Add(_responseSocket);
 		}
 
-		public void Start()
-		{
-			lock (_Sync)
-			{
-				if (_Started)
-					return;
 
-				_Thread = new Thread(Listen);
-                _Thread.Name = "RPCListener";
+        public void Start()
+        {
+			_responseSocket.Bind($"tcp://*:{PORT}");
 
-				_Thread.Start();
-				_Started = true;
-				_Stopping = false;
-			}
-		}
+			Task.Factory.StartNew(() => _poller.Run(),
+        	  TaskCreationOptions.LongRunning);
+        }
 
-		public void Stop()
-		{
-			lock (_Sync)
-			{
-				_Stopping = true;
-				_Thread.Join(TIMEOUT);
-				_Started = false;
-			}
-		}
+        public void Stop()
+        {
+            _poller.Stop();
+        }
 
-		void Listen()
-		{
-			using (var server = new ResponseSocket())
-			{
-				server.Bind($"tcp://*:{PORT}");
+        async void OnReceiveReady(object sender, NetMQSocketEventArgs e)
+        {
+            BasePayload request = null;
+            ResultPayload response = null;
 
-			    while (!_Stopping)
-			    {
-					BasePayload request = null;
-					ResultPayload response = null;
+            try
+            {
+                var message = _responseSocket.ReceiveFrameString();
+                var basePayload = JsonConvert.DeserializeObject<BasePayload>(message);
 
-					try
-					{
-						var message = server.ReceiveFrameString();
-						var basePayload = JsonConvert.DeserializeObject<BasePayload>(message);
+                request = (BasePayload)JsonConvert.DeserializeObject(message, basePayload.Type);
 
-						request = (BasePayload)JsonConvert.DeserializeObject(message, basePayload.Type);
+                TUI.WriteColor($"{request}->", ConsoleColor.Blue);
+                response = GetResult(request);
+            }
+            catch (Exception ex)
+            {
+                response = new ResultPayload() { Success = false, Message = ex.Message };
+            }
 
-						TUI.WriteColor($"{request}->", ConsoleColor.Blue);
-						response = GetResult(request);
-					}
-					catch (Exception e)
-					{
-						response = new ResultPayload() { Success = false, Message = e.Message };
-					}
+            if (response != null)
+            {
+                try
+                {
+                    TUI.WriteColor($"<-{response}", ConsoleColor.Blue);
+                    _responseSocket.SendFrame(JsonConvert.SerializeObject(response));
+                }
+                catch (Exception ex)
+                {
+                    TUI.WriteColor($"RPCServer could not reply to a {request} payload, got exception: {ex.Message}", ConsoleColor.Red);
+                }
+            }
 
-                    if (response != null)
-                    {
-                        try
-                        {
-							TUI.WriteColor($"<-{response}", ConsoleColor.Blue);
-                            server.SendFrame(JsonConvert.SerializeObject(response));
-                        } catch (Exception e)
-                        {
-                            TUI.WriteColor($"RPCServer could not reply to a {request} payload, got exception: {e.Message}", ConsoleColor.Red);
-						}
-                    }
-					
-			    }
-			}
-		}
+        }
+    
 
 		ResultPayload GetResult(BasePayload payload)
 		{
