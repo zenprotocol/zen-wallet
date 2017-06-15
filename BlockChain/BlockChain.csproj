@@ -90,8 +90,8 @@
       <Name>Consensus</Name>
     </ProjectReference>
     <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
-      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
-      <Name>ContractExamples</Name>
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

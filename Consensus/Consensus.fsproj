@@ -6,8 +6,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Consensus</RootNamespace>
     <AssemblyName>Consensus</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <UseMSBuildEngine>false</UseMSBuildEngine>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,27 +41,34 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="JetBrains.Annotations">
-      <HintPath>..\packages\JetBrains.Annotations.10.2.1\lib\net\JetBrains.Annotations.dll</HintPath>
-    </Reference>
-    <Reference Include="MsgPack">
-      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization.Primitives">
       <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="Sodium">
       <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
     </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
+    <Reference Include="JetBrains.Annotations">
+      <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
+      <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <None Include="packages.config" />
-    <Compile Include="Types.fs" />
     <Compile Include="Utilities.fs" />
+    <Compile Include="Authentication.fs" />
+    <Compile Include="Types.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="Tree.fs" />
     <Compile Include="Merkle.fs" />
@@ -74,8 +80,10 @@
     <Compile Include="MerkleTests.fs" />
     <Compile Include="SparseMerkleTreeTests.fs" />
     <Compile Include="TransactionTests.fs" />
+    <Compile Include="ExternalTypes.fsi" />
+    <Compile Include="ExternalTypes.fs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(FSharpTargetsPath)" />
-  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.2.0-xbuild02\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.2.0-xbuild02\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
+  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
 </Project>
