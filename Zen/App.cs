@@ -305,6 +305,11 @@ namespace Zen
 		//private ManualResetEventSlim stopEvent = new ManualResetEventSlim();
 		private ManualResetEventSlim stoppedEvent = new ManualResetEventSlim();
 
+        public void Init()
+        {
+            var wallet = WalletManager; 
+        }
+
 		public void Stop()
 		{
             //stopEvent.Set();

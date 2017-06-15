@@ -3,7 +3,7 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
     <StartProgram></StartProgram>
-    <StartArguments>-t -m -r -d</StartArguments>
+    <StartArguments>-m -r -d -t</StartArguments>
     <ExternalConsole>true</ExternalConsole>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>

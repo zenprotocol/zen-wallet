@@ -9,10 +9,17 @@ using Microsoft.FSharp.Core;
 namespace Zen
 {
 	class Program {
+        enum LaunchModeEnum {
+            TUI,
+            GUI,
+            Headless
+        }
+
 		public static void Main (string[] args)
 		{
 			var app = new App();
 
+            var launchMode = LaunchModeEnum.GUI;
 			bool disableNetworking = false;
 			bool show_help = false;
 			bool headless = false;
@@ -23,10 +30,10 @@ namespace Zen
 
 			var p = new OptionSet() {
 				{ "headless", "start in headless mode",
-					v => headless = true },
+					v => launchMode = LaunchModeEnum.Headless },
 
 				{ "t|tui", "show TUI",
-					v => tui = true },
+					v => launchMode = LaunchModeEnum.TUI },
 
 				{ "n|network=", "use network profile",
 					v => app.SetNetwork(v) },
@@ -68,6 +75,11 @@ namespace Zen
 				return;
 			}
 
+            app.Init();
+			
+            if (!disableNetworking)
+				app.Connect();
+            
 			if (rpcServer)
 			{
                 app.StartRPCServer();
@@ -89,26 +101,21 @@ namespace Zen
 				}
 			}
 
-			if (tui)
-			{
-				TUI.Start(app, script);
-				return;
+            switch (launchMode)
+            {
+				case LaunchModeEnum.TUI:
+                    TUI.Start(app);
+					break;
+				case LaunchModeEnum.GUI:
+                    app.GUI();
+					break;
+				case LaunchModeEnum.Headless:
+                    Console.WriteLine("Press any key to stop...");
+                    Console.ReadKey();
+                    app.Dispose();
+                    Console.WriteLine("Stopped.");
+					break;
 			}
-
-            // only initiat connection if no init script is used
-            if (!disableNetworking)
-                app.Connect();
-
-			if (headless)
-			{
-                Console.ReadKey();
-			}
-			else
-			{
-				app.GUI();
-			}
-
-			app.Dispose();
 		}
 
 		static void ShowHelp (OptionSet p)

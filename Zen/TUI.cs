@@ -23,7 +23,7 @@ namespace Zen
 		static ListBox listMenu;
 		static string currentMenu { get; set; }
 
-		public static void Start (App app, String script)
+		public static void Start(App app)
 		{
 			var root = new RootWindow();
 			var options = new Dictionary<string, List<string>>();
