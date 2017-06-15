@@ -26,6 +26,7 @@ let callParams = {
     oracle=fakeOracle;
     underlying="GOOG";
     price=1337.00M;
+    strike=3423.00M;
     minimumCollateralRatio=0.2M;
     ownerPubKey=keypair.PublicKey
     }
