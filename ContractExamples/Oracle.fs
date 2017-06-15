@@ -2,6 +2,9 @@
 
 open FSharp.Data
 let innerHash = Consensus.Merkle.innerHash
+type AuditPath = Merkle.AuditPath
+type Outpoint = Consensus.Types.Outpoint
+let deserializeOutpoint = Consensus.TransactionValidation.guardedDeserialise<Outpoint>
 
 type TickerItem = {underlying:string; price:decimal;timestamp:int64}
 
@@ -54,20 +57,32 @@ let commitments (items: TickerItem seq) (secret: byte[]) =
 
 let proofMapSerializer =
     System.Runtime.Serialization.Json.DataContractJsonSerializer(
-        typeof<Map<string,Merkle.AuditPath>>)
+        typeof<Map<string,AuditPath>>)
 
-let pathToTypedJson (path:Merkle.AuditPath) =
+let pathToTypedJson (path:AuditPath) =
     let (data, loc, pa) = 
         (System.Convert.ToBase64String path.data, int64 path.location, Array.map (System.Convert.ToBase64String) path.path)
     RawJsonData.AuditPath(data, loc, pa)
 
 let pathData = pathToTypedJson >> (fun d -> d.JsonValue.ToString())
 
-let rawDataTypedJson (path:Merkle.AuditPath, outpoint:Consensus.Types.Outpoint) =
+let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
     let opnt = Consensus.Merkle.serialize outpoint |> System.Convert.ToBase64String
     RawJsonData.Root(pathToTypedJson path, opnt)
 
 let rawData = rawDataTypedJson >> (fun d -> d.JsonValue.ToString())
+
+let fromRawData (s:string) : (AuditPath * Outpoint) =
+    let raw = RawJsonData.Parse(s)
+    let rawAuditPath = raw.AuditPath
+    let rawOutpoint = raw.Outpoint
+    let auditPath:AuditPath = {
+        data = System.Convert.FromBase64String rawAuditPath.Data;
+        location = uint32 rawAuditPath.Location;
+        path = Array.map (System.Convert.FromBase64String) rawAuditPath.Path
+        }
+    let outpoint = rawOutpoint |> System.Convert.FromBase64String |> deserializeOutpoint
+    (auditPath, outpoint)
 
 let priceTable (m:Map<string,Merkle.AuditPath>) =
     let price (bs:byte[]) =
