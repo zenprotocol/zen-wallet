@@ -3,12 +3,12 @@
 open Microsoft.FSharp.Quotations
 
 open Consensus.Types
-open Authentication
+open Consensus.Authentication
 
 
-type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
-type TransactionSkeleton = Outpoint list * Output list * byte[]
-type ContractFunction = ContractFunctionInput -> TransactionSkeleton
+type ContractFunctionInput = Contracts.ContractFunctionInput
+type TransactionSkeleton = Contracts.TransactionSkeleton
+type ContractFunction = Contracts.ContractFunction
 
 let maybe = MaybeWorkflow.maybe
 type InvokeMessage = byte * Outpoint list
@@ -87,34 +87,31 @@ let makeData (tokens, collateral, counter) = Array.concat <| List.map uint64ToBy
 
 let returnToSender (opoint:Outpoint, oput:Output) = List.singleton opoint, List.singleton oput, Array.empty<byte>
 
-
+type SecureTokenParameters = {destination: Hash}
         
-let tokenGen : Expr<ContractFunction> = <@ fun (message, contracthash, utxos) ->
-    maybe {
-        let! opcode, outpoints = tryParseInvokeMessage message
-        let! commandLoc = Array.tryHead outpoints   
-        let! commandOutput = utxos commandLoc
+let secureTokenFactory : SecureTokenParameters -> Expr<ContractFunction> = fun p ->
+    <@
+    let contractType = "securetoken"
+    let meta = p
+    fun (message, contracthash, utxos) ->
+        maybe {
+            let! opcode, outpoints = tryParseInvokeMessage message
+            let! fundsLoc = Array.tryHead outpoints   
+            let! funds = utxos fundsLoc
+            let! commandSpend =
+                match funds with
+                | {
+                    lock=ContractLock (contractHash=contractHash);
+                    spend=spend
+                  } when contractHash=contracthash
+                    -> Some spend
+                | _ -> None
+            let oput = {lock=PKLock p.destination; spend=commandSpend}
+            // send a contract token as well
+            let cput = {lock=PKLock p.destination; spend={asset=contracthash; amount=1000UL}}
+            return ([fundsLoc;],[oput; cput;],[||])
+        } |> Option.defaultValue %BadTx @>
 
-        printfn "zzzzzzzz %A" commandOutput
-
-        let! commandData, commandSpend =
-            match commandOutput with
-            | {
-                lock=ContractLock (contractHash=contractHash; data=data);
-                spend=spend
-              } when contractHash=contracthash
-                -> Some (data, spend)
-            | _ -> None
-
-
-        printfn "%A %A" commandData commandSpend
-
-        // whatever data is present is used as the return address of the spend
-        let oput = {lock=PKLock commandData; spend=commandSpend}
-        // send a contract token as well
-        let cput = {lock=PKLock commandData; spend={asset=contracthash; amount=1000UL}}
-        return ([commandLoc;],[oput; cput;],[||])
-    } |> Option.defaultValue %BadTx @>
 
 let makeCollateralizeData (returnPubKeyHash:Hash) (counter:uint64) (keypair:Sodium.KeyPair) =
     let toSign = Array.append [|0uy|] <| uint64ToBytes counter
@@ -132,6 +129,8 @@ let makeCloseData returnPubKeyHash counter (keypair:Sodium.KeyPair) =
 
 let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun optParams ->
     <@
+    let contractType = "calloption"
+    let meta = optParams
     let (|Collateralize|_|) (data:byte[]) =
         maybe {
             let! opcode = Array.tryHead data
@@ -390,9 +389,11 @@ type OracleParameters =
         ownerPubKey: byte[]
     }
 
-let oracle : OracleParameters -> Expr<ContractFunction> = fun oParams ->
+let oracleFactory : OracleParameters -> Expr<ContractFunction> = fun oParams ->
     <@
     fun (message,contracthash,utxos) ->
+        let contractType = "oracle"
+        let meta = oParams
         maybe {
             if message.Length <> 129 then return! None
             let m, s = message.[0..64], message.[65..128]
