@@ -1,0 +1,87 @@
+﻿@model ContractsDiscovery.Web.App_Data.ContractData
+
+<table class="table">
+    <tbody>
+	    <tr>
+	        <td><p class="text-left">Address:</p></td>
+	        <td><p class="text-left">@Model.ActiveContract.Address</p></td>
+	    </tr>
+        <tr>
+            <td><p class="text-left">Type:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.Description</p></td>
+        </tr>
+
+        <tr>
+            <td><p class="text-left">Asset name:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.AssetName</p></td>
+        </tr>
+        <tr>
+            <td><p class="text-left">Asset metadata version:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.AssetMetadataVersion</p></td>
+        </tr>
+        <tr>
+            <td><p class="text-left">Asset image URL:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.AssetImageUrl</p></td>
+        </tr>
+        <!--tr>
+            <td><p class="text-left">Last block:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.LastBlock</p></td>
+        </tr-->
+        @if (@Model.ActiveContract.Type == "call-option")
+        {
+        <tr>
+            <td><p class="text-left">Message:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.AuthorMessage</p></td>
+        </tr>
+        <tr>
+            <td><p class="text-left">Expiry:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.Expiry</p></td>
+        </tr>
+        <tr>
+            <td><p class="text-left">Strike:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.Strike</p></td>
+        </tr>
+        <tr>
+            <td><p class="text-left">Oracle:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.Oracle</p></td>
+        </tr>
+        <tr>
+            <td><p class="text-left">Underlying:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.Underlying</p></td>
+        </tr>
+		}
+        <tr>
+            <td><p class="text-left">UTXOs:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.TotalAssets</p></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+
+<div>
+@using (@Html.BeginForm("PrepareAction", "ContractInteraction", FormMethod.Post))
+{
+	@Html.HiddenFor(m => m.ActiveContract.Address)
+                
+	switch (@Model.ActiveContract.Type)
+    {
+        case "call-option":
+            <button type="submit" value="Collateralize" name="action" class="btn btn-primary">Collateralize</button>
+            <button type="submit" value="Buy" name="action" class="btn btn-primary">Buy</button>
+            <button type="submit" value="Exercise" name="action" class="btn btn-primary">Exercise</button>
+            <button type="submit" value="Close" name="action" class="btn btn-primary">Close</button>
+            break;
+        case "secure-token-generator":
+            <button type="submit" value="GetTokens" name="action" class="btn btn-primary">Get Tokens</button>
+            break;
+    }
+}
+</div>          
+<br>
+<br>
+<div class="form-group">
+    <textarea rows="20" class="form-control" placeholder="Code">@Model.ActiveContract.Code</textarea>
+</div>

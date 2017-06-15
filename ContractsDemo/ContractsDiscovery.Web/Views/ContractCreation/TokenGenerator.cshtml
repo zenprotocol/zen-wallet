@@ -1,0 +1,15 @@
+﻿@model ContractsDiscovery.Web.App_Data.CreateTokenGenerator
+
+@using (@Html.BeginForm("TokenGenerator", "ContractCreation", FormMethod.Post))
+{
+    <div class="form-group">
+		<label for="Destination">Destination</label>
+        <input type="text" required="true" class="form-control" id="destination" name="destination" placeholder="Destination" value="@Model.Destination.Value"/>
+		@if (@Model.Destination.Invalid)
+		{
+			<small class="form-text text-muted">Invalid input</small>
+		}
+    </div>
+
+    <input type="submit" value="Submit" />
+}   
