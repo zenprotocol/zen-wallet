@@ -18,18 +18,31 @@ let itemSample =
         }""" 
 type ItemJsonData = JsonProvider<itemSample, SampleIsList=false>
 
+[<Literal>]
+let rawSample =
+    """{
+        "auditPath": {
+            "data": "5654aaoeuaoe52345234OUEA",
+            "location": 3242433330,
+            "path": ["5uejaeuao","axydd5454","aoeu43333","aoeuajk324","aekka444"]
+        },
+        "outpoint": "5ab534AAAOEUAAOEAA"
+    }"""
+type RawJsonData = JsonProvider<rawSample,SampleIsList=false>
+
 let commitments (items: TickerItem seq) (secret: byte[]) =
     let jsonOfTickerItem ({underlying=underlying;price=price;timestamp=timestamp} as item) =
-        TickerJsonData.Root(underlying,price,timestamp).JsonValue
-    let serializedTickerItem item = jsonOfTickerItem(item).ToString() |> System.Text.Encoding.ASCII.GetBytes
-    let nonce (bs:byte[]) = innerHash (Array.append bs secret)
+        ItemJsonData.Item(underlying,price,timestamp)
+    let serializedTickerItem item = jsonOfTickerItem(item).JsonValue.ToString() |> System.Text.Encoding.ASCII.GetBytes
+    let nonceB (bs:byte[]) = innerHash (Array.append bs secret)
     let leaf (item:TickerItem) =
         let itemJson = jsonOfTickerItem item
-        let nonceBytes = nonce (serializedTickerItem item)
-        JsonValue.Record [|("item", itemJson);("nonce", JsonValue.String <| System.Convert.ToBase64String nonceBytes) |]
+        let nonceBytes = nonceB (serializedTickerItem item)
+        let nonce = System.Convert.ToBase64String nonceBytes
+        ItemJsonData.Root(itemJson,nonce)
     let leafData = [|
         for item in items ->
-            (leaf item).ToString() |> System.Text.Encoding.ASCII.GetBytes
+            (leaf item).JsonValue.ToString() |> System.Text.Encoding.ASCII.GetBytes
             |]
     let tree = Merkle.merkleTree leafData
     let auditPaths = seq {
@@ -43,11 +56,18 @@ let proofMapSerializer =
     System.Runtime.Serialization.Json.DataContractJsonSerializer(
         typeof<Map<string,Merkle.AuditPath>>)
 
-let pathToContractData (path:Merkle.AuditPath) =
-    let serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof<Merkle.AuditPath>)
-    use stream = new System.IO.MemoryStream()
-    serializer.WriteObject(stream, path)
-    stream.ToArray() |> System.Text.Encoding.ASCII.GetString
+let pathToTypedJson (path:Merkle.AuditPath) =
+    let (data, loc, pa) = 
+        (System.Convert.ToBase64String path.data, int64 path.location, Array.map (System.Convert.ToBase64String) path.path)
+    RawJsonData.AuditPath(data, loc, pa)
+
+let pathData = pathToTypedJson >> (fun d -> d.JsonValue.ToString())
+
+let rawDataTypedJson (path:Merkle.AuditPath, outpoint:Consensus.Types.Outpoint) =
+    let opnt = Consensus.Merkle.serialize outpoint |> System.Convert.ToBase64String
+    RawJsonData.Root(pathToTypedJson path, opnt)
+
+let rawData = rawDataTypedJson >> (fun d -> d.JsonValue.ToString())
 
 let priceTable (m:Map<string,Merkle.AuditPath>) =
     let price (bs:byte[]) =
