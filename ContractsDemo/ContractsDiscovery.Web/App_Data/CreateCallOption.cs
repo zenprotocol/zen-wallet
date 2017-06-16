@@ -11,6 +11,7 @@ namespace ContractsDiscovery.Web.App_Data
 		public ContractAddressField ControlAssetReturn { get; set; }
 		public Field<string> Underlying { get; set; }
 		public DecimalField Price { get; set; }
+		public DecimalField Strike { get; set; }
 		public DecimalField MinimumCollateralRatio { get; set; }
 		public ContractAddressField OwnerPubKey { get; set; }
 
@@ -22,6 +23,7 @@ namespace ContractsDiscovery.Web.App_Data
             ControlAssetReturn = new ContractAddressField();
             Underlying = new Field<string>();
             Price = new DecimalField();
+            Strike = new DecimalField();
             MinimumCollateralRatio = new DecimalField();
             OwnerPubKey = new ContractAddressField();
         }
@@ -37,6 +39,7 @@ namespace ContractsDiscovery.Web.App_Data
                     ControlAssetReturn.Invalid ||
                     Underlying.Invalid ||
                     Price.Invalid ||
+                    Strike.Invalid ||
                     MinimumCollateralRatio.Invalid ||
                     OwnerPubKey.Invalid;
             }

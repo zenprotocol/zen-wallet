@@ -149,10 +149,6 @@
       <Project>{52C99661-71D0-4037-858E-B605CE5F562C}</Project>
       <Name>ContractUtilities</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Zen.Services.Oracle.Common\Zen.Services.Oracle.Common.csproj">
-      <Project>{52AA2809-D59A-4546-A124-D028E5DC4E20}</Project>
-      <Name>Zen.Services.Oracle.Common</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

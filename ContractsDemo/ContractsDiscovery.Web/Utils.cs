@@ -74,6 +74,7 @@ namespace ContractsDiscovery.Web
 
 						activeContract.Type = "call-option";
 						activeContract.Description = "Call Option";
+						activeContract.ControlAsset = Convert.ToBase64String(callOptionParameters.controlAsset);
 					}
 					else if (metadata.Value.IsOracle)
 					{

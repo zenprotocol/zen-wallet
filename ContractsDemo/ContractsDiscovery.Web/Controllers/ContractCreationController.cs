@@ -50,6 +50,7 @@ namespace ContractsDiscovery.Web.Controllers
 			createCallOption.ControlAssetReturn.SetValue(Request["controlAssetReturn"]);
 			createCallOption.Underlying.SetValue(Request["underlying"]);
 			createCallOption.Price.SetValue(Request["price"]);
+            createCallOption.Strike.SetValue(Request["strike"]);
 			createCallOption.MinimumCollateralRatio.SetValue(Request["minimumCollateralRatio"]);
 			createCallOption.OwnerPubKey.SetValue(Request["ownerPubKey"]);
 
@@ -67,7 +68,8 @@ namespace ContractsDiscovery.Web.Controllers
                         createCallOption.Oracle.Address.Bytes,
                         createCallOption.Underlying.Value,
                         createCallOption.Price.Decimal,
-                        createCallOption.MinimumCollateralRatio.Decimal,
+                        createCallOption.Strike.Decimal,
+						createCallOption.MinimumCollateralRatio.Decimal,
                         createCallOption.OwnerPubKey.Address.Bytes);
 
                     var contract = ContractExamples.QuotedContracts.callOptionFactory(callOptionParameters);

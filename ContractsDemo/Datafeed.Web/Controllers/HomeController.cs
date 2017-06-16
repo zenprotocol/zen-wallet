@@ -141,10 +141,7 @@ namespace Datafeed.Web.Controllers
 				var utxosNew = GetContractPointedOutputsResultPayload.Unpack(getNewOutpointsResult.PointedOutputs);
 				var utxoNew = utxosNew.First();
 
-				var newOutpoint = new byte[] { (byte)utxoNew.Item1.index };
-				newOutpoint = newOutpoint.Concat(utxoNew.Item1.txHash).ToArray();
-
-                System.IO.File.WriteAllText(Path.ChangeExtension(file, ".outpoint.json"), Convert.ToBase64String(newOutpoint));
+                System.IO.File.WriteAllText(Path.ChangeExtension(file, ".outpoint.txt"), Convert.ToBase64String(Merkle.serialize(new Types.Outpoint(utxoNew.Item1.txHash, utxoNew.Item1.index))));
 			}
             else
             {

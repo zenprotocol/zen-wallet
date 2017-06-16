@@ -57,6 +57,16 @@
     </div>
 
     <div class="form-group">
+        <label for="strike">Strike</label>
+        <input type="number" required="true" class="form-control" id="strike" name="strike" placeholder="Strike" value="@Model.Strike.Value"/>
+        @if (@Model.Strike.Invalid)
+        {
+            <small class="form-text text-muted">Invalid input</small>
+        }
+    </div>
+
+  
+    <div class="form-group">
 		<label for="minimumCollateralRatio">Minimum Collateral Ratio</label>
         <input type="number" required="true" class="form-control" id="minimumCollateralRatio" name="minimumCollateralRatio" placeholder="Minimum Collateral Ratio" value="@Model.MinimumCollateralRatio.Value"/>
 	    @if (@Model.MinimumCollateralRatio.Invalid)

@@ -14,6 +14,7 @@ using ContractsDiscovery.Web.App_Data;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Wallet.core.Data;
 using Zen.RPC;
 using Zen.RPC.Common;
@@ -26,6 +27,7 @@ namespace ContractsDiscovery.Web.Controllers
         string _address = WebConfigurationManager.AppSettings["node"];
 		const byte OPCODE_BUY = 0x01;
 		const byte OPCODE_COLLATERALIZE = 0x00;
+        const byte OPCODE_EXERCISE = 0x02;
 
 		[HttpPost]
 		public ActionResult PrepareAction()
@@ -122,13 +124,8 @@ namespace ContractsDiscovery.Web.Controllers
                         break;
                     case "Exercise":
                         var oracleData = GetOracleCommitmentData(callOptionParameters.Item.underlying, DateTime.Now.ToUniversalTime()).Result;
-						
-               //         args.Add("oracleOutpoint", );
-				//		args.Add("auditPath", );
-
-
-						contractInteraction.Data = oracleData.Proof;
-                        return View(contractInteraction);
+                        args.Add("oracleRawData", oracleData);
+                        opcode = OPCODE_EXERCISE;
                         break;
                 }
             }
@@ -150,12 +147,10 @@ namespace ContractsDiscovery.Web.Controllers
 			return View(contractInteraction);
 		}
 
-        async Task<Zen.Services.Oracle.Common.CommitmentData> GetOracleCommitmentData(string underlying, DateTime time)
+        async Task<string> GetOracleCommitmentData(string underlying, DateTime time)
         {
             string oracleGetCommitmentDataService = WebConfigurationManager.AppSettings["oracleGetCommitmentDataService"];
             var uri = new Uri(string.Format(oracleGetCommitmentDataService, underlying));
-            string remoteString = null;
-            Zen.Services.Oracle.Common.CommitmentData result = null;
 
             try
             {
@@ -163,7 +158,7 @@ namespace ContractsDiscovery.Web.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    remoteString = await response.Content.ReadAsStringAsync();
+                    return await response.Content.ReadAsStringAsync();
                 }
                 else
                 {
@@ -174,17 +169,6 @@ namespace ContractsDiscovery.Web.Controllers
             {
                 return null;
             }
-
-			try
-			{
-				result = JsonConvert.DeserializeObject<Zen.Services.Oracle.Common.CommitmentData>(remoteString);
-			}
-			catch (Exception e)
-			{
-				return null;
-			}
-
-            return result;
         }
 	}
 }
