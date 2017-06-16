@@ -70,6 +70,14 @@ let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
     let opnt = Consensus.Merkle.serialize outpoint |> System.Convert.ToBase64String
     RawJsonData.Root(pathToTypedJson path, opnt)
 
+let fromPath (s:string) : AuditPath =
+    let raw = RawJsonData.AuditPath(JsonValue.Parse s)
+    {
+        data = System.Convert.FromBase64String raw.Data;
+        location = uint32 raw.Location;
+        path = Array.map (System.Convert.FromBase64String) raw.Path
+    }
+
 let rawData = rawDataTypedJson >> (fun d -> d.JsonValue.ToString())
 
 let fromRawData (s:string) : (AuditPath * Outpoint) =

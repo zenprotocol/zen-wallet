@@ -65,6 +65,7 @@ type CallOptionParameters =
         oracle: Hash;
         underlying: string;
         price: decimal;
+        strike: decimal;
         minimumCollateralRatio: decimal;
         ownerPubKey: byte[]
     }
@@ -156,9 +157,9 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
             let! opcode = Array.tryHead data
             if opcode <> 2uy then
                 return! None
-            if data.Length <> 33 then
+            if data.Length < 34 then
                 return! None
-            return data.[1..32]
+            return (data.[1..32], data.[33..])
         }
 
     let (|Close|_|) (data:byte[]) =
@@ -208,9 +209,8 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
               Output * Output * Output -> 
               uint64 * uint64 * uint64 ->
               Hash -> Hash -> TransactionSkeleton =
-        fun optionParams outpoints outputs optionData pubkeyhash contracthash ->
+        fun optionParams (x,y,z as outpoints) ((b,d,f) as outputs) optionData pubkeyhash contracthash ->
             let optTx = maybe {
-                let b, d, f = outputs
                 if b.spend.asset <> optionParams.numeraire then
                     return! None
                 let! optionsPurchased =
@@ -229,35 +229,55 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
                                             contracthash,
                                             makeData (tokens + optionsPurchased,collateral + b.spend.amount,counter))}
                 let funds = { f with spend={ f.spend with amount = f.spend.amount + b.spend.amount } }
-                let outpointlist = match outpoints with (x,y,z) -> [x;y;z]
+                let outpointlist = [x;y;z]
                 return (outpointlist,[purchase; data; funds],[||])
             }
             match optTx with
             | Some tx -> tx
             | None ->
-                match outpoints, outputs with
-                | (buypoint, _, _), (buyput, _, _) ->
+                match x, b with
+                | buypoint, buyput ->
                     let returnOutput = { lock=PKLock pubkeyhash; spend=buyput.spend }
                     returnToSender (buypoint, returnOutput)
 
     let exercise : CallOptionParameters ->
-              Outpoint * Outpoint * Outpoint -> 
-              Output * Output * Output -> 
+              Outpoint * Outpoint * Outpoint * (Outpoint option) -> 
+              Output * Output * Output * (Output option)-> 
               uint64 * uint64 * uint64 ->
-              Hash -> Hash -> TransactionSkeleton =
-        fun optionParams ((x,y,z) as outpoints) ((b,d,f) as outputs) (tokens, collateral, counter) pubkeyhash contracthash ->
+              Hash -> byte[] -> Hash -> TransactionSkeleton =
+        fun optionParams (x,y,z,wOpt as outpoints) ((b,d,f,orOpt) as outputs) (tokens, collateral, counter) pubkeyhash auditB contracthash ->
             let optTx = maybe {
+                let! w = wOpt
+                let! orOutput = orOpt
+                let oracle = optionParams.oracle
+                let! root =
+                    match orOutput.lock with
+                    | ContractLock (orc, root) when orc = oracle -> Some root
+                    | _ -> None
                 if b.spend.asset <> contracthash then
                     return! None
-                let price = optionParams.price //TODO: oracle
-                let collateralizedTokens = (decimal)collateral / price |> floor |> (uint64)
+                let! auditPath =
+                    try
+                     auditB
+                         |> System.Text.Encoding.ASCII.GetString
+                         |> Oracle.fromPath
+                         |> Some
+                    with
+                        | _ -> None
+                if root <> Merkle.rootFromAuditPath auditPath then return! None
+                let auditJson = Oracle.ItemJsonData.Parse(System.Text.Encoding.ASCII.GetString auditPath.data)
+                let underlying, price, timestamp =
+                    auditJson.Item |> fun it -> it.Underlying, it.Price, it.Timestamp
+                if underlying <> optionParams.underlying then return! None
+                // if not <| timestamp `near` currentTime then return! None
+                let payoffAmtD = price - optParams.strike
+                if payoffAmtD <= 0m then return! None
+                let collateralizedTokens = (decimal)collateral / payoffAmtD |> floor |> (uint64)
                 if b.spend.amount > collateralizedTokens then // could create change, but it'd be a mess
                     return! None
-                let payoffamtd = (decimal)b.spend.amount * optionParams.price //TODO: oracle
-                if payoffamtd <= 0m then return! None
-                let payoffamt = payoffamtd |> floor |> (uint64)
-                let remainingCollateral = collateral - payoffamt
-                let payoff = { lock=PKLock pubkeyhash; spend={ asset=optionParams.numeraire; amount=payoffamt } }
+                let payoffAmt = payoffAmtD |> floor |> (uint64)
+                let remainingCollateral = collateral - payoffAmt
+                let payoff = { lock=PKLock pubkeyhash; spend={ asset=optionParams.numeraire; amount=payoffAmt } }
                 let data = { d with lock=ContractLock (
                                             contracthash,
                                             makeData (tokens-b.spend.amount, remainingCollateral, counter)) }
@@ -304,13 +324,14 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
         // parse message, obtaining opcode and three outpoints
         let! opcode, outpoints = tryParseInvokeMessage message
         let! commandLoc, dataLoc, fundsLoc =
-            if Array.length outpoints <> 3 then None
+            if Array.length outpoints < 3 then None
             else
                 Some <| (Array.get outpoints 0, Array.get outpoints 1, Array.get outpoints 2)
         // try to get the outputs. Fail early if they aren't there!
         let! commandOutput = utxos commandLoc
         let! dataOutput = utxos dataLoc
         let! fundsOutput = utxos fundsLoc
+        let otherPoints = outpoints.[3..]
         // the contract's data output must own the control token
         let! optionsOwnData =
             match dataOutput with
@@ -344,7 +365,7 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
             | Collateralize (returnAddress, pubsig) ->
                 Some <| collateralize
                             optParams
-                            (commandLoc,dataLoc,fundsLoc)
+                            (commandLoc, dataLoc, fundsLoc)
                             (commandOutput, dataOutput, fundsOutput)
                             (tokens, collateral, counter)
                             returnAddress
@@ -353,23 +374,26 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
             | Buy pubkeyhash ->
                 Some <| buy
                             optParams
-                            (commandLoc,dataLoc,fundsLoc)
+                            (commandLoc, dataLoc, fundsLoc)
                             (commandOutput, dataOutput, fundsOutput) 
                             (tokens, collateral, counter)
                             pubkeyhash
                             contracthash
-            | Exercise pubkeyhash ->
+            | Exercise (pubkeyhash, auditPath) ->
+                let oracleLoc = Array.tryHead otherPoints
+                let oracleOutput = Option.bind utxos oracleLoc
                 Some <| exercise
                             optParams
-                            (commandLoc,dataLoc,fundsLoc)
-                            (commandOutput, dataOutput, fundsOutput) 
+                            (commandLoc, dataLoc, fundsLoc, oracleLoc)
+                            (commandOutput, dataOutput, fundsOutput, oracleOutput) 
                             (tokens, collateral, counter)
                             pubkeyhash
+                            auditPath
                             contracthash
             | Close (pubkeyhash, pubsig) ->
                 Some <| close
                             optParams
-                            (commandLoc,dataLoc,fundsLoc)
+                            (commandLoc, dataLoc, fundsLoc)
                             (commandOutput, dataOutput, fundsOutput) 
                             (tokens, collateral, counter)
                             pubkeyhash

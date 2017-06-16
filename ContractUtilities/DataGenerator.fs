@@ -86,9 +86,10 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
                 )
             )
         | 2uy ->
+            let! oracleRawData = m.TryFind "oracleRawData"
             return ContractJsonData.Root (
                 ContractJsonData.StringOrFirst (
-                    Array.append [|2uy|] returnHash |> getString
+                    Array.concat [[|2uy|]; returnHash; System.Text.Encoding.ASCII.GetBytes oracleRawData] |> getString
                 ),
                 Some <| ContractJsonData.Second (
                     [|2uy|] |> getString,
