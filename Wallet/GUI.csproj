@@ -73,7 +73,6 @@
     <Reference Include="Sodium">
       <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
@@ -214,6 +213,7 @@
     <Compile Include="Domain\Zen.cs" />
     <Compile Include="Widgets\SignMessageDialog.cs" />
     <Compile Include="gtk-gui\Wallet.SignMessageDialog.cs" />
+    <Compile Include="UpdatingStore.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

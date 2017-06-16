@@ -11,6 +11,8 @@ namespace Wallet
 		{
 			this.Build();
 
+            textview1.Buffer.Text = Convert.ToBase64String(key.Public);
+
 			buttonSign.Clicked += delegate
 			{
                 try

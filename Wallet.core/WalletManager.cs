@@ -26,9 +26,9 @@ namespace Wallet.core
         //TODO: consider not using thread loops - * watchout from dbreeze threading limitation
         private EventLoopMessageListener<BlockChainMessage> _BlockChainListener;
 
-        public TxDeltaItemsEventArgs TxDeltaList { get; private set; }
+        public AggregatingTxDeltaItemsEventArgs TxDeltaList { get; private set; }
         public AssetsMetadata AssetsMetadata { get; private set; }
-
+            
         public event Action<ResetEventArgs> OnReset;
         public event Action<TxDeltaItemsEventArgs> OnItems;
 
@@ -41,7 +41,7 @@ namespace Wallet.core
             _KeyStore = new KeyStore();
             _TxStore = new TxStore();
 
-            TxDeltaList = new TxDeltaItemsEventArgs();
+            TxDeltaList = new AggregatingTxDeltaItemsEventArgs();
             AssetsMetadata = new AssetsMetadata();
 
             _BlockChainListener = new EventLoopMessageListener<BlockChainMessage>(OnBlockChainMessage);
@@ -58,6 +58,10 @@ namespace Wallet.core
                     switch (item.Item2.TxState)
                     {
                         case TxStateEnum.Confirmed:
+                            foreach (var output in item.Item2.Tx.outputs)
+                            {
+                                AssetsMetadata.GetMetadata(output.spend.asset);
+                            }
                             TxDeltaList.Add(new TxDelta(item.Item2.TxState, item.Item2.TxHash, item.Item2.Tx, item.Item2.AssetDeltas, item.Item2.DateTime));
                             break;
                         case TxStateEnum.Unconfirmed:
@@ -121,7 +125,7 @@ namespace Wallet.core
                     foreach (var output in item.Value)
                     {
                         AddOutput(assetDeltas, output);
-                        AssetsMetadata.Add(output.spend.asset);
+                        AssetsMetadata.GetMetadata(output.spend.asset);
                     }
 
                     _TxStore.Put(dbTx, item.Key, txs[item.Key], assetDeltas, TxStateEnum.Confirmed);
@@ -191,7 +195,7 @@ namespace Wallet.core
             ptx.outputs.Where(IsMatch).ToList().ForEach(o =>
             {
                 AddOutput(_deltas, o, !isValid);
-                AssetsMetadata.Add(o.spend.asset);
+                AssetsMetadata.GetMetadata(o.spend.asset);
             });
 
             ptx.pInputs.ToList().ForEach(pInput =>
@@ -411,7 +415,7 @@ namespace Wallet.core
 
         public bool Sign(Address address, byte[] asset, ulong amount, out Types.Transaction signedTx)
         {
-            var output = new Types.Output(address.GetLock(), new Types.Spend(Tests.zhash, amount));
+            var output = new Types.Output(address.GetLock(), new Types.Spend(asset, amount));
             return Sign(output, asset, amount, out signedTx);
         }
 

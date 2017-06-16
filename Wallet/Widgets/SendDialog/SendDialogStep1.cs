@@ -22,22 +22,6 @@ namespace Wallet
 			var i = 0;
 			int selectedIdx = 0;
 			var keys = new Dictionary<string, byte[]>();
-   //         foreach (var _asset in App.Instance.Wallet.AssetsMetadata.Keys)
-			//{
-			//	keys[_asset.Item2] = _asset.Item1;
-
-   //             if (_asset.Item1.SequenceEqual(WalletController.Instance.Asset))
-			//	{
-			//		selectedIdx = i;
-			//		asset = _asset.Item1;
-			//	}
-			//	else
-			//	{
-			//		i++;
-			//	}
-
-			//	dialogcombofieldAsset.ComboBox.AppendText(_asset.Item2);
-			//}
 
 			Gtk.TreeIter iter;
 			dialogcombofieldAsset.ComboBox.Model.IterNthChild(out iter, selectedIdx);
@@ -96,7 +80,7 @@ namespace Wallet
 				}
 				else
 				{
-                    labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.Get(asset).Result;
+                    labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(asset).Result;
 				}
 			};
 

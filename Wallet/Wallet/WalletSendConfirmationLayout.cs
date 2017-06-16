@@ -59,16 +59,19 @@ namespace Wallet
 
 					Types.Transaction autoTx;
 					WalletSendLayout.SendInfo.AutoTxCreated = App.Instance.Wallet.SendContract(WalletSendLayout.SendInfo.Destination.Bytes, witnessData, out autoTx);
-					WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTx);
-				}
 
-				UpdateStatus();
+                    if (WalletSendLayout.SendInfo.AutoTxCreated)
+                    {
+                        WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTx);
+                    }
+				}
+              	UpdateStatus();
 			};
 		}
 
 		public async void Init()
 		{
-            var assetName = await App.Instance.Wallet.AssetsMetadata.Get(WalletSendLayout.SendInfo.Asset);
+            var assetName = await App.Instance.Wallet.AssetsMetadata.GetMetadata(WalletSendLayout.SendInfo.Asset);
 
 		//	imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
 			labelSelectedAsset.Text = labelSelectedAsset1.Text = assetName;

@@ -6,131 +6,119 @@ using Wallet.core;
 
 namespace Wallet
 {
-	[System.ComponentModel.ToolboxItem (true)]
-	public partial class Portfolio : WidgetBase, IPortfolioVIew
-	{
-		ListStore listStore = new ListStore(
-			typeof(string),
-			typeof(long)
-		);
+    [System.ComponentModel.ToolboxItem (true)]
+    public partial class Portfolio : WidgetBase, IPortfolioVIew
+    {
+        UpdatingStore<byte[]> listStore = new UpdatingStore<byte[]>(
+            0,
+            typeof(byte[]),
+            typeof(string),
+            typeof(decimal)
+        );
 
-		public Portfolio ()
-		{
-			this.Build ();
+        public Portfolio ()
+        {
+            this.Build ();
 
-			Apply((Label label) =>
-			{
-				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.SubText.Gdk);
-				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, label3, label2);
+            Apply((Label label) =>
+            {
+                label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.SubText.Gdk);
+                label.ModifyFont(Constants.Fonts.ActionBarSmall);
+            }, label3, label2);
 
-			Apply((Label label) =>
-			{
-				label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-				label.ModifyFont(Constants.Fonts.ActionBarBig);
-			}, labelZen);
+            Apply((Label label) =>
+            {
+                label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+                label.ModifyFont(Constants.Fonts.ActionBarBig);
+            }, labelZen);
 
-			PortfolioController.Instance.AddVIew(this);
-	
-			ConfigureList();
+            PortfolioController.Instance.AddVIew(this);
+    
+            ConfigureList();
 
-			///////////////////////////////
+            App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
+            {
+                Gtk.Application.Invoke(delegate
+                {
+                    try
+                    {
+                        TreeIter iter;
+                        listStore.GetIterFirst(out iter);
 
-			//listStore.RowInserted += async (o, args) =>
-			//{
-   //             var store = (ListStore) o;
-   //             var asset = (byte[])store.GetValue(args.Iter, 0);
-   //             if (asset != null)
-   //             {
-   //                 var assetName = await App.Instance.Wallet.AssetsMetadata.Get(asset);
-   //                 listStore.SetValue(args.Iter, 2, assetName);
-   //             }
-			//};
+                        do
+                        {
+                            var key = new GLib.Value();
+                            listStore.GetValue(iter, 0, ref key);
+                            byte[] _asset = key.Val as byte[];
 
-			//var x = new byte[Consensus.Tests.zhash.Length];
-			//Consensus.Tests.zhash.CopyTo(x, 0);
-			//x[x.Length - 1] = 0x01;
-			//listStore.AppendValues(x, 10);
+                            if (_asset != null && _asset.SequenceEqual(t.Asset))
+                            {
+                                listStore.SetValue(iter, 0, t.Display);
+                                break;
+                            }
+                        } while (listStore.IterNext(ref iter));
+                    } catch 
+                    {
+                        Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
+                    }
+                });
+            };
+        }
 
-			//var y = new byte[Consensus.Tests.zhash.Length];
-			//Consensus.Tests.zhash.CopyTo(y, 0);
-			//y[x.Length - 1] = 0x02;
-			//listStore.AppendValues(y, 20);
+        private void ConfigureList()
+        {
+            treeview1.Model = listStore;
 
-			//var z = new byte[Consensus.Tests.zhash.Length];
-			//Consensus.Tests.zhash.CopyTo(z, 0);
-			//z[x.Length - 1] = 0x03;
-			//listStore.AppendValues(z, 30);
+            treeview1.RulesHint = true; //alternating colors
+            treeview1.Selection.Mode = SelectionMode.Single;
+            treeview1.Selection.Changed += OnSelectionChanged;
+            treeview1.BorderWidth = 0;
+            treeview1.HeadersVisible = false;
+            treeview1.ModifyBase(Gtk.StateType.Active, Constants.Colors.Base.Gdk);
+            treeview1.ModifyBase(Gtk.StateType.Selected, Constants.Colors.Base.Gdk);
+            treeview1.ModifyBase(Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
 
-			//var t = new byte[Consensus.Tests.zhash.Length];
-			//Consensus.Tests.zhash.CopyTo(t, 0);
-			//t[x.Length - 1] = 0x04;
-			//listStore.AppendValues(t, 40);
-		}
+            var col = new Gtk.TreeViewColumn();
+            var rowRenderer = new RowRenderer();
+            col.PackStart(rowRenderer, true);
+            col.SetCellDataFunc(rowRenderer, new Gtk.TreeCellDataFunc(RenderCell));
+            col.MinWidth = 130;
+            treeview1.AppendColumn(col);
+        }
 
-		private void ConfigureList()
-		{
-			treeview1.Model = listStore;
+        void OnSelectionChanged(object sender, EventArgs e)
+        {
+        }
 
-			treeview1.RulesHint = true; //alternating colors
-			treeview1.Selection.Mode = SelectionMode.Single;
-			treeview1.Selection.Changed += OnSelectionChanged;
-			treeview1.BorderWidth = 0;
-			treeview1.HeadersVisible = false;
-			treeview1.ModifyBase(Gtk.StateType.Active, Constants.Colors.Base.Gdk);
-			treeview1.ModifyBase(Gtk.StateType.Selected, Constants.Colors.Base.Gdk);
-			treeview1.ModifyBase(Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
+        void RenderCell(Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)
+        {
+            var rowRenderer = cellRenderer as RowRenderer;
 
-			var col = new Gtk.TreeViewColumn();
-			var rowRenderer = new RowRenderer();
-			col.PackStart(rowRenderer, true);
-			col.SetCellDataFunc(rowRenderer, new Gtk.TreeCellDataFunc(RenderCell));
-			col.MinWidth = 130;
-			treeview1.AppendColumn(col);
-		}
+            rowRenderer.Asset = (string)model.GetValue(iter, 1);
+            rowRenderer.Value = (decimal)model.GetValue(iter, 2);
+        }
 
-		void OnSelectionChanged(object sender, EventArgs e)
-		{
-		}
+        public AssetDeltas AssetDeltas
+        {
+            get
+            {
+                return null;
+            }
+        }
 
-		void RenderCell(Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)
-		{
-			var rowRenderer = cellRenderer as RowRenderer;
+        public void Clear()
+        {
+        }
 
-            rowRenderer.Asset = (string)model.GetValue(iter, 0);
-			rowRenderer.Value = new Zen((long)model.GetValue(iter, 1)).Value;
-		}
-
-		public AssetDeltas AssetDeltas
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		public void Clear()
-		{
-		}
-
-		public void SetDeltas(AssetDeltas assetDeltas)
-		{
+        public void SetPortfolioDeltas(AssetDeltas assetDeltas)
+        {
             foreach (var item in assetDeltas)
             {
-                if (item.Key.SequenceEqual(Consensus.Tests.zhash))
-                {
-                    labelZen.Text = new Zen(item.Value).Value + " " + App.Instance.Wallet.AssetsMetadata.Get(item.Key).Result;
-                }
-                else
-                {
-                    var iter = listStore.AppendValues(Convert.ToBase64String(item.Key), item.Value);
-                    App.Instance.Wallet.AssetsMetadata.Get(item.Key).ContinueWith(t =>
-                    {
-                        listStore.SetValue(iter, 0, t.Result);
-                    });
-                }
+                var value = item.Key.SequenceEqual(Consensus.Tests.zhash) ? new Zen(item.Value).Value : item.Value;
+
+                listStore.Update(t=>t.SequenceEqual(item.Key), item.Key, App.Instance.Wallet.AssetsMetadata.GetMetadata(item.Key).Result, value);
             }
-		}
-	}
+        }
+    }
 }
 

@@ -4,9 +4,14 @@ using Wallet.Domain;
 using System.Linq;
 using Infrastructure;
 using System.Collections.Generic;
+using BlockChain.Data;
 
 namespace Wallet
 {
+    public class AggregatingAssetDeltas : BlockChain.Data.HashDictionary<List<Tuple<long, TxStateEnum>>>
+    {
+    }
+
 	public class PortfolioController : Singleton<PortfolioController>
 	{
 		AssetDeltas _TxDeltas = new AssetDeltas();
@@ -14,15 +19,21 @@ namespace Wallet
 
 		public PortfolioController()
 		{
-			App.Instance.Wallet.TxDeltaList.ForEach(t => AddToTotals(t.AssetDeltas));
-			App.Instance.Wallet.OnReset += delegate { _PortfolioViews.ForEach(v => v.Clear()); };
-			App.Instance.Wallet.OnItems += a => { a.ForEach(t => AddToTotals(t.AssetDeltas)); UpdateTotals(); };
+			App.Instance.Wallet.TxDeltaList.ForEach(t => 
+			    AddToTotals(t.AssetDeltas)
+			);
+			App.Instance.Wallet.OnReset += delegate { 
+                _PortfolioViews.ForEach(v => v.Clear()); 
+            };
+			App.Instance.Wallet.OnItems += a => { 
+                a.ForEach(t => AddToTotals(t.AssetDeltas)); UpdateTotals(); 
+            };
 		}
 
 		public void AddVIew(IPortfolioVIew view)
 		{
 			_PortfolioViews.Add(view);
-			view.SetDeltas(_TxDeltas);
+            view.SetPortfolioDeltas(_TxDeltas);
 		}
 
 		void AddToTotals(AssetDeltas assetDeltas)
@@ -40,7 +51,7 @@ namespace Wallet
 		{
 			Gtk.Application.Invoke(delegate
 			{
-				_PortfolioViews.ForEach(v => v.SetDeltas(_TxDeltas));
+				_PortfolioViews.ForEach(v => v.SetPortfolioDeltas(_TxDeltas));
 			});
 		}
 	}

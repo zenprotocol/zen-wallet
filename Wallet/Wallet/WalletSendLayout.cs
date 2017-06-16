@@ -45,7 +45,7 @@ namespace Wallet
 			get; set;
 		}
 
-		public dynamic Data
+        public JObject Data
 		{
 			get; set;
 		}
@@ -246,51 +246,76 @@ namespace Wallet
 
 			var comboboxStore = new ListStore(typeof(byte[]), typeof(string));
 
-			var i = 0;
-			int selectedIdx = 0;
-
 			comboboxAsset.Model = comboboxStore;
 			var textRenderer = new CellRendererText();
 			comboboxAsset.PackStart(textRenderer, false);
 			comboboxAsset.AddAttribute(textRenderer, "text", 1);
 
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata.Keys)
-			{
-				if (_asset.SequenceEqual(WalletController.Instance.Asset))
-				{
-					selectedIdx = i;
-				}
-				else
-				{
-					i++;
-				}
+            foreach (var _asset in App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList())
+            {
+                var iter = comboboxStore.AppendValues(_asset.Asset, _asset.Display);
+				
+                if (_asset.Asset.SequenceEqual(WalletController.Instance.Asset))
+                {
+                    comboboxAsset.SetActiveIter(iter);
+                }
+            }
 
-				var _iter = comboboxStore.AppendValues(_asset, Convert.ToBase64String(_asset));
-				App.Instance.Wallet.AssetsMetadata.Get(_asset).ContinueWith(t =>
+            App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
+            {
+				Gtk.Application.Invoke(delegate
 				{
-					Gtk.Application.Invoke(delegate
+					try
 					{
-						comboboxStore.SetValue(_iter, 1, t.Result);
-					});
+		                TreeIter iter;
+		                comboboxStore.GetIterFirst(out iter);
+						bool found = false;
+
+						do
+		                {
+		                    var key = new GLib.Value();
+		                    comboboxStore.GetValue(iter, 0, ref key);
+		                    byte[] _asset = key.Val as byte[];
+
+		                    if (_asset != null && _asset.SequenceEqual(t.Asset))
+		                    {
+		                        comboboxStore.SetValue(iter, 1, t.Display);
+		                        found = true;
+		                        break;
+		                    }
+						} while (comboboxStore.IterNext(ref iter));
+
+						if (!found)
+						{
+							comboboxStore.AppendValues(t.Asset, t.Display);
+						}
+
+		                if (labelSelectedAsset.Text == Convert.ToBase64String(t.Asset))
+		                {
+		                    labelSelectedAsset.Text = t.Display;
+		            	}
+					}
+					catch
+					{
+						Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
+					}
 				});
-			}
-			TreeIter iter;
-			comboboxAsset.Model.IterNthChild(out iter, selectedIdx);
-			comboboxAsset.SetActiveIter(iter);
+            };
 
 			comboboxAsset.Changed += async (sender, e) =>
 			{
 				var comboBox = sender as Gtk.ComboBox;
-
+                TreeIter iter;
 				comboBox.GetActiveIter(out iter);
 				var value = new GLib.Value();
 				comboBox.Model.GetValue(iter, 0, ref value);
-                byte[] _asset = value.Val as byte[];
-				SendInfo.Asset = _asset; 
+                byte[] asset = value.Val as byte[];
+				SendInfo.Asset = asset;
 
-                var assetName = await App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset);
-				labelSelectedAsset.Text = labelSelectedAsset1.Text = assetName;
-			//	imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
+                var assetMatadataList = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(asset));
+
+                if (assetMatadataList.Count() != 0)
+                    labelSelectedAsset.Text = assetMatadataList.First().Display;
 
 				UpdateBalance();
 			};
@@ -308,12 +333,12 @@ namespace Wallet
 
                         byte[] firstData = null;
 
-                        if (data.first is JObject)
+                        if (data["first"] is JObject)
                         {
                             byte[] signedData;
 
-                            var pubkey = Convert.FromBase64String(data.first.pubkey.ToString());
-                            var toSign = Convert.FromBase64String(data.first.toSign.ToString());
+                            var pubkey = Convert.FromBase64String(data["first"]["pubkey"].ToString());
+                            var toSign = Convert.FromBase64String(data["first"]["toSign"].ToString());
 
                             if (!App.Instance.Wallet.SignData(pubkey, toSign, out signedData))
                             {
@@ -325,18 +350,18 @@ namespace Wallet
                         }
                         else
                         {
-                            var firstStr = data.first.ToString();
+                            var firstStr = data["first"].ToString();
                             firstData = firstStr.Length == 0 ? null : Convert.FromBase64String(firstStr);
                         }
 
                         SendInfo.Destination.Data = firstData;
 
-                        if (data.second is JObject)
+                        if (data["second"] is JObject)
                         {
                             SendInfo.WitnessData = new WitnessData()
                             {
-                                Initial = Convert.FromBase64String(data.second.initial.ToString()),
-                                Final = Convert.FromBase64String(data.second.final.ToString())
+                                Initial = Convert.FromBase64String(data["second"]["initial"].ToString()),
+                                Final = Convert.FromBase64String(data["second"]["final"].ToString())
                             };
 
                             SendInfo.NeedAutoTx = true;
@@ -356,13 +381,16 @@ namespace Wallet
 
 				if (!SendInfo.Signed)
 				{
-                    labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset).Result;
+                    labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result;
 					return;
 				}
 
                 FindParent<Notebook>().Page = 3;
                 FindParent<WalletLayout>().FindChild<WalletSendConfirmationLayout>().Init();
 			};
+
+            //Assets' images not implemented, remove ui elements
+            hboxAsset.Remove(hboxAsset.Children[0]);
 
 			PortfolioController.Instance.AddVIew(this);
 		}
@@ -377,7 +405,7 @@ namespace Wallet
 
 		}
 
-		public void SetDeltas(AssetDeltas assetDeltas)
+        public void SetPortfolioDeltas(AssetDeltas assetDeltas)
 		{
 			_AssetDeltas = assetDeltas;
 			UpdateBalance();
@@ -403,7 +431,7 @@ namespace Wallet
 				value = String.Format(Formats.Money, _AssetBalance);
 			}
 
-            labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset).Result}";
+            labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result}";
 			CheckAssetAmount();
 		}
 
@@ -413,7 +441,7 @@ namespace Wallet
 
 			if (!SendInfo.HasEnough)
 			{
-                labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.Get(SendInfo.Asset).Result;
+                labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result;
 			}
 			else
 			{

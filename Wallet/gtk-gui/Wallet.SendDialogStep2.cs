@@ -45,21 +45,27 @@ namespace Wallet
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.senddialogwaiting = null;
+			this.senddialogwaiting = new global::Wallet.SendDialogWaiting();
+			this.senddialogwaiting.Events = ((global::Gdk.EventMask)(256));
+			this.senddialogwaiting.Name = "senddialogwaiting";
 			this.vbox1.Add(this.senddialogwaiting);
 			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.senddialogwaiting]));
 			w1.Position = 0;
 			w1.Expand = false;
 			w1.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.dialogfieldTo = null;
+			this.dialogfieldTo = new global::Wallet.DialogField();
+			this.dialogfieldTo.Events = ((global::Gdk.EventMask)(256));
+			this.dialogfieldTo.Name = "dialogfieldTo";
 			this.vbox1.Add(this.dialogfieldTo);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.dialogfieldTo]));
 			w2.Position = 1;
 			w2.Expand = false;
 			w2.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.dialogfieldAmount = null;
+			this.dialogfieldAmount = new global::Wallet.DialogField();
+			this.dialogfieldAmount.Events = ((global::Gdk.EventMask)(256));
+			this.dialogfieldAmount.Name = "dialogfieldAmount";
 			this.vbox1.Add(this.dialogfieldAmount);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.dialogfieldAmount]));
 			w3.Position = 2;
@@ -75,21 +81,27 @@ namespace Wallet
 			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.dialogfield3 = null;
+			this.dialogfield3 = new global::Wallet.DialogField();
+			this.dialogfield3.Events = ((global::Gdk.EventMask)(256));
+			this.dialogfield3.Name = "dialogfield3";
 			this.vbox2.Add(this.dialogfield3);
 			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.dialogfield3]));
 			w4.Position = 0;
 			w4.Expand = false;
 			w4.Fill = false;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.dialogfield4 = null;
+			this.dialogfield4 = new global::Wallet.DialogField();
+			this.dialogfield4.Events = ((global::Gdk.EventMask)(256));
+			this.dialogfield4.Name = "dialogfield4";
 			this.vbox2.Add(this.dialogfield4);
 			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.dialogfield4]));
 			w5.Position = 1;
 			w5.Expand = false;
 			w5.Fill = false;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.dialogfield5 = null;
+			this.dialogfield5 = new global::Wallet.DialogField();
+			this.dialogfield5.Events = ((global::Gdk.EventMask)(256));
+			this.dialogfield5.Name = "dialogfield5";
 			this.vbox2.Add(this.dialogfield5);
 			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.dialogfield5]));
 			w6.Position = 2;

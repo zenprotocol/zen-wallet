@@ -351,7 +351,7 @@ namespace Wallet
 			// Container child hboxAsset.Gtk.Box+BoxChild
 			this.labelSelectOtherAsset = new global::Gtk.Label();
 			this.labelSelectOtherAsset.Name = "labelSelectOtherAsset";
-			this.labelSelectOtherAsset.LabelProp = global::Mono.Unix.Catalog.GetString("or select other asset:");
+			this.labelSelectOtherAsset.LabelProp = global::Mono.Unix.Catalog.GetString("Select asset:");
 			this.hboxAsset.Add(this.labelSelectOtherAsset);
 			global::Gtk.Box.BoxChild w27 = ((global::Gtk.Box.BoxChild)(this.hboxAsset[this.labelSelectOtherAsset]));
 			w27.Position = 1;

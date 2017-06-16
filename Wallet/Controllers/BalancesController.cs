@@ -38,18 +38,9 @@ namespace Wallet
 			{
 				_AssetsView = value;
 
-                _AssetsView.Assets = App.Instance.Wallet.AssetsMetadata.Keys.Select(t => new Tuple<byte[], string>(t, Convert.ToBase64String(t)));
+                App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t => _AssetsView.AssetUpdated = t; //TODO: streamline this
 
-                foreach (var asset in App.Instance.Wallet.AssetsMetadata.Keys)
-                {
-                    App.Instance.Wallet.AssetsMetadata.Get(asset).ContinueWith(t =>
-                    {
-                        Gtk.Application.Invoke(delegate
-                        {
-                            _AssetsView.Asset = new Tuple<byte[], string>(asset, t.Result);
-                        });
-                    });
-				}
+                _AssetsView.Assets = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList();
 			}
 		}
 

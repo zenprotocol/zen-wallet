@@ -2892,7 +2892,7 @@
                         <child>
                           <widget class="Gtk.Label" id="labelSelectOtherAsset">
                             <property name="MemberName" />
-                            <property name="LabelProp" translatable="yes">or select other asset:</property>
+                            <property name="LabelProp" translatable="yes">Select asset:</property>
                           </widget>
                           <packing>
                             <property name="Position">1</property>

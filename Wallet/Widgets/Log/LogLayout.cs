@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Gtk;
+using Wallet.core;
 
 namespace Wallet
 {
 	public interface IAssetsView
 	{
-		IEnumerable<Tuple<byte[], String>> Assets { set; }
-		Tuple<byte[], String> Asset { set; }
+        ICollection<AssetMetadata> Assets { set; }
+		AssetMetadata AssetUpdated { set; }
 	}
 	
 	[System.ComponentModel.ToolboxItem(true)]
@@ -47,29 +48,46 @@ namespace Wallet
 			BalancesController.Instance.AssetsView = this;
 		}
 
-		public Tuple<byte[], string> Asset
+		public AssetMetadata AssetUpdated
 		{
 			set
-			{
-				TreeIter iter;
-				_ComboboxStore.GetIterFirst(out iter);
-
-				do
+            {
+                Gtk.Application.Invoke(delegate
 				{
-					var key = new GLib.Value();
-					_ComboboxStore.GetValue(iter, 0, ref key);
-					byte[] _asset = key.Val as byte[];
+				    try
+				    {
+				        TreeIter iter;
+				        _ComboboxStore.GetIterFirst(out iter);
+				        bool found = false;
 
-					if (_asset.SequenceEqual(value.Item1))
-					{
-						_ComboboxStore.SetValue(iter, 1, value.Item2);
-						break;
-					}
-				} while (_ComboboxStore.IterNext(ref iter));
-			}
+				        do
+				        {
+				            var key = new GLib.Value();
+				            _ComboboxStore.GetValue(iter, 0, ref key);
+				            byte[] _asset = key.Val as byte[];
+
+				            if (_asset != null && _asset.SequenceEqual(value.Asset))
+				            {
+				                _ComboboxStore.SetValue(iter, 1, value.Display);
+				                found = true;
+				                break;
+				            }
+				        } while (_ComboboxStore.IterNext(ref iter));
+
+				        if (!found)
+				        {
+				            _ComboboxStore.AppendValues(value.Asset, value.Display);
+				        }
+				    }
+				    catch
+				    {
+				        Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
+				    }
+				});
+            }
 		}
 
-		public IEnumerable<Tuple<byte[], string>> Assets
+		public ICollection<AssetMetadata> Assets
 		{
 			set
 			{
@@ -77,7 +95,7 @@ namespace Wallet
 
 				foreach (var _asset in value)
 				{
-					if (_asset.Item1.SequenceEqual(WalletController.Instance.Asset))
+					if (_asset.Asset.SequenceEqual(WalletController.Instance.Asset))
 					{
 						_SelectedIdx = i;
 					}
@@ -86,7 +104,7 @@ namespace Wallet
 						i++;
 					}
 
-					_ComboboxStore.AppendValues(_asset.Item1, _asset.Item2);
+					_ComboboxStore.AppendValues(_asset.Asset, _asset.Display);
 				}
 			}
 		}
