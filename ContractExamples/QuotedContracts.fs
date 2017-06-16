@@ -121,7 +121,7 @@ let makeCollateralizeData (returnPubKeyHash:Hash) (counter:uint64) (keypair:Sodi
 
 let makeBuyData purchaserPubKeyHash = Array.append [|1uy|] purchaserPubKeyHash
 
-let makeExerciseData ownerPubKeyHash = Array.append [|2uy|] ownerPubKeyHash
+let makeExerciseData ownerPubKeyHash oracleRawData = Array.concat[ [|2uy|]; ownerPubKeyHash; oracleRawData]
 
 let makeCloseData returnPubKeyHash counter (keypair:Sodium.KeyPair) =
     let toSign = Array.append [|3uy|] <| uint64ToBytes counter
@@ -264,7 +264,12 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
                          |> Some
                     with
                         | _ -> None
+                printfn "path= %A" auditPath
+                printfn "root= %A" root
+                printfn "calculated root= %A" <| Merkle.rootFromAuditPath auditPath
+                printfn "size of calc root= %A" <| Array.length (Merkle.rootFromAuditPath auditPath)
                 if root <> Merkle.rootFromAuditPath auditPath then return! None
+                printfn "Got this far!"
                 let auditJson = Oracle.ItemJsonData.Parse(System.Text.Encoding.ASCII.GetString auditPath.data)
                 let underlying, price, timestamp =
                     auditJson.Item |> fun it -> it.Underlying, it.Price, it.Timestamp
