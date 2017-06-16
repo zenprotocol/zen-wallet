@@ -38,6 +38,7 @@
     <Content Include="icon.ico" />
     <Content Include="logo.jpg" />
     <Content Include="sidebar.jpg" />
+    <Content Include="vc_redist.x86.exe" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ZenPackage\ZenPackage.wixproj">
