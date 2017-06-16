@@ -10,16 +10,17 @@
         LogoSideFile="sidebar.jpg"
         SuppressOptionsUI="yes"
         LaunchTarget="[LocalAppDataFolder]\ZenWallet\zen.exe"
+        LaunchWorkingFolder="[LocalAppDataFolder]\ZenWallet\"
         LocalizationFile="HyperlinkTheme.wxl"
         ShowVersion="yes" />       
     </BootstrapperApplicationRef>
 
 		<Chain>
 			<!-- TODO: Define the list of chained packages. -->
-      <PackageGroupRef Id="NetFx462Web"/>
-      <ExePackage SourceFile="vc_redist.x86.exe" InstallCommand="/S" PerMachine="yes" Permanent="yes" />
+      <PackageGroupRef Id="NetFx462Web"/>    
       <ExePackage SourceFile="gtk2-runtime-2.24.10-2012-10-10-ash.exe" InstallCommand="/S" PerMachine="yes" Permanent="yes" />
       <MsiPackage SourceFile="gtk-sharp-2.12.44.msi" ForcePerMachine="yes" Permanent="yes" />
+      <ExePackage SourceFile="vc_redist.x86.exe" InstallCommand="/S" PerMachine="yes" Permanent="yes" />
 			<MsiPackage SourceFile="$(var.ZenPackage.TargetPath)" />
 		</Chain>
 	</Bundle>
