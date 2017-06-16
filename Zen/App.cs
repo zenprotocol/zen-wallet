@@ -203,7 +203,7 @@ namespace Zen
 
 			if (WalletManager.Sign(address, asset, amount, out tx))
 			{
-				return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+                return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
 
 			return false;
@@ -221,7 +221,7 @@ namespace Zen
 
 			if (WalletManager.Sign(address, asset, amount, out tx))
 			{
-				return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+                return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
 
 			return false;
@@ -234,12 +234,12 @@ namespace Zen
 
 		internal bool Transmit(Types.Transaction tx)
 		{
-			return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+            return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal bool Transmit(Types.Transaction tx, out BlockChain.BlockChain.TxResultEnum result)
 		{
-			result = NodeManager.Transmit(tx);
+            result = NodeManager.Transmit(tx);
 			return result == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
@@ -382,8 +382,10 @@ namespace Zen
 
 		public async Task Connect()
 		{
+            if (_CanConnect)
+    			await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
+
 			_CanConnect = false;
-			await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
 		}
 
 		public void GUI()
@@ -609,7 +611,7 @@ namespace Zen
 			if (!WalletManager.Sign(address, Tests.zhash, amount, out tx))
 				return false;
 
-			if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
+            if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
 			{
 				return false;
 			}
@@ -636,7 +638,7 @@ namespace Zen
 				return false;
 			}
 
-			return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+            return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
         }
 
 		public bool SendTestQuotedContract(byte[] contractHash, byte[] data)
@@ -648,7 +650,7 @@ namespace Zen
 				return false;
 			}
 
-			return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+            return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 	}

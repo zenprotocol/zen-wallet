@@ -465,18 +465,24 @@ namespace Zen
 
         static string GetTxDeltaInfo(App app, TxDelta txDelta, string prefix = null)
 		{
-            string info = (prefix == null ? "" : prefix + ": ") + txDelta.TxState.ToString().Substring(0, 1);
-			info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
-
-            string assets = string.Empty;
-
-            foreach (var item in txDelta.AssetDeltas)
+            try
             {
-                assets += (assets == string.Empty ? "" : ", ") + item.Value;
-                assets += " " + app.WalletManager.AssetsMetadata.Get(item.Key).Result;
-            }
+                string info = (prefix == null ? "" : prefix + ": ") + txDelta.TxState.ToString().Substring(0, 1);
+                info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
 
-			return info + " " + assets;
+                string assets = string.Empty;
+
+                foreach (var item in txDelta.AssetDeltas)
+                {
+                    assets += (assets == string.Empty ? "" : ", ") + item.Value;
+                    assets += " " + app.WalletManager.AssetsMetadata.GetMetadata(item.Key).Result;
+                }
+
+				return info + " " + assets;
+			} catch
+            {
+                return "error"; 
+            }
 		}
 						                
 		public static void WriteColor(string message, ConsoleColor color)
