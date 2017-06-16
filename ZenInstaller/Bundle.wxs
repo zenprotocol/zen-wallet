@@ -8,9 +8,7 @@
         LicenseUrl=""
         LogoFile="logo.jpg"
         LogoSideFile="sidebar.jpg"
-        SuppressOptionsUI="yes"
-        LaunchTarget="[LocalAppDataFolder]\ZenWallet\zen.exe"
-        LaunchWorkingFolder="[LocalAppDataFolder]\ZenWallet\"
+        SuppressOptionsUI="yes"        
         LocalizationFile="HyperlinkTheme.wxl"
         ShowVersion="yes" />       
     </BootstrapperApplicationRef>
