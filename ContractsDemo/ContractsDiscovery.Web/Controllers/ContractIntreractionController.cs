@@ -27,7 +27,8 @@ namespace ContractsDiscovery.Web.Controllers
         string _address = WebConfigurationManager.AppSettings["node"];
 		const byte OPCODE_BUY = 0x01;
 		const byte OPCODE_COLLATERALIZE = 0x00;
-        const byte OPCODE_EXERCISE = 0x02;
+		const byte OPCODE_EXERCISE = 0x02;
+		const byte OPCODE_CLOSE = 0x03;
 
 		[HttpPost]
 		public ActionResult PrepareAction()
@@ -119,14 +120,50 @@ namespace ContractsDiscovery.Web.Controllers
                 switch (action)
                 {
                     case "Collateralize":
-                        args.Add("returnPubKeyAddress", Request["return-address"]);
+						var pkAddress = new PKAddressField();
+						pkAddress.SetValue(Request["return-address"]);
+
+						if (pkAddress.Invalid)
+						{
+			                contractInteraction.Message = "Invalid return address";
+							return View(contractInteraction);
+						}
+
+						args.Add("returnPubKeyAddress", pkAddress.Value);
                         opcode = OPCODE_COLLATERALIZE;
                         break;
                     case "Exercise":
+						var pkExerciseReturnAddress = new PKAddressField();
+						pkExerciseReturnAddress.SetValue(Request["exercise-return-address"]);
+
+						if (pkExerciseReturnAddress.Invalid)
+						{
+			                contractInteraction.Message = "Invalid send address";
+							return View(contractInteraction);
+						}
+
+						args.Add("returnPubKeyAddress", pkExerciseReturnAddress.Value);
+						
                         var oracleData = GetOracleCommitmentData(callOptionParameters.Item.underlying, DateTime.Now.ToUniversalTime()).Result;
                         args.Add("oracleRawData", oracleData);
                         opcode = OPCODE_EXERCISE;
                         break;
+					case "Buy":
+						var pkSendAddress = new PKAddressField();
+						pkSendAddress.SetValue(Request["buy-send-address"]);
+
+						if (pkSendAddress.Invalid)
+						{
+			                contractInteraction.Message = "Invalid send address";
+							return View(contractInteraction);
+						}
+
+						args.Add("returnPubKeyAddress", pkSendAddress.Value);
+						opcode = OPCODE_BUY;
+						break;
+					case "Close":
+						opcode = OPCODE_CLOSE;
+						break;	
                 }
             }
 

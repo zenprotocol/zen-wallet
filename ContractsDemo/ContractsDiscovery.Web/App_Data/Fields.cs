@@ -20,6 +20,25 @@ namespace ContractsDiscovery.Web.App_Data
         }
     }
 
+	public class PublicKeyField : Field<string>
+	{
+		public byte[] PublicKey { get; set; }
+
+		public override void SetValue(string value)
+		{
+			base.SetValue(value);
+
+			try
+			{
+				PublicKey = Convert.FromBase64String(value);
+			}
+			catch
+			{
+				Invalid = true;
+			}
+		}
+	}
+
     public class ContractAddressField : Field<string>
     {
         public Address Address { get; set; }
@@ -53,6 +72,7 @@ namespace ContractsDiscovery.Web.App_Data
 			{
 				Address = new Address(value);
 				Invalid = Address.AddressType != AddressType.PK;
+				//Address = new Address(Convert.FromBase64String(value), Wallet.core.Data.AddressType.Contract);
 			}
 			catch
 			{

@@ -8,24 +8,24 @@ namespace ContractsDiscovery.Web.App_Data
 		public ContractAddressField Numeraire { get; set; }
 		public ContractAddressField ControlAsset { get; set; }
 		public ContractAddressField Oracle { get; set; }
-		public ContractAddressField ControlAssetReturn { get; set; }
+		public PKAddressField ControlAssetReturn { get; set; }
 		public Field<string> Underlying { get; set; }
 		public DecimalField Price { get; set; }
 		public DecimalField Strike { get; set; }
 		public DecimalField MinimumCollateralRatio { get; set; }
-		public ContractAddressField OwnerPubKey { get; set; }
+		public PublicKeyField OwnerPubKey { get; set; }
 
         public CreateCallOption()
         {
             Numeraire = new ContractAddressField();
             ControlAsset = new ContractAddressField();
             Oracle = new ContractAddressField();
-            ControlAssetReturn = new ContractAddressField();
+            ControlAssetReturn = new PKAddressField();
             Underlying = new Field<string>();
             Price = new DecimalField();
             Strike = new DecimalField();
             MinimumCollateralRatio = new DecimalField();
-            OwnerPubKey = new ContractAddressField();
+            OwnerPubKey = new PublicKeyField();
         }
 
         public bool Invalid 

@@ -59,19 +59,22 @@
     <Reference Include="System.Web.Mvc">
       <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
     </Reference>
-    <Reference Include="Wallet.core">
-      <HintPath>..\..\Wallet.core\bin\Debug\Wallet.core.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="BlockChain">
-      <HintPath>..\..\BlockChain\bin\Debug\BlockChain.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http" />
+    <Reference Include="ContractExamples">
+      <HintPath>..\..\ContractExamples\bin\Debug\ContractExamples.dll</HintPath>
+    </Reference>
+    <Reference Include="BlockChain">
+      <HintPath>..\..\BlockChain\bin\Debug\BlockChain.dll</HintPath>
+    </Reference>
+    <Reference Include="Wallet.core">
+      <HintPath>..\..\Wallet.core\bin\Debug\Wallet.core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\" />
@@ -129,10 +132,6 @@
     <Content Include="Views\ContractCreation\TokenGenerator.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Zen.RPC\Zen.RPC.csproj">
-      <Project>{396B8253-5F0E-4DB4-9A06-505DE88E89B7}</Project>
-      <Name>Zen.RPC</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
       <Project>{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}</Project>
       <Name>Zen.RPC.Common</Name>
@@ -141,13 +140,13 @@
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ContractExamples\ContractExamples.fsproj">
-      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
-      <Name>ContractExamples</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\ContractUtilities\ContractUtilities.fsproj">
       <Project>{52C99661-71D0-4037-858E-B605CE5F562C}</Project>
       <Name>ContractUtilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Zen.RPC\Zen.RPC.csproj">
+      <Project>{396B8253-5F0E-4DB4-9A06-505DE88E89B7}</Project>
+      <Name>Zen.RPC</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

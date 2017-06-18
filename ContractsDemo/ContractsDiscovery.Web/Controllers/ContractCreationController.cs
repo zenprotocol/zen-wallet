@@ -70,7 +70,7 @@ namespace ContractsDiscovery.Web.Controllers
                         createCallOption.Price.Decimal,
                         createCallOption.Strike.Decimal,
 						createCallOption.MinimumCollateralRatio.Decimal,
-                        createCallOption.OwnerPubKey.Address.Bytes);
+                        createCallOption.OwnerPubKey.PublicKey);
 
                     var contract = ContractExamples.QuotedContracts.callOptionFactory(callOptionParameters);
                     var contractCode = ContractExamples.Execution.quotedToString(contract);
