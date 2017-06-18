@@ -28,7 +28,10 @@ namespace Wallet
 				_TxDeltas = App.Instance.Wallet.TxDeltaList;
 				Apply();
 				App.Instance.Wallet.OnReset += delegate { value.Clear(); };
-				App.Instance.Wallet.OnItems += a => { _TxDeltas = a; Apply(); };
+				App.Instance.Wallet.OnItems += a => {
+                    _TxDeltas = App.Instance.Wallet.TxDeltaList;
+                    Apply();
+                };
 			}
 		}
 

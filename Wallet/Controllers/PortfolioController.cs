@@ -8,10 +8,6 @@ using BlockChain.Data;
 
 namespace Wallet
 {
-    public class AggregatingAssetDeltas : BlockChain.Data.HashDictionary<List<Tuple<long, TxStateEnum>>>
-    {
-    }
-
 	public class PortfolioController : Singleton<PortfolioController>
 	{
 		AssetDeltas _TxDeltas = new AssetDeltas();

@@ -6,7 +6,7 @@ namespace Wallet
 		public static string TimeAgo(this DateTime dateTime)
 		{
 			string result = string.Empty;
-			var timeSpan = DateTime.Now.Subtract(dateTime);
+            var timeSpan = DateTime.Now.ToUniversalTime().Subtract(dateTime);
 
 			if (timeSpan <= TimeSpan.FromSeconds(60))
 			{

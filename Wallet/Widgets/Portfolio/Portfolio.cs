@@ -114,9 +114,14 @@ namespace Wallet
         {
             foreach (var item in assetDeltas)
             {
-                var value = item.Key.SequenceEqual(Consensus.Tests.zhash) ? new Zen(item.Value).Value : item.Value;
-
-                listStore.Update(t=>t.SequenceEqual(item.Key), item.Key, App.Instance.Wallet.AssetsMetadata.GetMetadata(item.Key).Result, value);
+                if (item.Key.SequenceEqual(Consensus.Tests.zhash))
+                {
+                    labelZen.Text = $"{new Zen(item.Value)} {AssetsMetadata.ZEN}";
+                }
+                else
+                {
+                    listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.Wallet.AssetsMetadata.GetMetadata(item.Key).Result, item.Value);
+                }
             }
         }
     }

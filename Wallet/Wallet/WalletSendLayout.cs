@@ -294,6 +294,11 @@ namespace Wallet
 		                {
 		                    labelSelectedAsset.Text = t.Display;
 		            	}
+
+						if (labelSelectedAsset1.Text == Convert.ToBase64String(t.Asset))
+						{
+							labelSelectedAsset1.Text = t.Display;
+						}
 					}
 					catch
 					{

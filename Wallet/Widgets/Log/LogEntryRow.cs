@@ -15,8 +15,8 @@ namespace Wallet
 			Values = new System.Object[] {
 				logEntryItem.Date.TimeAgo(), 
 				logEntryItem.Id, 
-				logEntryItem.Direction == DirectionEnum.Sent ? zenAmount : "0",
-				logEntryItem.Direction == DirectionEnum.Recieved ? zenAmount : "0",
+				logEntryItem.Direction == DirectionEnum.Sent ? zenAmount : "",
+				logEntryItem.Direction == DirectionEnum.Recieved ? zenAmount : "",
 				logEntryItem.Balance
 			};
 		}
