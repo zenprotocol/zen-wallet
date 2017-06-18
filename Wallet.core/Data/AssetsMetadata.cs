@@ -162,7 +162,9 @@ namespace Wallet.core
                         //TODO: fetch image
 
                         if (string.IsNullOrWhiteSpace(remoteJson.name))
-                            assetMetadata.Display += " (No metadada)";
+                        {
+                           //assetMetadata.Display += " (No metadada)";
+                        }
                         else
                         {
                             assetMetadata.Display = remoteJson.name;
@@ -173,7 +175,7 @@ namespace Wallet.core
 					catch (Exception e)
 					{
 						WalletTrace.Information($"Error fetching asset metadata from url: {uri.AbsoluteUri}");
-                        assetMetadata.Display += " (Medata error)";
+                        assetMetadata.Display += " (Metadata error)";
 					}
                 }
                 else
