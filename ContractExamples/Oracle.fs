@@ -33,6 +33,15 @@ let rawSample =
     }"""
 type RawJsonData = JsonProvider<rawSample,SampleIsList=false>
 
+[<Literal>]
+let auditSample =
+    """{
+        "data": "5654aaoeuaoe52345234OUEA",
+        "location": 3242433330,
+        "path": ["5uejaeuao","axydd5454","aoeu43333","aoeuajk324","aekka444"]
+    }"""
+type AuditJsonData = JsonProvider<auditSample,SampleIsList=false>
+
 let commitments (items: TickerItem seq) (secret: byte[]) =
     let jsonOfTickerItem ({underlying=underlying;price=price;timestamp=timestamp} as item) =
         ItemJsonData.Item(underlying,price,timestamp)
@@ -71,7 +80,7 @@ let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
     RawJsonData.Root(pathToTypedJson path, opnt)
 
 let fromPath (s:string) : AuditPath =
-    let raw = RawJsonData.AuditPath(JsonValue.Parse s)
+    let raw = AuditJsonData.Parse s
     {
         data = System.Convert.FromBase64String raw.Data;
         location = uint32 raw.Location;

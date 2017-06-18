@@ -121,7 +121,7 @@ let makeCollateralizeData (returnPubKeyHash:Hash) (counter:uint64) (keypair:Sodi
 
 let makeBuyData purchaserPubKeyHash = Array.append [|1uy|] purchaserPubKeyHash
 
-let makeExerciseData ownerPubKeyHash = Array.append [|2uy|] ownerPubKeyHash
+let makeExerciseData ownerPubKeyHash oracleRawData = Array.concat[ [|2uy|]; ownerPubKeyHash; oracleRawData]
 
 let makeCloseData returnPubKeyHash counter (keypair:Sodium.KeyPair) =
     let toSign = Array.append [|3uy|] <| uint64ToBytes counter
@@ -270,12 +270,12 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun opt
                     auditJson.Item |> fun it -> it.Underlying, it.Price, it.Timestamp
                 if underlying <> optionParams.underlying then return! None
                 // if not <| timestamp `near` currentTime then return! None
-                let payoffAmtD = price - optParams.strike
-                if payoffAmtD <= 0m then return! None
-                let collateralizedTokens = (decimal)collateral / payoffAmtD |> floor |> (uint64)
+                let intrinsic = price - optParams.strike
+                if intrinsic <= 0m then return! None
+                let collateralizedTokens = (decimal)collateral / intrinsic |> floor |> (uint64)
                 if b.spend.amount > collateralizedTokens then // could create change, but it'd be a mess
                     return! None
-                let payoffAmt = payoffAmtD |> floor |> (uint64)
+                let payoffAmt = intrinsic * decimal b.spend.amount |> floor |> (uint64)
                 let remainingCollateral = collateral - payoffAmt
                 let payoff = { lock=PKLock pubkeyhash; spend={ asset=optionParams.numeraire; amount=payoffAmt } }
                 let data = { d with lock=ContractLock (
