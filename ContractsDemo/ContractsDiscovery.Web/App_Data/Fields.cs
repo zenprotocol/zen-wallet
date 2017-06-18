@@ -30,7 +30,9 @@ namespace ContractsDiscovery.Web.App_Data
 
             try
 			{
-				Address = new Address(Convert.FromBase64String(value), Wallet.core.Data.AddressType.Contract);
+                Address = new Address(value);
+                Invalid = Address.AddressType != AddressType.Contract;
+				//Address = new Address(Convert.FromBase64String(value), Wallet.core.Data.AddressType.Contract);
 			}
 			catch
 			{

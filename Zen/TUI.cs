@@ -432,16 +432,18 @@ namespace Zen
 			//	app.Settings.InitGenesisBlock = checkboxGenesis.Checked;
 
 			listMenu.Clicked += (object sender, EventArgs e) => {
-		//		var option = currentMenu + "_" + ((ListBox)sender).SelectedItem;
-
-				if (actions.ContainsKey(currentMenu))
-				{
-					actions[currentMenu](((ListBox)sender).SelectedItem as string);
-				}
-				else
-				{
-					Console.Write("missing " + currentMenu);
-				}
+                //		var option = currentMenu + "_" + ((ListBox)sender).SelectedItem;
+                try
+                {
+                    if (actions.ContainsKey(currentMenu))
+                    {
+                        actions[currentMenu](((ListBox)sender).SelectedItem as string);
+                    }
+                    else
+                    {
+                        Console.Write("missing " + currentMenu);
+                    }
+                } catch {}
 			};
 
 			Action<ResetEventArgs> wallet_OnReset = a =>
