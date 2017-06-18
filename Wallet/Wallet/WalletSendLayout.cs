@@ -161,6 +161,7 @@ namespace Wallet
 				{
 					SendInfo.Data = null;
 					SendInfo.DataValid = true;
+                    labelDataError.Text = "";
 				}
 				else
 				{
@@ -320,7 +321,10 @@ namespace Wallet
                 var assetMatadataList = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(asset));
 
                 if (assetMatadataList.Count() != 0)
-                    labelSelectedAsset.Text = assetMatadataList.First().Display;
+                {
+					labelSelectedAsset.Text = assetMatadataList.First().Display;
+					labelSelectedAsset1.Text = assetMatadataList.First().Display;
+				}
 
 				UpdateBalance();
 			};
@@ -340,23 +344,24 @@ namespace Wallet
 
                         if (data["first"] is JObject)
                         {
-                            byte[] signedData;
+                            byte[] signature;
 
                             var pubkey = Convert.FromBase64String(data["first"]["pubkey"].ToString());
                             var toSign = Convert.FromBase64String(data["first"]["toSign"].ToString());
 
-                            if (!App.Instance.Wallet.SignData(pubkey, toSign, out signedData))
+                            if (!App.Instance.Wallet.SignData(pubkey, toSign, out signature))
                             {
                                 labelDataError.Text = "Could not sign data";
                                 return;
                             }
 
-                            firstData = signedData.Concat(signedData).ToArray();
+                            byte[] _data = Convert.FromBase64String(data["first"]["data"].ToString());
+
+                            firstData = _data.Concat(signature).ToArray();
                         }
                         else
                         {
-                            var firstStr = data["first"].ToString();
-                            firstData = firstStr.Length == 0 ? null : Convert.FromBase64String(firstStr);
+                            firstData = Convert.FromBase64String(data["first"].ToString());
                         }
 
                         SendInfo.Destination.Data = firstData;
