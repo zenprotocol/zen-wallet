@@ -9,7 +9,7 @@ namespace Wallet
 	public class RowRenderer : CellRenderer
 	{
 		public String Asset { private get; set; }
-		public decimal Value { private get; set; }
+		public long Value { private get; set; }
 
 		public override void GetSize (Widget widget, ref Gdk.Rectangle cellArea, out int xOffset, out int yOffset, out int width, out int height)
 		{

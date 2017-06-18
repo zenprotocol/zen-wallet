@@ -13,7 +13,7 @@ namespace Wallet
             0,
             typeof(byte[]),
             typeof(string),
-            typeof(decimal)
+            typeof(long)
         );
 
         public Portfolio ()
@@ -95,7 +95,7 @@ namespace Wallet
             var rowRenderer = cellRenderer as RowRenderer;
 
             rowRenderer.Asset = (string)model.GetValue(iter, 1);
-            rowRenderer.Value = (decimal)model.GetValue(iter, 2);
+            rowRenderer.Value = (long)model.GetValue(iter, 2);
         }
 
         public AssetDeltas AssetDeltas

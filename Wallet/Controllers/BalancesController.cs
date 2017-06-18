@@ -74,11 +74,12 @@ namespace Wallet
 				{
 					AddToTotals(b.Key, b.Value);
 
-					var total = _AssetDeltasTotal.ContainsKey(_Asset) ? new Zen(_AssetDeltasTotal[_Asset]).Value : 0;
-					var decTotal = Convert.ToDecimal(total);
+					var total = _AssetDeltasTotal.ContainsKey(_Asset) ? _AssetDeltasTotal[_Asset] : 0;
+                    var decTotal = _Asset.SequenceEqual(Consensus.Tests.zhash) ? new Zen(total).Value : total;
+                    var decValue = _Asset.SequenceEqual(Consensus.Tests.zhash) ? new Zen(b.Value).Value : b.Value;
 
                     _LogView.AddLogEntryItem(u.TxHash, new LogEntryItem(
-					Math.Abs(b.Value),
+					Math.Abs(decValue),
 					b.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
 					b.Key,
 					u.Time,

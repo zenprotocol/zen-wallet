@@ -11,12 +11,11 @@ namespace Wallet
 
         public LogEntryRow (byte[] key, LogEntryItem logEntryItem) {
             Key = key;
-            var zenAmount = new Zen(logEntryItem.Amount).ToString();
 			Values = new System.Object[] {
 				logEntryItem.Date.TimeAgo(), 
 				logEntryItem.Id, 
-				logEntryItem.Direction == DirectionEnum.Sent ? zenAmount : "",
-				logEntryItem.Direction == DirectionEnum.Recieved ? zenAmount : "",
+				logEntryItem.Direction == DirectionEnum.Sent ? logEntryItem.Amount : 0,
+				logEntryItem.Direction == DirectionEnum.Recieved ? logEntryItem.Amount : 0,
 				logEntryItem.Balance
 			};
 		}
