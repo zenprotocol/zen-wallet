@@ -87,13 +87,21 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
             )
         | 2uy ->
             let! oracleRawData = m.TryFind "oracleRawData"
+            let! orStr = m.TryFind "outpoint"
+            let! oracleOutpoint = maybe {
+                let! ret =
+                        try
+                            Some <| (Consensus.TransactionValidation.guardedDeserialise<Outpoint> <| System.Convert.FromBase64String orStr)
+                        with _ -> None
+                return ret
+            }
             return ContractJsonData.Root (
                 ContractJsonData.StringOrFirst (
                     Array.concat [[|2uy|]; returnHash; System.Text.Encoding.ASCII.GetBytes oracleRawData] |> getString
                 ),
                 Some <| ContractJsonData.Second (
                     [|2uy|] |> getString,
-                    packManyOutpoints [fst dataPair; fst fundsPair] |> getString
+                    packManyOutpoints [fst dataPair; fst fundsPair; oracleOutpoint] |> getString
                 )
             )
         | 3uy ->
