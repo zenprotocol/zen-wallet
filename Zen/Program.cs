@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.FSharp.Collections;
 using System.Text;
 using Microsoft.FSharp.Core;
+using BlockChain.Data;
 
 namespace Zen
 {
@@ -100,7 +101,7 @@ namespace Zen
 					Console.ReadKey();
 				}
 			}
-
+           
             switch (launchMode)
             {
 				case LaunchModeEnum.TUI:
@@ -110,10 +111,10 @@ namespace Zen
                     app.GUI();
 					break;
 				case LaunchModeEnum.Headless:
-                    Console.WriteLine("Press any key to stop...");
-                    Console.ReadKey();
-                    app.Dispose();
-                    Console.WriteLine("Stopped.");
+                    Console.WriteLine("Running headless.");
+                    Console.WriteLine("My address: " + app.WalletManager.GetUnusedKey().Address);
+                    //TODO: wait for kill signal and only then dispose
+                    //app.Dispose();
 					break;
 			}
 		}
