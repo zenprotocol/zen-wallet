@@ -101,18 +101,17 @@ namespace Datafeed.Web.Controllers
 
             var utxo = utxos.First();
 
-            var data = new byte[] { (byte)utxo.Item1.index };
-            data = data.Concat(utxo.Item1.txHash).ToArray();
-            data = data.Concat(commitmentData.Item2).ToArray();
+			var data = ContractExamples.QuotedContracts.simplePackOutpoint(utxo.Item1)
+                           .Concat(commitmentData.Item2).ToArray();
 
             var signiture = Authentication.sign(data, privateKey);
 
             data = data.Concat(signiture).ToArray();
 
-            var sendContractResult = await Client.Send<ResultPayload>(_address, new SendContractPayload()
+            var sendContractResult = await Client.Send<SendContractResultPayload>(_address, new SendContractPayload()
             {
                 ContractHash = contractHash,
-                Data = data.ToArray()
+                Data = data
             });
 
             ViewData["Result"] = sendContractResult.Success;
@@ -129,19 +128,9 @@ namespace Datafeed.Web.Controllers
 				var sr = new StreamReader(ms);
                 System.IO.File.WriteAllText(Path.ChangeExtension(file, ".data.json"), sr.ReadToEnd());
 
-				var getNewOutpointsResult = await Client.Send<GetContractPointedOutputsResultPayload>(_address, new GetContractPointedOutputsPayload() { ContractHash = contractHash });
+				var outpoint = new Types.Outpoint(sendContractResult.TxHash, 1); // oracle always puts data on output #1
 
-				if (!getNewOutpointsResult.Success || getNewOutpointsResult.PointedOutputs.Count == 0)
-				{
-					ViewData["Result"] = false;
-					ViewData["Message"] = "Could not find new outputs";
-					return View();
-				}
-
-				var utxosNew = GetContractPointedOutputsResultPayload.Unpack(getNewOutpointsResult.PointedOutputs);
-				var utxoNew = utxosNew.First();
-
-                System.IO.File.WriteAllText(Path.ChangeExtension(file, ".outpoint.txt"), Convert.ToBase64String(Merkle.serialize(new Types.Outpoint(utxoNew.Item1.txHash, utxoNew.Item1.index))));
+				System.IO.File.WriteAllText(Path.ChangeExtension(file, ".outpoint.txt"), Convert.ToBase64String(Merkle.serialize(outpoint)));
 			}
             else
             {

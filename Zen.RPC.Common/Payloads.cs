@@ -136,6 +136,11 @@ namespace Zen.RPC.Common
 		public byte[] Data { get; set; }
 	}
 
+	public class SendContractResultPayload : ResultPayload
+	{
+		public byte[] TxHash { get; set; }
+	}
+
 	public class ActivateContractPayload : BasePayload
 	{
 		public string Code { get; set; }

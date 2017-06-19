@@ -106,16 +106,16 @@ namespace Zen
 
                 if (!_App.WalletManager.SendContract(sendContractPayload.ContractHash, sendContractPayload.Data, out autoTx))
                 {
-                    return new ResultPayload() { Success = false };
+                    return new SendContractResultPayload() { Success = false };
                 }
 
 				BlockChain.BlockChain.TxResultEnum transmitResult;
 				if (!_App.Transmit(autoTx, out transmitResult))
 				{
-					return new ResultPayload() { Success = false, Message = transmitResult.ToString() };
+					return new SendContractResultPayload() { Success = false, Message = transmitResult.ToString() };
 				}
 
-				return new ResultPayload() { Success = true };
+                return new SendContractResultPayload() { Success = true, TxHash = Consensus.Merkle.transactionHasher.Invoke(autoTx) };
 			}
 
 			if (type == typeof(ActivateContractPayload))
