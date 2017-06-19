@@ -168,13 +168,14 @@ namespace Wallet.core
                         else
                         {
                             assetMetadata.Display = remoteJson.name;
-                            _CacheJsonStore.Value.Add(Convert.ToBase64String(assetMetadata.Asset), remoteJson);
+                            _CacheJsonStore.Value[Convert.ToBase64String(assetMetadata.Asset)] = remoteJson;
                             _CacheJsonStore.Save();
 						}
 					}
 					catch (Exception e)
 					{
-						WalletTrace.Information($"Error fetching asset metadata from url: {uri.AbsoluteUri}");
+
+                        WalletTrace.Information($"Error fetching asset metadata from url: {uri.AbsoluteUri}");
                         assetMetadata.Display += " (Metadata error)";
 					}
                 }
