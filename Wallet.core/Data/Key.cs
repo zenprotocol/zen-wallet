@@ -35,13 +35,13 @@ namespace Wallet.core.Data
 		public Address(string raw)
 		{
 			AddressType = (AddressType)raw[0];
-			Data = null;
+            Data = new byte[] {};
 			Bytes = Convert.FromBase64String(raw.Substring(1));
 		}
 
 		public Address(byte[] bytes, AddressType addressType)
 		{
-			Data = null;
+			Data = new byte[] { };
 			AddressType = addressType;
 			Bytes = bytes;
 		}
@@ -57,7 +57,6 @@ namespace Wallet.core.Data
 			else 
 			{
 				return false;
-				//throw new NotImplementedException();
 			}
 		}
 
