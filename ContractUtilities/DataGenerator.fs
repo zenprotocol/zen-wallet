@@ -56,10 +56,40 @@ let oracleSample = """
 """
 type OracleJsonData = JsonProvider<oracleSample, SampleIsList=true>
 
+let initializeCall (meta:QuotedContracts.CallOptionParameters) returnHash dataPair =
+    ContractJsonData.Root (
+        ContractJsonData.StringOrFirst (
+            ContractJsonData.First (
+                [|0uy|] |> getString,
+                meta.ownerPubKey |> getString,
+                Array.append [|0uy|] returnHash |> getString
+            )
+           ),
+        Some <| ContractJsonData.Second (
+            [|0uy|] |> getString,
+            packManyOutpoints [fst dataPair] |> getString
+        )
+    )
+
 let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*Output) seq) opcode (m:Map<string,string>) =
     maybe {
         let! dataPair = Seq.tryFind (fun (_,y) -> y.spend.asset = meta.controlAsset) utxos
         let {lock=dataLock} = snd dataPair
+        let! returnHash =
+            maybe {
+                let! returnPubKeyAddressStr = m.TryFind("returnPubKeyAddress")
+                let returnPubKeyAddress = Address(returnPubKeyAddressStr)
+                if returnPubKeyAddress.AddressType <> AddressType.PK then
+                    return! None
+                return returnPubKeyAddress.Bytes
+            }
+        let initialized =
+            match dataLock with
+            | ContractLock (_, [||]) -> false
+            | _ -> true
+        if initialized && opcode = 0uy then
+            return! Some <| initializeCall meta returnHash dataPair
+        else
         let! tokens, collateral, counter =
             match dataLock with
             | ContractLock (_, d) -> QuotedContracts.tryParseData d
@@ -69,14 +99,6 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
                                 y.spend.asset = meta.numeraire &&
                                 y.spend.amount = collateral)
                             utxos
-        let! returnHash =
-            maybe {
-                let! returnPubKeyAddressStr = m.TryFind("returnPubKeyAddress")
-                let returnPubKeyAddress = Address(returnPubKeyAddressStr)
-                if returnPubKeyAddress.AddressType <> AddressType.PK then
-                    return! None
-                return returnPubKeyAddress.Bytes
-            }
         match opcode with
         | 0uy ->
             return ContractJsonData.Root (
