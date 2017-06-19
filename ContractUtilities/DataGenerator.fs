@@ -39,6 +39,23 @@ let dataSamples = """
 """
 type ContractJsonData = JsonProvider<dataSamples, SampleIsList=true>
 
+[<Literal>]
+let oracleSample = """
+{
+  "auditPath": {
+    "data": "ewogICJpdGVtIjogewogICAgInVuZGVybHlpbmciOiAiR09PRyIsCiAgICAicHJpY2UiOiA5NDAuNzIsCiAgICAidGltZXN0YW1wIjogNjM2MzMxNDgwOTc1NzY5NjIwCiAgfSwKICAibm9uY2UiOiAiWlJsWUw2M3FteklYd213c0xsYkhOeHF0dnFDWU9EU25tTjQ4WmNKcDZ2bz0iCn0=",
+    "location": 0,
+    "path": [
+      "ewogICJpdGVtIjogewogICAgInVuZGVybHlpbmciOiAiR09PR0wiLAogICAgInByaWNlIjogOTU4LjYzLAogICAgInRpbWVzdGFtcCI6IDYzNjMzMTQ4MDk3NTc2OTYyMAogIH0sCiAgIm5vbmNlIjogIjNydGtlenlsaVNJK3hGUnlFbFJ5U3RuUldpUU1oM3hORzVwVW5wL1doSUU9Igp9",
+      "0Dd1HaW1Xvab+tz727fXydPuyuhvrBDR/aAOz4sLISI=",
+      "k/vjrP3C9O8U1LvDeREENVkjk3mazg/O1p2vjOQeNaI="
+    ]
+  },
+  "outpoint": "ksQgi4nI1a+7LHQZgqcHzjLNnXKzJ9vBRCbkIz+tIYx2HPQB"
+}
+"""
+type OracleJsonData = JsonProvider<oracleSample, SampleIsList=true>
+
 let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*Output) seq) opcode (m:Map<string,string>) =
     maybe {
         let! dataPair = Seq.tryFind (fun (_,y) -> y.spend.asset = meta.controlAsset) utxos
@@ -87,17 +104,21 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
             )
         | 2uy ->
             let! oracleRawData = m.TryFind "oracleRawData"
-            let! orStr = m.TryFind "outpoint"
-            let! oracleOutpoint = maybe {
-                let! ret =
-                        try
-                            Some <| (Consensus.TransactionValidation.guardedDeserialise<Outpoint> <| System.Convert.FromBase64String orStr)
-                        with _ -> None
-                return ret
-            }
+            let! oracleJson =
+                try
+                    Some <| OracleJsonData.Parse oracleRawData
+                with _ -> None
+            let orStr = oracleJson.Outpoint
+            let! oracleOutpoint =
+                try
+                    Some <| (Consensus.TransactionValidation.guardedDeserialise<Outpoint> <| System.Convert.FromBase64String orStr)
+                with _ -> None
+            let auditPath =
+                oracleJson.AuditPath.JsonValue.ToString() |>
+                System.Text.Encoding.ASCII.GetBytes
             return ContractJsonData.Root (
                 ContractJsonData.StringOrFirst (
-                    Array.concat [[|2uy|]; returnHash; System.Text.Encoding.ASCII.GetBytes oracleRawData] |> getString
+                    Array.concat [[|2uy|]; returnHash; auditPath] |> getString
                 ),
                 Some <| ContractJsonData.Second (
                     [|2uy|] |> getString,
