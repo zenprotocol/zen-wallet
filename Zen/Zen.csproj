@@ -201,10 +201,6 @@
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ContractUtilities\ContractUtilities.fsproj">
-      <Project>{52C99661-71D0-4037-858E-B605CE5F562C}</Project>
-      <Name>ContractUtilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tests\" />

@@ -46,20 +46,15 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
-      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
-      <Name>Consensus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Consensus\Consensus.fsproj">
-      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
-      <Name>Consensus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
-      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
-      <Name>Wallet.core</Name>
-    </ProjectReference>
+    <Reference Include="ContractExamples">
+      <HintPath>..\ContractExamples\bin\Debug\ContractExamples.dll</HintPath>
+    </Reference>
+    <Reference Include="Consensus">
+      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
+    </Reference>
+    <Reference Include="Wallet.core">
+      <HintPath>..\Wallet.core\bin\Debug\Wallet.core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
