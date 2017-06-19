@@ -38,6 +38,7 @@ namespace Zen
 
         public void Start()
         {
+            Console.WriteLine("RPC Server starting...");
 			_responseSocket.Bind($"tcp://*:{PORT}");
 
 			Task.Factory.StartNew(() => _poller.Run(),
