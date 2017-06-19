@@ -13,29 +13,30 @@ namespace Wallet.core
 
     public class AggregatingTxDeltaItemsEventArgs : TxDeltaItemsEventArgs
     {
-        public readonly AssetDeltas AssetDeltas = new AssetDeltas();
-
 		public new void Add(TxDelta txDelta)
 		{
 			this.Where(t => t.TxHash.SequenceEqual(txDelta.TxHash)).ToList().ForEach(t=>Remove(t));
 
-			AssetDeltas.Accumulate(txDelta.AssetDeltas);
-
 			base.Add(txDelta);
 		}
 
-		public new void Remove(TxDelta txDelta)
-		{
-			AssetDeltas.Subtract(txDelta.AssetDeltas);
+        public AssetDeltas AssetDeltas {
+            get
+            {
+                var assetDeltas = new AssetDeltas();
 
-			base.Remove(txDelta);
-		}
+				ForEach(t => {
+                    foreach (var item in t.AssetDeltas) {
+				        if (!assetDeltas.ContainsKey(item.Key))
+				            assetDeltas[item.Key] = 0;
 
-		public new void AddRange(IEnumerable<TxDelta> items)
-		{
-			foreach (var item in items)
-				Add(item);
-		}
+				        assetDeltas[item.Key] += item.Value;
+					}
+				});
+
+                return assetDeltas;
+            }
+        }
 	}
 
 	public class TxDeltaItemsEventArgs : List<TxDelta>
@@ -45,26 +46,7 @@ namespace Wallet.core
 
 	public class AssetDeltas : HashDictionary<long>
 	{
-		public void Accumulate(AssetDeltas assetDeltas)
-		{
-            AccumulateInner(assetDeltas);
-		}
-
-		public void Subtract(AssetDeltas assetDeltas)
-		{
-			AccumulateInner(assetDeltas, true);
-		}
-
-		public void AccumulateInner(AssetDeltas assetDeltas, bool isSubtract = false)
-        {
-            foreach (var item in assetDeltas)
-            {
-                if (!ContainsKey(item.Key))
-                    this[item.Key] = 0;
-
-                this[item.Key] += (isSubtract ? -1 : 1) * item.Value;
-            }
-        }
+        
 	}
 
 	public class TxDelta
