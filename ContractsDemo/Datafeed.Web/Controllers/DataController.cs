@@ -27,6 +27,26 @@ namespace Datafeed.Web.Controllers
 			return View();
 		}
 
+		public ActionResult ShowTicker(string ticker)
+		{
+			DateTime dateTime;
+			decimal value;
+
+			if (GetLastValue(ticker, out value, out dateTime))
+			{
+				return View("Search", new CommitmentData()
+				{
+				Ticker = ticker,
+					Value = value,
+					Time = dateTime.ToLongDateString() + " " + dateTime.ToLongTimeString()
+				});
+			}
+			else
+			{
+				return View("Search", new CommitmentData());
+			}
+		}
+
 		[HttpPost]
 		public ActionResult Search()
 		{

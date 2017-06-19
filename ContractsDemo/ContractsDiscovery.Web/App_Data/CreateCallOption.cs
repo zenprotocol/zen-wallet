@@ -26,6 +26,9 @@ namespace ContractsDiscovery.Web.App_Data
             Strike = new DecimalField();
             MinimumCollateralRatio = new DecimalField();
             OwnerPubKey = new PublicKeyField();
+
+			Numeraire.SetValue("cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
+			MinimumCollateralRatio.SetValue("1");
         }
 
         public bool Invalid 

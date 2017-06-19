@@ -1,28 +1,30 @@
 ﻿@model ContractsDiscovery.Web.App_Data.ContractData
 
+@if (!string.IsNullOrEmpty(@Model.ActiveContract.AssetName))
+{
+<h1>@Model.ActiveContract.AssetName</h1>
+}
 <table class="table">
     <tbody>
-	    <tr>
-	        <td><p class="text-left">Address:</p></td>
-	        <td><p class="text-left">@Model.ActiveContract.Address</p></td>
-	    </tr>
+		@if (!string.IsNullOrEmpty(@Model.ActiveContract.Description))
+		{
         <tr>
             <td><p class="text-left">Type:</p></td>
             <td><p class="text-left">@Model.ActiveContract.Description</p></td>
         </tr>
-
-        <tr>
-            <td><p class="text-left">Asset name:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.AssetName</p></td>
-        </tr>
-        <tr>
+		}
+	    <tr>
+	        <td><p class="text-left">Address:</p></td>
+	        <td><p class="text-left">@Model.ActiveContract.Address</p></td>
+	    </tr>
+        <!--tr>
             <td><p class="text-left">Asset metadata version:</p></td>
             <td><p class="text-left">@Model.ActiveContract.AssetMetadataVersion</p></td>
         </tr>
         <tr>
             <td><p class="text-left">Asset image URL:</p></td>
             <td><p class="text-left">@Model.ActiveContract.AssetImageUrl</p></td>
-        </tr>
+        </tr-->
         <!--tr>
             <td><p class="text-left">Last block:</p></td>
             <td><p class="text-left">@Model.ActiveContract.LastBlock</p></td>
@@ -34,20 +36,20 @@
             <td><p class="text-left">@Model.ActiveContract.ControlAsset</p></td>
         </tr>
         <tr>
-            <td><p class="text-left">Expiry:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.Expiry</p></td>
+            <td><p class="text-left">Premium:</p></td>
+            <td><p class="text-left">@Model.ActiveContract.Premium</p></td>
         </tr>
         <tr>
             <td><p class="text-left">Strike:</p></td>
             <td><p class="text-left">@Model.ActiveContract.Strike</p></td>
         </tr>
         <tr>
-            <td><p class="text-left">Oracle:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.Oracle</p></td>
-        </tr>
-        <tr>
             <td><p class="text-left">Underlying:</p></td>
             <td><p class="text-left">@Model.ActiveContract.Underlying</p></td>
+        </tr>
+        <tr>
+            <td><p class="text-left">Oracle:</p></td>
+            <td><p class="text-left"><a href="@Model.ActiveContract.OracleTickerUrl" target="new">@Model.ActiveContract.Oracle</a></p></td>
         </tr>
 		}
         <tr>

@@ -64,13 +64,16 @@ namespace ContractsDiscovery.Web.Controllers
 			//	Hash = new Wallet.core.Data.Address(Convert.ToBase64String(contractHash)).Bytes
 			//});
 
-			contractData.ActiveContract.Address = Convert.ToBase64String(contractHash);
+			contractData.ActiveContract.Address = new Wallet.core.Data.Address(contractHash, Wallet.core.Data.AddressType.Contract).ToString();
 
 			if (contractCode != null)
             {
 				contractData.ActiveContract.Code = contractCode;
                 Utils.SetContractInfo(contractData.ActiveContract, contractCode);
 			}
+
+			string oracleGetCommitmentDataService = WebConfigurationManager.AppSettings["oracleGetCommitmentDataService"];
+			contractData.ActiveContract.OracleTickerUrl = string.Format(oracleGetCommitmentDataService, contractData.ActiveContract.Underlying).Replace("GetData", "ShowTicker");
 
 			return View(contractData);
         }

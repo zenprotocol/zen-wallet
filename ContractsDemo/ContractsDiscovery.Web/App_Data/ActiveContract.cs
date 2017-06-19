@@ -9,8 +9,10 @@ namespace ContractsDiscovery.Web.App_Data
 		public string Code { get; set; }
 		public string AuthorMessage { get; set; }
 		public string Expiry { get; set; }
+		public string Premium { get; set; }
 		public string Strike { get; set; }
 		public string Oracle { get; set; }
+		public string OracleTickerUrl { get; set; }
 		public string Underlying { get; set; }
 		public string Type { get; set; }
 		public string Description { get; set; }
@@ -20,5 +22,13 @@ namespace ContractsDiscovery.Web.App_Data
 		public string AssetName { get; set; }
 		public string AssetImageUrl { get; set; }
 		public string AssetMetadataVersion { get; set; }
+
+		public string ActiveUntil
+		{
+			get
+			{
+				return LastBlock == 0 ? "Inactive" : LastBlock.ToString();
+			}
+		}
 	}
 }

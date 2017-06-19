@@ -4,18 +4,20 @@
 <table class="table">
 	<thead>
 		<tr>
+			<th>Name</th>
 			<th>Address</th>
             <th>Type</th>
-			<th>Last Block</th>
+			<th>Active&nbsp;Until</th>
 		</tr>
 	</thead>
     <tbody>
 	@foreach (var item in Model)
 	{
 		<tr>
+            <td><p class="text-left">@item.AssetName</p></td>
 			<td><p class="text-left">@Html.ActionLink(@item.Address, "Index", "Contract", new { @id = @item.AddressUrl }, null)</p></td>
             <td><p class="text-left">@item.Description</p></td>
-			<td><p class="text-left">@item.LastBlock</p></td>
+			<td><p class="text-left">@item.ActiveUntil</p></td>
 		</tr>
     }
 	</tbody>

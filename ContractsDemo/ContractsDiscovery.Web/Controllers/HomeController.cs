@@ -65,6 +65,22 @@ namespace ContractsDiscovery.Web.Controllers
 
 					Utils.SetContractInfo(activeContract, code);
 
+					var id = System.IO.Path.GetFileNameWithoutExtension(t);
+					var assetMetaDataFile = Path.Combine("db", "asset-metadata", $"{id}.json");
+		            if (System.IO.File.Exists(assetMetaDataFile))
+					{
+						try
+						{
+							var json = System.IO.File.ReadAllText(assetMetaDataFile);
+							var assetMetaData = JsonConvert.DeserializeObject<AssetMetadata>(json);
+							activeContract.AssetName = assetMetaData.name;
+						}
+						catch
+						{
+							
+						}
+					}
+
 					return activeContract;
                 });
 

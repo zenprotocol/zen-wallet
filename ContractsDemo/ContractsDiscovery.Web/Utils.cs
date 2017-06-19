@@ -74,7 +74,11 @@ namespace ContractsDiscovery.Web
 
 						activeContract.Type = "call-option";
 						activeContract.Description = "Call Option";
-						activeContract.ControlAsset = Convert.ToBase64String(callOptionParameters.controlAsset);
+						activeContract.ControlAsset = new Wallet.core.Data.Address(callOptionParameters.controlAsset, Wallet.core.Data.AddressType.Contract).ToString();
+						activeContract.Premium = String.Format("{0:0.00#####}", callOptionParameters.price);
+						activeContract.Strike = String.Format("{0:0.00#####}", callOptionParameters.strike);
+						activeContract.Oracle = new Wallet.core.Data.Address(callOptionParameters.oracle, Wallet.core.Data.AddressType.Contract).ToString();
+
 					}
 					else if (metadata.Value.IsOracle)
 					{
