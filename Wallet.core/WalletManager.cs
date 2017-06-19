@@ -307,11 +307,11 @@ namespace Wallet.core
         /// <summary>
         /// get a set of outpoints with matching keys using greedy algorithm 
         /// </summary>
-        /// <returns>null if could not satisfy</returns>
+        /// <returns>false if could not satisfy</returns>
         /// <param name="asset">Asset.</param>
         /// <param name="amount">Amount.</param>
-        private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, out Assets assets)
-            {
+        private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, Assets assets)
+        {
             var matchingAssets = new Assets();
 
             var spendableOutputs = new List<Types.Output>();
@@ -371,7 +371,6 @@ namespace Wallet.core
 			}
 
             ulong total = 0;
-            assets = new Assets();
 
             foreach (var unspentMatchingAsset in unspentMatchingAssets)
             {
@@ -393,9 +392,9 @@ namespace Wallet.core
             using (TransactionContext dbTx = _DBContext.GetTransactionContext())
             {
                 ulong change;
-                Assets assets;
+                var assets = new Assets();
 
-                return Require(dbTx, asset, amount, out change, out assets);
+                return Require(dbTx, asset, amount, out change, assets);
             }
         }
 
@@ -422,13 +421,13 @@ namespace Wallet.core
         bool Sign(Types.Output output, byte[] asset, ulong amount, out Types.Transaction signedTx)
         {
             ulong change;
-            Assets assets;
+            var assets = new Assets();
 
             var outputs = new List<Types.Output>();
 
             using (TransactionContext dbTx = _DBContext.GetTransactionContext())
             {
-                if (!Require(dbTx, asset, amount, out change, out assets))
+                if (!Require(dbTx, asset, amount, out change, assets))
                 {
                     signedTx = null;
                     return false;
@@ -466,16 +465,16 @@ namespace Wallet.core
         /// <param name="address">Address.</param>
         /// <param name="asset">Asset.</param>
         /// <param name="amount">Amount.</param>
-        public bool SacrificeToContract(byte[] code, ulong zenAmount, out Types.Transaction signedTx)
+        public bool SacrificeToContract(byte[] code, ulong zenAmount, out Types.Transaction signedTx, byte[] secureTokenHash = null)
         {
             ulong change;
-            Assets assets;
+            var assets = new Assets();
 
             var outputs = new List<Types.Output>();
 
             using (TransactionContext dbTx = _DBContext.GetTransactionContext())
             {
-                if (!Require(dbTx, Tests.zhash, zenAmount, out change, out assets))
+                if (!Require(dbTx, Tests.zhash, zenAmount, out change, assets))
                 {
                     signedTx = null;
                     return false;
@@ -492,6 +491,30 @@ namespace Wallet.core
 
                     outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Tests.zhash, change)));
                 }
+
+                if (secureTokenHash != null)
+                {
+					ulong secureTokenChange;
+                   // var secureTokenAssets = new Assets();
+
+                    if (!Require(dbTx, secureTokenHash, 1, out secureTokenChange, assets))
+					{
+						signedTx = null;
+						return false;
+					}
+					else if (secureTokenChange > 0)
+					{
+						Key key;
+
+						if (_KeyStore.GetUnusedKey(dbTx, out key, true))
+						{
+							_Keys.Add(key);
+							dbTx.Commit();
+						}
+
+						outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(secureTokenHash, secureTokenChange)));
+					}
+				}
             }
 
             var output = new Types.Output(
@@ -502,6 +525,11 @@ namespace Wallet.core
             );
 
             outputs.Add(output);
+
+            if (secureTokenHash != null)
+            {
+                outputs.Add(new Types.Output(Types.OutputLock.NewContractLock(Merkle.innerHash(code), new byte[] { }), new Types.Spend(secureTokenHash, 1)));
+            }
 
             signedTx = TransactionValidation.signTx(new Types.Transaction(
                 1,

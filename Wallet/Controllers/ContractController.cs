@@ -14,7 +14,7 @@ namespace Wallet
         public enum ResultEnum
         {
             Success,
-            NotEngoughZen,
+            NotEnoughZen,
             Error,
         }
 
@@ -28,12 +28,12 @@ namespace Wallet
 		byte[] _Hash;
 		public ContractView ContractView { set; get; }
 
-        Func<ulong, byte[], ContractActivationResult> ActivateContract = (kalapas, code) =>
+        Func<ulong, byte[], byte[], ContractActivationResult> ActivateContract = (kalapas, code, secureToken) =>
         {
             Types.Transaction tx;
-            if (!App.Instance.Wallet.SacrificeToContract(code, kalapas, out tx))
+            if (!App.Instance.Wallet.SacrificeToContract(code, kalapas, out tx, secureToken))
             {
-                return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.NotEngoughZen };
+                return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.NotEnoughZen };
             }
 
             var txResult = App.Instance.Node.Transmit(tx);

@@ -35,6 +35,11 @@ namespace Wallet
 			get; set;
 		}
 
+		public byte[] SecureToken
+		{
+			get; set;
+		}
+
 		public ulong Amount
 		{
 			get; set;
@@ -124,6 +129,7 @@ namespace Wallet
 			};
 
 			vboxMainInner.Remove(eventboxData);
+			vboxMainInner.Remove(eventboxSecureToken);
 
 			entryDestination.Changed += (sender, e) =>
 			{
@@ -136,11 +142,16 @@ namespace Wallet
 					switch (address.AddressType)
 					{
 						case AddressType.Contract:
+                            //vboxMainInner.Add(eventboxSecureToken);
+							//vboxMainInner.ReorderChild(eventboxSecureToken, 1);
+
 							vboxMainInner.Add(eventboxData);
 							vboxMainInner.ReorderChild(eventboxData, 1);
+
 							break;
 						case AddressType.PK:
 							vboxMainInner.Remove(eventboxData);
+							vboxMainInner.Remove(eventboxSecureToken);
 							break;
 					}
 				}
@@ -220,19 +231,19 @@ namespace Wallet
 			Apply((EventBox eventbox) =>
 			{
 				eventbox.ModifyBg(StateType.Normal, Constants.Colors.Textbox.Gdk);
-            }, eventboxDestination, eventboxData, eventboxAsset, eventboxAmount);
+            }, eventboxDestination, eventboxData, eventboxSecureToken, eventboxAsset, eventboxAmount);
 
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarIntermediate);
-			}, labelDestination, labelData, labelAsset, labelAmount, labelBalanceValue);
+			}, labelDestination, labelData, labelAsset, labelSecureToken, labelAmount, labelBalanceValue);
 
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, labelSelectedAsset, labelSelectedAsset1, labelSelectOtherAsset, labelBalance);
+            }, labelSelectedAsset, labelSelectedAsset1, labelSelectOtherAsset, labelSelectSecureToken, labelBalance);
 
 			Apply((Entry entry) =>
 			{
@@ -252,7 +263,16 @@ namespace Wallet
 			comboboxAsset.PackStart(textRenderer, false);
 			comboboxAsset.AddAttribute(textRenderer, "text", 1);
 
-            foreach (var _asset in App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList())
+			var secureTokenComboboxStore = new ListStore(typeof(byte[]), typeof(string));
+
+			comboboxSecureToken.Model = secureTokenComboboxStore;
+			var textRendererSecukreToken = new CellRendererText();
+			comboboxSecureToken.PackStart(textRendererSecukreToken, false);
+			comboboxSecureToken.AddAttribute(textRendererSecukreToken, "text", 1);
+
+            secureTokenComboboxStore.AppendValues(new byte[] {}, "None");
+
+			foreach (var _asset in App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList())
             {
                 var iter = comboboxStore.AppendValues(_asset.Asset, _asset.Display);
 				
@@ -260,6 +280,8 @@ namespace Wallet
                 {
                     comboboxAsset.SetActiveIter(iter);
                 }
+
+                secureTokenComboboxStore.AppendValues(_asset.Asset, _asset.Display);
             }
 
             App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
@@ -291,6 +313,25 @@ namespace Wallet
 							comboboxStore.AppendValues(t.Asset, t.Display);
 						}
 
+						do
+						{
+							var key = new GLib.Value();
+                            secureTokenComboboxStore.GetValue(iter, 0, ref key);
+							byte[] _asset = key.Val as byte[];
+
+							if (_asset != null && _asset.SequenceEqual(t.Asset))
+							{
+								secureTokenComboboxStore.SetValue(iter, 1, t.Display);
+								found = true;
+								break;
+							}
+						} while (secureTokenComboboxStore.IterNext(ref iter));
+
+						if (!found)
+						{
+							secureTokenComboboxStore.AppendValues(t.Asset, t.Display);
+						}
+
 		                if (labelSelectedAsset.Text == Convert.ToBase64String(t.Asset))
 		                {
 		                    labelSelectedAsset.Text = t.Display;
@@ -308,7 +349,7 @@ namespace Wallet
 				});
             };
 
-			comboboxAsset.Changed += async (sender, e) =>
+			comboboxAsset.Changed += (sender, e) =>
 			{
 				var comboBox = sender as Gtk.ComboBox;
                 TreeIter iter;
@@ -327,6 +368,17 @@ namespace Wallet
 				}
 
 				UpdateBalance();
+			};
+
+            comboboxSecureToken.Changed += (sender, e) =>
+			{
+			    var comboBox = sender as Gtk.ComboBox;
+			    TreeIter iter;
+			    comboBox.GetActiveIter(out iter);
+			    var value = new GLib.Value();
+			    comboBox.Model.GetValue(iter, 0, ref value);
+			    byte[] asset = value.Val as byte[];
+                SendInfo.SecureToken = asset;
 			};
 
 			UpdateBalance();
