@@ -10,44 +10,35 @@ namespace Wallet
 {
 	public class PortfolioController : Singleton<PortfolioController>
 	{
-		AssetDeltas _TxDeltas = new AssetDeltas();
 		List<IPortfolioVIew> _PortfolioViews = new List<IPortfolioVIew>();
 
 		public PortfolioController()
 		{
-			App.Instance.Wallet.TxDeltaList.ForEach(t => 
-			    AddToTotals(t.AssetDeltas)
-			);
-			App.Instance.Wallet.OnReset += delegate { 
-                _PortfolioViews.ForEach(v => v.Clear()); 
+            App.Instance.Wallet.OnReset += delegate {
+                UpdateViews();
             };
-			App.Instance.Wallet.OnItems += a => { 
-                a.ForEach(t => AddToTotals(t.AssetDeltas)); UpdateTotals(); 
-            };
+			//TODO: handle a single item, rather than redrawing the entire set
+			App.Instance.Wallet.OnItems += delegate
+			{
+				UpdateViews();
+			};
 		}
 
 		public void AddVIew(IPortfolioVIew view)
 		{
 			_PortfolioViews.Add(view);
-            view.SetPortfolioDeltas(_TxDeltas);
+            view.SetPortfolioDeltas(App.Instance.Wallet.TxDeltaList.AssetDeltas);
 		}
 
-		void AddToTotals(AssetDeltas assetDeltas)
+		void UpdateViews()
 		{
-			foreach (var item in assetDeltas)
-			{
-				if (!_TxDeltas.ContainsKey(item.Key))
-					_TxDeltas[item.Key] = 0;
-
-				_TxDeltas[item.Key] += item.Value;
-			}
-		}
-
-		void UpdateTotals()
-		{
-			Gtk.Application.Invoke(delegate
-			{
-				_PortfolioViews.ForEach(v => v.SetPortfolioDeltas(_TxDeltas));
+            Gtk.Application.Invoke(delegate
+            {
+                _PortfolioViews.ForEach(v =>
+                {
+	                v.Clear();
+                    v.SetPortfolioDeltas(App.Instance.Wallet.TxDeltaList.AssetDeltas);
+                });
 			});
 		}
 	}

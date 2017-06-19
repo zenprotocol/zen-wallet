@@ -93,7 +93,7 @@ namespace Wallet
 		}
 
 		AssetDeltas _AssetDeltas = null;
-		ulong _AssetBalance = 0;
+		long _AssetBalance = 0;
 
 		public WalletSendLayout()
 		{
@@ -428,18 +428,9 @@ namespace Wallet
                 SendInfo.Asset = Consensus.Tests.zhash;
             }
 
-			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];
+            _AssetBalance = _AssetDeltas != null && _AssetDeltas.ContainsKey(SendInfo.Asset) ? _AssetDeltas[SendInfo.Asset] : 0;
 
-			string value;
-
-			if (SendInfo.Asset.SequenceEqual(Tests.zhash))
-			{
-				value = new Zen(_AssetBalance).ToString();
-			}
-			else
-			{
-				value = String.Format(Formats.Money, _AssetBalance);
-			}
+			string value = SendInfo.Asset.SequenceEqual(Tests.zhash) ? new Zen(_AssetBalance).ToString() : String.Format(Formats.Money, _AssetBalance);
 
             labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result}";
 			CheckAssetAmount();
@@ -447,7 +438,7 @@ namespace Wallet
 
 		void CheckAssetAmount()
 		{
-			SendInfo.HasEnough = SendInfo.Amount <= _AssetBalance;
+			SendInfo.HasEnough = SendInfo.Amount <= (ulong)_AssetBalance && _AssetBalance > 0;
 
 			if (!SendInfo.HasEnough)
 			{
