@@ -85,9 +85,9 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
             }
         let initialized =
             match dataLock with
-            | ContractLock (_, [||]) -> false
+            | ContractLock (_, d) when d.Length = 0 -> false
             | _ -> true
-        if initialized && opcode = 0uy then
+        if not initialized && opcode = 0uy then
             return! Some <| initializeCall meta returnHash dataPair
         else
         let! tokens, collateral, counter =
