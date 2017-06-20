@@ -1,22 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using System.Web.Mvc.Ajax;
-using Newtonsoft.Json;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Text.RegularExpressions;
-using NetMQ.Sockets;
-using NetMQ;
 using Consensus;
 using Microsoft.FSharp.Collections;
-using Zen.RPC.Common;
-using Zen.RPC;
 using Datafeed.Web.App_Data;
-using Newtonsoft.Json.Linq;
 
 namespace Datafeed.Web.Controllers
 {
@@ -36,7 +25,7 @@ namespace Datafeed.Web.Controllers
 			{
 				return View("Search", new CommitmentData()
 				{
-				Ticker = ticker,
+					Ticker = ticker,
 					Value = value,
 					Time = dateTime.ToLongDateString() + " " + dateTime.ToLongTimeString()
 				});

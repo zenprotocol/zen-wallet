@@ -7,42 +7,54 @@ using Consensus;
 using Sodium;
 using System.Text;
 using System.Collections.Generic;
+using Wallet.core.Data;
 
 namespace Datafeed.Web.App_Code
 {
-	public class Utils
+	public class ContractManager
 	{
-		public static string NodeRPCAddress = WebConfigurationManager.AppSettings["node"];
+		static string NodeRPCAddress = WebConfigurationManager.AppSettings["node"];
 		static string walletPrivateKey = WebConfigurationManager.AppSettings["walletPrivateKey"];
 
-        public bool EnsureContract(out string errorMessage)
+        public string Message { get; private set; }
+		public bool IsSetup { get; private set; }
+		public Address ContractAddress { get; private set; }
+		public byte[] PrivateKey { get; private set; }
+
+		public ContractManager()
         {
             if (!EnsureFunds())
             {
-                errorMessage = "No funds";
-                return false;
+                Message = "No funds";
+                IsSetup = false;
+                return;
             }
 
             var keypair = EnsureKeyPair();
+            PrivateKey = keypair.PrivateKey;
             var contractCode = EnsureContractCode(keypair.PublicKey);
 
-            if (!EnsureContractActive(contractCode))
+			ContractAddress = new Address(Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)), AddressType.Contract);
+
+			if (!EnsureContractActive(contractCode))
 			{
-				errorMessage = "Could not activate Contract";
-				return false;
+				Message = "Could not activate Contract";
+				IsSetup = false;
+                return;
 			}
 
-            if (!EnsureInitialOutpoiunt(contractCode))
+			if (!EnsureInitialOutpoint())
 			{
-				errorMessage = "Could not create initial outpoint";
-				return false;
+				Message = "Could not create initial outpoint";
+				IsSetup = false;
+                return;
 			}
 
-            errorMessage = "";
-			return true;
+            Message = "";
+			IsSetup = true;
         }
 
-		static bool EnsureFunds()
+		bool EnsureFunds()
 		{
 			if (HasFunds())
 			{
@@ -57,7 +69,7 @@ namespace Datafeed.Web.App_Code
 			return HasFunds();
 		}
 
-		static bool HasFunds()
+		bool HasFunds()
 		{
 			var getBalanceResultPayload = Client.Send<GetBalanceResultPayload>(NodeRPCAddress, new GetBalancePayload() { Asset = Consensus.Tests.zhash }).Result;
 
@@ -69,46 +81,42 @@ namespace Datafeed.Web.App_Code
 			return getBalanceResultPayload.Balance > 0;
 		}
 
-	    static bool Acquire()
+	    bool Acquire()
 		{
 			return Client.Send<ResultPayload>(NodeRPCAddress, new AcquirePayload() { PrivateKey = walletPrivateKey }).Result.Success;
 		}
 
-        static KeyPair EnsureKeyPair()
+        KeyPair EnsureKeyPair()
         {
-			if (!System.IO.File.Exists("oracle-key.txt"))
+            if (!System.IO.File.Exists(System.IO.Path.Combine("db", "oracle-key.txt")))
 			{
 				var keyPair = PublicKeyAuth.GenerateKeyPair();
-				System.IO.File.WriteAllText("oracle-key.txt", Convert.ToBase64String(keyPair.PrivateKey) + " " + Convert.ToBase64String(keyPair.PublicKey));
+                System.IO.File.WriteAllText(System.IO.Path.Combine("db", "oracle-key.txt"), Convert.ToBase64String(keyPair.PublicKey) + " " + Convert.ToBase64String(keyPair.PrivateKey));
                 return keyPair;
             }
-			else
-			{
-				var data = System.IO.File.ReadAllText("oracle-key.txt");
-				var parts = data.Split(null);
-                return new KeyPair(Convert.FromBase64String(parts[0]), Convert.FromBase64String(parts[1]));
-			}
+
+            var data = System.IO.File.ReadAllText(System.IO.Path.Combine("db", "oracle-key.txt"));
+			var parts = data.Split(null);
+            return new KeyPair(Convert.FromBase64String(parts[0]), Convert.FromBase64String(parts[1]));
         }
 
-        static string EnsureContractCode(byte[] publicKey)
+        string EnsureContractCode(byte[] publicKey)
         {
-            if (System.IO.File.Exists("oracle-contract.txt"))
+            if (System.IO.File.Exists(System.IO.Path.Combine("db", "oracle-contract.txt")))
             {
-                return System.IO.File.ReadAllText("oracle-contract.txt");
+                return System.IO.File.ReadAllText(System.IO.Path.Combine("db", "oracle-contract.txt"));
             }
-            else
-            {
-                var @params = new ContractExamples.QuotedContracts.OracleParameters(publicKey);
-                var contract = ContractExamples.QuotedContracts.oracleFactory(@params);
-                var contractCode = ContractExamples.Execution.quotedToString(contract);
-                System.IO.File.WriteAllText("oracle-contract.txt", contractCode);
-                return contractCode;
-			}
+
+            var @params = new ContractExamples.QuotedContracts.OracleParameters(publicKey);
+            var contract = ContractExamples.QuotedContracts.oracleFactory(@params);
+            var contractCode = ContractExamples.Execution.quotedToString(contract);
+            System.IO.File.WriteAllText(System.IO.Path.Combine("db", "oracle-contract.txt"), contractCode);
+            return contractCode;
         }
 
-        static bool EnsureContractActive(string contractCode)
+        bool EnsureContractActive(string contractCode)
         {
-            if (IsContractActive(contractCode))
+            if (IsContractActive())
 			{
 				return true;
 			}
@@ -116,7 +124,7 @@ namespace Datafeed.Web.App_Code
             return ActivateContract(contractCode);
         }
 
-        static bool IsContractActive(string contractCode)
+        bool IsContractActive()
         {
 			var acsResult = Client.Send<GetACSResultPayload>(NodeRPCAddress, new GetACSPayload()).Result;
 
@@ -125,34 +133,31 @@ namespace Datafeed.Web.App_Code
 				return false;
 			}
 
-			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-
-            return acsResult.Contracts.Count(t => t.Hash.SequenceEqual(contractHash)) == 1;
+            return acsResult.Contracts.Count(t => t.Hash.SequenceEqual(ContractAddress.Bytes)) == 1;
 		}
 
-        static bool ActivateContract(string contractCode)
+        bool ActivateContract(string contractCode)
         {
-			var activateContractResult = Client.Send<ResultPayload>(NodeRPCAddress, new ActivateContractPayload() { Code = contractCode, Blocks = 1 }).Result;
+            //TODO: extend contract if remaining blocks is less than ~10
+			var activateContractResult = Client.Send<ResultPayload>(NodeRPCAddress, new ActivateContractPayload() { Code = contractCode, Blocks = 1000 }).Result;
 
             return activateContractResult.Success;
 		}
 
-		static bool EnsureInitialOutpoiunt(string contractCode)
+		bool EnsureInitialOutpoint()
 		{
-			if (HasInitialOutpoint(contractCode))
+			if (HasInitialOutpoint())
 			{
 				return true;
 			}
 
-            return SetInitialOutpoint(contractCode);
+            return SetInitialOutpoint();
 		}
 
-		static bool HasInitialOutpoint(string contractCode)
+		bool HasInitialOutpoint()
 		{
-			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-
 			var getOutpointsResult =
-				Client.Send<GetContractPointedOutputsResultPayload>(NodeRPCAddress, new GetContractPointedOutputsPayload() { ContractHash = contractHash }).Result;
+				Client.Send<GetContractPointedOutputsResultPayload>(NodeRPCAddress, new GetContractPointedOutputsPayload() { ContractHash = ContractAddress.Bytes }).Result;
 
 			if (!getOutpointsResult.Success)
 			{
@@ -162,12 +167,9 @@ namespace Datafeed.Web.App_Code
             return getOutpointsResult.PointedOutputs.Count > 0;
 		}
 
-		static bool SetInitialOutpoint(string contractCode)
+		bool SetInitialOutpoint()
         {
-			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-			var contractAddress = new Wallet.core.Data.Address(contractHash, Wallet.core.Data.AddressType.Contract);
-
-			var sendContractResult = Client.Send<ResultPayload>(NodeRPCAddress, new SpendPayload() { Address = contractAddress.ToString(), Amount = 1 }).Result;
+			var sendContractResult = Client.Send<ResultPayload>(NodeRPCAddress, new SpendPayload() { Address = ContractAddress.ToString(), Amount = 1 }).Result;
 
             return sendContractResult.Success;
 		}

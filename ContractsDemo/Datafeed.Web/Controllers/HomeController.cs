@@ -11,62 +11,61 @@ using Datafeed.Web.App_Data;
 using Zen.RPC.Common;
 using Zen.RPC;
 using Datafeed.Web.App_Code;
+using System.Web.Configuration;
 
 namespace Datafeed.Web.Controllers
 {
     public class HomeController : Controller
     {
 		StockAPI _StockAPI = new StockAPI();
+		static string NodeRPCAddress = WebConfigurationManager.AppSettings["node"];
 
 		public ActionResult Index()
 		{
-			byte[] contractHash;
-			byte[] privateKey;
+			if (!Directory.Exists("db"))
+				Directory.CreateDirectory("db");
 
-			if (!Utils.EnsureFunds())
+			var contractManager = new ContractManager();
+
+            if (!contractManager.IsSetup)
             {
-                ViewBag.Message = "No funds";
+                ViewBag.Message = contractManager.Message;
                 return View(new List<Commitment>());
             }
-            else if (!Utils.EnsureOracle(out contractHash, out privateKey))
-            {
-                ViewBag.Message = "Could not setup the contract";
-                return View(new List<Commitment>());
-            }
-            else
-            {
-                ViewBag.Address = new Wallet.core.Data.Address(contractHash, Wallet.core.Data.AddressType.Contract);
 
-                return View(Directory.GetFiles("db", "*.data.json")
-                    .Select(t => Regex.Replace(t, @"[^\d]", ""))
-                    .OrderBy(t => t)
-                    .Reverse().Take(5).Reverse()
-                    .Select(t =>
+            ViewBag.Address = contractManager.ContractAddress;
+
+            return View(Directory.GetFiles("db", "*.data.json")
+                .Select(t => Regex.Replace(t, @"[^\d]", ""))
+                .OrderBy(t => t)
+                .Reverse().Take(5).Reverse()
+                .Select(t =>
+                {
+                    var datetime = DateTime.FromFileTime(long.Parse(t));
+                    var file = Path.Combine("db", $"{t}.data.json");
+
+                    var data = System.IO.File.ReadAllText(file);
+
+                    return new App_Data.Commitment()
                     {
-                        var datetime = DateTime.FromFileTime(long.Parse(t));
-                        var file = Path.Combine("db", $"{t}.data.json");
-
-                        var data = System.IO.File.ReadAllText(file);
-
-                        return new App_Data.Commitment()
-                        {
-                            Id = t,
-                            Time = datetime.ToLongDateString() + " " + datetime.ToLongTimeString(),
-                        };
-                    }));
-            }
+                        Id = t,
+                        Time = datetime.ToLongDateString() + " " + datetime.ToLongTimeString(),
+                    };
+                }));
 		}
 
 		[HttpPost]
 		public async Task<ActionResult> Generate()
 		{
-			byte[] contractHash;
-			byte[] privateKey;
+			if (!Directory.Exists("db"))
+				Directory.CreateDirectory("db");
 
-			if (!Utils.EnsureOracle(out contractHash, out privateKey))
+			var contractManager = new ContractManager();
+
+			if (!contractManager.IsSetup)
 			{
 				ViewData["Result"] = false;
-				ViewData["Message"] = "Could not setup the contract";
+				ViewData["Message"] = contractManager.Message;
 				return View();
 			}
 
@@ -76,10 +75,10 @@ namespace Datafeed.Web.Controllers
             var now = DateTime.Now.ToUniversalTime();
             var nowTicks = now.Ticks;
             var items = rawTickers.Select(t => new ContractExamples.Oracle.TickerItem(t.Name, t.Value, nowTicks));
-            var secret = new byte[] { 0x00, 0x01, 0x02 }; // System. WebConfigurationManager.AppSettings["secret"];
+            var secret = Convert.FromBase64String(WebConfigurationManager.AppSettings["secret"]);
             var commitmentData = ContractExamples.Oracle.commitments(items, secret);
 
-            var getOutpointsResult = await Client.Send<GetContractPointedOutputsResultPayload>(Utils.NodeRPCAddress, new GetContractPointedOutputsPayload() { ContractHash = contractHash });
+            var getOutpointsResult = await Client.Send<GetContractPointedOutputsResultPayload>(NodeRPCAddress, new GetContractPointedOutputsPayload() { ContractHash = contractManager.ContractAddress.Bytes });
 
             if (!getOutpointsResult.Success || getOutpointsResult.PointedOutputs.Count == 0)
             {
@@ -102,13 +101,13 @@ namespace Datafeed.Web.Controllers
 			var data = ContractExamples.QuotedContracts.simplePackOutpoint(utxo.Item1)
                            .Concat(commitmentData.Item2).ToArray();
 
-            var signiture = Authentication.sign(data, privateKey);
+            var signiture = Authentication.sign(data, contractManager.PrivateKey);
 
             data = data.Concat(signiture).ToArray();
 
-            var sendContractResult = await Client.Send<SendContractResultPayload>(Utils.NodeRPCAddress, new SendContractPayload()
+            var sendContractResult = await Client.Send<SendContractResultPayload>(NodeRPCAddress, new SendContractPayload()
             {
-                ContractHash = contractHash,
+                ContractHash = contractManager.ContractAddress.Bytes,
                 Data = data
             });
 
@@ -116,9 +115,6 @@ namespace Datafeed.Web.Controllers
 
             if (sendContractResult.Success)
             {
-                if (!Directory.Exists("db"))
-                    Directory.CreateDirectory("db");
-
                 var file = Path.Combine("db", $"{now.ToFileTime()}");
                 MemoryStream ms = new MemoryStream();
                 ContractExamples.Oracle.proofMapSerializer.WriteObject(ms, commitmentData.Item1);

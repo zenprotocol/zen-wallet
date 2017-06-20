@@ -125,7 +125,7 @@
     <Compile Include="Models\Commitment.cs" />
     <Compile Include="Controllers\DataController.cs" />
     <Compile Include="App_Data\CommitmentData.cs" />
-    <Compile Include="App_Code\Utils.cs" />
+    <Compile Include="App_Code\ContractManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Web.config" />

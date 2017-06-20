@@ -74,7 +74,7 @@ namespace ContractsDiscovery.Web.Controllers
 
 			var address = Request["Address"];
 
-			var contractHash = Convert.FromBase64String(address);
+			var contractHash = new Address(address).Bytes;
 
 			string key = HttpServerUtility.UrlTokenEncode(contractHash);
 			var file = $"{key}";
