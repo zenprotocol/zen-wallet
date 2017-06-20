@@ -1,8 +1,15 @@
-﻿@using (@Html.BeginForm("GetTokens", "Home", FormMethod.Post))
+﻿@if (!string.IsNullOrEmpty(@ViewBag.Message))
 {
-	<div class="form-group">
-	    <label for="address">Address:</label>
-	    <input type="text" class="form-control" id="address" name="address" placeholder="Address">
-	</div>
-    <button type="submit" class="btn btn-primary" name="submit">Submit</button>
+    <div class="form-group">@ViewBag.Message</div>
+}
+else
+{
+	using (@Html.BeginForm("GetTokens", "Home", FormMethod.Post))
+	{
+		<div class="form-group">
+		    <label for="address">Address:</label>
+		    <input type="text" class="form-control" id="address" name="address" placeholder="Address">
+		</div>
+	    <button type="submit" class="btn btn-primary" name="submit">Submit</button>
+	}
 }

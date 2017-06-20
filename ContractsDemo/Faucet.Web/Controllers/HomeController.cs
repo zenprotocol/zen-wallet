@@ -6,6 +6,7 @@ using System.Web;
 using System.Web.Configuration;
 using System.Web.Mvc;
 using System.Web.Mvc.Ajax;
+using Datafeed.Web.App_Code;
 using Wallet.core.Data;
 using Zen.RPC;
 using Zen.RPC.Common;
@@ -18,9 +19,12 @@ namespace Faucet.Web.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var result = await Client.Send<HelloResultPayload>(address, new HelloPayload());
+            var contractManager = new FaucetManager();
 
-            ViewData["Success"] = result.Success;
+			if (!contractManager.IsSetup)
+			{
+				ViewBag.Message = contractManager.Message;
+			}
 
             return View();
         }
@@ -45,7 +49,7 @@ namespace Faucet.Web.Controllers
             {
                 Asset = Consensus.Tests.zhash,
                 Address = sendAddress.ToString(),
-                Amount = 10
+                Amount = 50000000
 			});
 
             ViewData["message"] = result.Message;
