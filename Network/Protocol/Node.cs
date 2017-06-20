@@ -173,8 +173,8 @@ namespace NBitcoin.Protocol
 							processing = kv;
 							var payload = kv.Payload;
 
-							//if(isVerbose)
-							//{
+							if(isVerbose)
+							{
 								Trace.CorrelationManager.ActivityId = kv.ActivityId;
 								if(kv.ActivityId != TraceCorrelation.Activity)
 								{
@@ -182,7 +182,7 @@ namespace NBitcoin.Protocol
 									Trace.CorrelationManager.ActivityId = TraceCorrelation.Activity;
 								}
 								NodeServerTrace.Information("Sending " + payload + " to " + _Node.RemoteSocketAddress);
-							//}
+							}
 
 							var bytes = WireSerialization.Instance.Pack(payload);
 
