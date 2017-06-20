@@ -69,7 +69,7 @@
     <Compile Include="TUI.cs" />
     <Compile Include="AppTraceListener.cs" />
     <Compile Include="Tests\UITests.cs" />
-    <Compile Include="Data\Keys.cs" />
+    <Compile Include="Data\TestKeys.cs" />
     <Compile Include="Data\Outputs.cs" />
     <Compile Include="Data\Settings.cs" />
     <Compile Include="BlockChainDumper.cs" />

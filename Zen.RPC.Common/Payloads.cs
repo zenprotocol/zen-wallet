@@ -159,4 +159,19 @@ namespace Zen.RPC.Common
 		public string Address { get; set; }
 		public ulong Amount { get; set; }
 	}
+
+	public class AcquirePayload : BasePayload
+	{
+		public string PrivateKey { get; set; }
+	}
+
+	public class GetBalancePayload : BasePayload
+	{
+		public byte[] Asset { get; set; }
+	}
+
+	public class GetBalanceResultPayload : ResultPayload
+	{
+		public long Balance { get; set; }
+	}
 }

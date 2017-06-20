@@ -45,9 +45,8 @@ namespace Zen
 			options["wallet"] = new List<string>();
 		//	options["wallet"].Add("Reset");
 		//	options["wallet"].Add("Sync");
-			options["wallet"].Add("Add Genesis UTXO");
+			options["wallet"].Add("Import Genesis UTXO Key");
 			options["wallet"].Add("List Keys");
-			options["wallet"].Add("Import Test Key");
 			options["wallet"].Add("Get Receive Address");
 			options["wallet"].Add("My Wallet");
 			options["wallet"].Add("Send Dialog");
@@ -345,13 +344,14 @@ namespace Zen
 			{
 				switch (a)
 				{
-					case "Add Genesis UTXO":
+					case "Import Genesis UTXO Key":
 						wallet_mode = a;
 						listMenu.Items.Clear();
 
 						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
 						{
-							listMenu.Items.Add(output.Amount + " " + output.Key);
+                            var key = JsonLoader<TestKeys>.Instance.Value.Values[output.TestKeyIdx];
+                            listMenu.Items.Add($"{output.TestKeyIdx} {output.Amount} {key.Desc}");
 						}
 						listMenu.Items.Add("Back");
 						break;
@@ -369,23 +369,6 @@ namespace Zen
 						}
 						listMenu.Items.Add("Back");
 						break;
-					case "Import Test Key":
-						wallet_mode = a;
-
-						listMenu.Items.Clear();
-
-						foreach (var key in  JsonLoader<Keys>.Instance.Value.Values)
-						{
-							listMenu.Items.Add(key);
-						}
-						listMenu.Items.Add("Back");
-						break;
-					//case "Reset":
-					//	app.ResetWallet();
-					//	break;
-					//case "Import":
-					//	app.ImportWallet();
-					//	break;
 					case "Get Receive Address":
 						listTrace.Items.Add(app.WalletManager.GetUnusedKey().Address.ToString());
 						break;
@@ -407,17 +390,10 @@ namespace Zen
 					default:
 						switch (wallet_mode)
 						{
-							case "Add Genesis UTXO":
-								foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
-								{
-									if (a == output.Amount + " " + output.Key)
-									{
-										app.WalletManager.Import(Key.Create(output.Key));
-									}
-								}
-								break;
-							case "Import Test Key":
-								app.WalletManager.Import(Key.Create(a));
+							case "Import Genesis UTXO Key":
+                                var idx = int.Parse(a.Split(null)[0]);
+                                var key = Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[idx].Private);
+								app.WalletManager.Import(key);
 								break;
 						}
 						break;
@@ -476,7 +452,8 @@ namespace Zen
 
                 foreach (var item in txDelta.AssetDeltas)
                 {
-                    assets += (assets == string.Empty ? "" : ", ") + item.Value;
+                    var value = item.Key.SequenceEqual(Consensus.Tests.zhash) ? item.Value * Math.Pow(10, -8)  : item.Value;
+                    assets += (assets == string.Empty ? "" : ", ") + value;
                     assets += " " + app.WalletManager.AssetsMetadata.GetMetadata(item.Key).Result;
                 }
 

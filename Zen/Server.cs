@@ -35,7 +35,6 @@ namespace Zen
 			_poller.Add(_responseSocket);
 		}
 
-
         public void Start()
         {
             Console.WriteLine("RPC Server starting...");
@@ -186,7 +185,32 @@ namespace Zen
 					Success = result
 				};
 			}
-			    
+
+            if (type == typeof(AcquirePayload))
+            {
+				var _payload = (AcquirePayload)payload;
+
+                _App.ImportTestKey(_payload.PrivateKey);
+
+				return new ResultPayload()
+				{
+					Success = true
+				};
+			}
+
+			if (type == typeof(GetBalancePayload))
+			{
+				var _payload = (GetBalancePayload)payload;
+
+                var assets = _App.WalletManager.TxDeltaList.AssetDeltas;
+
+				return new GetBalanceResultPayload()
+				{
+					Success = true,
+                    Balance = assets.ContainsKey(_payload.Asset) ? assets[_payload.Asset] : 0
+				};
+			}
+			  
 			return null;
 		}
 	}

@@ -145,8 +145,14 @@ namespace Zen
 			MinerLogData = new List<MinerLogData>();
 
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
-			JsonLoader<Keys>.Instance.FileName = "keys.json";
 
+			if (JsonLoader<Outputs>.Instance.Corrupt)
+				Console.Write("Test genesis outputs json file is invalid!");
+			
+            JsonLoader<TestKeys>.Instance.FileName = "keys.json";
+
+			if (JsonLoader<TestKeys>.Instance.Corrupt)
+				Console.Write("Test keys json file is invalid!");
 		}
 
 		bool _MinerEnabled;
@@ -171,11 +177,6 @@ namespace Zen
 			return AppBlockChain.HandleBlock(block).Result == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
-		public void Acquire(int utxoIndex)
-		{
-			WalletManager.Import(Key.Create(JsonLoader<Outputs>.Instance.Value.Values[utxoIndex].Key));
-		}
-
 		public void MineTestBlock()
 		{
 			NodeManager.Miner.MineTestBlock();
@@ -188,7 +189,7 @@ namespace Zen
 
 		public Address GetTestAddress(int keyIndex)
 		{
-			return Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]).Address;
+            return Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[keyIndex].Private).Address;
 		}
 
 		public bool Spend(Address address, ulong amount, byte[] data = null, byte[] asset = null)
@@ -375,9 +376,14 @@ namespace Zen
 			Settings.NetworkProfile = networkProfile;
 		}
 
-		public void AddKey(int keyIndex)
+		public void ImportTestKey(int keyIndex)
 		{
-			WalletManager.Import(Key.Create(JsonLoader<Keys>.Instance.Value.Values[keyIndex]));
+			WalletManager.Import(Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[keyIndex].Private));
+		}
+
+		public void ImportTestKey(string privateKey)
+		{
+			WalletManager.Import(Key.Create(privateKey));
 		}
 
 		public async Task Connect()
@@ -447,46 +453,22 @@ namespace Zen
 					var version = (uint)1;
 					var date = "2000-02-02";
 
-					if (JsonLoader<Outputs>.Instance.IsNew)
-					{
-						foreach (Tuple<string, string> genesisOutputs in Settings.GenesisOutputs)
-						{
-							try
-							{
-								var key = Key.Create(genesisOutputs.Item1);
-								var amount = ulong.Parse(genesisOutputs.Item2);
+                    for (var i = 0; i < JsonLoader<TestKeys>.Instance.Value.Values.Count; i++)
+                    {
+                        var key = Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[i].Private);
+                        var amount = JsonLoader<Outputs>.Instance.Value.Values.Where(t => t.TestKeyIdx == i).Select(t => t.Amount).First();
 
-								JsonLoader<Outputs>.Instance.Value.Values.Add(new Output() { Key = key.ToString(), Amount = amount });
-
-								outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
-							}
-							catch
-							{
-								Console.WriteLine("error initializing genesis outputs with: " + genesisOutputs.Item1 + "," + genesisOutputs.Item2);
-								throw;
-							}
-						}
-
-						JsonLoader<Outputs>.Instance.Save();
-					}
-					else
-					{
-						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
-						{
-							var key = Key.Create(output.Key);
-							var amount = output.Amount;
-
-							outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
-						}
-					}
+                        outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
+                    }
 
 					var txs = new List<Types.Transaction>();
 
-					txs.Add(new Types.Transaction(version,
+					txs.Add(new Types.Transaction(
+                        version,
 						ListModule.OfSeq(inputs),
 						ListModule.OfSeq(hashes),
 						ListModule.OfSeq(outputs),
-						  null
+					    null
 					));
 
 					var blockHeader = new Types.BlockHeader(
