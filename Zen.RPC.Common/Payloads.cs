@@ -173,5 +173,10 @@ namespace Zen.RPC.Common
 	public class GetBalanceResultPayload : ResultPayload
 	{
 		public long Balance { get; set; }
+
+		public override string ToString()
+		{
+			return base.ToString() + $" Balance={Balance}";
+		}
 	}
 }
