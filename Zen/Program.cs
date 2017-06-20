@@ -18,13 +18,12 @@ namespace Zen
 
 		public static void Main (string[] args)
 		{
-			var app = new App();
+            var app = new App();
 
             var launchMode = LaunchModeEnum.GUI;
 			bool disableNetworking = false;
 			bool show_help = false;
-			bool headless = false;
-			bool tui = false;
+			bool genesis = false;
 			bool rpcServer = false;
 
 			string script = null;
@@ -57,6 +56,9 @@ namespace Zen
 				{ "r|rpc", "enable RPC",
 					v => rpcServer = true },
 
+				{ "g|genesis", "add the genesis block",
+					v => genesis = true },
+
 				{ "h|help",  "show this message and exit", 
 					v => show_help = v != null },
 			};
@@ -77,6 +79,12 @@ namespace Zen
 			}
 
             app.Init();
+
+            if (genesis)
+            {
+                app.AddGenesisBlock();
+                Console.WriteLine("Genesis block added.");
+            }
 			
             if (!disableNetworking)
 				app.Connect();
