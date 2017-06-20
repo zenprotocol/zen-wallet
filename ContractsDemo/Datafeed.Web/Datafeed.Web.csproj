@@ -101,6 +101,8 @@
     <Reference Include="Wallet.core">
       <HintPath>..\..\Wallet.core\bin\Debug\Wallet.core.dll</HintPath>
     </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\" />
@@ -109,6 +111,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="Views\Data\" />
     <Folder Include="assets\" />
+    <Folder Include="App_Code\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
@@ -122,6 +125,7 @@
     <Compile Include="Models\Commitment.cs" />
     <Compile Include="Controllers\DataController.cs" />
     <Compile Include="App_Data\CommitmentData.cs" />
+    <Compile Include="App_Code\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Web.config" />

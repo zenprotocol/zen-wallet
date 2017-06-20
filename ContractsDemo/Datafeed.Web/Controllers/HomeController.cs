@@ -3,34 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Mvc.Ajax;
-using Newtonsoft.Json;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Text.RegularExpressions;
 using Consensus;
-using Microsoft.FSharp.Collections;
+using Datafeed.Web.App_Data;
 using Zen.RPC.Common;
 using Zen.RPC;
-using System.Web.Configuration;
-using Microsoft.FSharp.Core;
-using Sodium;
-using Datafeed.Web.App_Data;
+using Datafeed.Web.App_Code;
 
 namespace Datafeed.Web.Controllers
 {
     public class HomeController : Controller
     {
 		StockAPI _StockAPI = new StockAPI();
-		string _address = WebConfigurationManager.AppSettings["node"];
 
 		public ActionResult Index()
 		{
 			byte[] contractHash;
 			byte[] privateKey;
 
-            if (!EnsureOracle(out contractHash, out privateKey))
+			if (!Utils.EnsureFunds())
+            {
+                ViewBag.Message = "No funds";
+                return View(new List<Commitment>());
+            }
+            else if (!Utils.EnsureOracle(out contractHash, out privateKey))
             {
                 ViewBag.Message = "Could not setup the contract";
                 return View(new List<Commitment>());
@@ -65,7 +63,7 @@ namespace Datafeed.Web.Controllers
 			byte[] contractHash;
 			byte[] privateKey;
 
-			if (!EnsureOracle(out contractHash, out privateKey))
+			if (!Utils.EnsureOracle(out contractHash, out privateKey))
 			{
 				ViewData["Result"] = false;
 				ViewData["Message"] = "Could not setup the contract";
@@ -81,7 +79,7 @@ namespace Datafeed.Web.Controllers
             var secret = new byte[] { 0x00, 0x01, 0x02 }; // System. WebConfigurationManager.AppSettings["secret"];
             var commitmentData = ContractExamples.Oracle.commitments(items, secret);
 
-            var getOutpointsResult = await Client.Send<GetContractPointedOutputsResultPayload>(_address, new GetContractPointedOutputsPayload() { ContractHash = contractHash });
+            var getOutpointsResult = await Client.Send<GetContractPointedOutputsResultPayload>(Utils.NodeRPCAddress, new GetContractPointedOutputsPayload() { ContractHash = contractHash });
 
             if (!getOutpointsResult.Success || getOutpointsResult.PointedOutputs.Count == 0)
             {
@@ -108,7 +106,7 @@ namespace Datafeed.Web.Controllers
 
             data = data.Concat(signiture).ToArray();
 
-            var sendContractResult = await Client.Send<SendContractResultPayload>(_address, new SendContractPayload()
+            var sendContractResult = await Client.Send<SendContractResultPayload>(Utils.NodeRPCAddress, new SendContractPayload()
             {
                 ContractHash = contractHash,
                 Data = data
@@ -139,88 +137,5 @@ namespace Datafeed.Web.Controllers
 
  			return View();
 		}
-
-        bool EnsureOracle(out byte[] contractHash, out byte[] privateKey)
-        {
-            byte[] publicKey;
-
-            contractHash = null;
-
-			if (!System.IO.File.Exists("oracle-key.txt"))
-            {
-				var keyPair = PublicKeyAuth.GenerateKeyPair();
-                privateKey = keyPair.PrivateKey;
-                publicKey = keyPair.PublicKey;
-                System.IO.File.WriteAllText("oracle-key.txt", Convert.ToBase64String(keyPair.PrivateKey) + " " + Convert.ToBase64String(keyPair.PublicKey));
-            } else {
-                var data = System.IO.File.ReadAllText("oracle-key.txt");
-                var parts = data.Split(null);
-                privateKey = Convert.FromBase64String(parts[0]);
-				publicKey = Convert.FromBase64String(parts[1]);
-            }
-
-            if (System.IO.File.Exists("oracle-contract.txt"))
-            {
-                var existingContractHash = System.IO.File.ReadAllText("oracle-contract.txt");
-
-                var acsResult = Client.Send<GetACSResultPayload>(_address, new GetACSPayload()).Result;
-
-                if (!acsResult.Success)
-                {
-                    return false;
-                }
-
-                var contactDataArr = acsResult.Contracts.Where(t => Convert.ToBase64String(t.Hash) == existingContractHash).ToList();
-
-                if (contactDataArr.Count == 0)
-                {
-                    System.IO.File.Delete("oracle-contract.txt");
-                }
-                else 
-                {
-                    contractHash = contactDataArr[0].Hash;
-                }
-            }
-
-            if (contractHash == null)
-            {
-				var @params = new ContractExamples.QuotedContracts.OracleParameters(publicKey);
-				var contract = ContractExamples.QuotedContracts.oracleFactory(@params);
-				var code = ContractExamples.Execution.quotedToString(contract);
-
-                contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(code));
-
-                var activateContractResult = Client.Send<ResultPayload>(_address, new ActivateContractPayload() { Code = code, Blocks = 100 }).Result;
-
-                if (!activateContractResult.Success)
-                {
-                    return false;
-                }
-
-                System.IO.File.WriteAllText("oracle-contract.txt", Convert.ToBase64String(contractHash));
-            }
-
-			var contractAddress = new Wallet.core.Data.Address(contractHash, Wallet.core.Data.AddressType.Contract);
-
-			var getOutpointsResult = 
-                Client.Send<GetContractPointedOutputsResultPayload>(_address, new GetContractPointedOutputsPayload() { ContractHash = contractHash }).Result;
-
-            if (!getOutpointsResult.Success)
-            {
-                return false;
-            }
-
-            if (getOutpointsResult.PointedOutputs.Count == 0)
-			{
-                var sendContractResult = Client.Send<ResultPayload>(_address, new SpendPayload() { Address = contractAddress.ToString(), Amount = 1 }).Result;
-
-                if (!sendContractResult.Success)
-                {
-                    return false;
-                }
-			}
-
-            return true;
-        }
     }
 }
