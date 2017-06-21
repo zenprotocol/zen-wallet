@@ -85,6 +85,7 @@ namespace BlockChain
             }
             catch (Exception e)
             {
+                BlockChainTrace.Information("Error compiling contract");
                 return false;
             }
 
