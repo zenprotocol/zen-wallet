@@ -790,7 +790,7 @@ namespace BlockChain
 
 				Func<Types.Outpoint, FSharpOption<Types.Output>> getUTXO = t =>
 				{
-					return GetUTXO(t, dbTx, isInBlock);
+                    return new FSharpOption<Types.Output>(GetUTXO(t, dbTx, isInBlock));
 				};
 
 				var contractArgs = new ContractArgs()
