@@ -20,7 +20,13 @@ namespace Wallet.core
 			base.Add(txDelta);
 		}
 
-        public AssetDeltas AssetDeltas {
+        public new void AddRange(IEnumerable<TxDelta> txDeltas)
+		{
+            foreach (var txDelta in txDeltas)
+    			Add(txDelta);
+		}
+
+		public AssetDeltas AssetDeltas {
             get
             {
                 var assetDeltas = new AssetDeltas();
