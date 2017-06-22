@@ -173,6 +173,7 @@ namespace BlockChain
 
 					blockChain.ChainTip.Context(dbTx).Value = fork.Key;
 					blockChain.Tip = fork;
+                    blockChain.InitBlockTimestamps();
 
 					var oldMainChain = GetOldMainChainStartFromLeafToFork(fork, originalTip.Key);
 
