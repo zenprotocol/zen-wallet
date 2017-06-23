@@ -1,7 +1,10 @@
 {
   "PeersToFind": 1,
   "MaximumNodeConnection": 1,
-  "DefaultPort": 9999,
+  "DefaultPort": 9998,
   "Magic": 0,
+  "Seeds": [
+    "192.168.2.100"
+  ],
   "IsLANClient": true
 }
