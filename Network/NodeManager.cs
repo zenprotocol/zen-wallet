@@ -52,8 +52,11 @@ namespace Network
 			{
 				ipAddress = null;
 				networkInfo.PeersToFind = 1;
-				networkInfo.Seeds.Clear();
-				networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
+
+                if (networkInfo.Seeds.Count == 0 && !networkInfo.Seeds.Contains(natManager.InternalIPAddress.ToString()))
+                {
+                    networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
+                }
 			}
 			else
 #endif
