@@ -9,18 +9,34 @@ using Microsoft.FSharp.Core;
 
 namespace BlockChain
 {
-	public class BlockVerificationHelper
-	{
-		public BkResultEnum Result { get; set; }
-		public readonly HashDictionary<TransactionValidation.PointedTransaction> ConfirmedTxs;
-		public readonly HashDictionary<Types.Transaction> UnconfirmedTxs;
-		public readonly List<QueueAction> QueuedActions;
+    public class BlockVerificationHelper
+    {
+        public BkResult Result { get; set; }
+        public readonly HashDictionary<TransactionValidation.PointedTransaction> ConfirmedTxs;
+        public readonly HashDictionary<Types.Transaction> UnconfirmedTxs;
+        public readonly List<QueueAction> QueuedActions;
 
 		public enum BkResultEnum
 		{
 			Accepted,
 			AcceptedOrphan,
 			Rejected
+		}
+
+        //TODO: refactor using C# 7.0 and sub-classing each case
+		public class BkResult
+        {
+            public BkResultEnum BkResultEnum { get; set; }
+            public byte[] MissingOrphan { get; set; }
+
+            public BkResult(BkResultEnum bkResultEnum) {
+                BkResultEnum = bkResultEnum;
+            }
+
+            public BkResult(BkResultEnum bkResultEnum, byte[] missingOrphan) : this(bkResultEnum)
+			{
+				MissingOrphan = missingOrphan;
+			}
 		}
 
 		BlockChain _BlockChain;
@@ -52,7 +68,7 @@ namespace BlockChain
 			if (!IsValid())
 			{
 				BlockChainTrace.Information("not valid", bk);
-				Result = BkResultEnum.Rejected;
+                Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
@@ -75,8 +91,7 @@ namespace BlockChain
 
 				if (reject)
 				{
-					BlockChainTrace.Information("block already in store: " + blockChain.BlockStore.GetLocation(dbTx, bkHash), bkHash);
-					Result = BkResultEnum.Rejected;
+					Result = new BkResult(BkResultEnum.Rejected);
 					return;
 				}
 			}
@@ -84,14 +99,14 @@ namespace BlockChain
 			if (bk.transactions.Count() == 0)
 			{
 				BlockChainTrace.Information("empty tx list", bkHash);
-				Result = BkResultEnum.Rejected;
+				Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
 			if (!IsValidTime())
 			{
 				BlockChainTrace.Information("invalid time", bkHash);
-				Result = BkResultEnum.Rejected;
+				Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
@@ -112,14 +127,14 @@ namespace BlockChain
 				if (!IsGenesisValid())
 				{
 					BlockChainTrace.Information("invalid genesis block", _Bk);
-					Result = BkResultEnum.Rejected;
+					Result = new BkResult(BkResultEnum.Rejected);
 					return;
 				}
 				else
 				{
 					blockChain.Timestamps.Init(bk.header.timestamp);
 					ExtendMain(QueuedActions, 0);
-					Result = BkResultEnum.Accepted;
+					Result = new BkResult(BkResultEnum.Accepted);
 					BlockChainTrace.Information("accepted genesis block", _Bk);
 					return;
 				}
@@ -127,9 +142,10 @@ namespace BlockChain
 
 			if (IsOrphan())
 			{
+                var missingOrphan = GetMissingOrphan();
 				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
-				BlockChainTrace.Information("block added as orphan", _Bk);
-				Result = BkResultEnum.AcceptedOrphan;
+                BlockChainTrace.Information($"block {_Bk.header.blockNumber} added as orphan");
+                Result = new BkResult(BkResultEnum.AcceptedOrphan, missingOrphan);
 				return;
 			}
 
@@ -138,7 +154,7 @@ namespace BlockChain
 			if (!IsValidDifficulty() || !IsValidBlockNumber() || !IsValidTimeStamp())
 			{
 				BlockChainTrace.Information("block rejected", _Bk);
-				Result = BkResultEnum.Rejected;
+				Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
@@ -150,7 +166,7 @@ namespace BlockChain
 			{
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
-					Result = BkResultEnum.Rejected;
+					Result = new BkResult(BkResultEnum.Rejected);
 					return;
 				}
 			}
@@ -173,7 +189,7 @@ namespace BlockChain
 
 					blockChain.ChainTip.Context(dbTx).Value = fork.Key;
 					blockChain.Tip = fork;
-                    blockChain.InitBlockTimestamps();
+                    blockChain.InitBlockTimestamps(dbTx);
 
 					var oldMainChain = GetOldMainChainStartFromLeafToFork(fork, originalTip.Key);
 
@@ -198,14 +214,14 @@ namespace BlockChain
 						
 						BlockChainTrace.Information($"new main chain bk {_bk.Value.header.blockNumber} {action.Result}", _bk.Value);
 
-						if (action.Result == BkResultEnum.Rejected)
+						if (action.Result.BkResultEnum == BkResultEnum.Rejected)
 						{
 							blockChain.ChainTip.Context(dbTx).Value = originalTip.Key;
 							blockChain.Tip = originalTip;
-							blockChain.InitBlockTimestamps();
+							blockChain.InitBlockTimestamps(dbTx);
 
 							BlockChainTrace.Information("undo reorganization", _bk.Value);
-							Result = BkResultEnum.Rejected;
+							Result = new BkResult(BkResultEnum.Rejected);
 							return;
 						}
 					}
@@ -220,13 +236,13 @@ namespace BlockChain
 				if (!ExtendMain(QueuedActions, totalWork))
 				{
 					BlockChainTrace.Information("block rejected", _Bk);
-					Result = BkResultEnum.Rejected;
+					Result = new BkResult(BkResultEnum.Rejected);
 					return;
 				}
 			}
 
 			BlockChainTrace.Information("block accepted", _Bk);
-			Result = BkResultEnum.Accepted;
+            Result = new BkResult(BkResultEnum.Accepted);
 		}
 
 		bool ExtendMain(List<QueueAction> queuedActions, double totalWork)
@@ -391,7 +407,25 @@ namespace BlockChain
 
 		bool IsOrphan()
 		{
-			return !_BlockChain.BlockStore.ContainsKey(_DbTx, _Bk.header.parent);
+            return !_BlockChain.BlockStore.ContainsKey(_DbTx, _Bk.header.parent) || 
+               _BlockChain.BlockStore.IsLocation(_DbTx, _Bk.header.parent, LocationEnum.Orphans);
+		}
+
+        byte[] GetMissingOrphan()
+        {
+            var blockItr = _Bk.header.parent;
+
+            while (true)
+            {
+                var block = _BlockChain.BlockStore.Get(_DbTx, blockItr);
+
+                if (block == null)
+                {
+                    return blockItr;
+                }
+
+				blockItr = block.Value.parent;
+			}
 		}
 
 		bool IsInStore()

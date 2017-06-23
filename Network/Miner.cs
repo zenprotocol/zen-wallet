@@ -16,7 +16,7 @@ namespace Network
 		public uint BlockNumber { get; set; }
 		public int Transactions { get; set; }
 		public double TimeToMine { get; set; }
-		public BlockChain.BlockVerificationHelper.BkResultEnum Status { get; set; }
+		public BlockChain.BlockVerificationHelper.BkResult Status { get; set; }
 	}
 
     public class Miner : IDisposable
@@ -162,7 +162,7 @@ namespace Network
 
 				var result = BlockChain_.HandleBlock(block).Result;
 
-				var accepted = result == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+                var accepted = result.BkResultEnum == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 				log.Status = result;
 
 				if (accepted && BlockBroadcastHub != null)

@@ -51,7 +51,7 @@ namespace NBitcoin.Protocol.Behaviors
 			message.IfPayloadIs<Types.Block>(async bk =>
 			{
 				var result = await _BlockChain.HandleBlock(bk);
-				switch (result)
+				switch (result.BkResultEnum)
 				{
 					case BlockChain.BlockVerificationHelper.BkResultEnum.Accepted:
 						foreach (var other in Nodes)
@@ -62,7 +62,7 @@ namespace NBitcoin.Protocol.Behaviors
 						break;
 					case BlockChain.BlockVerificationHelper.BkResultEnum.AcceptedOrphan:
 						node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
-							new InventoryVector(InventoryType.MSG_BLOCK, bk.header.parent)
+                            new InventoryVector(InventoryType.MSG_BLOCK, result.MissingOrphan)
 						}));
 						break;
 					case BlockChain.BlockVerificationHelper.BkResultEnum.Rejected:

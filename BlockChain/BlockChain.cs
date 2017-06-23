@@ -86,9 +86,9 @@ namespace BlockChain
 
 				//TODO: check if makred as main?
 				Tip = chainTip == null ? null : BlockStore.GetBlock(context, chainTip);
-			}
 
-			InitBlockTimestamps();
+				InitBlockTimestamps(context);
+			}
 
 			var listener = new EventLoopMessageListener<QueueAction>(HandleQueueAction, "BlockChain listener");
 
@@ -304,14 +304,15 @@ namespace BlockChain
 			return true;
 		}
 
-		public Task<BkResultEnum> HandleBlock(Types.Block bk)
+		public Task<BkResult> HandleBlock(Types.Block bk)
 		{
 			return new HandleBlockAction(bk).Publish();
 		}
 
-		BlockVerificationHelper.BkResultEnum HandleBlock(HandleBlockAction a)
+		BlockVerificationHelper.BkResult HandleBlock(HandleBlockAction a)
 		{
 			BlockVerificationHelper action = null;
+            var orphans = new List<Keyed<Types.Block>>();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
@@ -323,7 +324,7 @@ namespace BlockChain
 					a.IsOrphan
 				);
 
-				switch (action.Result)
+				switch (action.Result.BkResultEnum)
 				{
 					case BlockVerificationHelper.BkResultEnum.AcceptedOrphan:
 						dbTx.Commit();
@@ -335,11 +336,10 @@ namespace BlockChain
 						return action.Result;
 				}
 
-				foreach (var _bk in BlockStore.Orphans(dbTx, a.BkHash))
-				{
-					new HandleBlockAction(_bk.Key, _bk.Value, true).Publish();
-				}
+                orphans = BlockStore.Orphans(dbTx, a.BkHash).ToList();
 			}
+
+            orphans.ForEach(t => new HandleBlockAction(t.Key, t.Value, true).Publish());
 
 			action.QueuedActions.ForEach(t =>
 			{
@@ -627,17 +627,27 @@ namespace BlockChain
 		//	return xValid(ptx, contractHash, utxos, tipBlockHeader);
 		//}
 
-		public void InitBlockTimestamps()
+        public void InitBlockTimestamps(TransactionContext dbTx)
 		{
 			if (Tip != null)
 			{
 				var timestamps = new List<long>();
-				var itr = Tip == null ? null : Tip.Value;
+				var itr = Tip.Value;
 
 				while (itr != null && timestamps.Count < BlockTimestamps.SIZE)
 				{
 					timestamps.Add(itr.header.timestamp);
-					itr = itr.header.parent.Length == 0 ? null : GetBlock(itr.header.parent);
+
+                    if (itr.header.parent.Length == 0)
+                    {
+                        break;
+                    }
+
+                    var bk = BlockStore.GetBlock(dbTx, itr.header.parent);
+
+                    System.Diagnostics.Debug.Assert(bk != null);
+
+                    itr = bk.Value;
 				}
 				Timestamps.Init(timestamps.ToArray());
 			}

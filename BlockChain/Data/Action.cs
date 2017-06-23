@@ -55,7 +55,7 @@ namespace BlockChain.Data
 		}
 	}
 
-	public class HandleBlockAction : AsyncQueueAction<BkResultEnum>
+	public class HandleBlockAction : AsyncQueueAction<BkResult>
 	{
 		public byte[] BkHash { get; set; }
 		public Types.Block Bk { get; set; }

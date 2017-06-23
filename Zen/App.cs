@@ -174,7 +174,7 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
-			return AppBlockChain.HandleBlock(block).Result == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+            return AppBlockChain.HandleBlock(block).Result.BkResultEnum == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
 		public void MineTestBlock()
