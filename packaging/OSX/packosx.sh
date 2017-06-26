@@ -22,7 +22,10 @@ cd ..
 mkdir Resources
 cd Resources
 
-ZENPATH=../../../../../Zen/bin/Debug
+MODE="${1:-Debug}"
+echo "Packing $MODE mode"
+
+ZENPATH="../../../../../Zen/bin/$MODE"
 
 cp $ZENPATH/*.dll ./
 cp $ZENPATH/zen.exe ./
