@@ -116,7 +116,7 @@ namespace Zen
                     TUI.Start(app);
 					break;
 				case LaunchModeEnum.GUI:
-                    app.GUI();
+                    app.GUI(true);
 					break;
 				case LaunchModeEnum.Headless:
                     Console.WriteLine("Running headless.");

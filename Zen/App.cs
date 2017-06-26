@@ -24,8 +24,8 @@ namespace Zen
 	{
 		public Settings Settings { get; set; }
 
-		Action<TxDeltaItemsEventArgs> _WalletOnItemsHandler;
-		public Action<TxDeltaItemsEventArgs> WalletOnItemsHandler
+        Action<List<TxDelta>> _WalletOnItemsHandler;
+		public Action<List<TxDelta>> WalletOnItemsHandler
 		{
 			get
 			{
@@ -39,25 +39,6 @@ namespace Zen
 				{
 					_WalletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
 					_WalletManager.OnItems += WalletOnItemsHandler;
-				}
-			}
-		}
-
-		Action<ResetEventArgs> _WalletOnResetHandler;
-		public Action<ResetEventArgs> WalletOnResetHandler
-		{
-			get
-			{
-				return _WalletOnResetHandler;
-			}
-			set
-			{
-				_WalletOnResetHandler = value;
-
-				if (_WalletManager != null)
-				{
-					_WalletManager.OnReset -= WalletOnResetHandler; // ensure single registration
-					_WalletManager.OnReset += WalletOnResetHandler;
 				}
 			}
 		}
@@ -102,8 +83,6 @@ namespace Zen
 		{
 			var walletManager = new WalletManager(blockChain, WalletDB);
 
-			walletManager.OnReset -= WalletOnResetHandler; // ensure single registration
-			walletManager.OnReset += WalletOnResetHandler;
 			walletManager.OnItems -= WalletOnItemsHandler; // ensure single registration
 			walletManager.OnItems += WalletOnItemsHandler;
 
@@ -394,8 +373,11 @@ namespace Zen
 			_CanConnect = false;
 		}
 
-		public void GUI()
+		public void GUI(bool shutdownOnClose)
 		{
+            if (shutdownOnClose)
+                Wallet.App.Instance.OnClose += Stop;
+            
 			Wallet.App.Instance.Start(WalletManager, NodeManager);
 		}
 
@@ -635,6 +617,23 @@ namespace Zen
             return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
+        public long CalcBalance(byte[] asset)
+        {
+            var txDeltaList = new List<TxDelta>();
+
+            Action<TxDelta> addTxDelta = (TxDelta txDelta) =>
+            {
+				txDeltaList
+				.Where(t => t.TxHash.SequenceEqual(txDelta.TxHash))
+				.ToList()
+				.ForEach(t => txDeltaList.Remove(t));
+
+				txDeltaList.Add(txDelta);
+            };
+
+            WalletManager.TxDeltaList.ForEach(addTxDelta);
+
+            return txDeltaList.Select(t => t.AssetDeltas).Sum(t=>t.ContainsKey(asset) ? t[asset] : 0);
+        }
 	}
 }
-

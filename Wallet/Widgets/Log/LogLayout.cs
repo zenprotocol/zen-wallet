@@ -13,98 +13,60 @@ namespace Wallet
 	}
 	
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class LogLayout : Gtk.Bin, IAssetsView
+	public partial class LogLayout : WidgetBase, IAssetsView
 	{
-		int _SelectedIdx = 0;
-		ListStore _ComboboxStore;
+        public AssetsController AssetsController { get; set; }
+        UpdatingStore<byte[]> _AssetsStore = new UpdatingStore<byte[]>(0, typeof(byte[]), typeof(string));
+
+        static byte[] _CurrentAsset = Consensus.Tests.zhash;
+        public static byte[] CurrentAsset
+        {
+            get { return _CurrentAsset; }
+            set { _CurrentAsset = value; }
+        }
 
 		public LogLayout()
 		{
 			this.Build();
+
+            CurrentAsset = Consensus.Tests.zhash;
+            AssetsController = new AssetsController(this);
+
 			label1.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text.Gdk);
 
-            _ComboboxStore = new ListStore(typeof(byte[]), typeof(string));
-
-            comboboxAsset.Model = _ComboboxStore;
+            comboboxAsset.Model = _AssetsStore;
 			var textRenderer = new CellRendererText();
             comboboxAsset.PackStart(textRenderer, false);
 			comboboxAsset.AddAttribute(textRenderer, "text", 1);
 
-			Gtk.TreeIter iter;
-			comboboxAsset.Model.IterNthChild(out iter, _SelectedIdx);
-			comboboxAsset.SetActiveIter(iter);
-
 			comboboxAsset.Changed += (sender, e) =>
 			{
-				var comboBox = sender as Gtk.ComboBox;
-
-				comboBox.GetActiveIter(out iter);
-				var value = new GLib.Value();
-				comboBox.Model.GetValue(iter, 0, ref value);
-                byte[] _asset = value.Val as byte[];
-                BalancesController.Instance.Asset = _asset;
+				var ctl = sender as ComboBox;
+				TreeIter iter;
+				if (ctl.GetActiveIter(out iter))
+					FindChild<Log>().SelectedAsset = (byte[])ctl.Model.GetValue(iter, 0);
 			};
 
-			BalancesController.Instance.AssetsView = this;
+            TreeIter iterDefault;
+            if (_AssetsStore.Find(t => t.SequenceEqual(Consensus.Tests.zhash), out iterDefault))
+                comboboxAsset.SetActiveIter(iterDefault);
 		}
 
 		public AssetMetadata AssetUpdated
-		{
-			set
+        {
+            set
             {
-                Gtk.Application.Invoke(delegate
-				{
-				    try
-				    {
-				        TreeIter iter;
-				        _ComboboxStore.GetIterFirst(out iter);
-				        bool found = false;
-
-				        do
-				        {
-				            var key = new GLib.Value();
-				            _ComboboxStore.GetValue(iter, 0, ref key);
-				            byte[] _asset = key.Val as byte[];
-
-				            if (_asset != null && _asset.SequenceEqual(value.Asset))
-				            {
-				                _ComboboxStore.SetValue(iter, 1, value.Display);
-				                found = true;
-				                break;
-				            }
-				        } while (_ComboboxStore.IterNext(ref iter));
-
-				        if (!found)
-				        {
-				            _ComboboxStore.AppendValues(value.Asset, value.Display);
-				        }
-				    }
-				    catch
-				    {
-				        Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
-				    }
-				});
+                _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
             }
-		}
+        }
 
 		public ICollection<AssetMetadata> Assets
 		{
 			set
 			{
-				var i = 0;
-
 				foreach (var _asset in value)
 				{
-					if (_asset.Asset.SequenceEqual(WalletController.Instance.Asset))
-					{
-						_SelectedIdx = i;
-					}
-					else
-					{
-						i++;
-					}
-
-					_ComboboxStore.AppendValues(_asset.Asset, _asset.Display);
+					_AssetsStore.AppendValues(_asset.Asset, _asset.Display);
 				}
 			}
 		}

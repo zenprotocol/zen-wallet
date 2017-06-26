@@ -6,7 +6,8 @@ namespace Wallet
 {
 	public class App : Singleton<App>
 	{
-		private Gtk.Window _MainWindow;
+        public event Action OnClose;
+		Gtk.Window _MainWindow;
 		public WalletManager Wallet { get; private set; }
 		public Network.NodeManager Node { get; private set; }
 
@@ -41,8 +42,11 @@ namespace Wallet
 		{
 			_MainWindow.Hide();
 			Gtk.Application.Quit();
-			//	a.RetVal = true;
-			//	Hide();
+            //	a.RetVal = true;
+            //	Hide();
+
+            if (OnClose != null)
+                OnClose();
 		}
 	}
 }

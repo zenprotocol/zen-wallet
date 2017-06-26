@@ -154,7 +154,6 @@
                     <child>
                       <widget class="Gtk.Label" id="labelAmount">
                         <property name="MemberName" />
-                        <property name="LabelProp" translatable="yes" />
                       </widget>
                       <packing>
                         <property name="Position">0</property>
@@ -628,7 +627,6 @@
                 <child>
                   <widget class="Gtk.Label" id="labelStatus">
                     <property name="MemberName" />
-                    <property name="LabelProp" translatable="yes" />
                   </widget>
                   <packing>
                     <property name="Position">2</property>
@@ -913,7 +911,6 @@
             <child>
               <widget class="Gtk.Label" id="labelZen">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">1</property>
@@ -986,7 +983,6 @@
               <widget class="Gtk.Label" id="label4">
                 <property name="MemberName" />
                 <property name="WidthRequest">50</property>
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">0</property>
@@ -1166,7 +1162,6 @@
           <widget class="Gtk.Label" id="label2">
             <property name="MemberName" />
             <property name="WidthRequest">100</property>
-            <property name="LabelProp" translatable="yes" />
           </widget>
           <packing>
             <property name="Position">2</property>
@@ -1225,7 +1220,6 @@
         <child>
           <widget class="Gtk.Label" id="labelMessage">
             <property name="MemberName" />
-            <property name="LabelProp" translatable="yes" />
           </widget>
           <packing>
             <property name="Position">3</property>
@@ -1678,7 +1672,6 @@
         <child>
           <widget class="Gtk.Label" id="label1">
             <property name="MemberName" />
-            <property name="LabelProp" translatable="yes" />
           </widget>
           <packing>
             <property name="Position">0</property>
@@ -1757,7 +1750,6 @@
             <child>
               <widget class="Gtk.Label" id="label3">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">0</property>
@@ -1798,7 +1790,6 @@
             <child>
               <widget class="Gtk.Label" id="labelKalapas">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">3</property>
@@ -1810,7 +1801,6 @@
             <child>
               <widget class="Gtk.Label" id="label5">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">4</property>
@@ -1911,7 +1901,6 @@
             <child>
               <widget class="Gtk.Label" id="labelStatus">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">1</property>
@@ -1948,7 +1937,6 @@
               <widget class="Gtk.Label" id="label4">
                 <property name="MemberName" />
                 <property name="WidthRequest">50</property>
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">0</property>
@@ -2014,7 +2002,6 @@
         <child>
           <widget class="Gtk.Label" id="labelStatus">
             <property name="MemberName" />
-            <property name="LabelProp" translatable="yes" />
           </widget>
           <packing>
             <property name="Position">2</property>
@@ -2102,7 +2089,6 @@
           <widget class="Gtk.Label" id="label2">
             <property name="MemberName" />
             <property name="WidthRequest">100</property>
-            <property name="LabelProp" translatable="yes" />
           </widget>
           <packing>
             <property name="Position">2</property>
@@ -2473,7 +2459,6 @@
             <child>
               <widget class="Gtk.Label" id="label5">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">0</property>
@@ -2578,7 +2563,6 @@
             <child>
               <widget class="Gtk.Label" id="label5">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">0</property>
@@ -2641,7 +2625,6 @@
                         <child>
                           <widget class="Gtk.Label" id="labelDestinationError">
                             <property name="MemberName" />
-                            <property name="LabelProp" translatable="yes" />
                           </widget>
                           <packing>
                             <property name="PackType">End</property>
@@ -2819,7 +2802,6 @@
                         <child>
                           <widget class="Gtk.Label" id="labelDataError">
                             <property name="MemberName" />
-                            <property name="LabelProp" translatable="yes" />
                           </widget>
                           <packing>
                             <property name="PackType">End</property>
@@ -3072,7 +3054,6 @@
                         <child>
                           <widget class="Gtk.Label" id="labelAmountError">
                             <property name="MemberName" />
-                            <property name="LabelProp" translatable="yes" />
                           </widget>
                           <packing>
                             <property name="PackType">End</property>
@@ -3111,7 +3092,6 @@
                         <child>
                           <widget class="Gtk.Label" id="labelBalanceValue">
                             <property name="MemberName" />
-                            <property name="LabelProp" translatable="yes" />
                           </widget>
                           <packing>
                             <property name="Position">1</property>
@@ -3202,7 +3182,6 @@
             <child>
               <widget class="Gtk.Label" id="label5">
                 <property name="MemberName" />
-                <property name="LabelProp" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">0</property>
@@ -3435,7 +3414,6 @@
                     <child>
                       <widget class="Gtk.Label" id="labelAmountValue">
                         <property name="MemberName" />
-                        <property name="LabelProp" translatable="yes" />
                       </widget>
                       <packing>
                         <property name="Position">1</property>

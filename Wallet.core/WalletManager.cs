@@ -26,11 +26,10 @@ namespace Wallet.core
         //TODO: consider not using thread loops - * watchout from dbreeze threading limitation
         private EventLoopMessageListener<BlockChainMessage> _BlockChainListener;
 
-        public AggregatingTxDeltaItemsEventArgs TxDeltaList { get; private set; }
+        public List<TxDelta> TxDeltaList { get; private set; }
         public AssetsMetadata AssetsMetadata { get; private set; }
-            
-        public event Action<ResetEventArgs> OnReset;
-        public event Action<TxDeltaItemsEventArgs> OnItems;
+
+        public event Action<List<TxDelta>> OnItems;
 
         public WalletManager(BlockChain.BlockChain blockChain, string dbName)
         {
@@ -41,7 +40,7 @@ namespace Wallet.core
             _KeyStore = new KeyStore();
             _TxStore = new TxStore();
 
-            TxDeltaList = new AggregatingTxDeltaItemsEventArgs();
+            TxDeltaList = new List<TxDelta>();
             AssetsMetadata = new AssetsMetadata();
 
             _BlockChainListener = new EventLoopMessageListener<BlockChainMessage>(OnBlockChainMessage);
@@ -137,15 +136,15 @@ namespace Wallet.core
                 dbTx.Commit();
             }
 
-            if (OnReset != null)
-                OnReset(new ResetEventArgs() { TxDeltaList = TxDeltaList });
+            if (OnItems != null)
+                OnItems(TxDeltaList);
 
             _BlockChainListener.Continue();
         }
 
         private void OnBlockChainMessage(BlockChainMessage m)
         {
-            var deltas = new TxDeltaItemsEventArgs();
+            var deltas = new List<TxDelta>();
 
             using (var dbTx = _DBContext.GetTransactionContext())
             {
@@ -175,7 +174,7 @@ namespace Wallet.core
             }
         }
 
-        private void HandleTx(TransactionContext dbTx, byte[] txHash, TransactionValidation.PointedTransaction ptx, TxDeltaItemsEventArgs deltas, TxStateEnum txState)
+        private void HandleTx(TransactionContext dbTx, byte[] txHash, TransactionValidation.PointedTransaction ptx, List<TxDelta> deltas, TxStateEnum txState)
         {
             var isValid = txState != TxStateEnum.Invalid;
             var _deltas = new AssetDeltas();

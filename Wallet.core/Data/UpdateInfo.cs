@@ -6,50 +6,6 @@ using System.Linq;
 
 namespace Wallet.core
 {
-	public class ResetEventArgs
-	{
-		public TxDeltaItemsEventArgs TxDeltaList { get; set; }
-	}
-
-    public class AggregatingTxDeltaItemsEventArgs : TxDeltaItemsEventArgs
-    {
-		public new void Add(TxDelta txDelta)
-		{
-			this.Where(t => t.TxHash.SequenceEqual(txDelta.TxHash)).ToList().ForEach(t=>Remove(t));
-
-			base.Add(txDelta);
-		}
-
-        public new void AddRange(IEnumerable<TxDelta> txDeltas)
-		{
-            foreach (var txDelta in txDeltas)
-    			Add(txDelta);
-		}
-
-		public AssetDeltas AssetDeltas {
-            get
-            {
-                var assetDeltas = new AssetDeltas();
-
-				ForEach(t => {
-                    foreach (var item in t.AssetDeltas) {
-				        if (!assetDeltas.ContainsKey(item.Key))
-				            assetDeltas[item.Key] = 0;
-
-				        assetDeltas[item.Key] += item.Value;
-					}
-				});
-
-                return assetDeltas;
-            }
-        }
-	}
-
-	public class TxDeltaItemsEventArgs : List<TxDelta>
-	{
-
-	}
-
 	public class AssetDeltas : HashDictionary<long>
 	{
         

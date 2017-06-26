@@ -126,7 +126,6 @@ namespace Wallet
 			// Container child hboxTop.Gtk.Box+BoxChild
 			this.label5 = new global::Gtk.Label();
 			this.label5.Name = "label5";
-			this.label5.LabelProp = "";
 			this.hboxTop.Add(this.label5);
 			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hboxTop[this.label5]));
 			w1.Position = 0;
@@ -176,7 +175,6 @@ namespace Wallet
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.labelDestinationError = new global::Gtk.Label();
 			this.labelDestinationError.Name = "labelDestinationError";
-			this.labelDestinationError.LabelProp = "";
 			this.hbox2.Add(this.labelDestinationError);
 			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.labelDestinationError]));
 			w5.PackType = ((global::Gtk.PackType)(1));
@@ -310,7 +308,6 @@ namespace Wallet
 			// Container child hbox5.Gtk.Box+BoxChild
 			this.labelDataError = new global::Gtk.Label();
 			this.labelDataError.Name = "labelDataError";
-			this.labelDataError.LabelProp = "";
 			this.hbox5.Add(this.labelDataError);
 			global::Gtk.Box.BoxChild w20 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.labelDataError]));
 			w20.PackType = ((global::Gtk.PackType)(1));
@@ -500,7 +497,6 @@ namespace Wallet
 			// Container child hbox6.Gtk.Box+BoxChild
 			this.labelAmountError = new global::Gtk.Label();
 			this.labelAmountError.Name = "labelAmountError";
-			this.labelAmountError.LabelProp = "";
 			this.hbox6.Add(this.labelAmountError);
 			global::Gtk.Box.BoxChild w42 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.labelAmountError]));
 			w42.PackType = ((global::Gtk.PackType)(1));
@@ -530,7 +526,6 @@ namespace Wallet
 			// Container child hbox8.Gtk.Box+BoxChild
 			this.labelBalanceValue = new global::Gtk.Label();
 			this.labelBalanceValue.Name = "labelBalanceValue";
-			this.labelBalanceValue.LabelProp = "";
 			this.hbox8.Add(this.labelBalanceValue);
 			global::Gtk.Box.BoxChild w45 = ((global::Gtk.Box.BoxChild)(this.hbox8[this.labelBalanceValue]));
 			w45.Position = 1;

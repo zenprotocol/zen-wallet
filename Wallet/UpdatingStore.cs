@@ -14,9 +14,22 @@ namespace Wallet
 
 		public void Update(Predicate<TKey> keyMatchPredicate, params object[] values)
 		{
-			TreeIter iter;
+            TreeIter iter;
+            var found = Find(keyMatchPredicate, out iter);
+
+			if (found)
+            {
+                SetValues(iter, values);
+            }
+            else
+			{
+				AppendValues(values);
+			}
+		}
+
+        public bool Find(Predicate<TKey> keyMatchPredicate, out TreeIter iter)
+        {
 			var canIter = GetIterFirst(out iter);
-			var found = false;
 
 			while (canIter)
 			{
@@ -26,18 +39,13 @@ namespace Wallet
 
 				if (keyMatchPredicate(oValue))
 				{
-					SetValues(iter, values);
-					found = true;
-					break;
+                    return true;
 				}
 
 				canIter = IterNext(ref iter);
 			}
 
-			if (!found)
-			{
-				AppendValues(values);
-			}
-		}
+            return false;
+        }
 	}
 }

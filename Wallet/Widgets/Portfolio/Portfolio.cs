@@ -6,10 +6,17 @@ using Wallet.core;
 
 namespace Wallet
 {
+	public interface IPortfolioVIew : IDeltasVIew
+	{
+        AssetDeltas PortfolioDeltas { set; }
+	}
+
     [System.ComponentModel.ToolboxItem (true)]
     public partial class Portfolio : WidgetBase, IPortfolioVIew
     {
-        UpdatingStore<byte[]> listStore = new UpdatingStore<byte[]>(
+		readonly DeltasController _DeltasController;
+
+		UpdatingStore<byte[]> listStore = new UpdatingStore<byte[]>(
             0,
             typeof(byte[]),
             typeof(string),
@@ -20,7 +27,9 @@ namespace Wallet
         {
             this.Build ();
 
-            Apply((Label label) =>
+			_DeltasController = new DeltasController(this);
+
+			Apply((Label label) =>
             {
                 label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.SubText.Gdk);
                 label.ModifyFont(Constants.Fonts.ActionBarSmall);
@@ -32,8 +41,6 @@ namespace Wallet
                 label.ModifyFont(Constants.Fonts.ActionBarBig);
             }, labelZen);
 
-            PortfolioController.Instance.AddVIew(this);
-    
             ConfigureList();
 
             App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
@@ -71,7 +78,7 @@ namespace Wallet
 
             treeview1.RulesHint = true; //alternating colors
             treeview1.Selection.Mode = SelectionMode.Single;
-            treeview1.Selection.Changed += OnSelectionChanged;
+            //treeview1.Selection.Changed += OnSelectionChanged;
             treeview1.BorderWidth = 0;
             treeview1.HeadersVisible = false;
             treeview1.ModifyBase(Gtk.StateType.Active, Constants.Colors.Base.Gdk);
@@ -86,10 +93,6 @@ namespace Wallet
             treeview1.AppendColumn(col);
         }
 
-        void OnSelectionChanged(object sender, EventArgs e)
-        {
-        }
-
         void RenderCell(Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)
         {
             var rowRenderer = cellRenderer as RowRenderer;
@@ -98,31 +101,25 @@ namespace Wallet
             rowRenderer.Value = (long)model.GetValue(iter, 2);
         }
 
-        public AssetDeltas AssetDeltas
-        {
-            get
+        public AssetDeltas PortfolioDeltas 
+        { 
+            set 
             {
-                return null;
-            }
-        }
+				listStore.Clear();
+				labelZen.Text = "";
 
-        public void Clear()
-        {
-        }
-
-        public void SetPortfolioDeltas(AssetDeltas assetDeltas)
-        {
-            foreach (var item in assetDeltas)
-            {
-                if (item.Key.SequenceEqual(Consensus.Tests.zhash))
-                {
-                    labelZen.Text = $"{new Zen(item.Value)} {AssetsMetadata.ZEN}";
-                }
-                else
-                {
-                    listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.Wallet.AssetsMetadata.GetMetadata(item.Key).Result, item.Value);
-                }
-            }
+				foreach (var item in value)
+				{
+					if (item.Key.SequenceEqual(Consensus.Tests.zhash))
+					{
+						labelZen.Text = $"{new Zen(item.Value)} {AssetsMetadata.ZEN}";
+					}
+					else
+					{
+						listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.Wallet.AssetsMetadata.GetMetadata(item.Key).Result, item.Value);
+					}
+				}
+			} 
         }
     }
 }

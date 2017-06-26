@@ -36,8 +36,7 @@ namespace Wallet
 			
 		public override MenuButton Selection { 
 			set {
-				WalletController.Instance.Asset = (byte[])value.Data;
-				BalancesController.Instance.Asset = (byte[])value.Data;
+				//WalletController.Instance.Asset = (byte[])value.Data;
 			}
 		}
 
@@ -57,8 +56,7 @@ namespace Wallet
 					if (((byte[])buttonChild.Data).SequenceEqual(value))
 						buttonChild.Select();
 				}
-				WalletController.Instance.Asset = value;
-				BalancesController.Instance.Asset = value;
+				//WalletController.Instance.Asset = value;
 			}
 		}
 

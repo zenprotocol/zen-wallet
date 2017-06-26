@@ -7,10 +7,8 @@ using Wallet.core;
 using Wallet.core.Data;
 using Consensus;
 using Wallet.Constants;
-using Newtonsoft.Json.Converters;
-using System.Dynamic;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Wallet;
 
 namespace Wallet
 {
@@ -84,8 +82,10 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class WalletSendLayout : WidgetBase, IPortfolioVIew
+    public partial class WalletSendLayout : WidgetBase, IPortfolioVIew, IAssetsView
 	{
+        readonly DeltasController _DeltasController;
+        readonly AssetsController _AssetsController;
 		public static SendInfo SendInfo
 		{
 			get; private set;
@@ -97,13 +97,57 @@ namespace Wallet
 			get { return _Tx; }
 		}
 
-		AssetDeltas _AssetDeltas = null;
+        byte[] _CurrentAsset;
+        UpdatingStore<byte[]> _AssetsStore = new UpdatingStore<byte[]>(0, typeof(byte[]), typeof(string));
+        UpdatingStore<byte[]> _AssetsStoreSecureToken = new UpdatingStore<byte[]>(0, typeof(byte[]), typeof(string));
+
+		public ICollection<AssetMetadata> Assets 
+        { 
+            set 
+            {
+                foreach (var _asset in value)
+				{
+					var iter = _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
+
+					if (_CurrentAsset != null && _asset.Asset.SequenceEqual(_CurrentAsset))
+					{
+						comboboxAsset.SetActiveIter(iter);
+					}
+
+					_AssetsStoreSecureToken.AppendValues(_asset.Asset, _asset.Display);
+				}
+            } 
+        }
+
+        public AssetMetadata AssetUpdated
+        {
+            set
+            {
+                _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                _AssetsStoreSecureToken.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+
+                if (_CurrentAsset != null && _CurrentAsset.SequenceEqual(value.Asset))
+                {
+                    Gtk.Application.Invoke(delegate
+                    {
+                        labelSelectedAsset.Text = value.Display;
+                        labelSelectedAsset1.Text = value.Display;
+                    });
+                }
+            }
+        }
+
+        AssetDeltas _AssetDeltas = null;
 		long _AssetBalance = 0;
 
 		public WalletSendLayout()
 		{
 			this.Build();
+
 			SendInfo = new SendInfo();
+
+			_DeltasController = new DeltasController(this);
+			_AssetsController = new AssetsController(this);
 
 			_Tx = null;
 			buttonSignAndReview.Sensitive = false;
@@ -256,9 +300,7 @@ namespace Wallet
 
 			buttonBack.Clicked += Back;
 
-			var comboboxStore = new ListStore(typeof(byte[]), typeof(string));
-
-			comboboxAsset.Model = comboboxStore;
+			comboboxAsset.Model = _AssetsStore;
 			var textRenderer = new CellRendererText();
 			comboboxAsset.PackStart(textRenderer, false);
 			comboboxAsset.AddAttribute(textRenderer, "text", 1);
@@ -271,83 +313,6 @@ namespace Wallet
 			comboboxSecureToken.AddAttribute(textRendererSecukreToken, "text", 1);
 
             secureTokenComboboxStore.AppendValues(new byte[] {}, "None");
-
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList())
-            {
-                var iter = comboboxStore.AppendValues(_asset.Asset, _asset.Display);
-				
-                if (_asset.Asset.SequenceEqual(WalletController.Instance.Asset))
-                {
-                    comboboxAsset.SetActiveIter(iter);
-                }
-
-                secureTokenComboboxStore.AppendValues(_asset.Asset, _asset.Display);
-            }
-
-            App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
-            {
-				Gtk.Application.Invoke(delegate
-				{
-					try
-					{
-		                TreeIter iter;
-		                comboboxStore.GetIterFirst(out iter);
-						bool found = false;
-
-						do
-		                {
-		                    var key = new GLib.Value();
-		                    comboboxStore.GetValue(iter, 0, ref key);
-		                    byte[] _asset = key.Val as byte[];
-
-		                    if (_asset != null && _asset.SequenceEqual(t.Asset))
-		                    {
-		                        comboboxStore.SetValue(iter, 1, t.Display);
-		                        found = true;
-		                        break;
-		                    }
-						} while (comboboxStore.IterNext(ref iter));
-
-						if (!found)
-						{
-							comboboxStore.AppendValues(t.Asset, t.Display);
-						}
-
-						do
-						{
-							var key = new GLib.Value();
-                            secureTokenComboboxStore.GetValue(iter, 0, ref key);
-							byte[] _asset = key.Val as byte[];
-
-							if (_asset != null && _asset.SequenceEqual(t.Asset))
-							{
-								secureTokenComboboxStore.SetValue(iter, 1, t.Display);
-								found = true;
-								break;
-							}
-						} while (secureTokenComboboxStore.IterNext(ref iter));
-
-						if (!found)
-						{
-							secureTokenComboboxStore.AppendValues(t.Asset, t.Display);
-						}
-
-		                if (labelSelectedAsset.Text == Convert.ToBase64String(t.Asset))
-		                {
-		                    labelSelectedAsset.Text = t.Display;
-		            	}
-
-						if (labelSelectedAsset1.Text == Convert.ToBase64String(t.Asset))
-						{
-							labelSelectedAsset1.Text = t.Display;
-						}
-					}
-					catch
-					{
-						Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
-					}
-				});
-            };
 
 			comboboxAsset.Changed += (sender, e) =>
 			{
@@ -453,8 +418,6 @@ namespace Wallet
 
             //Assets' images not implemented, remove ui elements
             hboxAsset.Remove(hboxAsset.Children[0]);
-
-			PortfolioController.Instance.AddVIew(this);
 		}
 
 		void Back(object sender, EventArgs e)
@@ -462,15 +425,13 @@ namespace Wallet
 			FindParent<Notebook>().Page = 0;
 		}
 
-		public void Clear()
+        public AssetDeltas PortfolioDeltas
 		{
-
-		}
-
-        public void SetPortfolioDeltas(AssetDeltas assetDeltas)
-		{
-			_AssetDeltas = assetDeltas;
-			UpdateBalance();
+            set
+            {
+                _AssetDeltas = value;
+                UpdateBalance();
+            }
 		}
 
 		void UpdateBalance()

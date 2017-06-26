@@ -232,7 +232,7 @@ namespace Zen
 						await app.Connect();
 						break;
 					case "Start GUI":
-						app.GUI();
+						app.GUI(false);
 						root.Detach();
 						root.Run();
 						break;
@@ -422,20 +422,13 @@ namespace Zen
                 } catch {}
 			};
 
-			Action<ResetEventArgs> wallet_OnReset = a =>
-			{
-				foreach (var txDelta in a.TxDeltaList)
-					listTrace.Items.Add(GetTxDeltaInfo(app,txDelta, "Wallet reset"));
-			};
-
-			Action<TxDeltaItemsEventArgs> wallet_OnItems = a =>
+            Action<List<TxDelta>> wallet_OnItems = a =>
 		   	{
 				foreach (var txDelta in a)
 					listTrace.Items.Add(GetTxDeltaInfo(app, txDelta, "Wallet item"));
 		   	};
 
 			app.WalletOnItemsHandler = wallet_OnItems;
-			app.WalletOnResetHandler = wallet_OnReset;
 
 			//	app.Init();
 			root.Run();

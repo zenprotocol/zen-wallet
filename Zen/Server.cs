@@ -95,7 +95,7 @@ namespace Zen
 
 				var _result = _App.Spend(new Address(spendPayload.Address), spendPayload.Amount);
 
-				return new ResultPayload() { Success = _result };
+				return new ResultPayload { Success = _result };
 			}
 
 			if (type == typeof(SendContractPayload))
@@ -106,16 +106,16 @@ namespace Zen
 
                 if (!_App.WalletManager.SendContract(sendContractPayload.ContractHash, sendContractPayload.Data, out autoTx))
                 {
-                    return new SendContractResultPayload() { Success = false };
+                    return new SendContractResultPayload { Success = false };
                 }
 
 				BlockChain.BlockChain.TxResultEnum transmitResult;
 				if (!_App.Transmit(autoTx, out transmitResult))
 				{
-					return new SendContractResultPayload() { Success = false, Message = transmitResult.ToString() };
+					return new SendContractResultPayload { Success = false, Message = transmitResult.ToString() };
 				}
 
-                return new SendContractResultPayload() { Success = true, TxHash = Consensus.Merkle.transactionHasher.Invoke(autoTx) };
+                return new SendContractResultPayload { Success = true, TxHash = Consensus.Merkle.transactionHasher.Invoke(autoTx) };
 			}
 
 			if (type == typeof(ActivateContractPayload))
@@ -127,7 +127,7 @@ namespace Zen
 					activateContractPayload.Blocks
 				);
 
-				return new ResultPayload() { Success = _result };
+				return new ResultPayload { Success = _result };
 			}
 
 			if (type == typeof(GetACSPayload))
@@ -157,7 +157,7 @@ namespace Zen
 			{
 				var contractHash = ((GetContractTotalAssetsPayload)payload).Hash;
 			//	var totals = _App.GetTotalAssets(contractHash);
-				return new GetContractTotalAssetsResultPayload() { 
+				return new GetContractTotalAssetsResultPayload { 
 					Confirmed = 999, // totals.Item1, 
 					Unconfirmed = 999 // totals.Item2
 				};
@@ -180,7 +180,7 @@ namespace Zen
 				var _payload = (MakeTransactionPayload)payload;
 				var result = _App.Spend(new Address(_payload.Address), _payload.Amount);
 
-				return new ResultPayload()
+				return new ResultPayload
 				{
 					Success = result
 				};
@@ -192,7 +192,7 @@ namespace Zen
 
                 _App.ImportTestKey(_payload.PrivateKey);
 
-				return new ResultPayload()
+				return new ResultPayload
 				{
 					Success = true
 				};
@@ -202,12 +202,10 @@ namespace Zen
 			{
 				var _payload = (GetBalancePayload)payload;
 
-                var assets = _App.WalletManager.TxDeltaList.AssetDeltas;
-
-				return new GetBalanceResultPayload()
+				return new GetBalanceResultPayload
 				{
 					Success = true,
-                    Balance = assets.ContainsKey(_payload.Asset) ? assets[_payload.Asset] : 0
+                    Balance = _App.CalcBalance(_payload.Asset)
 				};
 			}
 			  

@@ -127,7 +127,6 @@
     <Compile Include="gtk-gui\Wallet.ImageButton.cs" />
     <Compile Include="Widgets\Wallet\ActionBar.cs" />
     <Compile Include="gtk-gui\Wallet.ActionBar.cs" />
-    <Compile Include="Controllers\WalletController.cs" />
     <Compile Include="gtk-gui\Wallet.Wallet.cs" />
     <Compile Include="Widgets\Wallet\Wallet.cs" />
     <Compile Include="MainWindow.cs" />
@@ -156,7 +155,7 @@
     <Compile Include="gtk-gui\Wallet.Log.cs" />
     <Compile Include="Widgets\Log\LogCellRenderer.cs" />
     <Compile Include="Widgets\Log\LogEntryRow.cs" />
-    <Compile Include="Controllers\BalancesController.cs" />
+    <Compile Include="Controllers\AssetsController.cs" />
     <Compile Include="Widgets\Log\ILogEntryRow.cs" />
     <Compile Include="Widgets\Log\LogSummaryRow.cs" />
     <Compile Include="Widgets\Log\LogHeaderRow.cs" />
@@ -196,8 +195,7 @@
     <Compile Include="Widgets\Log\LogLayout.cs" />
     <Compile Include="gtk-gui\Wallet.LogLayout.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Controllers\PortfolioController.cs" />
-    <Compile Include="Widgets\Portfolio\IPortfolioVIew.cs" />
+    <Compile Include="Controllers\DeltasController.cs" />
     <Compile Include="Widgets\Wallet\ExpandingCellRenderer.cs" />
     <Compile Include="Widgets\Portfolio\RowRenderer.cs" />
     <Compile Include="Wallet\WalletLayout.cs" />
