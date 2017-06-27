@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Consensus;
 using Microsoft.FSharp.Collections;
 using Datafeed.Web.App_Data;
+using Datafeed.Web.App_Code;
 
 namespace Datafeed.Web.Controllers
 {
@@ -14,6 +15,22 @@ namespace Datafeed.Web.Controllers
 		public ActionResult Index()
 		{
 			return View();
+		}
+
+		public JsonResult Status() { 
+			var contractManager = new ContractManager();
+			dynamic json;
+
+			if (!contractManager.IsSetup)
+			{
+				json = new { isSetup = false, message = contractManager.Message };
+			}
+			else
+			{
+				json = new { isSetup = true, address = contractManager.ContractAddress.ToString() };
+			}
+
+			return Json(json, JsonRequestBehavior.AllowGet);
 		}
 
 		public ActionResult ShowTicker(string ticker)
