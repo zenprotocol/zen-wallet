@@ -20,7 +20,8 @@ namespace BlockChain
 		{
 			Accepted,
 			AcceptedOrphan,
-			Rejected
+			Rejected,
+            KnownOrphan
 		}
 
         //TODO: refactor using C# 7.0 and sub-classing each case
@@ -82,7 +83,12 @@ namespace BlockChain
 						reject = !handleBranch;
 						break;
 					case LocationEnum.Orphans:
-						reject = !handleOrphan && !handleBranch;
+                        if (handleOrphan)
+                        {
+                            Result = new BkResult(BkResultEnum.KnownOrphan);
+                            return;
+                        }
+						reject = !handleBranch;
 						break;
 					default:
 						reject = true;
