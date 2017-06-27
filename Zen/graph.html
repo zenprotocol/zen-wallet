@@ -1,36 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
+    <style>
 
-.link line {
-  stroke: #696969;
-}
+        html, body {
+          height: 100% !important;
+          width: 100% !important;
+        }
 
-.link line.separator {
-  stroke: #fff;
-  stroke-width: 2px;
-}
+        .link line {
+          stroke: #696969;
+        }
 
-.node circle {
-  stroke: #000;
-  stroke-width: 1.5px;
-}
+        .link line.separator {
+          stroke: #fff;
+          stroke-width: 2px;
+        }
 
-.node text {
-  font: 10px sans-serif;
-  pointer-events: none;
-}
+        .node circle {
+          stroke: #000;
+          stroke-width: 1.5px;
+        }
 
-</style>
-	<script src="d3.min.js"></script>
-	<script src="nodes.js"></script>
+        .node text {
+          font: 10px sans-serif;
+          pointer-events: none;
+        }
+
+    </style>
+    <script src="d3.min.js"></script>
+    <script src="nodes.js"></script>
 </head>
 <body>
-<script>
-
-var width = 960,
-    height = 500;
+    <script>
 
 var color = d3.scale.category20();
 
@@ -38,13 +40,21 @@ var radius = d3.scale.sqrt()
     .range([0, 6]);
 
 var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    .attr("width", "100%")
+    .attr("height", "100%");
 
 var force = d3.layout.force()
-    .size([width, height])
     .charge(-500)
     .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; });
+
+var resize = function() {
+  var rect = svg.node().getBoundingClientRect();
+  force.size([rect.width, rect.height]);
+};
+
+d3.select(window).on("resize", resize);
+
+resize();
 
 //d3.json('graph.json', function(graph) {
   force
@@ -88,8 +98,6 @@ var force = d3.layout.force()
 
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
   }
-</script>
-
+    </script>
 </body>
 </html>
-
