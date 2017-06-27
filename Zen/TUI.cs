@@ -34,7 +34,6 @@ namespace Zen
 			options["main"].Add("Wallet Menu");
 			options["main"].Add("BlockChain Menu");
 			options["main"].Add("Miner Menu");
-			options["main"].Add("Tests");
 			options["main"].Add("Reset Blockchain DB");
 			options["main"].Add("Reset Wallet DB");
 			options["main"].Add("Generate Graph");
@@ -61,18 +60,6 @@ namespace Zen
 			options["miner"].Add("Stop Miner");
 			options["miner"].Add("Mine Block");
 			options["miner"].Add("Back");
-
-			options["tests"] = new List<string>();
-
-			foreach (var scriptFile in Directory.GetFiles("Scripts"))
-			{
-				var fileInfo = new FileInfo(scriptFile);
-
-				if (fileInfo.Extension == ".fs")
-					options["tests"].Add(fileInfo.Name);
-			}
-			options["tests"].Add("Back");
-
 
 			var actions = new Dictionary<string, Action<string>>();
 			Action<string> menu = (s) =>
@@ -269,9 +256,6 @@ namespace Zen
 					case "Stop":
 						app.Stop();
 						break;
-					case "Tests":
-						menu("tests");
-						break;
 					case "Exit":
 						app.Dispose();
 						root.Detach();
@@ -307,21 +291,6 @@ namespace Zen
 						break;
 					case "Back":
 						menu("main");
-						break;
-				}
-			};
-
-			actions["tests"] = a =>
-			{
-				switch (a)
-				{
-					case "Back":
-						menu("main");
-						break;
-					default:
-						object result;
-						ScriptRunner.Execute(app, Path.Combine("Scripts", a), out result);
-						listTrace.Items.Add(result);	
 						break;
 				}
 			};

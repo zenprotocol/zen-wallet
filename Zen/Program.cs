@@ -26,8 +26,6 @@ namespace Zen
 			bool genesis = false;
 			bool rpcServer = false;
 
-			string script = null;
-
 			var p = new OptionSet() {
 				{ "headless", "start in headless mode",
 					v => launchMode = LaunchModeEnum.Headless },
@@ -46,9 +44,6 @@ namespace Zen
 
 				{ "d|disable-network", "disable networking",
 					v => disableNetworking = true },
-
-				{ "s|script=", "execute script",
-					v => script = v.EndsWith(".fs", StringComparison.OrdinalIgnoreCase) ? v : v + ".fs" },
 
 				{ "m|miner", "enable miner",
 					v => app.MinerEnabled = true },
@@ -92,22 +87,6 @@ namespace Zen
 			if (rpcServer)
 			{
                 app.StartRPCServer();
-			}
-
-			if (script != null)
-			{
-				object result;
-				var isSuccess = ScriptRunner.Execute(app, Path.Combine("Scripts", script), out result);
-
-				if (isSuccess)
-				{
-					Console.WriteLine(result);
-				}
-				else
-				{
-					Console.WriteLine("\nScript error.");
-					Console.ReadKey();
-				}
 			}
            
             switch (launchMode)

@@ -53,12 +53,6 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="FSharp.Data">
       <HintPath>..\packages\FSharp.Data.2.3.3\lib\net40\FSharp.Data.dll</HintPath>
@@ -68,17 +62,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TUI.cs" />
     <Compile Include="AppTraceListener.cs" />
-    <Compile Include="Tests\UITests.cs" />
     <Compile Include="Data\TestKeys.cs" />
     <Compile Include="Data\Outputs.cs" />
     <Compile Include="Data\Settings.cs" />
     <Compile Include="BlockChainDumper.cs" />
-    <Compile Include="ScriptRunner.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="App.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="TestContracts\SendToken.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
@@ -88,8 +77,6 @@
     <None Include="app.config" />
     <None Include="readme.md" />
     <Compile Include="Program.cs" />
-    <None Include="Reset.txt" />
-    <None Include="ResetAcquireAndSend.txt" />
     <None Include="genesis_outputs.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -108,16 +95,7 @@
     <None Include="testnet_host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Scripts\reset.fs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="standalone.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Scripts\lan_sender.fs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Scripts\lan_receiver.fs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="graph.html">
@@ -126,37 +104,13 @@
     <None Include="d3.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="TestContracts\Contracts.fs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Scripts\test-datafeed.fs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="contracts-demo-seed.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Scripts\init-contracts-demo.fs">
+    <None Include="testnet2_host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="TestContracts\DatafeedContract.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TestContracts\MockCallOption.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Scripts\init-faucet.fs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Scripts\reset %28copy%29.fs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Scripts\test-send-token.fs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="TestContracts\TestContract.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Scripts\test-send-token-fsharp.fs">
+    <None Include="testnet2_client.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -168,10 +122,6 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NBitcoinDerive\NBitcoinDerive.csproj">
-      <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
-      <Name>Network</Name>
     </ProjectReference>
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
@@ -203,9 +153,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Tests\" />
     <Folder Include="Data\" />
-    <Folder Include="Scripts\" />
-    <Folder Include="TestContracts\" />
   </ItemGroup>
 </Project>
