@@ -8,6 +8,7 @@ namespace ContractsDiscovery.Web.App_Data
 		public ContractAddressField Numeraire { get; set; }
 		public ContractAddressField ControlAsset { get; set; }
 		public ContractAddressField Oracle { get; set; }
+		public string OracleErrorMessage { get; set; }
 		public PKAddressField ControlAssetReturn { get; set; }
 		public Field<string> Underlying { get; set; }
 		public DecimalField Price { get; set; }

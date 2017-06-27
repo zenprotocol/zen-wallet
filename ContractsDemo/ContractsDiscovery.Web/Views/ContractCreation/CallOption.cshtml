@@ -1,14 +1,19 @@
 ﻿@model ContractsDiscovery.Web.App_Data.CreateCallOption
 
+<h2>Create Call Option</h2>
+<br>
+
 @using (@Html.BeginForm("CallOption", "ContractCreation", FormMethod.Post))
 {
     <div class="form-group">
 		<label for="numeraire">Numeraire</label>
-        <input type="text" required="true" class="form-control" id="numeraire" name="numeraire" placeholder="Numeraire" value="@Model.Numeraire.Value"/>
+        <!--input type="text" required="true" class="form-control" id="numeraire" name="numeraire" placeholder="Numeraire" value="@Model.Numeraire.Value"/-->
+        <input readonly type="text" required="true" class="form-control" id="numeraire" name="numeraire" placeholder="Numeraire" value="Zen"/>
 		@if (@Model.Numeraire.Invalid)
 		{
 			<small class="form-text text-muted">Invalid input</small>
 		}
+		<small class="form-text text-muted">We'll never share your email with anyone else.</small>
     </div>
 
     <div class="form-group">
@@ -22,7 +27,8 @@
 
     <div class="form-group">
 		<label for="oracle">Oracle</label>
-        <input type="text" required="true" class="form-control" id="oracle" name="oracle" placeholder="Oracle" value="@Model.Oracle.Value"/>
+        <small class="form-text text-muted">@Model.OracleErrorMessage</small>
+        <input readonly type="text" required="true" class="form-control" id="oracle" name="oracle" placeholder="Oracle Address" value="@Model.Oracle.Value"/>
         @if (@Model.Oracle.Invalid)
         {
             <small class="form-text text-muted">Invalid input</small>
@@ -84,5 +90,5 @@
         }
     </div>
 
-    <input type="submit" value="Submit" />
+    <input type="submit" class="btn-success" value="Create" />
 }   

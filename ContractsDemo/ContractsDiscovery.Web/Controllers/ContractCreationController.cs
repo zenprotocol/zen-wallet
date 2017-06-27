@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
+using System.Web.Configuration;
 using System.Web.Mvc;
 using System.Web.Mvc.Ajax;
 using BlockChain.Data;
 using ContractsDiscovery.Web.App_Data;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Zen.RPC;
 using Zen.RPC.Common;
 
@@ -27,7 +31,23 @@ namespace ContractsDiscovery.Web.Controllers
 			switch (id)
 			{
 				case "CallOption":
-					model = new CreateCallOption();
+					var createCallOption = new CreateCallOption();
+                    var oracleStatus = GetOracleStatus().Result;
+
+                    if (oracleStatus == null)
+                    {
+						createCallOption.OracleErrorMessage = "Oracle not operatable";
+					}
+                    else if ((bool)oracleStatus["isSetup"] == true)
+                    {
+                        createCallOption.Oracle.SetValue(oracleStatus["address"].ToString());
+                    }
+                    else
+                    {
+                        createCallOption.OracleErrorMessage = oracleStatus["message"].ToString();
+                    }
+
+					model = createCallOption;
 					break;
 				case "TokenGenerator":
 					model = new CreateTokenGenerator();
@@ -155,6 +175,30 @@ namespace ContractsDiscovery.Web.Controllers
 				}
 
 				return View("Result");
+			}
+		}
+
+		async Task<JObject> GetOracleStatus()
+		{
+			string oracleService = WebConfigurationManager.AppSettings["oracleService"];
+			var uri = new Uri($"{oracleService}/Data/Status");
+
+			try
+			{
+				var response = await new HttpClient().GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
+
+				if (response.IsSuccessStatusCode)
+				{
+                    return JObject.Parse(await response.Content.ReadAsStringAsync());
+				}
+				else
+				{
+					return null;
+				}
+			}
+			catch
+			{
+				return null;
 			}
 		}
     }
