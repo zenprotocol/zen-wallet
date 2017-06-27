@@ -62,7 +62,7 @@ namespace NBitcoin.Protocol.Behaviors
 						break;
 					case BlockChain.BlockVerificationHelper.BkResultEnum.AcceptedOrphan:
 						node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
-                            new InventoryVector(InventoryType.MSG_BLOCK, result.MissingOrphan)
+                            new InventoryVector(InventoryType.MSG_BLOCK, result.MissingParent)
 						}));
 						break;
 					case BlockChain.BlockVerificationHelper.BkResultEnum.Rejected:

@@ -27,15 +27,15 @@ namespace BlockChain
 		public class BkResult
         {
             public BkResultEnum BkResultEnum { get; set; }
-            public byte[] MissingOrphan { get; set; }
+            public byte[] MissingParent { get; set; }
 
             public BkResult(BkResultEnum bkResultEnum) {
                 BkResultEnum = bkResultEnum;
             }
 
-            public BkResult(BkResultEnum bkResultEnum, byte[] missingOrphan) : this(bkResultEnum)
+            public BkResult(BkResultEnum bkResultEnum, byte[] missingParent) : this(bkResultEnum)
 			{
-				MissingOrphan = missingOrphan;
+				MissingParent = missingParent;
 			}
 		}
 
@@ -142,10 +142,10 @@ namespace BlockChain
 
 			if (IsOrphan())
 			{
-                var missingOrphan = GetMissingOrphan();
+                var missingParent = GetMissingParent();
 				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
                 BlockChainTrace.Information($"block {_Bk.header.blockNumber} added as orphan");
-                Result = new BkResult(BkResultEnum.AcceptedOrphan, missingOrphan);
+                Result = new BkResult(BkResultEnum.AcceptedOrphan, missingParent);
 				return;
 			}
 
@@ -411,7 +411,7 @@ namespace BlockChain
                _BlockChain.BlockStore.IsLocation(_DbTx, _Bk.header.parent, LocationEnum.Orphans);
 		}
 
-        byte[] GetMissingOrphan()
+        byte[] GetMissingParent()
         {
             var blockItr = _Bk.header.parent;
 
