@@ -93,6 +93,8 @@
     <Folder Include="db\" />
     <Folder Include="Views\Create\" />
     <Folder Include="Views\ContractCreation\" />
+    <Folder Include="App_Code\" />
+    <Folder Include="Views\Faucet\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\ContractCreationController.cs" />
@@ -114,6 +116,8 @@
     <Compile Include="App_Data\CreateOracle.cs" />
     <Compile Include="App_Data\Fields.cs" />
     <Compile Include="App_Data\CreateTokenGenerator.cs" />
+    <Compile Include="App_Code\FaucetManager.cs" />
+    <Compile Include="Controllers\FaucetController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Web.config" />
@@ -133,6 +137,8 @@
     <Content Include="Views\ContractCreation\Result.cshtml" />
     <Content Include="Views\ContractCreation\Oracle.cshtml" />
     <Content Include="Views\ContractCreation\TokenGenerator.cshtml" />
+    <Content Include="Views\Faucet\GetTokens.cshtml" />
+    <Content Include="Views\Faucet\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
