@@ -25,7 +25,7 @@
 	    foreach (var item in Model)
 	    {
 	        <tr>
-	            <td><p class="text-left">@Html.ActionLink(@item.Time, "Display", "Data", new { @id = @item.Id }, null)</p></td>
+	            <td><p class="text-left">@Html.ActionLink(@item.Time, "Display", "OracleData", new { @id = @item.Id }, null)</p></td>
 	            <!--td><p class="text-left">@item.Count</p></td-->
 	            <!--td><p class="text-left">@item.Data</p></td-->
 	        </tr>
