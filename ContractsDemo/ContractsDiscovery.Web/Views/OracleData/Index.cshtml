@@ -1,0 +1,9 @@
+﻿@using (@Html.BeginForm("Search", "OracleData", FormMethod.Post))
+{
+    <div class="form-group">
+        <label for="ticker">Search by ticker:</label>
+        <input type="text" class="form-control" id="ticker" name="ticker" placeholder="Ticker">
+    </div>
+
+    <button type="submit" class="btn btn-primary" name="doAction">Submit</button>
+}

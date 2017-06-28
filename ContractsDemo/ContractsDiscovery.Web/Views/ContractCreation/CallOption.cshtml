@@ -41,7 +41,7 @@
 		<label for="oracle" class="col-sm-2 control-label">Oracle</label>
 	    <div class="col-sm-10">
 	        <input type="text" required="true" class="form-control" id="oracle" name="oracle" placeholder="Oracle Address" value="@Model.Oracle.Value"/>
-            <p class="text-left form-text text-muted">This is an <a href="@Model.OracleServiceUrl" target="_blank">Oracle</a> provided by Zen for the testnet.</p>
+            <p class="text-left form-text text-muted">This is an Oracle provided by Zen for the testnet.</p>
             @if (!string.IsNullOrEmpty(Model.OracleErrorMessage))
             {
     		<p class="text-left form-text text-muted">Error: @Model.OracleErrorMessage</p>

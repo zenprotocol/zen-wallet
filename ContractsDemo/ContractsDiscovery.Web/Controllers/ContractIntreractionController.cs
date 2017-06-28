@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Configuration;
@@ -143,9 +144,17 @@ namespace ContractsDiscovery.Web.Controllers
 						}
 
 						args.Add("returnPubKeyAddress", pkExerciseReturnAddress.Value);
-						
-                        var oracleData = GetOracleCommitmentData(callOptionParameters.Item.underlying, DateTime.Now.ToUniversalTime()).Result;
-                        args.Add("oracleRawData", oracleData);
+
+                        string oracleData; //GetOracleCommitmentData(callOptionParameters.Item.underlying, DateTime.Now.ToUniversalTime()).Result;
+
+                        if (GetLastData(callOptionParameters.Item.underlying, out oracleData))
+                            args.Add("oracleRawData", oracleData);
+                        else
+						{
+							contractInteraction.Message = "Error getting oracle data";
+							return View(contractInteraction);
+						}                           
+
                         opcode = OPCODE_EXERCISE;
                         break;
 					case "Buy":
@@ -184,28 +193,50 @@ namespace ContractsDiscovery.Web.Controllers
 			return View(contractInteraction);
 		}
 
-        async Task<string> GetOracleCommitmentData(string underlying, DateTime time)
-        {
-			string oracleService = WebConfigurationManager.AppSettings["oracleService"];
-			var uri = new Uri($"{oracleService}/Data/GetData?ticker={underlying}");
+		bool GetLastData(string ticker, out string data)
+		{
+			data = null;
 
-            try
-            {
-                var response = await new HttpClient().GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
+			try
+			{
+				var commitments = Directory.GetFiles("db", "*.data.json")
+					.Select(t => Regex.Replace(t, @"[^\d]", ""))
+					.OrderByDescending(t => t);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content.ReadAsStringAsync();
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
+				if (commitments.Count() == 0)
+				{
+					return false;
+				}
+
+				foreach (var item in commitments)
+				{
+					//dateTime = DateTime.FromFileTime(long.Parse(item));
+
+					var file = Path.Combine("db", $"{item}");
+					var mapFile = Path.ChangeExtension(file, ".data.json");
+
+					var commitmentDataMap = (FSharpMap<string, ContractExamples.Merkle.AuditPath>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(mapFile));
+
+					foreach (var _value in commitmentDataMap)
+					{
+						if (_value.Key == ticker)
+						{
+							var outpointFile = Path.ChangeExtension(file, ".outpoint.txt");
+							var outpointData = Convert.FromBase64String(System.IO.File.ReadAllText(outpointFile));
+							var outpoint = Consensus.Serialization.context.GetSerializer<Types.Outpoint>().UnpackSingleObject(outpointData);
+
+							data = ContractExamples.Oracle.rawData.Invoke(new Tuple<ContractExamples.Merkle.AuditPath, Types.Outpoint>(_value.Value, outpoint));
+
+							return true;
+						}
+					}
+				}
+			}
+			catch
+			{
+			}
+
+			return false;
+		}
 	}
 }

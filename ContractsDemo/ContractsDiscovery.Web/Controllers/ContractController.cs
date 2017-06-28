@@ -72,8 +72,8 @@ namespace ContractsDiscovery.Web.Controllers
                 Utils.SetContractInfo(contractData.ActiveContract, contractCode);
 			}
 
-			string oracleService = WebConfigurationManager.AppSettings["oracleService"];
-			contractData.ActiveContract.OracleTickerUrl = $"{oracleService}/Data/ShowTicker={contractData.ActiveContract.Underlying}";
+			//string oracleService = WebConfigurationManager.AppSettings["oracleService"];
+			contractData.ActiveContract.OracleTickerUrl =  $"/OracleData/ShowTicker?ticker={contractData.ActiveContract.Underlying}";
 
 			return View(contractData);
         }

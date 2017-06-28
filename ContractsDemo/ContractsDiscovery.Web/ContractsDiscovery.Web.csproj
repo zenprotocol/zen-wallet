@@ -59,13 +59,9 @@
     <Reference Include="System.Web.Mvc">
       <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="System.Net.Http" />
     <Reference Include="ContractExamples">
       <HintPath>..\..\ContractExamples\bin\Debug\ContractExamples.dll</HintPath>
     </Reference>
@@ -78,6 +74,25 @@
     <Reference Include="Consensus">
       <HintPath>..\..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
+    <Reference Include="Sodium">
+      <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime">
+      <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\" />
@@ -95,6 +110,8 @@
     <Folder Include="Views\ContractCreation\" />
     <Folder Include="App_Code\" />
     <Folder Include="Views\Faucet\" />
+    <Folder Include="Views\Oracle\" />
+    <Folder Include="Views\OracleData\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\ContractCreationController.cs" />
@@ -118,6 +135,12 @@
     <Compile Include="App_Data\CreateTokenGenerator.cs" />
     <Compile Include="App_Code\FaucetManager.cs" />
     <Compile Include="Controllers\FaucetController.cs" />
+    <Compile Include="App_Code\OracleContractManager.cs" />
+    <Compile Include="Controllers\OracleController.cs" />
+    <Compile Include="App_Data\Commitment.cs" />
+    <Compile Include="App_Data\CommitmentData.cs" />
+    <Compile Include="StockAPI.cs" />
+    <Compile Include="Controllers\OracleDataController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Web.config" />
@@ -139,6 +162,12 @@
     <Content Include="Views\ContractCreation\TokenGenerator.cshtml" />
     <Content Include="Views\Faucet\GetTokens.cshtml" />
     <Content Include="Views\Faucet\Index.cshtml" />
+    <Content Include="Views\OracleData\Display.cshtml" />
+    <Content Include="Views\OracleData\Index.cshtml" />
+    <Content Include="Views\Oracle\Generate.cshtml" />
+    <Content Include="Views\Oracle\Index.cshtml" />
+    <Content Include="Views\OracleData\Search.cshtml" />
+    <Content Include="Views\OracleData\ShowTicker.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
@@ -162,4 +191,5 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
 </Project>

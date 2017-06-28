@@ -33,24 +33,26 @@ namespace ContractsDiscovery.Web.Controllers
 			{
 				case "CallOption":
 					var createCallOption = new CreateCallOption();
-                    var oracleStatus = GetOracleStatus().Result;
+					//               var oracleStatus = GetOracleStatus().Result;
 
-                    if (oracleStatus == null)
+					//               if (oracleStatus == null)
+					//               {
+					//	createCallOption.OracleErrorMessage = "Oracle not operatable";
+					//}
+
+					var oracleContractManager = new ContractsDiscovery.Web.App_Code.OracleContractManager();
+
+                    if (oracleContractManager.IsSetup)
                     {
-						createCallOption.OracleErrorMessage = "Oracle not operatable";
-					}
-                    else if ((bool)oracleStatus["isSetup"] == true)
-                    {
-                        createCallOption.Oracle.SetValue(oracleStatus["address"].ToString());
+                        createCallOption.Oracle.SetValue(oracleContractManager.ContractAddress.ToString());
                     }
                     else
                     {
-                        createCallOption.OracleErrorMessage = oracleStatus["message"].ToString();
+                        createCallOption.OracleErrorMessage = oracleContractManager.Message;
                     }
 
-
                     createCallOption.ControlAssets = GetSecureTokens();
-					createCallOption.OracleServiceUrl = WebConfigurationManager.AppSettings["oracleService"];
+					//createCallOption.OracleServiceUrl = WebConfigurationManager.AppSettings["oracleService"];
                     createCallOption.Tickers.AddRange(new List<String> { "GOOG", "GOOGL", "YHOO", "TSLA", "INTC", "AMZN" });
 
 					model = createCallOption;
@@ -184,29 +186,29 @@ namespace ContractsDiscovery.Web.Controllers
 			}
 		}
 
-		async Task<JObject> GetOracleStatus()
-		{
-			string oracleService = WebConfigurationManager.AppSettings["oracleService"];
-			var uri = new Uri($"{oracleService}/Data/Status");
+		//async Task<JObject> GetOracleStatus()
+		//{
+		//	string oracleService = WebConfigurationManager.AppSettings["oracleService"];
+		//	var uri = new Uri($"{oracleService}/Data/Status");
 
-			try
-			{
-				var response = await new HttpClient().GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
+		//	try
+		//	{
+		//		var response = await new HttpClient().GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
 
-				if (response.IsSuccessStatusCode)
-				{
-                    return JObject.Parse(await response.Content.ReadAsStringAsync());
-				}
-				else
-				{
-					return null;
-				}
-			}
-            catch //(Exception e)
-			{
-				return null;
-			}
-		}
+		//		if (response.IsSuccessStatusCode)
+		//		{
+  //                  return JObject.Parse(await response.Content.ReadAsStringAsync());
+		//		}
+		//		else
+		//		{
+		//			return null;
+		//		}
+		//	}
+  //          catch //(Exception e)
+		//	{
+		//		return null;
+		//	}
+		//}
 
         Dictionary<string, string> GetSecureTokens()
         {

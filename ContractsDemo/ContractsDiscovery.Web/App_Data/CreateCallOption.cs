@@ -17,7 +17,7 @@ namespace ContractsDiscovery.Web.App_Data
 		public DecimalField MinimumCollateralRatio { get; set; }
 		public PublicKeyField OwnerPubKey { get; set; }
         public List<string> Tickers { get; set; }
-        public string OracleServiceUrl { get; set; }
+        //public string OracleServiceUrl { get; set; }
         public Dictionary<string, string> ControlAssets { get; set; }
 
         public CreateCallOption()
