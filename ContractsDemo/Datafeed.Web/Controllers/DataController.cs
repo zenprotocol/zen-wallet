@@ -102,6 +102,21 @@ namespace Datafeed.Web.Controllers
 			return Content(data, "application/json");
 		}
 
+		public JsonResult GetDataJson(string ticker)
+		{
+			DateTime dateTime;
+			decimal value;
+
+            if (GetLastValue(ticker, out value, out dateTime))
+            {
+                return Json(new { Value = value }, JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+				return Json(new { Value = "Not found" }, JsonRequestBehavior.AllowGet);
+			}
+		}
+
 		bool GetLastValue(string ticker, out decimal value, out DateTime dateTime)
 		{
 			value = 0;

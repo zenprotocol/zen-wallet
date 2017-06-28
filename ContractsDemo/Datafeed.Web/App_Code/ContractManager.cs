@@ -25,7 +25,7 @@ namespace Datafeed.Web.App_Code
         {
             if (!EnsureFunds())
             {
-                Message = "No funds";
+                Message = "No funds for oracle contract.";
                 IsSetup = false;
                 return;
             }
@@ -38,14 +38,14 @@ namespace Datafeed.Web.App_Code
 
 			if (!EnsureContractActive(contractCode))
 			{
-				Message = "Could not activate Contract";
+				Message = "Could not activate oracle contract.";
 				IsSetup = false;
                 return;
 			}
 
 			if (!EnsureInitialOutpoint())
 			{
-				Message = "Could not create initial outpoint";
+				Message = "Could not create initial outpoint.";
 				IsSetup = false;
                 return;
 			}
