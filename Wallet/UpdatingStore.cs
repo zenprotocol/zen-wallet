@@ -37,9 +37,15 @@ namespace Wallet
 				GetValue(iter, _KeyColumn, ref keyValue);
 				TKey oValue = keyValue.Val as TKey;
 
-				if (keyMatchPredicate(oValue))
+                if (oValue != null)
 				{
-                    return true;
+                    try {
+                        if (keyMatchPredicate(oValue))
+                            return true;
+                    } catch (Exception e)
+                    {
+                        Console.WriteLine("Find", e);
+                    }
 				}
 
 				canIter = IterNext(ref iter);
