@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Configuration;
 using System.Web.Mvc;
 using System.Web.Mvc.Ajax;
@@ -46,6 +47,11 @@ namespace ContractsDiscovery.Web.Controllers
                     {
                         createCallOption.OracleErrorMessage = oracleStatus["message"].ToString();
                     }
+
+
+                    createCallOption.ControlAssets = GetSecureTokens();
+					createCallOption.OracleServiceUrl = WebConfigurationManager.AppSettings["oracleService"];
+                    createCallOption.Tickers.AddRange(new List<String> { "GOOG", "GOOGL", "YHOO", "TSLA", "INTC", "AMZN" });
 
 					model = createCallOption;
 					break;
@@ -196,10 +202,46 @@ namespace ContractsDiscovery.Web.Controllers
 					return null;
 				}
 			}
-			catch
+            catch //(Exception e)
 			{
 				return null;
 			}
+		}
+
+        Dictionary<string, string> GetSecureTokens()
+        {
+			return Directory.GetFiles(Path.Combine("db", "contracts"), "*.txt").Select(t =>
+			{
+				var hash = HttpServerUtility.UrlTokenDecode(System.IO.Path.GetFileNameWithoutExtension(t));
+				var code = System.IO.File.ReadAllText(t);
+
+				var activeContract = new ActiveContract();
+
+				activeContract.AddressUrl = HttpServerUtility.UrlTokenEncode(hash);
+				activeContract.Address = new Wallet.core.Data.Address(hash, Wallet.core.Data.AddressType.Contract).ToString();
+
+				Utils.SetContractInfo(activeContract, code);
+
+				var id = System.IO.Path.GetFileNameWithoutExtension(t);
+				var assetMetaDataFile = Path.Combine("db", "asset-metadata", $"{id}.json");
+				if (System.IO.File.Exists(assetMetaDataFile))
+				{
+					try
+					{
+						var json = System.IO.File.ReadAllText(assetMetaDataFile);
+						var assetMetaData = JsonConvert.DeserializeObject<AssetMetadata>(json);
+						activeContract.AssetName = assetMetaData.name;
+					}
+					catch
+					{
+
+					}
+				}
+
+				return activeContract;
+            })
+                            .Where(t=>t.Type == "secure-token-generator")
+                            .ToDictionary(t=>t.Address, t=> string.IsNullOrEmpty(t.AssetName) ? t.Address : $"{t.AssetName} ({t.Address})");
 		}
     }
 }

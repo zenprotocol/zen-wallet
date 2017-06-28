@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Wallet.core.Data;
 
 namespace ContractsDiscovery.Web.App_Data
@@ -15,6 +16,9 @@ namespace ContractsDiscovery.Web.App_Data
 		public DecimalField Strike { get; set; }
 		public DecimalField MinimumCollateralRatio { get; set; }
 		public PublicKeyField OwnerPubKey { get; set; }
+        public List<string> Tickers { get; set; }
+        public string OracleServiceUrl { get; set; }
+        public Dictionary<string, string> ControlAssets { get; set; }
 
         public CreateCallOption()
         {
@@ -27,6 +31,8 @@ namespace ContractsDiscovery.Web.App_Data
             Strike = new DecimalField();
             MinimumCollateralRatio = new DecimalField();
             OwnerPubKey = new PublicKeyField();
+            Tickers = new List<string>();
+            ControlAssets = new Dictionary<string, string>();
 
 			Numeraire.SetValue("cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
 			MinimumCollateralRatio.SetValue("1");

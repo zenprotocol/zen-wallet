@@ -3,91 +3,131 @@
 <h2>Create Call Option</h2>
 <br>
 
-@using (@Html.BeginForm("CallOption", "ContractCreation", FormMethod.Post))
+@using (@Html.BeginForm("CallOption", "ContractCreation", FormMethod.Post, new { @class = "form-horizontal"}))
 {
     <div class="form-group">
-		<label for="numeraire">Numeraire</label>
-        <!--input type="text" required="true" class="form-control" id="numeraire" name="numeraire" placeholder="Numeraire" value="@Model.Numeraire.Value"/-->
-        <input readonly type="text" required="true" class="form-control" id="numeraire" name="numeraire" placeholder="Numeraire" value="Zen"/>
-		@if (@Model.Numeraire.Invalid)
-		{
-			<small class="form-text text-muted">Invalid input</small>
-		}
-		<small class="form-text text-muted">We'll never share your email with anyone else.</small>
+		<label for="numeraire" class="col-sm-2 control-label">Numeraire</label>
+        <div class="col-sm-10">
+		    <input readonly type="text" required="true" class="form-control" id="numeraire" name="numeraire" placeholder="Numeraire" value="@Model.Numeraire.Value"/>
+			@if (@Model.Numeraire.Invalid)
+			{
+				<p class="text-left form-text text-muted">Invalid input</p>
+			}
+			<p class="text-left form-text text-muted">Commodity or good in terms of which all other prices are expressed. Default is Zen.</p>
+		</div>
     </div>
 
     <div class="form-group">
-		<label for="controlAsset">Control Asset</label>
-        <input type="text" required="true" class="form-control" id="controlAsset" name="controlAsset" placeholder="Control Asset" value="@Model.ControlAsset.Value"/>
-        @if (@Model.ControlAsset.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
+		<label for="controlAsset" class="col-sm-2 control-label">Control&nbsp;Asset</label>
+        <div class="col-sm-10">
+		
+	        <!--input type="text" required="true" class="form-control" id="controlAsset" name="controlAsset" placeholder="Control Asset" value="@Model.ControlAsset.Value"/-->
+            <select class="form-control" id="controlAsset" name="controlAsset" placeholder="Secure Token" value="@Model.ControlAsset.Value">
+            @foreach (var item in Model.ControlAssets)
+            {
+                <option value="@item.Key">@item.Value</option>
+            }
+            </select>
+		
+		    @if (@Model.ControlAsset.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+	        }
+    		<p class="text-left form-text text-muted">Please select your secure token. </p>
+        </div>
+   </div>
+
+    <div class="form-group">
+		<label for="oracle" class="col-sm-2 control-label">Oracle</label>
+	    <div class="col-sm-10">
+	        <input type="text" required="true" class="form-control" id="oracle" name="oracle" placeholder="Oracle Address" value="@Model.Oracle.Value"/>
+            <p class="text-left form-text text-muted">This is an <a href="@Model.OracleServiceUrl" target="_blank">Oracle</a> provided by Zen for the testnet.</p>
+            @if (!string.IsNullOrEmpty(Model.OracleErrorMessage))
+            {
+    		<p class="text-left form-text text-muted">Error: @Model.OracleErrorMessage</p>
+	        }
+		    @if (@Model.Oracle.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+	        }
+		</div>
     </div>
 
     <div class="form-group">
-		<label for="oracle">Oracle</label>
-        <small class="form-text text-muted">@Model.OracleErrorMessage</small>
-        <input readonly type="text" required="true" class="form-control" id="oracle" name="oracle" placeholder="Oracle Address" value="@Model.Oracle.Value"/>
-        @if (@Model.Oracle.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
+		<label for="controlAssetReturn" class="col-sm-2 control-label">Control&nbsp;Asset&nbsp;Return</label>
+	    <div class="col-sm-10">
+	        <input type="text" required="true" class="form-control" id="controlAssetReturn" name="controlAssetReturn" placeholder="Control Asset Return" value="@Model.ControlAssetReturn.Value"/>
+	        @if (@Model.ControlAssetReturn.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+	        }
+		    <p class="text-left form-text text-muted">Please copy your wallet's address here (Click the "Copy" button in the "Wallet" tab).</p>
+        </div>
+   </div>
+
+    <div class="form-group">
+		<label for="underlying" class="col-sm-2 control-label">Underlying</label>
+        <div class="col-sm-10">
+		    <select class="form-control" id="underlying" name="underlying" placeholder="Underlying">
+	        @foreach (var item in Model.Tickers)
+	        {
+			    <option>@item</option>
+			}
+		    </select>
+
+	    	@if (@Model.Underlying.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+            }
+    		<p class="text-left form-text text-muted">The underlying asset is the underlying ticker of the Call Option.</p>
+        </div>
+   </div>
+
+    <div class="form-group">
+    	<label for="price" class="col-sm-2 control-label">Premium</label>
+        <div class="col-sm-10">
+			<input type="number" step="any" min="0" required="true" class="form-control" id="price" name="price" placeholder="Premium" value="@Model.Price.Value"/>
+	        <p class="text-left form-text text-muted">Premium is the price for the purchase of a single Call Option.</p>
+		    @if (@Model.Price.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+	        }
+        </div>
     </div>
 
     <div class="form-group">
-		<label for="controlAssetReturn">Control Asset Return</label>
-        <input type="text" required="true" class="form-control" id="controlAssetReturn" name="controlAssetReturn" placeholder="Control Asset Return" value="@Model.ControlAssetReturn.Value"/>
-        @if (@Model.ControlAssetReturn.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
+        <label for="strike" class="col-sm-2 control-label">Strike</label>
+        <div class="col-sm-10">
+	        <input type="number" step="any" min="0" required="true" class="form-control" id="strike" name="strike" placeholder="Strike" value="@Model.Strike.Value"/>
+            <p class="text-left form-text text-muted">The price at which the Call Option can be exercised.</p>
+	        @if (@Model.Strike.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+	        }
+        </div>
+   </div>
+
+    <div class="form-group" style="display:none;">
+		<label for="minimumCollateralRatio" class="col-sm-2 control-label">Minimum Collateral Ratio</label>
+        <div class="col-sm-10">
+	        <input type="number" step="any" min="0" required="true" class="form-control" id="minimumCollateralRatio" name="minimumCollateralRatio" placeholder="Minimum Collateral Ratio" value="@Model.MinimumCollateralRatio.Value"/>
+		    @if (@Model.MinimumCollateralRatio.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+	        }
+	    </div>
     </div>
 
     <div class="form-group">
-		<label for="underlying">Underlying</label>
-        <input type="text" required="true" class="form-control" id="underlying" name="underlying" placeholder="Underlying" value="@Model.Underlying.Value"/>
-        @if (@Model.Underlying.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
-    </div>
-
-    <div class="form-group">
-    	<label for="price">Premium</label>
-		<input type="number" step="any" min="0" required="true" class="form-control" id="price" name="price" placeholder="Price" value="@Model.Price.Value"/>
-        @if (@Model.Price.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
-    </div>
-
-    <div class="form-group">
-        <label for="strike">Strike</label>
-        <input type="number" step="any" min="0" required="true" class="form-control" id="strike" name="strike" placeholder="Strike" value="@Model.Strike.Value"/>
-        @if (@Model.Strike.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
-    </div>
-
-  
-    <div class="form-group">
-		<label for="minimumCollateralRatio">Minimum Collateral Ratio</label>
-        <input type="number" step="any" min="0" required="true" class="form-control" id="minimumCollateralRatio" name="minimumCollateralRatio" placeholder="Minimum Collateral Ratio" value="@Model.MinimumCollateralRatio.Value"/>
-	    @if (@Model.MinimumCollateralRatio.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
-    </div>
-
-    <div class="form-group">
-		<label for="ownerPubKey">Owner PubKey</label>
-        <input type="text" required="true" class="form-control" id="ownerPubKey" name="ownerPubKey" placeholder="Owner PubKey" value="@Model.OwnerPubKey.Value"/>
-	    @if (@Model.OwnerPubKey.Invalid)
-        {
-            <small class="form-text text-muted">Invalid input</small>
-        }
+		<label for="ownerPubKey" class="col-sm-2 control-label">Owner&nbsp;PubKey</label>
+        <div class="col-sm-10">
+	        <input type="text" required="true" class="form-control" id="ownerPubKey" name="ownerPubKey" placeholder="Owner PubKey" value="@Model.OwnerPubKey.Value"/>
+		    @if (@Model.OwnerPubKey.Invalid)
+	        {
+	            <p class="text-left form-text text-muted">Invalid input</p>
+	        }
+            <p class="text-left form-text text-muted">Please copy a public-key from your wallet here (Click the "Copy Public Key" button in the "Wallet" tab).</p>
+        </div>
     </div>
 
     <input type="submit" class="btn-success" value="Create" />

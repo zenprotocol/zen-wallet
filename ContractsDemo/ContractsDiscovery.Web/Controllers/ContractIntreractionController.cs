@@ -187,7 +187,7 @@ namespace ContractsDiscovery.Web.Controllers
         async Task<string> GetOracleCommitmentData(string underlying, DateTime time)
         {
 			string oracleService = WebConfigurationManager.AppSettings["oracleService"];
-			var uri = new Uri($"{oracleService}/Data/GetData={underlying}");
+			var uri = new Uri($"{oracleService}/Data/GetData?ticker={underlying}");
 
             try
             {
