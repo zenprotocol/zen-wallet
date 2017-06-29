@@ -333,7 +333,6 @@ namespace BlockChain
 						UpdateMempool(dbTx, action.ConfirmedTxs, action.UnconfirmedTxs);
 						break;
 					case BlockVerificationHelper.BkResultEnum.Rejected:
-					case BlockVerificationHelper.BkResultEnum.KnownOrphan:
 						return action.Result;
 				}
 
