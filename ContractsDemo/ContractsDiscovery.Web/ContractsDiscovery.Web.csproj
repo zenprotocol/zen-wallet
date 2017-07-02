@@ -104,7 +104,6 @@
     <Folder Include="assets\" />
     <Folder Include="assets\css\" />
     <Folder Include="assets\js\" />
-    <Folder Include="Views\AssetMetadata\" />
     <Folder Include="db\" />
     <Folder Include="Views\Create\" />
     <Folder Include="Views\ContractCreation\" />
@@ -127,7 +126,6 @@
     <Compile Include="Utils.cs" />
     <Compile Include="Controllers\CreateController.cs" />
     <Compile Include="App_Data\AssetMetadata.cs" />
-    <Compile Include="Controllers\AssetMetadataController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="App_Data\CreateCallOption.cs" />
     <Compile Include="App_Data\CreateOracle.cs" />

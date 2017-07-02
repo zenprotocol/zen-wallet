@@ -368,9 +368,10 @@ namespace Zen
 		public async Task Connect()
 		{
             if (_CanConnect)
-    			await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
-
-			_CanConnect = false;
+            {
+                _CanConnect = false;
+                await NodeManager.Connect(JsonConvert.DeserializeObject<NetworkInfo>(File.ReadAllText(Settings.NetworkProfile)));
+            }
 		}
 
 		public void GUI(bool shutdownOnClose)

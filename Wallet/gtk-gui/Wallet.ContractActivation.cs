@@ -154,7 +154,7 @@ namespace Wallet
 			this.buttonApply.CanFocus = true;
 			this.buttonApply.Name = "buttonApply";
 			this.buttonApply.UseUnderline = true;
-			this.buttonApply.Label = global::Mono.Unix.Catalog.GetString("Button");
+			this.buttonApply.Label = global::Mono.Unix.Catalog.GetString("Apply");
 			this.hbox2.Add(this.buttonApply);
 			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonApply]));
 			w12.Position = 1;
