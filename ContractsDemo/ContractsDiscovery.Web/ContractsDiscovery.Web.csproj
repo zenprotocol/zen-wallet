@@ -139,6 +139,7 @@
     <Compile Include="App_Data\CommitmentData.cs" />
     <Compile Include="StockAPI.cs" />
     <Compile Include="Controllers\OracleDataController.cs" />
+    <Compile Include="Controllers\AssetMetadataController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Web.config" />
