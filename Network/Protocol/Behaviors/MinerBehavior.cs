@@ -230,14 +230,6 @@ namespace NBitcoin.Protocol.Behaviors
 			}
 			return result;
 		}
-		void AttachedNode_StateChanged(Node node, NodeState oldState)
-		{
-			if (node.State == NodeState.HandShaked)
-			{
-				_BlockBroadcastHub.Nodes.TryAdd(node, node);
-				AnnounceAll();
-			}
-		}
 			
 		private void AnnounceAll()
 		{
@@ -278,7 +270,6 @@ namespace NBitcoin.Protocol.Behaviors
 		Timer _Flush;
 		protected override void AttachCore()
 		{
-			AttachedNode.StateChanged += AttachedNode_StateChanged;
 			AttachedNode.MessageReceived += AttachedNode_MessageReceived;
 			_Flush = new Timer(o =>
 			{
@@ -288,7 +279,6 @@ namespace NBitcoin.Protocol.Behaviors
 
 		protected override void DetachCore()
 		{
-			AttachedNode.StateChanged -= AttachedNode_StateChanged;
 			AttachedNode.MessageReceived -= AttachedNode_MessageReceived;
 
 			Node unused;
