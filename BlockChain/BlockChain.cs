@@ -312,7 +312,6 @@ namespace BlockChain
 		BlockVerificationHelper.BkResult HandleBlock(HandleBlockAction a)
 		{
 			BlockVerificationHelper action = null;
-            var orphans = new List<Keyed<Types.Block>>();
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
@@ -331,22 +330,19 @@ namespace BlockChain
 						break;
 					case BlockVerificationHelper.BkResultEnum.Accepted:
 						UpdateMempool(dbTx, action.ConfirmedTxs, action.UnconfirmedTxs);
+						BlockStore.Orphans(dbTx, a.BkHash).ToList().ForEach(t => new HandleBlockAction(t.Key, t.Value, true).Publish());
 						break;
 					case BlockVerificationHelper.BkResultEnum.Rejected:
 						return action.Result;
 				}
-
-                orphans = BlockStore.Orphans(dbTx, a.BkHash).ToList();
 			}
 
-            orphans.ForEach(t => new HandleBlockAction(t.Key, t.Value, true).Publish());
-
-			action.QueuedActions.ForEach(t =>
+			action.QueueActions.ForEach(t =>
 			{
 				if (t is MessageAction)
 					(t as MessageAction).Message.Publish();
 				else
-					a.Publish();
+					t.Publish();
 			});
 
 			return action.Result;
