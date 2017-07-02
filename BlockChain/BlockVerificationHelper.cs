@@ -14,7 +14,7 @@ namespace BlockChain
         public BkResult Result { get; set; }
         public readonly HashDictionary<TransactionValidation.PointedTransaction> ConfirmedTxs;
         public readonly HashDictionary<Types.Transaction> UnconfirmedTxs;
-        public readonly List<QueueAction> QueuedActions;
+        public readonly List<QueueAction> QueueActions;
 
 		public enum BkResultEnum
 		{
@@ -58,7 +58,7 @@ namespace BlockChain
 		{
 			ConfirmedTxs = confirmedTxs ?? new HashDictionary<TransactionValidation.PointedTransaction>();
 			UnconfirmedTxs = invalidatedTxs ?? new HashDictionary<Types.Transaction>();
-			QueuedActions = queuedActions ?? new List<QueueAction>();
+			QueueActions = queuedActions ?? new List<QueueAction>();
 
 			_BlockChain = blockChain;
 			_DbTx = dbTx;
@@ -133,7 +133,7 @@ namespace BlockChain
 				else
 				{
 					blockChain.Timestamps.Init(bk.header.timestamp);
-					ExtendMain(QueuedActions, 0);
+					ExtendMain(QueueActions, 0);
 					Result = new BkResult(BkResultEnum.Accepted);
 					BlockChainTrace.Information("accepted genesis block", _Bk);
 					return;
@@ -164,7 +164,7 @@ namespace BlockChain
 
 			if (handleBranch) // make a branch block main
 			{
-				if (!ExtendMain(QueuedActions, totalWork))
+				if (!ExtendMain(QueueActions, totalWork))
 				{
 					Result = new BkResult(BkResultEnum.Rejected);
 					return;
@@ -210,9 +210,9 @@ namespace BlockChain
 							true,
 							ConfirmedTxs,
 							UnconfirmedTxs,
-							QueuedActions);
+							QueueActions);
 						
-						BlockChainTrace.Information($"new main chain bk {_bk.Value.header.blockNumber} {action.Result}", _bk.Value);
+                        BlockChainTrace.Information($"new main chain bk {_bk.Value.header.blockNumber} {action.Result.BkResultEnum}", _bk.Value);
 
 						if (action.Result.BkResultEnum == BkResultEnum.Rejected)
 						{
@@ -233,7 +233,7 @@ namespace BlockChain
 			}
 			else
 			{
-				if (!ExtendMain(QueuedActions, totalWork))
+				if (!ExtendMain(QueueActions, totalWork))
 				{
 					BlockChainTrace.Information("block rejected", _Bk);
 					Result = new BkResult(BkResultEnum.Rejected);
