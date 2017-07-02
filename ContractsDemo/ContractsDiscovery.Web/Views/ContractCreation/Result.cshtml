@@ -10,6 +10,12 @@ else
     </div>
 
     <div class="form-group">
-	    <textarea rows="20" class="form-control" placeholder="Code">@ViewBag.Code</textarea>
+		<h1 id="loading">Loading...</h1>
+	    <textarea id="code" style="display:none" rows="20" class="form-control" placeholder="Code">@ViewBag.Code</textarea>
 	</div>
 }
+
+<script>
+	$("#loading").hide()
+	$("#code").show()
+</script>
