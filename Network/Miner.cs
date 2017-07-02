@@ -68,7 +68,7 @@ namespace Network
 					while (!_Stopping)
 					{
 						Mine(Difficulty);
-						Thread.Sleep(10);
+						Thread.Sleep(100);
 					}
 				}
 				catch (ThreadInterruptedException tie)
@@ -85,6 +85,7 @@ namespace Network
 		}
 
 #if DEBUG
+        public bool SkipTxs { get; set; }
 		public void MineTestBlock()
 		{
 			Mine(0);
@@ -93,15 +94,38 @@ namespace Network
 
 		bool Mine(int difficulty)
 		{
+            byte[] txMerkleRoot;
+            FSharpList<Types.Transaction> txsList;
+
+#if DEBUG
+			if (SkipTxs)
+            {
+                txMerkleRoot = new byte[] { };
+                txsList = FSharpList<Types.Transaction>.Empty;
+            }
+            else
+#endif
 			if (BlockChain_.memPool.TxPool.Count == 0)
 			{
 				return false;
+			}
+            else
+			{
+				var txs = BlockChain_.memPool.TxPool.Select(t => TransactionValidation.unpoint(t.Value));
+				txsList = ListModule.OfSeq(txs);
+
+				txMerkleRoot = Merkle.merkleRoot(
+					new byte[] { },
+					Merkle.transactionHasher,
+					txsList
+				);
 			}
 
 			var tip = BlockChain_.Tip;
 
 			if (tip == null)
 			{
+				NodeServerTrace.Information("Miner: no tip");
 				return false;
 			}
 
@@ -109,15 +133,6 @@ namespace Network
 			var nonce = new byte[10];
 			var random = new Random();
 			var time = DateTime.Now.ToUniversalTime();
-
-			var txs = BlockChain_.memPool.TxPool.Select(t => TransactionValidation.unpoint(t.Value));
-			var txsList = ListModule.OfSeq(txs);
-
-			var txMerkleRoot = Merkle.merkleRoot(
-				new byte[] { },
-				Merkle.transactionHasher,
-				txsList
-			);
 
 			random.NextBytes(nonce);
 
