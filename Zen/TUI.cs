@@ -152,7 +152,8 @@ namespace Zen
 			var minerDialog = new Dialog(root) { Text = "Miner", Width = 70, Height = 18, Top = 2, Left = 6, Border = BorderStyle.Thick, Visible = false };
 			var radioMinerEnabled = new RadioButton(minerDialog) { Top = 1, Left = 1, Id = "minerIsEnabled", Text = "Enabled" };
 			var radioMinerDisabled = new RadioButton(minerDialog) { Top = 2, Left = 1, Id = "minerIsEnabled", Text = "Disabled" };
-			new Label(minerDialog) { Top = 4, Left = 1, Width = 10, Text = "Difficulty" };
+            var mineEmptyBlock = new Checkbox(minerDialog) { Top = 3, Left = 1, Id = "minerEmptyBlocks", Text = "Empty blocks" };
+            new Label(minerDialog) { Top = 4, Left = 1, Width = 10, Text = "Difficulty" };
 			var difficulty = new SingleLineTextbox(minerDialog) { Top = 4, Left = 15, Width = 10 };
 			var minerDialogMinerButton = new Button(minerDialog) { Top = 1, Left = 32, Width = 15, Text = "Mine Now" };
 			var minerDialogCloseButton = new Button(minerDialog) { Top = 1, Left = 50, Width = 18, Text = "Apply and Close" };
@@ -160,10 +161,16 @@ namespace Zen
 
 			Func<MinerLogData, string> minerLogData = log =>
 			{
-				return $"Block #{log.BlockNumber} {log.Status} with {log.Transactions} txs, in {log.TimeToMine} seconds";
+				return $"Block #{log.BlockNumber} {log.Status.BkResultEnum} with {log.Transactions} txs, in {log.TimeToMine} seconds";
 			};
 
 			app.NodeManager.Miner.OnMinedBlock += log => minerLog.Items.Add(minerLogData(log));
+
+            mineEmptyBlock.Clicked += (sender, e) => {
+				var miner = app.NodeManager.Miner;
+
+                miner.SkipTxs = ((Checkbox)sender).Checked;
+			};
 
 			minerDialogCloseButton.Clicked += (sender, e) =>
 			{
@@ -400,6 +407,7 @@ namespace Zen
 			app.WalletOnItemsHandler = wallet_OnItems;
 
 			//	app.Init();
+
 			root.Run();
 		}
 
