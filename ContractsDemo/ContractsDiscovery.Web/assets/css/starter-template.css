@@ -1,7 +1,64 @@
 body {
-  padding-top: 50px;
+  padding-top: 103px;
+  color: #5e5e5e;
+  font-family: 'Source Sans Pro', sans-serif;
 }
-.starter-template {
-  padding: 40px 15px;
-  text-align: center;
+
+.navbar-brand img.navbarLogo {
+  height: 52.5px;
+  margin-top: 10px;
+}
+
+nav.navbar-inverse {
+  height: 103px;
+  background: #1c1b33;
+}
+
+.navbar-inverse .navbar-nav>li>a {
+  line-height: 73px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 15px;
+  color: #8aa0bf;
+  font-weight: 100;
+  letter-spacing: 0.2px;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover, .navbar-inverse .navbar-nav>li.activeLink>a {
+  color: #83d6f3;
+  font-weight: 400;
+}
+
+.titleSection {
+  margin-bottom: 36px;
+}
+
+h1 {
+  margin-top: 38.5px;
+  color: #5e5e5e;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 600;
+  font-size: 36px;
+  letter-spacing: 0.6px;
+}
+
+h5 {
+  font-size: 18px;
+  font-weight: 200;
+  letter-spacing: 0.5px;
+}
+
+thead { background-color: #e2e2e2; }
+
+table.zenTable tr { height: 50px; }
+
+table.zenTable.table>thead>tr>th {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  color: #000000;
+}
+
+tbody tr td, thead, table.zenTable.table>thead>tr>th {
+  border: solid 0.5px #d4d4d4;
 }

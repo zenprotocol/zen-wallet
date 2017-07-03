@@ -104,10 +104,27 @@ namespace ContractsDiscovery.Web.Controllers
                     var contractCode = ContractExamples.Execution.quotedToString(contract);
 					
                     var code = Utils.Dos2Unix(contractCode);
-                    var hash = Convert.ToBase64String(Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)));
+                    var contractHash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
 
 					ViewBag.Code = code;
-					ViewBag.Hash = hash;
+					ViewBag.Hash = Convert.ToBase64String(contractHash);
+
+					var file = $"{HttpServerUtility.UrlTokenEncode(contractHash)}";
+
+					Directory.CreateDirectory(Path.Combine("db", "contracts"));
+					Directory.CreateDirectory(Path.Combine("db", "asset-metadata"));
+
+					if (!System.IO.File.Exists(file))
+					{
+						System.IO.File.WriteAllText(Path.ChangeExtension(Path.Combine("db", "contracts", file), ".txt"), contractCode);
+					}
+
+					System.IO.File.WriteAllText(Path.ChangeExtension(Path.Combine("db", "asset-metadata", file), ".json"), JsonConvert.SerializeObject(new AssetMetadata()
+					{
+						name = Request["assetName"]
+
+					}));
+
                 } catch (Exception e) {
                     ViewBag.Message = "Error creating contract: " + e.Message;
                 }
@@ -172,10 +189,25 @@ namespace ContractsDiscovery.Web.Controllers
 					var contractCode = ContractExamples.Execution.quotedToString(contract);
 
 					var code = Utils.Dos2Unix(contractCode);
-					var hash = Convert.ToBase64String(Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)));
+                    var contractHash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
 
 					ViewBag.Code = code;
-                    ViewBag.Hash = hash;
+                    ViewBag.Hash = Convert.ToBase64String(contractHash);
+
+                    var file = $"{HttpServerUtility.UrlTokenEncode(contractHash)}";
+
+                    Directory.CreateDirectory(Path.Combine("db", "contracts"));
+					Directory.CreateDirectory(Path.Combine("db", "asset-metadata"));
+
+					if (!System.IO.File.Exists(file))
+					{
+						System.IO.File.WriteAllText(Path.ChangeExtension(Path.Combine("db", "contracts", file), ".txt"), contractCode);
+					}
+
+					System.IO.File.WriteAllText(Path.ChangeExtension(Path.Combine("db", "asset-metadata", file), ".json"), JsonConvert.SerializeObject(new AssetMetadata()
+					{
+						name = Request["assetName"]
+					}));
 				}
 				catch (Exception e)
 				{

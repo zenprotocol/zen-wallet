@@ -1,17 +1,22 @@
-﻿<!DOCTYPE html>
+@{
+    String controller = HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString();
+}
+
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>@ViewBag.Title</title>
+    <title>Zen | @controller</title>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-        
+
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -28,7 +33,7 @@
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
     <script src="/assets/js/ie-emulation-modes-warning.js"></script>
 
-        
+
   </head>
   <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -40,15 +45,17 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">Zen Contracts Discovery</a>
+	      <a class="navbar-brand" href="/">
+	        <img class='navbarLogo' alt="Brand" src="../../assets/img/zen_logo.png">
+	      </a>
+
         </div>
         <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li class="_active"><a href="/Create">Update Metadata</a></li>
-            <li><a href="/ContractCreation">Create Contract</a></li>
-            <li><a href="/Faucet">Faucet</a></li>
-            <li><a href="/Oracle">Oracle</a></li>
-            <li><a href="/OracleData">Search Oracle Data</a></li>
+          <ul class="nav navbar-nav navbar-right">
+            <li class="@(controller == "Home" ? "activeLink": "")"><a href="/">EXPLORER</a></li>
+            <li class="@(controller == "ContractCreation" ? "activeLink": "")"><a href="/ContractCreation">TEMPLATES</a></li>
+            <li class="@(controller == "Faucet" ? "activeLink": "")"><a href="/Faucet">FAUCET</a></li>
+            <li class="@(controller == "Oracle" ? "activeLink": "")"><a href="/Oracle">ORACLE</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -56,13 +63,11 @@
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-		
+
     <div class="container">
-        <div class="starter-template">
-            @RenderBody()
-        </div>
+      @RenderBody()
     </div><!-- /.container -->
-        
+
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="/assets/js/ie10-viewport-bug-workaround.js"></script>
