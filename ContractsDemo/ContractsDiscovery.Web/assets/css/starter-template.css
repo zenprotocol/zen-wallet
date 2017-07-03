@@ -25,7 +25,7 @@ nav.navbar-inverse {
   letter-spacing: 0.2px;
 }
 
-.navbar-inverse .navbar-nav>li>a:hover {
+.navbar-inverse .navbar-nav>li>a:hover, .navbar-inverse .navbar-nav>li.activeLink>a {
   color: #83d6f3;
   font-weight: 400;
 }
