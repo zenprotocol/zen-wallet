@@ -111,6 +111,7 @@
     <Folder Include="Views\Faucet\" />
     <Folder Include="Views\Oracle\" />
     <Folder Include="Views\OracleData\" />
+    <Folder Include="assets\img\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\ContractCreationController.cs" />
@@ -167,6 +168,10 @@
     <Content Include="Views\Oracle\Index.cshtml" />
     <Content Include="Views\OracleData\Search.cshtml" />
     <Content Include="Views\OracleData\ShowTicker.cshtml" />
+    <Content Include="assets\css\ie10-viewport-bug-workaround.css" />
+    <Content Include="assets\css\starter-template.css" />
+    <Content Include="assets\js\ie-emulation-modes-warning.js" />
+    <Content Include="assets\js\ie10-viewport-bug-workaround.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
