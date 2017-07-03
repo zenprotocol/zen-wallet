@@ -100,22 +100,32 @@ namespace Wallet
 
 		public List<TransactionItem> TransactionsList { 
 			set {
-				listStore.Clear ();
+                Gtk.Application.Invoke(delegate
+                {
+                    listStore.Clear();
 
-				foreach (TransactionItem transactionItem in value) {
-					AddTransactionItem(transactionItem);
-				}
+                    foreach (TransactionItem transactionItem in value)
+                    {
+                        AddTransactionItem(transactionItem);
+                    }
+                });
 			}
 		}
 
-		public void Clear()
-		{
-			listStore.Clear();
-		}
+        public void Clear()
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                listStore.Clear();
+            });
+        }
 
 		public void AddTransactionItem(TransactionItem transactionItem)
 		{
-			listStore.AppendValues(false, transactionItem);
-		}
+            Gtk.Application.Invoke(delegate
+            {
+                listStore.AppendValues(false, transactionItem);
+            });
+        }   
 	}
 }

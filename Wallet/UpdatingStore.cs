@@ -17,14 +17,17 @@ namespace Wallet
             TreeIter iter;
             var found = Find(keyMatchPredicate, out iter);
 
-			if (found)
+            Gtk.Application.Invoke(delegate
             {
-                SetValues(iter, values);
-            }
-            else
-			{
-				AppendValues(values);
-			}
+                if (found)
+                {
+                    SetValues(iter, values);
+                }
+                else
+                {
+                    AppendValues(values);
+                }
+            });
 		}
 
         public bool Find(Predicate<TKey> keyMatchPredicate, out TreeIter iter)

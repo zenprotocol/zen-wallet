@@ -105,17 +105,20 @@ namespace Wallet
         { 
             set 
             {
-                foreach (var _asset in value)
-				{
-					var iter = _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
+                Gtk.Application.Invoke(delegate
+                {
+                    foreach (var _asset in value)
+                    {
+                        var iter = _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
 
-					if (_CurrentAsset != null && _asset.Asset.SequenceEqual(_CurrentAsset))
-					{
-						comboboxAsset.SetActiveIter(iter);
-					}
+                        if (_CurrentAsset != null && _asset.Asset.SequenceEqual(_CurrentAsset))
+                        {
+                            comboboxAsset.SetActiveIter(iter);
+                        }
 
-					_AssetsStoreSecureToken.AppendValues(_asset.Asset, _asset.Display);
-				}
+                        _AssetsStoreSecureToken.AppendValues(_asset.Asset, _asset.Display);
+                    }
+                });
             } 
         }
 
@@ -123,17 +126,20 @@ namespace Wallet
         {
             set
             {
-                _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
-                _AssetsStoreSecureToken.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
-
-                if (_CurrentAsset != null && _CurrentAsset.SequenceEqual(value.Asset))
+                Gtk.Application.Invoke(delegate
                 {
-                    Gtk.Application.Invoke(delegate
+                    _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                    _AssetsStoreSecureToken.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+
+                    if (_CurrentAsset != null && _CurrentAsset.SequenceEqual(value.Asset))
                     {
-                        labelSelectedAsset.Text = value.Display;
-                        labelSelectedAsset1.Text = value.Display;
-                    });
-                }
+                        Gtk.Application.Invoke(delegate
+                        {
+                            labelSelectedAsset.Text = value.Display;
+                            labelSelectedAsset1.Text = value.Display;
+                        });
+                    }
+                });
             }
         }
 

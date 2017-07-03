@@ -56,7 +56,10 @@ namespace Wallet
         {
             set
             {
-                _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                Gtk.Application.Invoke(delegate
+                {
+                    _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                });
             }
         }
 
@@ -64,10 +67,13 @@ namespace Wallet
 		{
 			set
 			{
-				foreach (var _asset in value)
-				{
-					_AssetsStore.AppendValues(_asset.Asset, _asset.Display);
-				}
+                Gtk.Application.Invoke(delegate
+                {
+                    foreach (var _asset in value)
+                    {
+                        _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
+                    }
+                });
 			}
 		}
 	}

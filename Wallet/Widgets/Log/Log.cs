@@ -144,51 +144,54 @@ namespace Wallet
 
         void UpdateView()
         {
-			logEntryStore.Clear();
+            Gtk.Application.Invoke(delegate
+            {
+                logEntryStore.Clear();
 
-			ulong sent = 0;
-			ulong received = 0;
-			ulong total = 0;
+                ulong sent = 0;
+                ulong received = 0;
+                ulong total = 0;
 
-            if (_TxDeltas != null && _SelectedAsset != null)
-                _TxDeltas.ForEach(
-                    txDelta => txDelta.AssetDeltas.Where(
-                        assetDelta => assetDelta.Key.SequenceEqual(_SelectedAsset)).ToList().ForEach(
-							assetDelta =>
-					{
-						var absValue = (ulong)Math.Abs(assetDelta.Value);
+                if (_TxDeltas != null && _SelectedAsset != null)
+                    _TxDeltas.ForEach(
+                        txDelta => txDelta.AssetDeltas.Where(
+                            assetDelta => assetDelta.Key.SequenceEqual(_SelectedAsset)).ToList().ForEach(
+                                assetDelta =>
+                        {
+                            var absValue = (ulong)Math.Abs(assetDelta.Value);
 
-						total += absValue;
+                            total += absValue;
 
-						if (assetDelta.Value < 0)
-						{
-							sent += absValue;
-						}
-						else
-						{
-							received += absValue;
-						}
+                            if (assetDelta.Value < 0)
+                            {
+                                sent += absValue;
+                            }
+                            else
+                            {
+                                received += absValue;
+                            }
 
-						logEntryStore.AppendValues(new LogEntryRow(assetDelta.Key, new LogEntryItem(
-							absValue,
-							assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-							assetDelta.Key,
-							txDelta.Time,
-							Convert.ToBase64String(txDelta.TxHash),
-							txDelta.TxState.ToString(),
-							assetDelta.Value)));
-					}));
+                            logEntryStore.AppendValues(new LogEntryRow(assetDelta.Key, new LogEntryItem(
+                                absValue,
+                                assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+                                assetDelta.Key,
+                                txDelta.Time,
+                                Convert.ToBase64String(txDelta.TxHash),
+                                txDelta.TxState.ToString(),
+                                assetDelta.Value)));
+                        }));
 
-			TreeIter storeIter;
-			logSummaryStore.GetIterFirst(out storeIter);
+                TreeIter storeIter;
+                logSummaryStore.GetIterFirst(out storeIter);
 
-			var logSummaryRow = (LogSummaryRow)logSummaryStore.GetValue(storeIter, 0);
+                var logSummaryRow = (LogSummaryRow)logSummaryStore.GetValue(storeIter, 0);
 
-			logSummaryRow[0] = sent;
-			logSummaryRow[1] = received;
-			logSummaryRow[2] = total;
+                logSummaryRow[0] = sent;
+                logSummaryRow[1] = received;
+                logSummaryRow[2] = total;
 
-			logSummaryStore.SetValue(storeIter, 0, logSummaryRow);
+                logSummaryStore.SetValue(storeIter, 0, logSummaryRow);
+            });
         }
     }
 }
