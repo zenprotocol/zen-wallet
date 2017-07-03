@@ -99,7 +99,7 @@ namespace Zen
 					break;
 				case LaunchModeEnum.Headless:
                     Console.WriteLine("Running headless.");
-                    Console.WriteLine("My address: " + app.WalletManager.GetUnusedKey().Address);
+                    //Console.WriteLine("My address: " + app.WalletManager.GetUnusedKey().Address);
                     //TODO: wait for kill signal and only then dispose
                     //app.Dispose();
 					break;
