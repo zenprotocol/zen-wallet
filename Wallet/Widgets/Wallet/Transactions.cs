@@ -83,11 +83,13 @@ namespace Wallet
 			bool hasSelection = ((TreeSelection)sender).GetSelected (out selectionIter);
 
 			TreeIter storeIter;
-			listStore.GetIterFirst (out storeIter);
+			var canIter = listStore.GetIterFirst (out storeIter);
 
-			do {
-				listStore.SetValue (storeIter, (int)Columns.IsExpanded, hasSelection && storeIter.Equals (selectionIter));
-			} while (listStore.IterNext (ref storeIter));
+            while (canIter)
+            {
+                listStore.SetValue(storeIter, (int)Columns.IsExpanded, hasSelection && storeIter.Equals(selectionIter));
+                canIter = listStore.IterNext(ref storeIter);
+            }
 		}
 			
 		private void RenderCell (Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)

@@ -324,13 +324,20 @@ namespace Wallet
 			{
 				var comboBox = sender as Gtk.ComboBox;
                 TreeIter iter;
-				comboBox.GetActiveIter(out iter);
-				var value = new GLib.Value();
-				comboBox.Model.GetValue(iter, 0, ref value);
-                byte[] asset = value.Val as byte[];
-				SendInfo.Asset = asset;
 
-                var assetMatadataList = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(asset));
+                if (comboBox.GetActiveIter(out iter))
+                {
+                    var value = new GLib.Value();
+                    comboBox.Model.GetValue(iter, 0, ref value);
+                    byte[] asset = value.Val as byte[];
+                    SendInfo.Asset = asset;
+                }
+                else
+                {
+                    SendInfo.Asset = null;
+				}
+
+                var assetMatadataList = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(SendInfo.Asset));
 
                 if (assetMatadataList.Count() != 0)
                 {
@@ -345,11 +352,17 @@ namespace Wallet
 			{
 			    var comboBox = sender as Gtk.ComboBox;
 			    TreeIter iter;
-			    comboBox.GetActiveIter(out iter);
-			    var value = new GLib.Value();
-			    comboBox.Model.GetValue(iter, 0, ref value);
-			    byte[] asset = value.Val as byte[];
-                SendInfo.SecureToken = asset;
+                if (comboBox.GetActiveIter(out iter))
+                {
+                    var value = new GLib.Value();
+                    comboBox.Model.GetValue(iter, 0, ref value);
+                    byte[] asset = value.Val as byte[];
+                    SendInfo.SecureToken = asset;
+                }
+                else
+                {
+                    SendInfo.SecureToken = null;
+                }
 			};
 
 			UpdateBalance();

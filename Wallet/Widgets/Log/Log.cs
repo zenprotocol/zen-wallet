@@ -182,15 +182,17 @@ namespace Wallet
                         }));
 
                 TreeIter storeIter;
-                logSummaryStore.GetIterFirst(out storeIter);
 
-                var logSummaryRow = (LogSummaryRow)logSummaryStore.GetValue(storeIter, 0);
+                if (logSummaryStore.GetIterFirst(out storeIter))
+                {
+                    var logSummaryRow = (LogSummaryRow)logSummaryStore.GetValue(storeIter, 0);
 
-                logSummaryRow[0] = sent;
-                logSummaryRow[1] = received;
-                logSummaryRow[2] = total;
+                    logSummaryRow[0] = sent;
+                    logSummaryRow[1] = received;
+                    logSummaryRow[2] = total;
 
-                logSummaryStore.SetValue(storeIter, 0, logSummaryRow);
+                    logSummaryStore.SetValue(storeIter, 0, logSummaryRow);
+                }
             });
         }
     }

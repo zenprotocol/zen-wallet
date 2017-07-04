@@ -50,9 +50,10 @@ namespace Wallet
                     try
                     {
                         TreeIter iter;
-                        listStore.GetIterFirst(out iter);
 
-                        do
+                        var canIter = listStore.GetIterFirst(out iter);
+
+                        while (canIter)
                         {
                             var key = new GLib.Value();
                             listStore.GetValue(iter, 0, ref key);
@@ -63,7 +64,9 @@ namespace Wallet
                                 listStore.SetValue(iter, 0, t.Display);
                                 break;
                             }
-                        } while (listStore.IterNext(ref iter));
+
+                            canIter = listStore.IterNext(ref iter);
+                        }
                     } catch 
                     {
                         Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");

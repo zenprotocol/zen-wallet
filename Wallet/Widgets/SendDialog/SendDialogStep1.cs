@@ -31,10 +31,12 @@ namespace Wallet
 			{
 				var comboBox = sender as Gtk.ComboBox;
 
-				comboBox.GetActiveIter(out iter);
-				var value = new GLib.Value();
-				comboBox.Model.GetValue(iter, 0, ref value);
-				asset = keys[value.Val as string];
+                if (comboBox.GetActiveIter(out iter))
+                {
+                    var value = new GLib.Value();
+                    comboBox.Model.GetValue(iter, 0, ref value);
+                    asset = keys[value.Val as string];
+                }
 			};
 
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
