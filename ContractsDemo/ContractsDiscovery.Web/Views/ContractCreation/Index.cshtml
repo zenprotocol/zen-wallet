@@ -1,7 +1,67 @@
-﻿@Html.ActionLink("Create a Secure Token contract", "FromTemplate", "ContractCreation", new { id = "TokenGenerator" }, null)
-<br><br>
-@Html.ActionLink("Create a Call Option contract", "FromTemplate", "ContractCreation", new { id = "CallOption" }, null)
-<br><br>
+<div class="titleSection">
+	<h1>Contract Templates</h1>
+	<h5>Browse all of the contract templates and deploy your own</h5>
+</div>
+
+<table class="table zenTable">
+	<thead>
+		<tr>
+			<th>No.</th>
+			<th>Contract Type</th>
+			<th>Contract Terms</th>
+			<th></th>
+		</tr>
+	</thead>
+    <tbody>
+
+		<tr>
+			<td><p class="text-left">1.</p></td>
+			<td><p class="text-left">Vanilla Call Option</p></td>
+			<td><p class="text-left">A simple call option including a premium, collateral, strike price and a stock price ticker.</p></td>
+			<td><p class="text-left">@Html.ActionLink("Create", "FromTemplate", "ContractCreation", new { id = "CallOption" },
+new { @class = "zen-blue-button"}) </p></td>
+		</tr>
+
+    <tr>
+			<td><p class="text-left">2.</p></td>
+			<td><p class="text-left">Secure Token</p></td>
+			<td><p class="text-left">This contract is required for controling other contracts.</p></td>
+			<td><p class="text-left">@Html.ActionLink("Create", "FromTemplate", "ContractCreation", new { id = "TokenGenerator" },
+new { @class = "zen-blue-button"})</p></td>
+		</tr>
+
+    <tr>
+			<td><p class="text-left">3.</p></td>
+			<td><p class="text-left">ETF</p></td>
+			<td><p class="text-left">An ETF contract which tracks the prices of multiple stock prices.</p></td>
+			<td><p class="text-left">Coming soon...</p></td>
+		</tr>
+
+    <tr>
+			<td><p class="text-left">4.</p></td>
+			<td><p class="text-left">Flight Cancelation Insurance</p></td>
+			<td><p class="text-left">An contract to track flight cancelations and pay out the insurance if the flight gets canceled.</p></td>
+			<td><p class="text-left">Coming soon...</p></td>
+		</tr>
+
+    <tr>
+			<td><p class="text-left">5.</p></td>
+			<td><p class="text-left">Property derivative</p></td>
+			<td><p class="text-left">A contract whose value is derived from the value of an underlying real estate asset.</p></td>
+			<td><p class="text-left">Coming soon...</p></td>
+		</tr>
+
+    <tr>
+			<td><p class="text-left">6.</p></td>
+			<td><p class="text-left">CFD</p></td>
+			<td><p class="text-left">A CFD is a tradable instrument that mirrors the movements of the asset underlying it. It allows for profits or losses to be realized when the underlying asset moves in relation to the position taken, but the actual underlying asset is never owned.</p></td>
+			<td><p class="text-left">Coming soon...</p></td>
+		</tr>
+
+	</tbody>
+</table>
+
+
 <!--@Html.ActionLink("Create an Oracle contract", "FromTemplate", "ContractCreation", new { id = "Oracle" }, null)
 <br><br-->
 
