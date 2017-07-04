@@ -1,89 +1,101 @@
 ﻿@model ContractsDiscovery.Web.App_Data.ContractData
 
+<ol class="breadcrumb zen-breadcrumbs">
+  <li><a href="/">Contract Explorer</a></li>
+  <li class="active">@Model.ActiveContract.Description (@Model.ActiveContract.Underlying)</li>
+</ol>
+
 @if (!string.IsNullOrEmpty(@Model.ActiveContract.AssetName))
 {
 <h1>@Model.ActiveContract.AssetName</h1>
 }
-<table class="table">
-    <tbody>
-		@if (!string.IsNullOrEmpty(@Model.ActiveContract.Description))
-		{
-        <tr>
-            <td><p class="text-left">Type:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.Description</p></td>
-        </tr>
-		}
-	    <tr>
-	        <td><p class="text-left">Address:</p></td>
-	        <td><p class="text-left">@Model.ActiveContract.Address</p></td>
-	    </tr>
-        <!--tr>
-            <td><p class="text-left">Asset metadata version:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.AssetMetadataVersion</p></td>
-        </tr>
-        <tr>
-            <td><p class="text-left">Asset image URL:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.AssetImageUrl</p></td>
-        </tr-->
-        <!--tr>
-            <td><p class="text-left">Last block:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.LastBlock</p></td>
-        </tr-->
-        @if (@Model.ActiveContract.Type == "call-option")
-        {
-        <tr>
-            <td><p class="text-left">Control Asset:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.ControlAsset</p></td>
-        </tr>
-        <tr>
-            <td><p class="text-left">Premium:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.Premium</p></td>
-        </tr>
-        <tr>
-            <td><p class="text-left">Strike:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.Strike</p></td>
-        </tr>
-        <tr>
-            <td><p class="text-left">Underlying:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.Underlying</p></td>
-        </tr>
-        <tr>
-            <td><p class="text-left">Oracle:</p></td>
-            <td><p class="text-left"><a href="@Model.ActiveContract.OracleTickerUrl" target="_blank">@Model.ActiveContract.Oracle</a></p></td>
-        </tr>
-		}
-        <tr>
-            <td><p class="text-left">UTXOs:</p></td>
-            <td><p class="text-left">@Model.ActiveContract.TotalAssets</p></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-        </tr>
-    </tbody>
-</table>
 
-<div>
-@using (@Html.BeginForm("PrepareAction", "ContractInteraction", FormMethod.Post))
-{
-	@Html.HiddenFor(m => m.ActiveContract.Address)
-                
-	switch (@Model.ActiveContract.Type)
+
+<div class="row">
+  <div class="col-md-8">
+    <table class="table">
+        <tbody>
+    		@if (!string.IsNullOrEmpty(@Model.ActiveContract.Description))
+    		{
+            <tr>
+                <td><p class="text-left">Type:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.Description</p></td>
+            </tr>
+    		}
+    	    <tr>
+    	        <td><p class="text-left">Address:</p></td>
+    	        <td><p class="text-left">@Model.ActiveContract.Address</p></td>
+    	    </tr>
+            <!--tr>
+                <td><p class="text-left">Asset metadata version:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.AssetMetadataVersion</p></td>
+            </tr>
+            <tr>
+                <td><p class="text-left">Asset image URL:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.AssetImageUrl</p></td>
+            </tr-->
+            <!--tr>
+                <td><p class="text-left">Last block:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.LastBlock</p></td>
+            </tr-->
+            @if (@Model.ActiveContract.Type == "call-option")
+            {
+            <tr>
+                <td><p class="text-left">Control Asset:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.ControlAsset</p></td>
+            </tr>
+            <tr>
+                <td><p class="text-left">Premium:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.Premium</p></td>
+            </tr>
+            <tr>
+                <td><p class="text-left">Strike:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.Strike</p></td>
+            </tr>
+            <tr>
+                <td><p class="text-left">Underlying:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.Underlying</p></td>
+            </tr>
+            <tr>
+                <td><p class="text-left">Oracle:</p></td>
+                <td><p class="text-left"><a href="@Model.ActiveContract.OracleTickerUrl" target="_blank">@Model.ActiveContract.Oracle</a></p></td>
+            </tr>
+    		}
+            <tr>
+                <td><p class="text-left">UTXOs:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.TotalAssets</p></td>
+            </tr>
+        </tbody>
+    </table>
+  </div>
+  <div class="col-md-4">
+
+    @using (@Html.BeginForm("PrepareAction", "ContractInteraction", FormMethod.Post))
     {
-        case "call-option":
-            <button type="submit" value="Collateralize" name="action" class="btn btn-primary">Collateralize</button>
-            <button type="submit" value="Buy" name="action" class="btn btn-primary">Buy</button>
-            <button type="submit" value="Exercise" name="action" class="btn btn-primary">Exercise</button>
-            <button type="submit" value="Close" name="action" class="btn btn-primary">Close</button>
-            break;
-        case "secure-token-generator":
-            <button type="submit" value="GetTokens" name="action" class="btn btn-primary">Get Tokens</button>
-            break;
+    	@Html.HiddenFor(m => m.ActiveContract.Address)
+
+    	switch (@Model.ActiveContract.Type)
+        {
+            case "call-option":
+              <div>
+                <button type="submit" value="Buy" name="action" class="zen-button zen-blue-button">Buy</button>
+                <button type="submit" value="Exercise" name="action" class="zen-button zen-blue-button">Exercise</button>
+              </div>
+              <hr class='button-devider' />
+              <div>
+              <button type="submit" value="Collateralize" name="action" class="zen-button zen-white-button">Collateralize</button>
+                <button type="submit" value="Close" name="action" class="zen-button zen-white-button">Close</button>
+              </div>
+                break;
+            case "secure-token-generator":
+                <button type="submit" value="GetTokens" name="action" class="zen-blue-button">Get Tokens</button>
+                break;
+        }
     }
-}
-</div>          
-<br>
-<br>
+
+  </div>
+</div>
+<h3>Contract code</h3>
 <div class="form-group">
     <textarea rows="20" class="form-control" placeholder="Code">@Model.ActiveContract.Code</textarea>
 </div>
