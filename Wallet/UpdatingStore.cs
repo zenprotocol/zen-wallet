@@ -14,11 +14,11 @@ namespace Wallet
 
 		public void Update(Predicate<TKey> keyMatchPredicate, params object[] values)
 		{
-            TreeIter iter;
-            var found = Find(keyMatchPredicate, out iter);
-
             Gtk.Application.Invoke(delegate
             {
+				TreeIter iter;
+				var found = Find(keyMatchPredicate, out iter);
+				
                 if (found)
                 {
                     SetValues(iter, values);
@@ -38,7 +38,7 @@ namespace Wallet
 			{
 				var keyValue = new GLib.Value();
 				GetValue(iter, _KeyColumn, ref keyValue);
-				TKey oValue = keyValue.Val as TKey;
+				var oValue = keyValue.Val as TKey;
 
                 if (oValue != null)
 				{

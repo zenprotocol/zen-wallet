@@ -74,28 +74,29 @@ namespace Wallet
 			}
 
             App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
-			{
-			    Gtk.Application.Invoke(delegate
-			    {
-			        try
-			        {
-						bool found = false;
-						TreeIter iter;
-						secureTokenComboboxStore.GetIterFirst(out iter);
+            {
+                Gtk.Application.Invoke(delegate
+                {
+                    try
+                    {
+                        bool found = false;
+                        TreeIter iter;
+                        var canIter = secureTokenComboboxStore.GetIterFirst(out iter);
 
-						do
-			            {
-			                var key = new GLib.Value();
-			                secureTokenComboboxStore.GetValue(iter, 0, ref key);
-			                byte[] _asset = key.Val as byte[];
+                        while (canIter)
+                        {
+                            var key = new GLib.Value();
+                            secureTokenComboboxStore.GetValue(iter, 0, ref key);
+                            byte[] _asset = key.Val as byte[];
 
-			                if (_asset != null && _asset.SequenceEqual(t.Asset))
-			                {
-			                    secureTokenComboboxStore.SetValue(iter, 1, t.Display);
-			                    found = true;
-			                    break;
-			                }
-			            } while (secureTokenComboboxStore.IterNext(ref iter));
+                            if (_asset != null && _asset.SequenceEqual(t.Asset))
+                            {
+                                secureTokenComboboxStore.SetValue(iter, 1, t.Display);
+                                found = true;
+                                break;
+                            }
+                            canIter = secureTokenComboboxStore.IterNext(ref iter);
+                        }
 
 			            if (!found)
 			            {
@@ -113,11 +114,17 @@ namespace Wallet
 			{
 				var comboBox = sender as Gtk.ComboBox;
 				TreeIter iter;
-				comboBox.GetActiveIter(out iter);
-				var value = new GLib.Value();
-				comboBox.Model.GetValue(iter, 0, ref value);
-				byte[] asset = value.Val as byte[];
-                SecureToken = asset.Length == 0 ? null : asset;
+                if (comboBox.GetActiveIter(out iter))
+                {
+                    var value = new GLib.Value();
+                    comboBox.Model.GetValue(iter, 0, ref value);
+                    byte[] asset = value.Val as byte[];
+                    SecureToken = asset.Length == 0 ? null : asset;
+                }
+                else
+                {
+                    SecureToken = null;
+                }
 			};
 		}
 
