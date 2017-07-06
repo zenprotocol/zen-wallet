@@ -6,26 +6,27 @@ using Store;
 
 namespace BlockChain.Data
 {
-	public class ICTxPool : TxPoolBase
-	{
-		//public TxPool TxPool { get; set; }
+    public class ICTxPool : KnownTxPool
+    {
+		public override IEnumerable<Tuple<IPool, byte[]>> GetDependencies(byte[] txHash)
+		{
+			foreach (var item in this)
+			{
+				if (item.Value.pInputs.Select(t => t.Item1).Any(t => t.txHash.SequenceEqual(txHash)))
+				{
+					yield return new Tuple<IPool, byte[]>(this, item.Key);
+				}
+			}
 
-		//public void Purge(HashSet activeContracts, TransactionContext dbTx, Types.BlockHeader blockHeader)
-		//{
-		//	foreach (var key in Keys.ToList())
-		//	{
-		//		var tx = this[key];
-		//		var contractHash = ((Types.OutputLock.ContractLock)tx.pInputs.Head.Item2.@lock).contractHash;
+			foreach (var item in OrphanTxPool.GetDependencies(txHash))
+			{
+				yield return item;
+			}
+		}
 
-		//		if (activeContracts.Contains(contractHash) && ContractHelper.IsTxValid(tx, contractHash, utxos, blockHeader))
-		//		{
-		//			Remove(key);
-		//			TxPool.Add(key, tx);
-		//			new TxMessage(key, tx, TxStateEnum.Unconfirmed).Publish();
-		//			new HandleOrphansOfTxAction(key).Publish();
-		//			// todo check if ptx **activates a contract** and update contractpool if it does
-		//		}
-		//	}
-		//}
-	}
+		public override bool IsDoubleSpend(TransactionValidation.PointedTransaction t, IEnumerable<Types.Outpoint> spentOutputs)
+		{
+			return t.pInputs.Select(_t => _t.Item1).Any(_t => spentOutputs.Contains(_t));
+		}
+    }
 }

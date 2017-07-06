@@ -30,10 +30,10 @@ namespace BlockChain
             Put(dbTx, item.Hash, item);
         }
 
-        public HashSet Keys(TransactionContext dbTx)
-        {
-            return new HashSet(All(dbTx).Select(t => t.Item2.Hash));
-        }
+        //public HashSet Keys(TransactionContext dbTx)
+        //{
+        //    return new HashSet(All(dbTx).Select(t => t.Item2.Hash));
+        //}
 
         public bool IsActive(TransactionContext dbTx, byte[] contractHash)
         {
