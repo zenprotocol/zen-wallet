@@ -4,28 +4,29 @@ html {
 }
 
 body {
-  margin-bottom: 100px;
+  margin-bottom: 82px;
   color: #ffffff;
   font-family: 'Source Sans Pro', sans-serif;
   background: #1c1b33;
 }
 
 body > .container {
-  padding-top: 100px;
+  padding-top: 82px;
 }
 
 .footer {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 100px;
+  height: 82px;
   background-color: #1c1b33;
   color: white;
+  border-top: 1px solid #404b59;
 }
 
 .footer ul {
   display: inline-block;
-  padding: 55px 0 0 0;
+  padding: 32px 0 0 0;
 }
 .footer ul.footer-right { float: right; }
 .footer ul.footer-right li {
@@ -236,3 +237,7 @@ ol.breadcrumb.zen-breadcrumbs {
 ::-moz-placeholder { color: rgba(92, 107, 128, 0.5) !important; }
 :-ms-input-placeholder { color: rgba(92, 107, 128, 0.5) !important; }
 :-moz-placeholder { color: rgba(92, 107, 128, 0.5) !important; }
+
+.row.call-option-page {
+  margin-bottom: 47px;
+}
