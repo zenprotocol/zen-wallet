@@ -62,18 +62,6 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="ContractExamples">
-      <HintPath>..\..\ContractExamples\bin\Debug\ContractExamples.dll</HintPath>
-    </Reference>
-    <Reference Include="BlockChain">
-      <HintPath>..\..\BlockChain\bin\Debug\BlockChain.dll</HintPath>
-    </Reference>
-    <Reference Include="Wallet.core">
-      <HintPath>..\..\Wallet.core\bin\Debug\Wallet.core.dll</HintPath>
-    </Reference>
-    <Reference Include="Consensus">
-      <HintPath>..\..\Consensus\bin\Debug\Consensus.dll</HintPath>
-    </Reference>
     <Reference Include="Sodium">
       <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
     </Reference>
@@ -172,6 +160,7 @@
     <Content Include="assets\css\starter-template.css" />
     <Content Include="assets\js\ie-emulation-modes-warning.js" />
     <Content Include="assets\js\ie10-viewport-bug-workaround.js" />
+    <Content Include="Views\Oracle\List.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
@@ -182,9 +171,25 @@
       <Project>{52C99661-71D0-4037-858E-B605CE5F562C}</Project>
       <Name>ContractUtilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Consensus\Consensus.fsproj">
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ContractExamples\ContractExamples.fsproj">
+      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
+      <Name>ContractExamples</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Wallet.core\Wallet.core.csproj">
+      <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
+      <Name>Wallet.core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Zen.RPC\Zen.RPC.csproj">
       <Project>{396B8253-5F0E-4DB4-9A06-505DE88E89B7}</Project>
       <Name>Zen.RPC</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BlockChain\BlockChain.csproj">
+      <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
+      <Name>BlockChain</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

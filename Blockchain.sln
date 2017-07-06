@@ -27,6 +27,10 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractExamples", "Contrac
 EndProject
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractsDiscovery.Web", "ContractsDemo\ContractsDiscovery.Web\ContractsDiscovery.Web.csproj", "{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC", "ContractsDemo\Zen.RPC\Zen.RPC.csproj", "{396B8253-5F0E-4DB4-9A06-505DE88E89B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -81,5 +85,13 @@ Global
 		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.Build.0 = Debug|Any CPU
 		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.ActiveCfg = Release|Any CPU
 		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.Build.0 = Release|Any CPU
+		{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}.Debug|x86.Build.0 = Debug|Any CPU
+		{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}.Release|x86.ActiveCfg = Release|Any CPU
+		{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}.Release|x86.Build.0 = Release|Any CPU
+		{396B8253-5F0E-4DB4-9A06-505DE88E89B7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{396B8253-5F0E-4DB4-9A06-505DE88E89B7}.Debug|x86.Build.0 = Debug|Any CPU
+		{396B8253-5F0E-4DB4-9A06-505DE88E89B7}.Release|x86.ActiveCfg = Release|Any CPU
+		{396B8253-5F0E-4DB4-9A06-505DE88E89B7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
