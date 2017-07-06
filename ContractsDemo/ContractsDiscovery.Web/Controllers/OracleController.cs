@@ -20,38 +20,43 @@ namespace ContractsDiscovery.Web.Controllers
 		StockAPI _StockAPI = new StockAPI();
 		static string NodeRPCAddress = WebConfigurationManager.AppSettings["node"];
 
+    public ActionResult List()
+		{
+      return View();
+    }
+
 		public ActionResult Index()
 		{
-			if (!Directory.Exists("db"))
-				Directory.CreateDirectory("db");
-
-			var contractManager = new OracleContractManager();
-
-			if (!contractManager.IsSetup)
-			{
-				ViewBag.Message = contractManager.Message;
-				return View(new List<Commitment>());
-			}
-
-			ViewBag.Address = contractManager.ContractAddress;
-
-			return View(Directory.GetFiles("db", "*.data.json")
-				.Select(t => Regex.Replace(t, @"[^\d]", ""))
-				.OrderBy(t => t)
-				.Reverse().Take(5).Reverse()
-				.Select(t =>
-				{
-					var datetime = DateTime.FromFileTime(long.Parse(t));
-					var file = Path.Combine("db", $"{t}.data.json");
-
-					var data = System.IO.File.ReadAllText(file);
-
-					return new App_Data.Commitment()
-					{
-						Id = t,
-						Time = datetime.ToLongDateString() + " " + datetime.ToLongTimeString(),
-					};
-				}));
+			 if (!Directory.Exists("db"))
+			 	Directory.CreateDirectory("db");
+      
+			 var contractManager = new OracleContractManager();
+      
+			 if (!contractManager.IsSetup)
+			 {
+			 	ViewBag.Message = contractManager.Message;
+			 	return View(new List<Commitment>());
+			 }
+      
+			 ViewBag.Address = contractManager.ContractAddress;
+      
+			 return View(Directory.GetFiles("db", "*.data.json")
+			 	.Select(t => Regex.Replace(t, @"[^\d]", ""))
+			 	.OrderBy(t => t)
+			 	.Reverse().Take(5).Reverse()
+			 	.Select(t =>
+			 	{
+			 		var datetime = DateTime.FromFileTime(long.Parse(t));
+			 		var file = Path.Combine("db", $"{t}.data.json");
+      
+			 		var data = System.IO.File.ReadAllText(file);
+      
+			 		return new App_Data.Commitment()
+			 		{
+			 			Id = t,
+			 			Time = datetime.ToLongDateString() + " " + datetime.ToLongTimeString(),
+			 		};
+			 	}));
 		}
 
 		[HttpPost]

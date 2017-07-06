@@ -16,7 +16,7 @@
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:100,200,300,400,600,700" rel="stylesheet">
 
     <link rel="stylesheet" href="/assets/font-awesome-4.7.0/css/font-awesome.min.css">
 
@@ -49,7 +49,7 @@
             <span class="icon-bar"></span>
           </button>
 	      <a class="navbar-brand" href="/">
-	        <img class='navbarLogo' alt="Brand" src="../../assets/img/zen_logo.png">
+	        <img class='navbar-logo' alt="Brand" src="../../assets/img/zen_logo.png">
 	      </a>
 
         </div>
@@ -58,7 +58,7 @@
             <li class="@(controller == "Home" ? "activeLink": "")"><a href="/">EXPLORER</a></li>
             <li class="@(controller == "ContractCreation" ? "activeLink": "")"><a href="/ContractCreation">TEMPLATES</a></li>
             <li class="@(controller == "Faucet" ? "activeLink": "")"><a href="/Faucet">FAUCET</a></li>
-            <li class="@(controller == "Oracle" ? "activeLink": "")"><a href="/Oracle">ORACLE</a></li>
+            <li class="@(controller == "Oracle" ? "activeLink": "")"><a href="/Oracle/List">ORACLES</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -74,42 +74,19 @@
     <footer class="footer">
       <div class="container">
         <ul class="footerleft">
-          <li>
-            <a href="https://www.zenprotocol.com/index.htm" target="_blank">WEBSITE</a>
-          </li>
-          <li>
-            <a href="https://www.zenprotocol.com/learn.htm" target="_blank">LEARN</a>
-          </li>
-          <li>
-            <a href="https://www.zenprotocol.com/about.htm" target="_blank">ABOUT</a>
-          </li>
-          <li>
-            <a href="https://www.zenprotocol.com/faq.htm" target="_blank">FAQ</a>
-          </li>
-
+          <li><a href="https://www.zenprotocol.com/index.htm" target="_blank">WEBSITE</a></li>
+          <li><a href="https://www.zenprotocol.com/learn.htm" target="_blank">LEARN</a></li>
+          <li><a href="https://www.zenprotocol.com/about.htm" target="_blank">ABOUT</a></li>
+          <li><a href="https://www.zenprotocol.com/faq.htm" target="_blank">FAQ</a></li>
+          <li></li>
+          <li class='social-link'><a href="https://t.me/zenprotocol" target="_blank"><i class="fa fa-telegram" aria-hidden="true"></i></a></li>
+          <li class='social-link'><a href="https://www.facebook.com/thezenprotocol/"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+          <li class='social-link'><a href="https://twitter.com/zen_protocol/"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+          <li class='social-link'><a href="https://blog.zenprotocol.com"><i class="fa fa-medium" aria-hidden="true"></i></a></li>
         </ul>
 
         <ul class="footer-right">
-          <li>
-            <a href="https://t.me/zenprotocol" target="_blank">
-              <i class="fa fa-telegram" aria-hidden="true"></i>
-            </a>
-          </li>
-          <li>
-            <a href="https://www.facebook.com/thezenprotocol/">
-              <i class="fa fa-facebook" aria-hidden="true"></i>
-            </a>
-          </li>
-          <li>
-            <a href="https://twitter.com/zen_protocol/">
-              <i class="fa fa-twitter" aria-hidden="true"></i>
-            </a>
-          </li>
-          <li>
-            <a href="https://blog.zenprotocol.com">
-              <i class="fa fa-medium" aria-hidden="true"></i>
-            </a>
-          </li>
+          <li class='footer-copyright'><i class="fa fa-copyright" aria-hidden="true"></i> 2017 Zen Protocol Development.</li>
         </ul>
       </div>
     </footer>

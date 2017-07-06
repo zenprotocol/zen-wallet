@@ -4,20 +4,21 @@ html {
 }
 
 body {
-  margin-bottom: 130px;
-  color: #5e5e5e;
+  margin-bottom: 100px;
+  color: #ffffff;
   font-family: 'Source Sans Pro', sans-serif;
+  background: #1c1b33;
 }
 
 body > .container {
-  padding-top: 110px;
+  padding-top: 100px;
 }
 
 .footer {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 130px;
+  height: 100px;
   background-color: #1c1b33;
   color: white;
 }
@@ -27,12 +28,16 @@ body > .container {
   padding: 55px 0 0 0;
 }
 .footer ul.footer-right { float: right; }
-.footer ul.footer-right li { margin: 0 0 0 25px; }
+.footer ul.footer-right li {
+  margin: 0 0 0 25px;
+  font-weight: 300;
+}
 
 .footer ul li {
   display: inline-block;
   margin-right: 25px;
   list-style: none;
+  font-weight: 300;
 }
 
 .footer ul li a {
@@ -40,22 +45,19 @@ body > .container {
   font-size: 15px;
   text-decoration: none;
 }
-.footer ul li a i.fa {
-  font-size: 25px;
+.footer ul li a i.fa { font-size: 15px; }
+.footer ul li.social-link { margin-right: 12px; }
+
+.footer-copyright { color: #5c6b80; }
+
+nav.navbar-inverse { border-bottom: none; }
+
+.navbar-brand {
+  padding: 30px 15px;
 }
-/*footer ul.footerright{
-  margin-right: 150px;
-  margin-top: 10px;
-}
-footer ul.footerright li{
-  display: inline;
 
-}*/
-
-
-.navbar-brand img.navbarLogo {
-  height: 52.5px;
-  margin-top: 10px;
+.navbar-brand img.navbar-logo {
+  height: 43px;
 }
 
 nav.navbar-inverse {
@@ -80,16 +82,23 @@ nav.navbar-inverse {
 
 .navbar-inverse .navbar-nav>li>a:hover, .navbar-inverse .navbar-nav>li.activeLink>a {
   color: #83d6f3;
-  font-weight: 400;
 }
 
-.titleSection { margin-bottom: 36px; }
+.titleSection {
+  margin-bottom: 36px;
+  margin-top: 32px;
+}
+.titleSection .zen-button.create-oracle {
+  float: right;
+  background: #2e4074;
+  color: #ffffff;
+}
 
 h1 {
-  margin-top: 32px;
-  color: #5e5e5e;
+  margin-top: 0;
+  color: #ffffff;
   font-family: 'Source Sans Pro', sans-serif;
-  font-weight: 600;
+  font-weight: 300;
   font-size: 36px;
   letter-spacing: 0.6px;
 }
@@ -98,41 +107,63 @@ h5 {
   font-size: 18px;
   font-weight: 200;
   letter-spacing: 0.5px;
+  color: #b3b3b3;
 }
 
-thead { background-color: #e2e2e2; }
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+  border: none;
+  border-bottom: 1px solid #3c3c3c;
+  color: #8aa0bf;
 
-table.zenTable tr { height: 50px; }
+}
 
-table.zenTable.table>thead>tr>th {
+tbody>tr:hover { background: #222138; }
+
+table.zen-table>thead>tr>th {
+  border-right: 1px solid #3c3c3c;
+  padding-left: 16px;
+}
+
+table.zen-table>thead>tr>th:last-child { border-right: none; }
+
+table.zen-table tr { height: 30px; }
+
+table.zen-table.table>thead>tr>th {
   font-family: 'Source Sans Pro', sans-serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.1px;
-  color: #000000;
+  color: #5c6b80;
 }
 
-table.zenTable.table>tbody>tr>td>p { margin: 0; }
-table.zenTable.table>tbody>tr>td { padding: 20px; }
-
-tbody tr td, thead, table.zenTable.table>thead>tr>th {
-  border: solid 0.5px #d4d4d4;
+table.zen-table.table>tbody>tr>td>p {
+  margin: 0;
+  font-weight: 300;
 }
+table.zen-table.table>tbody>tr>td { padding: 20px 0 10px 16px; }
 
+.zen-button:hover { text-decoration: none; }
 .zen-button {
-  padding: 4px 20px;
+  padding: 4px 30px;
   border-radius: 2px;
   min-width: 115px;
   margin-right: 10px;
-  font-weight: 400;
+  font-weight: 200;
   background-image: none;
   border: none;
   outline: none;
+  letter-spacing: 1px;
+  font-size: 13px;
+  text-decoration: none;
 }
 
-.zen-blue-button {
-  background-color: #3da5fc;
-  color: white;
+.zen-grey-button { background: #5c6b80; color: white; }
+.zen-grey-button:hover { background: #5c6b80; color: white; }
+.zen-blue-button { background-color: #3da5fc; color: white; }
+
+.table.zen-table.oracle-market .zen-grey-button {
+  position: relative;
+  bottom: 5px;
 }
 
 .zen-white-button {
@@ -147,10 +178,13 @@ tbody tr td, thead, table.zenTable.table>thead>tr>th {
   background-color: #3291e0;
 }
 
-.zen-blue-button:active {
-  background-color: #2c7fc3;
-
+  .zen-light-blue-link, .zen-light-blue-link:hover {
+  text-decoration: none;
+  font-size: 14px;
+  color: #83d6f3;
 }
+
+.zen-blue-button:active { background-color: #2c7fc3; }
 
 ol.breadcrumb.zen-breadcrumbs a { font-size: 15px; }
 ol.breadcrumb.zen-breadcrumbs {
@@ -160,3 +194,11 @@ ol.breadcrumb.zen-breadcrumbs {
 }
 
 .button-devider { float: left; width: 242px; }
+
+.coming-soon {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  color: #5c6b80;
+}
