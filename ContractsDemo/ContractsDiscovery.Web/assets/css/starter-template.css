@@ -10,9 +10,23 @@ body {
   background: #1c1b33;
 }
 
-body > .container {
-  padding-top: 82px;
+body#Faucet-page nav.navbar-inverse { background: none; }
+body#Faucet-page { background-image: url('../img/stars_bg.jpg') }
+
+body#Faucet-page .titleSection {
+  margin-bottom: 50px;
+  margin-top: 50px;
 }
+
+body#Faucet-page .zen-red-button { padding: 11px 30px; }
+body#Faucet-page .col-md-4 { padding-right: 0; }
+
+body#Faucet-page .form-control#address {
+  height: 40px;
+  border: solid 1px #404b59;
+}
+
+body > .container { padding-top: 82px; }
 
 .footer {
   position: absolute;
@@ -162,6 +176,11 @@ table.zen-table.table>tbody>tr>td { padding: 20px 0 10px 16px; }
 .zen-grey-button.float-right { float: right; margin-right: 0; }
 .zen-grey-button:hover { background: #5c6b80; color: white; }
 .zen-blue-button { background-color: #3da5fc; color: white; }
+
+.zen-red-button {
+  background-color: #ff4d4d;
+  color: white;
+}
 
 hr.form-button-seperator { border-top: 1px solid #3f4a58; }
 
