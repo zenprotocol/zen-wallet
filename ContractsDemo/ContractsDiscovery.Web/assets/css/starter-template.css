@@ -159,9 +159,9 @@ table.zen-table.table>tbody>tr>td { padding: 20px 0 10px 16px; }
 
 .zen-button:hover { text-decoration: none; }
 .zen-button {
-  padding: 4px 30px;
+  padding: 8px 15px;
   border-radius: 2px;
-  min-width: 115px;
+  min-width: 120px;
   margin-right: 10px;
   font-weight: 200;
   background-image: none;
@@ -177,10 +177,13 @@ table.zen-table.table>tbody>tr>td { padding: 20px 0 10px 16px; }
 .zen-grey-button:hover { background: #5c6b80; color: white; }
 .zen-blue-button { background-color: #3da5fc; color: white; }
 
-.zen-red-button {
-  background-color: #ff4d4d;
-  color: white;
-}
+.zen-red-button { background-color: #ff4d4d; color: white; }
+.zen-red-button:hover { background-color: #e63d3d; }
+.zen-red-button:focus { background-color: #c53232; }
+
+.zen-dark-blue-button { background-color: #2e4074; color: white; }
+.zen-dark-blue-button:hover { background-color: #3e5188; }
+.zen-dark-blue-button:focus { background-color: #26345d; }
 
 hr.form-button-seperator { border-top: 1px solid #3f4a58; }
 
@@ -222,7 +225,12 @@ ol.breadcrumb.zen-breadcrumbs {
   color: #5c6b80;
 }
 
-.button-devider { float: left; width: 242px; }
+.button-devider {
+  float: left;
+  width: 253px;
+  border-color: #3c3c3c;
+  margin: 16px 0;
+}
 
 .coming-soon {
   font-family: 'Source Sans Pro', sans-serif;
