@@ -12,9 +12,12 @@ namespace BlockChain.Data
 {
     public class QueueAction
     {
+        //public static ITargetBlock<QueueAction> Target;
+		
         public void Publish()
         {
-            MessageProducer<QueueAction>.Instance.PushMessage(this);
+			//Target.Post(this);
+			MessageProducer<QueueAction>.Instance.PushMessage(this);
         }
     }
 
@@ -50,7 +53,8 @@ namespace BlockChain.Data
 
         public new Task<TResult> Publish()
         {
-            MessageProducer<QueueAction>.Instance.PushMessage(this);
+			//Target.Post(this);
+			MessageProducer<QueueAction>.Instance.PushMessage(this);
 
             return _TaskCompletion.Task;
         }
@@ -80,7 +84,8 @@ namespace BlockChain.Data
     public class HandleTransactionAction : AsyncQueueAction<BlockChain.TxResultEnum>
     {
         public Types.Transaction Tx { get; set; }
-    }
+		public bool CheckInDb { get; set; }
+	}
 
     public class GetActiveContactsAction : AsyncQueueAction<List<ACSItem>>
     {

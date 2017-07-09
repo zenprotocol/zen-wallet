@@ -46,6 +46,11 @@ namespace BlockChain
 			Information(info, Consensus.Merkle.transactionHasher.Invoke(tx));
 		}
 
+		internal static void Information(string info, Consensus.Types.Block bk)
+		{
+            Information(info, Consensus.Merkle.blockHeaderHasher.Invoke(bk.header));
+		}
+
 		internal static void Information(string info, byte[] key)
 		{
 			_Trace.TraceEvent(TraceEventType.Information, 0, key != null && tags.ContainsKey(key) ? info + " (" + tags[key] + ")" : info);

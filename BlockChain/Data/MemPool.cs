@@ -21,7 +21,7 @@ namespace BlockChain.Data
 
             TxPool.ICTxPool = ICTxPool;
             TxPool.ContractPool = ContractPool;
-            //TxPool.OrphanTxPool = OrphanTxPool;
+            TxPool.OrphanTxPool = OrphanTxPool;
         }
 
         public void RemoveDoubleSpends(IEnumerable<Types.Outpoint> spentOutputs)

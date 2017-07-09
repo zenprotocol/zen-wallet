@@ -9,13 +9,6 @@ namespace BlockChain.Data
 	{
 		public ICTxPool ICTxPool { get; set; }
 
-		public new void Add(byte[] txHash, TransactionValidation.PointedTransaction ptx)
-		{
-			new TxMessage(txHash, ptx, TxStateEnum.Unconfirmed).Publish();
-			new HandleOrphansOfTxAction(txHash).Publish();
-			base.Add(txHash, ptx);
-		}
-
 		public bool ContainsInputs(Types.Transaction tx)
 		{
 			foreach (var outpoint in tx.inputs)
@@ -87,7 +80,7 @@ namespace BlockChain.Data
         {
             if (base.RemoveWithDependencies(txHash))
             {
-				new TxMessage(txHash, this[txHash], TxStateEnum.Invalid).Publish();
+				new TxMessage(txHash, null, TxStateEnum.Invalid).Publish();
                 return true;
 			}
 
