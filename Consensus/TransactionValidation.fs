@@ -276,17 +276,19 @@ let checkUserTransactionAmounts (ptx:PointedTransaction) =
     match ptx with
     | {pInputs=pInputs; outputs=outputs} ->
         let ins = List.map (fun (_,output) -> output) pInputs
-        let inList = spendMap ins |> Map.toList
-        let outList = spendMap outputs |> Map.toList
-        List.forall2 (=) inList outList
+        //let inList = spendMap ins |> Map.toList
+        //let outList = spendMap outputs |> Map.toList
+        //List.forall2 (=) inList outList
+        spendMap ins = spendMap outputs
 
 let checkAutoTransactionAmounts (ptx:PointedTransaction) (contract:Hash) =
     match ptx with
     | {pInputs=pInputs; outputs=outputs} ->
         let ins = List.map (fun (_,output) -> output) pInputs
-        let inList = spendMap ins |> Map.remove contract |> Map.toList
-        let outList = spendMap outputs |> Map.remove contract |> Map.toList
-        List.forall2 (=) inList outList
+        //let inList = spendMap ins |> Map.remove contract |> Map.toList |> List.sortBy fst
+        //let outList = spendMap outputs |> Map.remove contract |> Map.toList |> List.sortBy fst
+        //List.forall2 (=) inList outList
+        spendMap ins |> Map.remove contract = (spendMap outputs |> Map.remove contract)
 
 let checkCoinbaseTransactionAmounts (ptx:PointedTransaction) (claimable:Map<Hash,uint64>) =
     match ptx with
@@ -296,8 +298,102 @@ let checkCoinbaseTransactionAmounts (ptx:PointedTransaction) (claimable:Map<Hash
             let v = Map.tryFind k m |> Option.defaultValue 0UL
             Map.add k (v+claim) m
         let totals = Map.fold addToMap (spendMap ins) claimable
-        let inList = totals |> Map.toList
-        let outList = spendMap outputs |> Map.toList
-        List.forall2 (>=) inList outList
+        //let inList = totals |> Map.toList
+        //let outList = spendMap outputs |> Map.toList
+        //List.forall2 (>=) inList outList
+        totals = spendMap outputs
 
-//let validateAsUser ptx =
+let validateUserTx (ptx:PointedTransaction) =
+    if ptx.version > 0u then false
+    elif ptx.pInputs.Length < 1 || ptx.outputs.Length < 1 then false
+    elif List.exists
+            (fun input -> match input with
+                          | PKLock _ -> false
+                          | _ -> true           // fixme: high version
+            )
+            (List.map (snd >> (fun output -> output.lock)) ptx.pInputs) then false
+    elif not <| checkUserTransactionAmounts ptx then false
+    elif not <| goodOutputVersions ptx then false
+    else List.forall
+            (validateAtIndex ptx)
+            [0 .. ptx.pInputs.Length - 1]
+
+type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
+type TransactionSkeleton = Outpoint list * Output list * byte[]
+type ContractFunction = ContractFunctionInput -> TransactionSkeleton
+
+let validateAutoTx  (ptx:PointedTransaction)
+                    (utxos:Outpoint -> Output option)
+                    (contracts: Hash -> ContractFunction option) =
+    if ptx.version > 0u then false
+    elif ptx.pInputs.Length < 1 || ptx.outputs.Length < 1 then false
+    elif List.exists
+            (fun input -> match input with
+                          | ContractLock _ -> false
+                          | _ -> true
+            )
+            (List.map (snd >> (fun output -> output.lock)) ptx.pInputs) then false
+    else
+        let contracthash = ptx.pInputs.[0]
+                                |> snd
+                                |> fun output ->
+                                    match output with 
+                                    | {lock=ContractLock (h,_)} -> h
+                                    | _ -> failwith "Can't happen"
+        if List.exists
+                (fun input -> match input with
+                              | ContractLock (contracthash, _) -> false
+                              | _ -> true
+                )
+                (List.map (snd >> (fun output -> output.lock)) ptx.pInputs) then false
+        elif not <| checkAutoTransactionAmounts ptx contracthash then false
+        else
+        let contractopt = contracts contracthash
+        if contractopt.IsNone then false
+        else
+        let contract = contractopt.Value
+        let msg =
+            if ptx.witnesses.[0].Length > 0
+            then ptx.witnesses.[0]
+            else match snd ptx.pInputs.[0] with
+                 | {lock=ContractLock (_, data)} -> data
+                 | _ -> Array.empty
+        let (outpoints, outputs, newcontractbytes) = contract (msg, contracthash, utxos)
+        let newcontract =
+            if newcontractbytes.Length = 0 then None
+            else try
+                    Some <| guardedDeserialise<ExtendedContract> newcontractbytes
+                 with _ ->
+                    None
+        (outpoints = List.map fst ptx.pInputs) &&
+        (outputs = ptx.outputs) &&
+        (newcontract = ptx.contract)
+
+
+let isUserTx ptx =
+    List.forall
+            (fun input -> match input with
+                          | PKLock _ -> true
+                          | _ -> false           // fixme: high version
+            )
+            (List.map (snd >> (fun output -> output.lock)) ptx.pInputs)
+
+let isAutoTx ptx =
+    List.forall
+            (fun input -> match input with
+                          | ContractLock _ -> true
+                          | _ -> false           // fixme: high version
+            )
+            (List.map (snd >> (fun output -> output.lock)) ptx.pInputs)
+
+let validateNonCoinbaseTx ptx utxos contracts =
+    if isUserTx ptx then validateUserTx ptx
+    elif isAutoTx ptx then validateAutoTx ptx utxos contracts
+    else false
+
+let validateCoinbaseTx ptx claimable blocknumber =
+    if ptx.version > 0u then false      // fixme
+    elif ptx.pInputs.Length <> 0 || ptx.outputs.Length < 1 then false
+    elif ptx.witnesses.Length < 1 || ptx.witnesses.[0] <> BitConverter.GetBytes(blocknumber:uint32) then false
+    elif not <| checkCoinbaseTransactionAmounts ptx claimable then false
+    else true
