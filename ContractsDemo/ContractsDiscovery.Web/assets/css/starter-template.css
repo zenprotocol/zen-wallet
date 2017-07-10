@@ -10,8 +10,7 @@ body {
   background: #1c1b33;
 }
 
-body#Faucet-page nav.navbar-inverse { background: none; }
-body#Faucet-page { background-image: url('../img/stars_bg.jpg') }
+body > .container { padding-top: 103px; }
 
 body#Faucet-page .titleSection {
   margin-bottom: 50px;
@@ -26,7 +25,6 @@ body#Faucet-page .form-control#address {
   border: solid 1px #404b59;
 }
 
-body > .container { padding-top: 82px; }
 
 .footer {
   position: absolute;
@@ -172,9 +170,16 @@ table.zen-table.table>tbody>tr>td { padding: 20px 0 10px 16px; }
   text-decoration: none;
 }
 
-.zen-grey-button { background: #5c6b80; color: white; }
+.zen-grey-button {
+  border: solid 1px #5c6b80;
+  background: #5c6b80;
+  color: white;
+  padding: 7px 15px;
+}
 .zen-grey-button.float-right { float: right; margin-right: 0; }
-.zen-grey-button:hover { background: #5c6b80; color: white; }
+.zen-grey-button:hover { border: solid 1px #6e8099; background: #6e8099; color: white; }
+.zen-grey-button:focus { border: solid 1px #5c6b80; background: #6e8099; }
+
 .zen-blue-button { background-color: #3da5fc; color: white; }
 
 .zen-red-button { background-color: #ff4d4d; color: white; }
@@ -240,11 +245,12 @@ ol.breadcrumb.zen-breadcrumbs {
   color: #5c6b80;
 }
 
-.form-horizontal .control-label {
+.form-group label {
   color: #dfdfe0;
   font-size: 14px;
   letter-spacing: 0.5px;
   font-weight: 100;
+  font-weight: 600;
 }
 
 .form-group .form-control {
