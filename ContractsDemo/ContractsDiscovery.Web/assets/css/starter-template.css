@@ -10,7 +10,7 @@ body {
   background: #1c1b33;
 }
 
-body > .container { padding-top: 103px; }
+body > .container { padding-top: 125px; }
 
 body#Faucet-page .titleSection {
   margin-bottom: 50px;
@@ -99,7 +99,7 @@ nav.navbar-inverse {
 
 .titleSection {
   margin-bottom: 36px;
-  margin-top: 32px;
+  margin-top: 20px;
 }
 .titleSection .zen-button.create-oracle {
   float: right;
