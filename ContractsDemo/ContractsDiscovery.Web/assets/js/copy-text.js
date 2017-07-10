@@ -23,7 +23,7 @@
       try {
         // copy text
         document.execCommand('copy');
-        t.innerHTML = 'Copied!'
+        t.innerHTML = 'Copied'
         setTimeout(function () {
           t.innerHTML = 'Copy'
         }, 2000);
