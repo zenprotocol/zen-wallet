@@ -133,8 +133,8 @@ namespace NBitcoin.Protocol.Behaviors
 							Message = "tx"
 						});
 						break;
-					case BlockChain.BlockChain.TxResultEnum.OrphanMissingInputs:
-					case BlockChain.BlockChain.TxResultEnum.OrphanIC:
+					case BlockChain.BlockChain.TxResultEnum.Orphan:
+					case BlockChain.BlockChain.TxResultEnum.InactiveContract:
 					case BlockChain.BlockChain.TxResultEnum.DoubleSpend:
 					case BlockChain.BlockChain.TxResultEnum.Known:
 						break;

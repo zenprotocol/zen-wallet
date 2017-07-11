@@ -50,7 +50,8 @@ namespace NBitcoin.Protocol.Behaviors
 		{
 			message.IfPayloadIs<Types.Block>(async bk =>
 			{
-				var result = await _BlockChain.HandleBlock(bk);
+                var result = await new HandleBlockAction(bk).Publish();
+
 				switch (result.BkResultEnum)
 				{
 					case BlockChain.BlockVerificationHelper.BkResultEnum.Accepted:
