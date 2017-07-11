@@ -1,0 +1,9 @@
+#!/bin/bash
+
+pwd=`pwd`
+dir="$(dirname "$0")"
+cd "$dir"
+
+mono zen.exe
+
+cd "$pwd"
