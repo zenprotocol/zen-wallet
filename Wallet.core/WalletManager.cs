@@ -16,7 +16,6 @@ namespace Wallet.core
 {
     public class WalletManager : ResourceOwner
     {
-        private HashDictionary<TransactionValidation.PointedTransaction> _TxCache = new HashDictionary<TransactionValidation.PointedTransaction>();
         private DBContext _DBContext;
         private BlockChain.BlockChain _BlockChain;
         private TxStore _TxStore;
@@ -43,7 +42,7 @@ namespace Wallet.core
             TxDeltaList = new List<TxDelta>();
             AssetsMetadata = new AssetsMetadata();
 
-            _BlockChainListener = new EventLoopMessageListener<BlockChainMessage>(OnBlockChainMessage);
+            _BlockChainListener = new EventLoopMessageListener<BlockChainMessage>(OnBlockChainMessage, "Wallet Consumer");
             OwnResource(MessageProducer<BlockChainMessage>.Instance.AddMessageListener(_BlockChainListener));
             OwnResource(_DBContext);
 
@@ -179,16 +178,14 @@ namespace Wallet.core
             var isValid = txState != TxStateEnum.Invalid;
             var _deltas = new AssetDeltas();
 
-            if (!isValid && ptx == null)
+            if (!isValid)
             {
-                if (_TxCache.ContainsKey(txHash))
-                    ptx = _TxCache[txHash];
-                else
-                    return;
-            }
-            else
-            {
-                _TxCache[txHash] = ptx;
+                foreach (var item in _TxStore.All(dbTx).Where(t => t.Item2.TxHash.SequenceEqual(txHash)))
+                {
+                    item.Item2.TxState = txState;
+                    //TODO: handle ui consistency
+                    _TxStore.Put(dbTx, item.Item1, item.Item2);
+                }
             }
 
             ptx.outputs.Where(IsMatch).ToList().ForEach(o =>
