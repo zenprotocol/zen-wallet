@@ -21,7 +21,6 @@ namespace Zen
             var app = new App();
 
             var launchMode = LaunchModeEnum.GUI;
-			bool disableNetworking = false;
 			bool show_help = false;
 			bool genesis = false;
 			bool rpcServer = false;
@@ -41,9 +40,6 @@ namespace Zen
 
 				{ "blockchain=", "blockchain DB suffix",
 					v => app.Settings.BlockChainDBSuffix = v },
-
-				{ "d|disable-network", "disable networking",
-					v => disableNetworking = true },
 
 				{ "m|miner", "enable miner",
 					v => app.MinerEnabled = true },
@@ -81,9 +77,6 @@ namespace Zen
                 Console.WriteLine("Genesis block added.");
             }
 			
-            if (!disableNetworking)
-				app.Connect();
-            
 			if (rpcServer)
 			{
                 app.StartRPCServer();
@@ -95,13 +88,14 @@ namespace Zen
                     TUI.Start(app);
 					break;
 				case LaunchModeEnum.GUI:
-                    app.GUI(true);
+					app.Connect();
+					app.GUI(true);
 					break;
 				case LaunchModeEnum.Headless:
                     Console.WriteLine("Running headless.");
-                    //Console.WriteLine("My address: " + app.WalletManager.GetUnusedKey().Address);
-                    //TODO: wait for kill signal and only then dispose
-                    //app.Dispose();
+					app.Connect();
+					//TODO: wait for kill signal and only then dispose
+					//app.Dispose();
 					break;
 			}
 		}
