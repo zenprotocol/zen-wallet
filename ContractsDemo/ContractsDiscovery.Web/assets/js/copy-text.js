@@ -37,3 +37,13 @@
   }
 
 })();
+
+
+window.onscroll = function() {
+    var nav = document.getElementById('navbar');
+    if ( window.pageYOffset > 20 ) {
+        nav.classList.add("with-border");
+    } else {
+        nav.classList.remove("with-border");
+    }
+}
