@@ -1,9 +1,10 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{1F030257-FBB4-4538-BBD8-4B241FD73B13}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>Zen</RootNamespace>
     <AssemblyName>zen</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
@@ -27,6 +28,12 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -74,7 +81,9 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="readme.md" />
     <Compile Include="Program.cs" />
     <None Include="genesis_outputs.json">
@@ -162,6 +171,10 @@
     <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Miner\Miner.csproj">
+      <Project>{9FF89573-7428-4194-9872-15D943B83CE5}</Project>
+      <Name>Miner</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

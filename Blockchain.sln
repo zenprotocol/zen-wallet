@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain", "BlockChain\Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Store", "Store\Store.csproj", "{1D6CF29D-253C-44BB-813A-701676A1349F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.TestingGtk", "Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj", "{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "Wallet\GUI.csproj", "{6B1189D4-2B5A-4764-A1D7-6E8258730303}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.core", "Wallet.core\Wallet.core.csproj", "{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}"
@@ -27,9 +25,11 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractExamples", "Contrac
 EndProject
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractsDiscovery.Web", "ContractsDemo\ContractsDiscovery.Web\ContractsDiscovery.Web.csproj", "{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractsDiscovery.Web", "ContractsDiscovery.Web\ContractsDiscovery.Web.csproj", "{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC", "ContractsDemo\Zen.RPC\Zen.RPC.csproj", "{396B8253-5F0E-4DB4-9A06-505DE88E89B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miner", "Miner\Miner.csproj", "{9FF89573-7428-4194-9872-15D943B83CE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,14 +37,22 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.Build.0 = Debug|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.ActiveCfg = Release|Any CPU
+		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.Build.0 = Release|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Debug|x86.Build.0 = Debug|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Release|x86.ActiveCfg = Release|Any CPU
+		{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}.Release|x86.Build.0 = Release|Any CPU
+		{9D566AD5-659D-4042-A5CA-F804287CA992}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9D566AD5-659D-4042-A5CA-F804287CA992}.Debug|x86.Build.0 = Debug|Any CPU
+		{9D566AD5-659D-4042-A5CA-F804287CA992}.Release|x86.ActiveCfg = Release|Any CPU
+		{9D566AD5-659D-4042-A5CA-F804287CA992}.Release|x86.Build.0 = Release|Any CPU
 		{1D6CF29D-253C-44BB-813A-701676A1349F}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{1D6CF29D-253C-44BB-813A-701676A1349F}.Debug|x86.Build.0 = Debug|Any CPU
 		{1D6CF29D-253C-44BB-813A-701676A1349F}.Release|x86.ActiveCfg = Release|Any CPU
 		{1D6CF29D-253C-44BB-813A-701676A1349F}.Release|x86.Build.0 = Release|Any CPU
-		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.ActiveCfg = Debug|x86
-		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.Build.0 = Debug|x86
-		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Release|x86.ActiveCfg = Release|x86
-		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Release|x86.Build.0 = Release|x86
 		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Debug|x86.Build.0 = Debug|Any CPU
 		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Release|x86.ActiveCfg = Release|Any CPU
@@ -93,5 +101,9 @@ Global
 		{396B8253-5F0E-4DB4-9A06-505DE88E89B7}.Debug|x86.Build.0 = Debug|Any CPU
 		{396B8253-5F0E-4DB4-9A06-505DE88E89B7}.Release|x86.ActiveCfg = Release|Any CPU
 		{396B8253-5F0E-4DB4-9A06-505DE88E89B7}.Release|x86.Build.0 = Release|Any CPU
+		{9FF89573-7428-4194-9872-15D943B83CE5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9FF89573-7428-4194-9872-15D943B83CE5}.Debug|x86.Build.0 = Debug|Any CPU
+		{9FF89573-7428-4194-9872-15D943B83CE5}.Release|x86.ActiveCfg = Release|Any CPU
+		{9FF89573-7428-4194-9872-15D943B83CE5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
