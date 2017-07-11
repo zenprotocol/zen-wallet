@@ -189,20 +189,16 @@ namespace Wallet
 					SendInfo.Destination = address;
 					labelDestinationError.Text = "";
 
-					switch (address.AddressType)
-					{
-						case AddressType.Contract:
-                            //vboxMainInner.Add(eventboxSecureToken);
-							//vboxMainInner.ReorderChild(eventboxSecureToken, 1);
+					vboxMainInner.Remove(eventboxData);
+					vboxMainInner.Remove(eventboxSecureToken);
 
-							vboxMainInner.Add(eventboxData);
-							vboxMainInner.ReorderChild(eventboxData, 1);
+                    if (address.AddressType == AddressType.Contract)
+                    {
+                        //vboxMainInner.Add(eventboxSecureToken);
+						//vboxMainInner.ReorderChild(eventboxSecureToken, 1);
 
-							break;
-						case AddressType.PK:
-							vboxMainInner.Remove(eventboxData);
-							vboxMainInner.Remove(eventboxSecureToken);
-							break;
+						vboxMainInner.Add(eventboxData);
+						vboxMainInner.ReorderChild(eventboxData, 1);
 					}
 				}
 				catch
