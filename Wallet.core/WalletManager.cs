@@ -173,7 +173,7 @@ namespace Wallet.core
             }
         }
 
-        private void HandleTx(TransactionContext dbTx, byte[] txHash, TransactionValidation.PointedTransaction ptx, List<TxDelta> deltas, TxStateEnum txState)
+        void HandleTx(TransactionContext dbTx, byte[] txHash, TransactionValidation.PointedTransaction ptx, List<TxDelta> deltas, TxStateEnum txState)
         {
             var isValid = txState != TxStateEnum.Invalid;
             var _deltas = new AssetDeltas();
@@ -186,6 +186,7 @@ namespace Wallet.core
                     //TODO: handle ui consistency
                     _TxStore.Put(dbTx, item.Item1, item.Item2);
                 }
+                return;
             }
 
             ptx.outputs.Where(IsMatch).ToList().ForEach(o =>
