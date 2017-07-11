@@ -6,18 +6,31 @@ using System.Threading.Tasks.Dataflow;
 using BlockChain.Store;
 using Consensus;
 using Infrastructure;
+using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 using static BlockChain.BlockVerificationHelper;
 
 namespace BlockChain.Data
 {
-    public class QueueAction
+	using System.Diagnostics;
+	//TODO: refactor duplication
+	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
+
+	public class QueueAction
     {
-        //public static ITargetBlock<QueueAction> Target;
-		
+        public static ITargetBlock<QueueAction> Target;
+
+#if DEBUG
+		public string StackTrace { get; set; }
+#endif
+
         public void Publish()
         {
-			//Target.Post(this);
-			MessageProducer<QueueAction>.Instance.PushMessage(this);
+#if DEBUG
+			StackTrace = Environment.StackTrace;
+#endif
+			Target.Post(this);
+			//MessageProducer<QueueAction>.Instance.PushMessage(this);
         }
     }
 
@@ -53,8 +66,7 @@ namespace BlockChain.Data
 
         public new Task<TResult> Publish()
         {
-			//Target.Post(this);
-			MessageProducer<QueueAction>.Instance.PushMessage(this);
+			base.Publish();
 
             return _TaskCompletion.Task;
         }
@@ -169,4 +181,17 @@ namespace BlockChain.Data
         public byte[] Block { get; set; }
     }
 #endif
+
+    public class MinerBlockChainData
+    {
+        public HashDictionary<ContractFunction> ActiveContracts { get; set; }
+        public List<KeyValuePair<Types.Outpoint, Types.Output>> UtxoSet { get; set; }
+		public byte[] Tip;
+		public uint TipBlockNumber;
+	}
+
+    public class GetMinerParamsAction : AsyncQueueAction<MinerBlockChainData>
+    {
+        
+    }
 }

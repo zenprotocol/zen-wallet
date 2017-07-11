@@ -16,163 +16,169 @@ using static BlockChain.BlockVerificationHelper;
 
 namespace BlockChain
 {
-    using TransactionSkeleton = Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
-    using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
-    using UtxoLookup = FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>;
-    using ContractFunctionInput = Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>;
+	using TransactionSkeleton = Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
+	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
+	using UtxoLookup = FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>;
+	using ContractFunctionInput = Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>;
 
-    public class BlockChain : ResourceOwner
-    {
+	public class BlockChain : ResourceOwner
+	{
 #if TEST
-        const int COINBASE_MATURITY = 0;
+		const int COINBASE_MATURITY = 0;
 #else
 		const int COINBASE_MATURITY = 100;
 #endif
 
-        readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
+		readonly TimeSpan OLD_TIP_TIME_SPAN = TimeSpan.FromMinutes(5);
 
-        DBContext _DBContext = null;
+		DBContext _DBContext = null;
 
-        public MemPool memPool { get; set; }
-        public UTXOStore UTXOStore { get; set; }
-        public ActiveContractSet ActiveContractSet { get; set; }
-        public BlockStore BlockStore { get; set; }
-        public BlockNumberDifficulties BlockNumberDifficulties { get; set; }
-        public ChainTip ChainTip { get; set; }
-        public BlockTimestamps Timestamps { get; set; }
-        public byte[] GenesisBlockHash { get; set; }
+		public MemPool memPool { get; set; }
+		public UTXOStore UTXOStore { get; set; }
+		public ActiveContractSet ActiveContractSet { get; set; }
+		public BlockStore BlockStore { get; set; }
+		public BlockNumberDifficulties BlockNumberDifficulties { get; set; }
+		public ChainTip ChainTip { get; set; }
+		public BlockTimestamps Timestamps { get; set; }
+		public byte[] GenesisBlockHash { get; set; }
 
-        public enum TxResultEnum
-        {
-            Accepted,
-            Orphan, // don't ban peer
-            InactiveContract, // don't ban peer
-            Invalid, // ban peer or inform wallet
-            DoubleSpend, //don't ban peer
-            Known
-        }
+		public enum TxResultEnum
+		{
+			Accepted,
+			Orphan, // don't ban peer
+			InactiveContract, // don't ban peer
+			Invalid, // ban peer or inform wallet
+			DoubleSpend, //don't ban peer
+			Known
+		}
 
-        public enum IsTxOrphanResult
-        {
-            NotOrphan,
-            Orphan,
-            Invalid,
-        }
+		public enum IsTxOrphanResult
+		{
+			NotOrphan,
+			Orphan,
+			Invalid,
+		}
 
-        public enum IsContractGeneratedTxResult
-        {
-            NotContractGenerated,
-            ContractGenerated,
-            Invalid,
-        }
+		public enum IsContractGeneratedTxResult
+		{
+			NotContractGenerated,
+			ContractGenerated,
+			Invalid,
+		}
 
-        public BlockChain(string dbName, byte[] genesisBlockHash)
-        {
-            memPool = new MemPool();
-            UTXOStore = new UTXOStore();
-            ActiveContractSet = new ActiveContractSet();
-            BlockStore = new BlockStore();
-            BlockNumberDifficulties = new BlockNumberDifficulties();
-            ChainTip = new ChainTip();
-            Timestamps = new BlockTimestamps();
-            GenesisBlockHash = genesisBlockHash;
+		public BlockChain(string dbName, byte[] genesisBlockHash)
+		{
+			memPool = new MemPool();
+			UTXOStore = new UTXOStore();
+			ActiveContractSet = new ActiveContractSet();
+			BlockStore = new BlockStore();
+			BlockNumberDifficulties = new BlockNumberDifficulties();
+			ChainTip = new ChainTip();
+			Timestamps = new BlockTimestamps();
+			GenesisBlockHash = genesisBlockHash;
 
-            _DBContext = new DBContext(dbName);
-            OwnResource(_DBContext);
+			_DBContext = new DBContext(dbName);
+			OwnResource(_DBContext);
 
-            using (var context = _DBContext.GetTransactionContext())
-            {
-                var chainTip = ChainTip.Context(context).Value;
+			using (var context = _DBContext.GetTransactionContext())
+			{
+				var chainTip = ChainTip.Context(context).Value;
 
-                //TODO: check if makred as main?
-                Tip = chainTip == null ? null : BlockStore.GetBlock(context, chainTip);
+				//TODO: check if makred as main?
+				Tip = chainTip == null ? null : BlockStore.GetBlock(context, chainTip);
 
-                if (Tip != null)
-                    BlockChainTrace.Information("Tip's block number is " + Tip.Value.header.blockNumber);
-                else
-                    BlockChainTrace.Information("No tip.");
+				if (Tip != null)
+					BlockChainTrace.Information("Tip's block number is " + Tip.Value.header.blockNumber);
+				else
+					BlockChainTrace.Information("No tip.");
 
-                InitBlockTimestamps(context);
-            }
-
-
-			var listener = new EventLoopMessageListener<QueueAction>(HandleQueueAction, "BlockChain listener");
-            OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(listener));
+				InitBlockTimestamps(context);
+			}
 
 
-   //         var buffer = new BufferBlock<QueueAction>();
-			//QueueAction.Target = buffer;
-			//var consumer = ConsumeAsync(buffer);
-        }
+			//var listener = new EventLoopMessageListener<QueueAction>(HandleQueueAction, "BlockChain listener");
+			//OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(listener));
 
-        void HandleQueueAction(QueueAction action)
-        //async Task ConsumeAsync(ISourceBlock<QueueAction> source)
-        {
-            //while (await source.OutputAvailableAsync())
-            {
-                //var action = source.Receive();
 
-                try
-                {
-                    //((dynamic)this).Handle((dynamic)action);
+	        var buffer = new BufferBlock<QueueAction>();
+			QueueAction.Target = buffer;
+			var consumer = ConsumeAsync(buffer);
+		}
 
-                    if (action is HandleBlockAction)
-                        ((HandleBlockAction)action).SetResult(HandleBlock(action as HandleBlockAction));
-                    else if (action is GetActiveContactsAction)
-                        ((GetActiveContactsAction)action).SetResult(GetActiveContacts());
-                    else if (action is GetContractPointedOutputsAction)
-                        ((GetContractPointedOutputsAction)action).SetResult(GetContractPointedOutputs(
-                            ((GetContractPointedOutputsAction)action).ContractHash));
-                    else if (action is HandleOrphansOfTxAction)
-                        HandleOrphansOfTransaction(action as HandleOrphansOfTxAction);
-                    else if (action is GetIsContractActiveAction)
-                        ((GetIsContractActiveAction)action).SetResult(IsContractActive(
-                            ((GetIsContractActiveAction)action).ContractHash));
-                    //else if (action is GetUTXOAction)
-                    //((GetUTXOAction)action).SetResult(GetUTXO(((GetUTXOAction)action).Outpoint, ((GetUTXOAction)action).IsInBlock));
-                    else if (action is GetIsConfirmedUTXOExistAction)
-                    {
-                        var outpoint = ((GetIsConfirmedUTXOExistAction)action).Outpoint;
-                        ((GetIsConfirmedUTXOExistAction)action).SetResult(IsConfirmedUTXOExist(outpoint));
-                    }
-                    else if (action is GetContractCodeAction)
-                        ((GetContractCodeAction)action).SetResult(GetContractCode(
-                            ((GetContractCodeAction)action).ContractHash));
-                    else if (action is HandleTransactionAction)
-                        ((HandleTransactionAction)action).SetResult(HandleTransaction(((HandleTransactionAction)action).Tx, ((HandleTransactionAction)action).CheckInDb));
-                    else if (action is GetBlockAction)
-                        ((GetBlockAction)action).SetResult(GetBlock(((GetBlockAction)action).BkHash));
-                    else if (action is GetTxAction)
-                        ((GetTxAction)action).SetResult(GetTransaction(((GetTxAction)action).TxHash));
-                    else if (action is ExecuteContractAction)
-                    {
-                        var executeContractAction = ((ExecuteContractAction)action);
-                        Types.Transaction tx;
-                        var result = AssembleAutoTx(executeContractAction.ContractHash, executeContractAction.Message, out tx, executeContractAction.Message != null);
-                        ((ExecuteContractAction)action).SetResult(new Tuple<bool, Types.Transaction>(result, tx));
-                    }
-                    else if (action is GetUTXOSetAction)
-                    {
-                        var getUTXOSetAction = (GetUTXOSetAction)action;
-                        HashDictionary<List<Types.Output>> txOutputs;
-                        HashDictionary<Types.Transaction> txs;
-                        GetUTXOSet(getUTXOSetAction.Predicate, out txOutputs, out txs);
-                        getUTXOSetAction.SetResult(new Tuple<HashDictionary<List<Types.Output>>, HashDictionary<Types.Transaction>>(txOutputs, txs));
-                    }
+		//void HandleQueueAction(QueueAction action)
+		async Task ConsumeAsync(ISourceBlock<QueueAction> source)
+		{
+			while (await source.OutputAvailableAsync())
+			{
+				var action = source.Receive();
+
+				try
+				{
+					//((dynamic)this).Handle((dynamic)action);
+
+					if (action is HandleBlockAction)
+						((HandleBlockAction)action).SetResult(HandleBlock(action as HandleBlockAction));
+					else if (action is GetActiveContactsAction)
+						((GetActiveContactsAction)action).SetResult(GetActiveContacts());
+					else if (action is GetContractPointedOutputsAction)
+						((GetContractPointedOutputsAction)action).SetResult(GetContractPointedOutputs(
+							((GetContractPointedOutputsAction)action).ContractHash));
+					else if (action is HandleOrphansOfTxAction)
+						HandleOrphansOfTransaction(action as HandleOrphansOfTxAction);
+					else if (action is GetIsContractActiveAction)
+						((GetIsContractActiveAction)action).SetResult(IsContractActive(
+							((GetIsContractActiveAction)action).ContractHash));
+					//else if (action is GetUTXOAction)
+					//((GetUTXOAction)action).SetResult(GetUTXO(((GetUTXOAction)action).Outpoint, ((GetUTXOAction)action).IsInBlock));
+					else if (action is GetIsConfirmedUTXOExistAction)
+					{
+						var outpoint = ((GetIsConfirmedUTXOExistAction)action).Outpoint;
+						((GetIsConfirmedUTXOExistAction)action).SetResult(IsConfirmedUTXOExist(outpoint));
+					}
+					else if (action is GetContractCodeAction)
+						((GetContractCodeAction)action).SetResult(GetContractCode(
+							((GetContractCodeAction)action).ContractHash));
+					else if (action is HandleTransactionAction)
+						((HandleTransactionAction)action).SetResult(HandleTransaction(((HandleTransactionAction)action).Tx, ((HandleTransactionAction)action).CheckInDb));
+					else if (action is GetBlockAction)
+						((GetBlockAction)action).SetResult(GetBlock(((GetBlockAction)action).BkHash));
+					else if (action is GetTxAction)
+						((GetTxAction)action).SetResult(GetTransaction(((GetTxAction)action).TxHash));
+					else if (action is ExecuteContractAction)
+					{
+						var executeContractAction = ((ExecuteContractAction)action);
+						Types.Transaction tx;
+						var result = AssembleAutoTx(executeContractAction.ContractHash, executeContractAction.Message, out tx, executeContractAction.Message != null);
+						((ExecuteContractAction)action).SetResult(new Tuple<bool, Types.Transaction>(result, tx));
+					}
+					else if (action is GetUTXOSetAction)
+					{
+						var getUTXOSetAction = (GetUTXOSetAction)action;
+						HashDictionary<List<Types.Output>> txOutputs;
+						HashDictionary<Types.Transaction> txs;
+						GetUTXOSet(getUTXOSetAction.Predicate, out txOutputs, out txs);
+						getUTXOSetAction.SetResult(new Tuple<HashDictionary<List<Types.Output>>, HashDictionary<Types.Transaction>>(txOutputs, txs));
+					}
 #if TEST
-                    else if (action is GetBlockLocationAction)
-                    {
-                        using (var dbTx = _DBContext.GetTransactionContext())
-                        {
-                            ((GetBlockLocationAction)action).SetResult(BlockStore.GetLocation(dbTx, ((GetBlockLocationAction)action).Block));
-                        }
-                    }
+					else if (action is GetBlockLocationAction)
+					{
+						using (var dbTx = _DBContext.GetTransactionContext())
+						{
+							((GetBlockLocationAction)action).SetResult(BlockStore.GetLocation(dbTx, ((GetBlockLocationAction)action).Block));
+						}
+					}
 #endif
-                }
-                catch (Exception e)
-                {
-                    BlockChainTrace.Error("BlockChain handler", e);
-                }
+				}
+				catch (Exception e)
+				{
+					BlockChainTrace.Error("BlockChain handler", e);
+
+#if DEBUG
+                    if (action.StackTrace != null)
+    					BlockChainTrace.Information("Original invocation scope: " + action.StackTrace);
+#endif
+
+				}
             }
         }
 
@@ -211,7 +217,7 @@ namespace BlockChain
 						return TxResultEnum.Known;
 					}
 
-                    if (checkInDb && BlockStore.TxStore.ContainsKey(dbTx, txHash))
+                    if (checkInDb && BlockStore.TxStore.ContainsKey(dbTx, txHash) && BlockStore.TxStore.Get(dbTx,txHash).Value.InMainChain)
 					{
 						BlockChainTrace.Information("Tx already in store", txHash);
 						return TxResultEnum.Known;
@@ -791,11 +797,18 @@ namespace BlockChain
 			{
 				var location = BlockStore.GetLocation(context, key);
 
-				if (location == LocationEnum.Main || location == LocationEnum.Genesis)
+				if (location == LocationEnum.Main)
 				{
-					var bk = BlockStore.GetBlock(context, key);
+                    try
+                    {
+                        var bk = BlockStore.GetBlock(context, key);
+						return bk == null ? null : bk.Value;
 
-					return bk == null ? null : bk.Value;
+					} catch (Exception e)
+                    {
+                        BlockChainTrace.Error("GetBlock", e);
+                        return null;
+                    }
 				}
 
 				return null;
@@ -884,11 +897,18 @@ namespace BlockChain
 		{
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
-                var UtxoLookup = UtxoLookupFactory(dbTx, false);
+                var utxoLookup = UtxoLookupFactory(dbTx, false);
 				var acsItem = ActiveContractSet.Get(dbTx, contractHash);
-				var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
 
-                return ExecuteContract(contractHash, contractFunction, message, out transaction, UtxoLookup, isWitness);
+                if (acsItem != null)
+                {
+                    var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+
+                    return ExecuteContract(contractHash, contractFunction, message, out transaction, utxoLookup, isWitness);
+                }
+
+                transaction = null;
+                return false;
 			}
 		}
 

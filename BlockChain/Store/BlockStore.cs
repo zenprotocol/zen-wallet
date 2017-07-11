@@ -10,10 +10,9 @@ namespace BlockChain.Store
 {
 	public enum LocationEnum
 	{
-		Genesis = 1,
-		Main = 2,
-		Branch = 3,
-		Orphans = 4
+		Main = 0,
+		Branch = 1,
+		Orphans = 2
 	}
 
     public class Block
@@ -109,7 +108,7 @@ namespace BlockChain.Store
                     TxStore.Put(transactionContext, tx.Key, 
                         new Transaction { 
 	                        Tx = tx.Value, 
-	                        InMainChain = location == LocationEnum.Main 
+	                        InMainChain = false 
 	                    });
 
 					if (isFirstTx)
@@ -175,7 +174,7 @@ namespace BlockChain.Store
             foreach (var txHash in block.TxHashes)
             {
                 var tx = TxStore.Get(transactionContext, txHash);
-                TxStore.Put(transactionContext, txHash, tx.Value.Tx, location == LocationEnum.Main);
+                TxStore.Put(transactionContext, txHash, tx.Value.Tx, false);
 			}
 		}
 

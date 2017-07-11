@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using BlockChain.Data;
 using Microsoft.FSharp.Core;
+using Microsoft.FSharp.Collections;
 
 namespace BlockChain
 {
@@ -137,7 +138,7 @@ namespace BlockChain
 				else
 				{
 					blockChain.Timestamps.Init(bk.header.timestamp);
-					ExtendMain(QueueActions, 0);
+					ExtendMain(QueueActions, 0, true);
 					Result = new BkResult(BkResultEnum.Accepted);
 					BlockChainTrace.Information("accepted genesis block", bk);
 					return;
@@ -201,16 +202,16 @@ namespace BlockChain
             Result = new BkResult(BkResultEnum.Accepted);
 		}
 
-		bool ExtendMain(List<QueueAction> queuedActions, double totalWork)
+		bool ExtendMain(List<QueueAction> queuedActions, double totalWork, bool isGenesis = false)
 		{
-			if (_BlockChain.BlockStore.ContainsKey(_DbTx, _BkHash))
-			{
-				_BlockChain.BlockStore.SetLocation(_DbTx, _BkHash, LocationEnum.Main);
-			}
-			else
-			{
-				_BlockChain.BlockStore.Put(_DbTx, _BkHash, _Bk, LocationEnum.Main, totalWork);
-			}
+            if (_BlockChain.BlockStore.ContainsKey(_DbTx, _BkHash))
+            {
+            	_BlockChain.BlockStore.SetLocation(_DbTx, _BkHash, LocationEnum.Main);
+            }
+            else
+            {
+            	_BlockChain.BlockStore.Put(_DbTx, _BkHash, _Bk, LocationEnum.Main, totalWork);
+            }
 
 			_BlockChain.Timestamps.Push(_Bk.header.timestamp);
 
@@ -223,37 +224,54 @@ namespace BlockChain
 
 			var confirmedTxs = new HashDictionary<TransactionValidation.PointedTransaction>();
 
-
-			//TODO: lock with mempool
-			foreach (var transaction in _Bk.transactions)
+            //TODO: lock with mempool
+            for (var txIdx = 0; txIdx < _Bk.transactions.Count(); txIdx++)
 			{
-				var txHash = Merkle.transactionHasher.Invoke(transaction);
+                var tx = _Bk.transactions[txIdx];
+				var txHash = Merkle.transactionHasher.Invoke(tx);
 				TransactionValidation.PointedTransaction ptx;
 
-				if (!IsTransactionValid(transaction, out ptx))
-				{
-					return false;
-				}
+                if (!isGenesis)
+                {
+                    if ((txIdx == 0 && !IsCoinbaseTxValid(tx)) || (txIdx > 0 && IsCoinbaseTxValid(tx)))
+                    {
+                        return false;
+                    }
 
-				confirmedTxs[txHash] = ptx;
+                    if (!IsTransactionValid(tx, txHash, out ptx))
+					{
+						return false;
+					}
 
-				BlockChainTrace.Information("saved tx", ptx);
+					confirmedTxs[txHash] = ptx;
 
-                foreach (var input in ptx.pInputs)
-				{
-					//TODO: refactoring is needed.
-					_BlockChain.UTXOStore.Remove(_DbTx, input.Item1);
-					BlockChainTrace.Information($"utxo spent, amount {input.Item2.spend.amount}", ptx);
-					BlockChainTrace.Information($" of", input.Item1.txHash);
-					blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(input.Item1, input.Item2));
-				}
+					BlockChainTrace.Information("saved tx", ptx);
+
+                    foreach (var pInput in ptx.pInputs)
+					{
+						_BlockChain.UTXOStore.Remove(_DbTx, pInput.Item1);
+						BlockChainTrace.Information($"utxo spent, amount {pInput.Item2.spend.amount}", ptx);
+						BlockChainTrace.Information($" of", pInput.Item1.txHash);
+						blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(pInput.Item1, pInput.Item2));
+					}
+                } 
+                else
+                {
+                    ptx = TransactionValidation.toPointedTransaction(
+                        tx,
+                        ListModule.Empty<Types.Output>()
+                    );
+                }
+
+                _BlockChain.BlockStore.TxStore.Put(_DbTx, txHash, tx, true);
 
 				var contractExtendSacrifices = new HashDictionary<ulong>();
                 var activationSacrifice = 0UL;
 
-                var i = 0;
-				foreach (var output in ptx.outputs)
+                for (var outputIdx = 0; outputIdx < tx.outputs.Count(); outputIdx++)
 				{
+                    var output = tx.outputs[outputIdx];
+
 					if (output.@lock.IsContractSacrificeLock)
 					{
 						if (!output.spend.asset.SequenceEqual(Tests.zhash))
@@ -278,19 +296,19 @@ namespace BlockChain
 						}
 					}
 
+                    //todo: fix  to exclude CSLocks&FLocks, instead of including by locktype
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
 					{
-						BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", ptx);
-                        var outpoint = new Types.Outpoint(txHash, (uint)i);
+                        BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", tx);
+                        var outpoint = new Types.Outpoint(txHash, (uint)outputIdx);
                         _BlockChain.UTXOStore.Put(_DbTx, outpoint, output);
 						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, output));
 					}
-					i++;
 				}
 
-                if (FSharpOption<Types.ExtendedContract>.get_IsSome(transaction.contract) && !transaction.contract.Value.IsHighVContract)
+                if (FSharpOption<Types.ExtendedContract>.get_IsSome(tx.contract) && !tx.contract.Value.IsHighVContract)
                 {
-                    var codeBytes = ((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code;
+                    var codeBytes = ((Types.ExtendedContract.Contract)tx.contract.Value).Item.code;
                     var contractHash = Merkle.innerHash(codeBytes);
                     var contractCode = System.Text.Encoding.ASCII.GetString(codeBytes);
 
@@ -324,7 +342,10 @@ namespace BlockChain
                     blockUndoData.ACSDeltas.Add(acsItem.Key, new ACSUndoData() { ACSItem = acsItem.Value });
 			}
 
-			_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
+            if (!isGenesis)
+            {
+				_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
+            }
 
 			_BlockChain.ActiveContractSet.DeactivateContracts(_DbTx, expiringContracts.Select(t=>t.Key));
 
@@ -437,8 +458,14 @@ namespace BlockChain
 		}
 
         // remove
-		bool IsTransactionValid(Types.Transaction tx, out TransactionValidation.PointedTransaction ptx)
+		bool IsTransactionValid(Types.Transaction tx, byte[] txHash, out TransactionValidation.PointedTransaction ptx)
 		{
+            if (_BlockChain.BlockStore.TxStore.ContainsKey(_DbTx, txHash) && _BlockChain.BlockStore.TxStore.Get(_DbTx, txHash).Value.InMainChain)
+			{
+				BlockChainTrace.Information("Tx already in store", txHash);
+                ptx = null;
+                return false;
+			}
 			switch (_BlockChain.IsOrphanTx(_DbTx, tx, true, out ptx))
 			{
 				case BlockChain.IsTxOrphanResult.Orphan:
@@ -452,7 +479,7 @@ namespace BlockChain
             if (_BlockChain.IsDoubleSpend(_DbTx, tx, true))
                 return false;
 
-            //TODO: coinbase validation
+            //TODO: coinbase validation + check that witness has blocknumber
 
             if (!BlockChain.IsValidUserGeneratedTx(_DbTx, ptx))
 			{
@@ -489,7 +516,7 @@ namespace BlockChain
 		bool IsValidTimeStamp()
 		{
 			//TODO: assert block's timestamp isn't too far in the future
-			var result = _Bk.header.timestamp > _BlockChain.Timestamps.Median();
+			var result = _Bk.header.timestamp >= _BlockChain.Timestamps.Median();
 
 			if (!result)
                 BlockChainTrace.Information($"block {_Bk.header.blockNumber} has invalid timestamp", _BkHash);
@@ -499,32 +526,52 @@ namespace BlockChain
 
 		bool IsValidDifficulty()
 		{
-			UInt32 expectedDifficulty;
+            //TODO:
 
-			if (_Bk.header.blockNumber % 2000 == 1)
-			{
-				var lastBlockHash = _BlockChain.BlockNumberDifficulties.GetLast(_DbTx.Transaction);
-				var lastBlock = GetBlock(lastBlockHash);
-				expectedDifficulty = NewDifficulty(lastBlock.Value.header.timestamp, _Bk.header.timestamp);
-			}
-			else
-			{
-				var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
-				var tipBlock = GetBlock(tip).Value;
-				expectedDifficulty = tipBlock.header.pdiff;
-			}
+            //			UInt32 expectedDifficulty;
 
-			var blockDifficulty = _Bk.header.pdiff;
+            //			if (_Bk.header.blockNumber % 2000 == 1)
+            //			{
+            //				var lastBlockHash = _BlockChain.BlockNumberDifficulties.GetLast(_DbTx.Transaction);
+            //				var lastBlock = GetBlock(lastBlockHash);
 
-#if TRACE
-			if (blockDifficulty != expectedDifficulty)
-			{
-                BlockChainTrace.Information($"block {_Bk.header.blockNumber}: expecting difficulty {expectedDifficulty}, found {blockDifficulty}", _BkHash);
-			}
-#endif
+            //                //
+            //				var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
+            //				var tipBlock = GetBlock(tip).Value;
+            //                //
 
-			return blockDifficulty == expectedDifficulty;
+            //                expectedDifficulty = tipBlock.header.pdiff;
+            //                    //TODO: fix: update difficuly
+            //                    //NewDifficulty(lastBlock.Value.header.timestamp, _Bk.header.timestamp);
+            //			}
+            //			else
+            //			{
+            //				var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
+            //				var tipBlock = GetBlock(tip).Value;
+            //				expectedDifficulty = tipBlock.header.pdiff;
+            //			}
+
+            //			var blockDifficulty = _Bk.header.pdiff;
+
+            //#if TRACE
+            //			if (blockDifficulty != expectedDifficulty)
+            //			{
+            //                BlockChainTrace.Information($"block {_Bk.header.blockNumber}: expecting difficulty {expectedDifficulty}, found {blockDifficulty}", _BkHash);
+            //			}
+            //#endif
+
+            //return blockDifficulty == expectedDifficulty;
+
+            return true;
 		}
+
+        bool IsCoinbaseTxValid(Types.Transaction tx)
+        {
+            //TODO: check maturity
+
+            return tx.witnesses.Count() == 1 && 
+                 BitConverter.ToUInt64(tx.witnesses[0], 0) == _Bk.header.blockNumber;
+        }
 
 		bool IsValidBlockNumber()
 		{
@@ -575,9 +622,9 @@ namespace BlockChain
 			return true;
 		}
 
-		Keyed<Types.Block> GetBlock(byte[] _BkHash)
+		Keyed<Types.Block> GetBlock(byte[] bkHash)
 		{
-			return _BlockChain.BlockStore.GetBlock(_DbTx, _BkHash);
+			return _BlockChain.BlockStore.GetBlock(_DbTx, bkHash);
 		}
 
 		List<Keyed<Types.Block>> GetNewMainChainStartFromForkToLeaf(Keyed<Types.Block> leaf, out Keyed<Types.Block> fork)
