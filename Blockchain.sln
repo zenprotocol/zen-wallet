@@ -27,7 +27,7 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Cons
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractsDiscovery.Web", "ContractsDiscovery.Web\ContractsDiscovery.Web.csproj", "{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC", "ContractsDemo\Zen.RPC\Zen.RPC.csproj", "{396B8253-5F0E-4DB4-9A06-505DE88E89B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC", "Zen.RPC\Zen.RPC.csproj", "{396B8253-5F0E-4DB4-9A06-505DE88E89B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miner", "Miner\Miner.csproj", "{9FF89573-7428-4194-9872-15D943B83CE5}"
 EndProject
