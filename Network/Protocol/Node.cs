@@ -155,6 +155,8 @@ namespace NBitcoin.Protocol
 			{
 				new Thread(() =>
 				{
+					Thread.CurrentThread.Name = "Node Listener";
+
 					SentMessage processing = null;
 					Exception unhandledException = null;
 					bool isVerbose = NodeServerTrace.Trace.Switch.ShouldTrace(TraceEventType.Verbose);
