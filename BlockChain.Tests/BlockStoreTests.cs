@@ -46,8 +46,8 @@ namespace BlockChain.Store
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Orphans(dbTx, Keyed(parent).Key).Select(t => t.Value), Contains.Item(child));
+                PutBlock(dbTx, child, LocationEnum.Main);
+				Assert.That(_BlockStore.Orphans(dbTx, BkHash(parent)).Select(t => t.Value), Contains.Item(child));
 			}
 		}
 
@@ -59,8 +59,8 @@ namespace BlockChain.Store
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Orphans(dbTx, Keyed(parent).Key), Is.Empty);
+				PutBlock(dbTx, child, LocationEnum.Main);
+				Assert.That(_BlockStore.Orphans(dbTx, BkHash(parent)), Is.Empty);
 			}
 		}
 
@@ -72,21 +72,8 @@ namespace BlockChain.Store
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, Keyed(child), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.HasChildren(dbTx, Keyed(parent).Key), Is.True);
-			}
-		}
-
-		[Test()]
-		public void ShouldStoreTx()
-		{
-			var tx = Utils.GetTx();
-			var block = Utils.GetGenesisBlock().AddTx(tx);
-
-			using (var dbTx = _DBContext.GetTransactionContext())
-			{
-				_BlockStore.Put(dbTx, Keyed(block), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Transactions(dbTx, Keyed(block).Key).Select(t=>t.Key), Contains.Item(tx));
+				PutBlock(dbTx, child, LocationEnum.Main);
+				Assert.That(_BlockStore.HasChildren(dbTx, BkHash(parent)), Is.True);
 			}
 		}
 
@@ -98,9 +85,9 @@ namespace BlockChain.Store
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, Keyed(block), LocationEnum.Main, 0);
+				PutBlock(dbTx, block, LocationEnum.Main);
 
-				var retrievedBlock = _BlockChain.BlockStore.GetBlock(dbTx, Keyed(block).Key);
+				var retrievedBlock = _BlockChain.BlockStore.GetBlock(dbTx, BkHash(block));
 
 				Assert.That(retrievedBlock.Equals(block), Is.True);
 			}
@@ -115,9 +102,9 @@ namespace BlockChain.Store
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, Keyed(child1), LocationEnum.Main, 0);
-				_BlockStore.Put(dbTx, Keyed(child2), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.Orphans(dbTx, Keyed(parent).Key).Count, Is.EqualTo(2));
+				PutBlock(dbTx, child1, LocationEnum.Main);
+				PutBlock(dbTx, child2, LocationEnum.Main);
+				Assert.That(_BlockStore.Orphans(dbTx, BkHash(parent)).Count, Is.EqualTo(2));
 			}
 		}
 
@@ -128,15 +115,20 @@ namespace BlockChain.Store
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
-				_BlockStore.Put(dbTx, Keyed(block), LocationEnum.Main, 0);
-				Assert.That(_BlockStore.GetLocation(dbTx, Keyed(block).Key), Is.EqualTo(LocationEnum.Main));
-				Assert.That(_BlockStore.IsLocation(dbTx, Keyed(block).Key, LocationEnum.Main), Is.True);
+                PutBlock(dbTx, block, LocationEnum.Main);
+                Assert.That(_BlockStore.GetLocation(dbTx, BkHash(block)), Is.EqualTo(LocationEnum.Main));
+                Assert.That(_BlockStore.IsLocation(dbTx, BkHash(block), LocationEnum.Main), Is.True);
 			}
+        }
+
+		void PutBlock(TransactionContext dbTx, Types.Block bk, LocationEnum location)
+		{
+            _BlockStore.Put(dbTx, BkHash(bk), bk, location, 0);
 		}
 
-		private Keyed<Types.Block> Keyed(Types.Block bk)
+		byte[] BkHash(Types.Block bk)
 		{
-			return new Keyed<Types.Block>(Merkle.blockHeaderHasher.Invoke(bk.header), bk);
+            return Merkle.blockHeaderHasher.Invoke(bk.header);
 		}
 	}
 }
