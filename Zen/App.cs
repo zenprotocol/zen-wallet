@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Linq;
 using BlockChain;
+using Miner;
 
 namespace Zen
 {
@@ -49,6 +50,8 @@ namespace Zen
 		NodeManager _NodeManager = null;
         Server _Server = null;
 		bool _CanConnect = true;
+
+        public MinerManager Miner { get; private set; }
 
 		BlockChain.BlockChain AppBlockChain
 		{
@@ -95,33 +98,34 @@ namespace Zen
             _Server.Start();
         }
 
-        public List<MinerLogData> MinerLogData { get; private set; }
-		public NodeManager NodeManager
+       // public List<MinerLogData> MinerLogData { get; private set; }
+		
+        public NodeManager NodeManager
 		{
 			get
 			{
 				if (_NodeManager == null)
 				{
 					_NodeManager = new NodeManager(AppBlockChain);
-					_NodeManager.Miner.Enabled = _MinerEnabled;
+					//_NodeManager.Miner.Enabled = _MinerEnabled;
 
-					_NodeManager.Miner.OnMinedBlock -= MinedBlockHandler;
-					_NodeManager.Miner.OnMinedBlock += MinedBlockHandler;
+					//_NodeManager.Miner.OnMinedBlock -= MinedBlockHandler;
+					//_NodeManager.Miner.OnMinedBlock += MinedBlockHandler;
 				}
 
 				return _NodeManager;
 			}
 		}
 
-		void MinedBlockHandler(MinerLogData minerLogData)
-		{
-			MinerLogData.Add(minerLogData);
-		}
+		//void MinedBlockHandler(MinerLogData minerLogData)
+		//{
+		//	MinerLogData.Add(minerLogData);
+		//}
 
 		public App()
 		{
 			Settings = new Settings();
-			MinerLogData = new List<MinerLogData>();
+		//	MinerLogData = new List<MinerLogData>();
 
 			JsonLoader<Outputs>.Instance.FileName = "genesis_outputs.json";
 
@@ -134,17 +138,7 @@ namespace Zen
 				Console.Write("Test keys json file is invalid!");
 		}
 
-		bool _MinerEnabled;
-		internal bool MinerEnabled
-		{
-			set
-			{
-				_MinerEnabled = value;
-
-				if (_NodeManager != null)
-					_NodeManager.Miner.Enabled = value;
-			}
-		}
+        internal bool MinerEnabled { get; set; }
 
 		public bool AddGenesisBlock()
 		{
@@ -153,17 +147,26 @@ namespace Zen
 
 		internal bool AddBlock(Types.Block block)
 		{
-            return AppBlockChain.HandleBlock(block).Result.BkResultEnum == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
+            return new HandleBlockAction(block).Publish().Result.BkResultEnum == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
 
 		public void MineTestBlock()
 		{
-			NodeManager.Miner.MineTestBlock();
+//			NodeManager.Miner.MineTestBlock();
 		}
 
 		public void SetMinerEnabled(bool enabled)
 		{
-			NodeManager.Miner.Enabled = enabled;
+            if (enabled && Miner == null)
+            {
+				Miner = new MinerManager(AppBlockChain, WalletManager.GetUnusedKey().Address);
+				Miner.OnMined += OnMined;
+			}
+            else if (!enabled && Miner != null)
+            {
+                Miner.Dispose();
+                Miner = null;
+            }
 		}
 
 		public Address GetTestAddress(int keyIndex)
@@ -287,12 +290,26 @@ namespace Zen
 
         public void Init()
         {
-            var wallet = WalletManager; 
+            var wallet = WalletManager;
+
+            SetMinerEnabled(MinerEnabled);
+        }
+
+        void OnMined(Types.Block bk)
+        {
+			if (_NodeManager != null)
+	            _NodeManager.Transmit(bk);
         }
 
 		public void Stop()
 		{
             //stopEvent.Set();
+
+            if (Miner != null)
+            {
+                Miner.Dispose();
+                Miner = null;
+            }
 
 			if (_NodeManager != null)
 			{

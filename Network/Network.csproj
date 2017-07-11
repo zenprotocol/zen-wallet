@@ -104,7 +104,6 @@
     <Compile Include="Protocol\Payloads\GetTipPayload.cs" />
     <Compile Include="Protocol\Behaviors\ChainBehavior.cs" />
     <Compile Include="Protocol\Behaviors\MinerBehavior.cs" />
-    <Compile Include="Miner.cs" />
     <Compile Include="NATManager.cs" />
     <Compile Include="NodeManager.cs" />
     <Compile Include="Server.cs" />

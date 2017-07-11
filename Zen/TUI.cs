@@ -152,57 +152,64 @@ namespace Zen
 			var minerDialog = new Dialog(root) { Text = "Miner", Width = 70, Height = 18, Top = 2, Left = 6, Border = BorderStyle.Thick, Visible = false };
 			var radioMinerEnabled = new RadioButton(minerDialog) { Top = 1, Left = 1, Id = "minerIsEnabled", Text = "Enabled" };
 			var radioMinerDisabled = new RadioButton(minerDialog) { Top = 2, Left = 1, Id = "minerIsEnabled", Text = "Disabled" };
-            var mineEmptyBlock = new Checkbox(minerDialog) { Top = 3, Left = 1, Id = "minerEmptyBlocks", Text = "Empty blocks" };
+//            var mineEmptyBlock = new Checkbox(minerDialog) { Top = 3, Left = 1, Id = "minerEmptyBlocks", Text = "Empty blocks" };
             new Label(minerDialog) { Top = 4, Left = 1, Width = 10, Text = "Difficulty" };
 			var difficulty = new SingleLineTextbox(minerDialog) { Top = 4, Left = 15, Width = 10 };
-			var minerDialogMinerButton = new Button(minerDialog) { Top = 1, Left = 32, Width = 15, Text = "Mine Now" };
+//			var minerDialogMinerButton = new Button(minerDialog) { Top = 1, Left = 32, Width = 15, Text = "Mine Now" };
 			var minerDialogCloseButton = new Button(minerDialog) { Top = 1, Left = 50, Width = 18, Text = "Apply and Close" };
 			var minerLog = new ListBox(minerDialog) { Top = 6, Left = 2, Width = 66, Height = 11, Border = BorderStyle.Thin };
 
-			Func<MinerLogData, string> minerLogData = log =>
-			{
-				return $"Block #{log.BlockNumber} {log.Status.BkResultEnum} with {log.Transactions} txs, in {log.TimeToMine} seconds";
-			};
+			//Func<MinerLogData, string> minerLogData = log =>
+			//{
+			//	return $"Block #{log.BlockNumber} {log.Status.BkResultEnum} with {log.Transactions} txs, in {log.TimeToMine} seconds";
+			//};
 
-			app.NodeManager.Miner.OnMinedBlock += log => minerLog.Items.Add(minerLogData(log));
+//			app.NodeManager.Miner.OnMinedBlock += log => minerLog.Items.Add(minerLogData(log));
 
-            mineEmptyBlock.Clicked += (sender, e) => {
-				var miner = app.NodeManager.Miner;
+   //         mineEmptyBlock.Clicked += (sender, e) => {
+			//	var miner = app.NodeManager.Miner;
 
-                miner.SkipTxs = ((Checkbox)sender).Checked;
-			};
+   //             miner.SkipTxs = ((Checkbox)sender).Checked;
+			//};
 
 			minerDialogCloseButton.Clicked += (sender, e) =>
 			{
-				var miner = app.NodeManager.Miner;
+                app.SetMinerEnabled(radioMinerEnabled.Checked);
 
-				miner.Difficulty = int.Parse(difficulty.Text);
-				miner.Enabled = radioMinerEnabled.Checked;
+                if (radioMinerEnabled.Checked)
+                {
+                    app.Miner.Difficulty = uint.Parse(difficulty.Text);
+                }
 
 				minerDialog.Hide();
 				dialog.Show();
 			};
 
-			minerDialogMinerButton.Clicked += (sender, e) =>
-			{
-				app.MineTestBlock();
-			};
+			//minerDialogMinerButton.Clicked += (sender, e) =>
+			//{
+			//	app.MineTestBlock();
+			//};
 
 			Action showMinerDialog = () =>
 			{
-				var miner = app.NodeManager.Miner;
-				difficulty.Text = miner.Difficulty.ToString();
+				var miner = app.Miner;
 
-				if (miner.Enabled)
-					radioMinerEnabled.Checked = true;
-				else
-					radioMinerDisabled.Checked = true;
+                if (miner != null)
+                {
+                    radioMinerEnabled.Checked = true;
+                    difficulty.Text = miner.Difficulty.ToString();
+                }
+                else
+                {
+                    radioMinerDisabled.Checked = true;
+                    difficulty.Text = "0";
+                }
 
 				minerLog.Items.Clear();
-				foreach (var log in app.MinerLogData)
-				{
-					minerLog.Items.Add(minerLogData(log));
-				}
+				//foreach (var log in app.MinerLogData)
+				//{
+				//	minerLog.Items.Add(minerLogData(log));
+				//}
 
 				dialog.Hide();
 				minerDialog.Show();

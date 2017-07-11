@@ -9,6 +9,7 @@ using NBitcoin.Protocol.Behaviors;
 using System.Net;
 using Consensus;
 using BlockChain.Data;
+using static BlockChain.BlockVerificationHelper;
 
 namespace Network
 {
@@ -18,9 +19,10 @@ namespace Network
 		BlockChain.BlockChain _BlockChain = null;
 		NodeConnectionParameters _NodeConnectionParameters;
 		BroadcastHubBehavior _BroadcastHubBehavior;
+        MinerBehavior _MinerBehavior;
 		NodesGroup _NodesGroup;
 
-		public readonly Miner Miner;
+		//public readonly Miner Miner;
 
 		public NodeManager(BlockChain.BlockChain blockChain)
 		{
@@ -31,10 +33,10 @@ namespace Network
 			var addressManagerBehavior = new AddressManagerBehavior(addressManager);
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
 
-			Miner = new Miner();
+			//Miner = new Miner();
 
-            OwnResource(Miner);
-			Miner.BlockChain_ = blockChain;
+            //OwnResource(Miner);
+			//Miner.BlockChain_ = blockChain;
 		}
 
 		public async Task Connect(NetworkInfo networkInfo)
@@ -78,9 +80,10 @@ namespace Network
 			}
 
 			_BroadcastHubBehavior = new BroadcastHubBehavior();
+            _MinerBehavior = new MinerBehavior();
 
 			_NodeConnectionParameters.TemplateBehaviors.Add(_BroadcastHubBehavior);
-			_NodeConnectionParameters.TemplateBehaviors.Add(new MinerBehavior(Miner));
+            _NodeConnectionParameters.TemplateBehaviors.Add(_MinerBehavior);
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _BroadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
@@ -137,12 +140,29 @@ namespace Network
 		/// </summary>
 		public BlockChain.BlockChain.TxResultEnum Transmit(Types.Transaction tx)
 		{
-			var result = new HandleTransactionAction() { Tx = tx } .Publish().Result;
+            //TODO: if tx is known (and validated), just send it.
+			var result = new HandleTransactionAction { Tx = tx }.Publish().Result;
 
 			if (result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
 				_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
 
 			return result;
+		}
+
+  //      public BkResultEnum Transmit(Types.Block bk)
+		//{
+  //          var result = new HandleBlockAction(bk).Publish().Result.BkResultEnum;
+
+  //          if (result == BkResultEnum.Accepted)
+  //              _MinerBehavior.BroadcastBlock(bk);
+
+		//	return result;
+		//}
+
+		public void Transmit(Types.Block bk)
+		{
+            if (_MinerBehavior != null)
+	    		_MinerBehavior.BroadcastBlock(bk);
 		}
 	}
 }
