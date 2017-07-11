@@ -53,10 +53,16 @@ namespace Wallet.core
 
         public AssetsMetadata()
         {
-            string directory = Utils.PathCombine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), Utils.Config("assetsDir"));
-            _CacheJsonStore.FileName = Utils.PathCombine(directory, "metadata.json");
-            _CacheJsonStore.Value.ToList().ForEach(t => _Cache.TryAdd(t.Key, new AssetMetadata() { Asset = Convert.FromBase64String(t.Key), Display = t.Value.name }));
-            _Cache.TryAdd(Convert.ToBase64String(Consensus.Tests.zhash), new AssetMetadata() { Asset = Consensus.Tests.zhash, Display = ZEN });
+            try
+            {
+                string directory = Utils.PathCombine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), Utils.Config("assetsDir"));
+                _CacheJsonStore.FileName = Utils.PathCombine(directory, "metadata.json");
+                _CacheJsonStore.Value.ToList().ForEach(t => _Cache.TryAdd(t.Key, new AssetMetadata() { Asset = Convert.FromBase64String(t.Key), Display = t.Value.name }));
+                _Cache.TryAdd(Convert.ToBase64String(Consensus.Tests.zhash), new AssetMetadata() { Asset = Consensus.Tests.zhash, Display = ZEN });
+            } catch (Exception e)
+            {
+                WalletTrace.Error("AssetsMetadata ctor", e);
+            }
         }
 
         //public async Task GetMetadata(byte[] asset)
