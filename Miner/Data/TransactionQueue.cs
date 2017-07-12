@@ -6,7 +6,7 @@ using Consensus;
 
 namespace Miner.Data
 {
-    using T = Types.Transaction;
+    using T = TransactionValidation.PointedTransaction;
 
     public class TransactionQueue
     {

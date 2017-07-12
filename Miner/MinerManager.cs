@@ -17,24 +17,19 @@ namespace Miner
 {
 	//TODO: refactor duplication
 	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
+	using UtxoLookup = FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>;
 
 	public class MinerManager : ResourceOwner
     {
         readonly TransactionQueue _TransactionQueue = new TransactionQueue();
-        readonly List<Types.Transaction> _ValidatedTxs = new List<Types.Transaction>();
+        readonly List<TransactionValidation.PointedTransaction> _ValidatedTxs = new List<TransactionValidation.PointedTransaction>();
 
-        HashDictionary<ContractFunction> _ActiveContracts;
-        List<KeyValuePair<Types.Outpoint, Types.Output>> _UtxoSet;
-
-		//    readonly HashDictionary<ContractFunc> _ActiveContracts = new HashDictionary<ContractFunc>();
-		//readonly IDictionary<Types.Outpoint, Types.Output> _UtxoSet = new Dictionary<Types.Outpoint, Types.Output>();
+		readonly HashDictionary<ContractFunction> _ActiveContracts = new HashDictionary<ContractFunction>();
+		List<Tuple<Types.Outpoint, Types.Output>> _UtxoSet;
 
 		BlockChain.BlockChain _BlockChain;
-        //TxPool _BlockChainTxPool;
         EventLoopMessageListener<BlockChainMessage> _BlockChainListener;
 
-        //byte[] _Tip;
-        //uint _TipBlockNumber;
         readonly Hasher _Hasher = new Hasher();
 
 		public uint Difficulty
@@ -63,7 +58,6 @@ namespace Miner
             Difficulty = 14;
 
             _Address = address;
-           // _BlockChainTxPool = blockChain.memPool.TxPool;
 			_BlockChain = blockChain;
             _Hasher.OnMined += DispatchBlock;
 			OwnResource(_Hasher);
@@ -74,28 +68,25 @@ namespace Miner
             Reset();
 		}
 
-		async void Reset()
-		{
-			//_Tip = _BlockChain.Tip.Key;
-		 	//_TipBlockNumber = _BlockChain.Tip.Value.header.blockNumber;
+        async void Reset()
+        {
+            MinerTrace.Information("Miner reset");
 
-			_TransactionQueue.Clear();
-			_ValidatedTxs.Clear();
+            _TransactionQueue.Clear();
+            _ValidatedTxs.Clear();
 
-			var acsList = await new GetActiveContactsAction().Publish();
-			var utxoSet = await new GetUTXOSetAction().Publish();
+            var acsList = await new GetActiveContactsAction().Publish();
+            _UtxoSet = await new GetUTXOSetAction2().Publish();
 
+			_ActiveContracts.Clear();
 
+            acsList.ForEach(t =>
+            {
+                //TODO: cache compiled?
+                var contractFunction = ContractExamples.Execution.deserialize(t.CompiledContract);
 
-		//	var minerBlockChainData = await new GetMinerParamsAction().Publish();
-
-			// _ActiveContracts.Clear();
-
-			// do we need that? bk message can update the tip
-			//_Tip = minerBlockChainData.Tip;
-			//_TipBlockNumber = minerBlockChainData.TipBlockNumber;
-			//_ActiveContracts = minerBlockChainData.ActiveContracts;
-			//_UtxoSet = minerBlockChainData.UtxoSet;
+                _ActiveContracts[t.Hash] = contractFunction;
+            });
 
 			Populate();
 			RecalculateHeader();
@@ -111,7 +102,7 @@ namespace Miner
             {
 				foreach (var item in _BlockChain.memPool.TxPool)
                 {
-                    _TransactionQueue.Push(TransactionValidation.unpoint(item.Value));
+                    _TransactionQueue.Push(item.Value);
                 }
             }
 
@@ -120,25 +111,14 @@ namespace Miner
             _BlockChainListener.Continue();
 		}
 
-  //      void Pause()
-  //      {
-  //          _Hasher.Pause();
-  //      }
-
-		//public void Continue()
-		//{
-		//	_Hasher.Pause();
-		//}
-
 		void OnBlockChainMessage(BlockChainMessage m)
 		{	
 			if (m is TxMessage)
 			{
 				MinerTrace.Information("Got tx");
 
-				var tx = TransactionValidation.unpoint(((TxMessage)m).Ptx);
-
-                _TransactionQueue.Push(tx);
+                if (((TxMessage)m).State == TxStateEnum.Unconfirmed)
+                    _TransactionQueue.Push(((TxMessage)m).Ptx);
 
                 RecalculateHeader();
 			}
@@ -150,12 +130,110 @@ namespace Miner
 			}	
 		}
 
-        bool IsTransactionValid(Types.Transaction tx)
+        bool IsTransactionValid(TransactionValidation.PointedTransaction ptx)
         {
-            return true;
+			UtxoLookup utxoLookup = UtxoLookup.FromConverter(outpoint =>
+			{
+                var outputs = _UtxoSet.Where(t => t.Item1.Equals(outpoint)).Select(t => t.Item2);
+                return !outputs.Any() ? FSharpOption<Types.Output>.None : new FSharpOption<Types.Output>(outputs.First());
+            });
+
+            FSharpFunc<byte[], FSharpOption<ContractFunction>> contractLookup =
+                FSharpFunc<byte[], FSharpOption<ContractFunction>>.FromConverter(contractHash =>
+            {
+                return !_ActiveContracts.ContainsKey(contractHash) ? 
+                       FSharpOption<ContractFunction>.None :
+                       new FSharpOption<ContractFunction>(_ActiveContracts[contractHash]);
+            });
+
+            var result = TransactionValidation.validateNonCoinbaseTx(
+                ptx,
+                utxoLookup,
+                contractLookup
+            );
+
+			if (!result)
+			{
+				MinerTrace.Information("Tx invalid");
+			}
+
+			return result;
         }
 
-        void RecalculateHeader()
+		void HandleTx(TransactionValidation.PointedTransaction ptx)
+		{
+            foreach (var pInput in ptx.pInputs)
+            {
+                var toremove = _UtxoSet.Where(t => t.Item1.Equals(pInput.Item1));
+
+                if (toremove.Any())
+                {
+                    toremove.ToList().ForEach(t => _UtxoSet.Remove(t));
+                }
+			}
+
+            //TODO: try simplify using hash from message
+            var txHash = Merkle.transactionHasher.Invoke(TransactionValidation.unpoint(ptx));
+			
+            var activationSacrifice = 0UL;
+
+            for (var i = 0; i < ptx.outputs.Length; i++)
+            {
+				var output = ptx.outputs[i];
+
+				if (output.@lock.IsContractSacrificeLock)
+				{
+					if (!output.spend.asset.SequenceEqual(Tests.zhash))
+						continue; // not Zen
+
+					var contractSacrificeLock = (Types.OutputLock.ContractSacrificeLock)output.@lock;
+
+					if (contractSacrificeLock.IsHighVLock)
+						continue; // not current version
+
+                    if (contractSacrificeLock.Item.lockData.Length == 0)
+					{
+						activationSacrifice += output.spend.amount;
+					}
+				}
+
+				//todo: fix  to exclude CSLocks&FLocks, instead of including by locktype
+				if (output.@lock.IsPKLock || output.@lock.IsContractLock)
+				{
+					var outpoint = new Types.Outpoint(txHash, (uint)i);
+					_UtxoSet.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, output));
+				}
+			}
+
+			if (FSharpOption<Types.ExtendedContract>.get_IsSome(ptx.contract) && !ptx.contract.Value.IsHighVContract)
+			{
+				var codeBytes = ((Types.ExtendedContract.Contract)ptx.contract.Value).Item.code;
+				var contractHash = Merkle.innerHash(codeBytes);
+				var contractCode = System.Text.Encoding.ASCII.GetString(codeBytes);
+
+                if (!_ActiveContracts.ContainsKey(contractHash))
+                {
+                    if (activationSacrifice > ActiveContractSet.KalapasPerBlock(contractCode))
+                    {
+						try
+						{
+							var compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
+
+                            if (FSharpOption<byte[]>.get_IsSome(compiledCodeOpt))
+                            {
+                                _ActiveContracts[contractHash] = ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
+                            }
+						}
+						catch (Exception e)
+						{
+                            MinerTrace.Information("Error compiling contract");
+						}
+					}
+                }
+			}
+		}
+
+		void RecalculateHeader()
         {
 			if (_BlockChain.Tip == null)
 			{
@@ -164,14 +242,16 @@ namespace Miner
 
 			while (!_TransactionQueue.IsStuck && _ValidatedTxs.Count < TxsPerBlockLimit)
 			{
-				var _tx = _TransactionQueue.Take();
+				var ptx = _TransactionQueue.Take();
 
-				if (IsTransactionValid(_tx))
+				if (IsTransactionValid(ptx))
 				{
-					_ValidatedTxs.Add(_tx);
+					_ValidatedTxs.Add(ptx);
 
 					_TransactionQueue.Remove();
-				}
+
+                    HandleTx(ptx);
+                }
 				else
 				{
 					_TransactionQueue.Next();
@@ -185,6 +265,8 @@ namespace Miner
 
             CalculateCoinbase();
 
+            var txs = ListModule.OfSeq(FSharpList<Types.Transaction>.Cons(_Coinbase, ListModule.OfSeq(_ValidatedTxs.Select(TransactionValidation.unpoint))));
+
             _Header = new Types.BlockHeader(
                 0,
 				_BlockChain.Tip.Key,
@@ -192,7 +274,7 @@ namespace Miner
                 Merkle.merkleRoot(
                     new byte[] { },
                     Merkle.transactionHasher,
-                    ListModule.OfSeq(FSharpList<Types.Transaction>.Cons(_Coinbase, ListModule.OfSeq(_ValidatedTxs)))
+                    txs
                 ),
 				new byte[] { },
 				new byte[] { },
@@ -219,7 +301,7 @@ namespace Miner
 
             var witness = new List<byte[]>
             {
-                BitConverter.GetBytes(_BlockChain.Tip.Value.header.blockNumber)
+                BitConverter.GetBytes(_BlockChain.Tip.Value.header.blockNumber + 1)
             };
 
             _Coinbase = new Types.Transaction(
@@ -235,7 +317,7 @@ namespace Miner
         {
             MinerTrace.Information("Dispatching block");
 
-            var txs = FSharpList<Types.Transaction>.Cons(_Coinbase, ListModule.OfSeq(_ValidatedTxs));
+			var txs = FSharpList<Types.Transaction>.Cons(_Coinbase, ListModule.OfSeq(_ValidatedTxs.Select(TransactionValidation.unpoint)));
 			var block = new Types.Block(_Header, txs);
 
 			_Hasher.Pause("validating block");

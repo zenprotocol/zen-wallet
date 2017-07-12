@@ -60,6 +60,10 @@
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
+      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
+      <Name>ContractExamples</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -170,9 +170,16 @@ namespace BlockChain.Data
         public byte[] Message { get; set; }
     }
 
+    //TODO: remove
     public class GetUTXOSetAction : AsyncQueueAction<Tuple<HashDictionary<List<Types.Output>>, HashDictionary<Types.Transaction>>>
     {
         public Func<Types.Output, bool> Predicate { get; set; }
+    }
+
+    //TODO: rename
+    public class GetUTXOSetAction2 : AsyncQueueAction<List<Tuple<Types.Outpoint, Types.Output>>>
+    {
+        
     }
 
 #if TEST

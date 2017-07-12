@@ -151,6 +151,8 @@ namespace BlockChain
 						var result = AssembleAutoTx(executeContractAction.ContractHash, executeContractAction.Message, out tx, executeContractAction.Message != null);
 						((ExecuteContractAction)action).SetResult(new Tuple<bool, Types.Transaction>(result, tx));
 					}
+
+                    //TODO: remove
 					else if (action is GetUTXOSetAction)
 					{
 						var getUTXOSetAction = (GetUTXOSetAction)action;
@@ -158,6 +160,14 @@ namespace BlockChain
 						HashDictionary<Types.Transaction> txs;
 						GetUTXOSet(getUTXOSetAction.Predicate, out txOutputs, out txs);
 						getUTXOSetAction.SetResult(new Tuple<HashDictionary<List<Types.Output>>, HashDictionary<Types.Transaction>>(txOutputs, txs));
+					}
+                    //TODO: rename
+                    else if (action is GetUTXOSetAction2)
+                    {
+						using (var dbTx = _DBContext.GetTransactionContext())
+						{
+                            ((GetUTXOSetAction2)action).SetResult(UTXOStore.All(dbTx).ToList());
+						}
 					}
 #if TEST
 					else if (action is GetBlockLocationAction)
