@@ -26,7 +26,7 @@ namespace BlockChain.Data
 		{
 			if (Contains(txHash))
 			{
-                var deps = GetDependencies(txHash).Where(t=>t.Item1 is KnownTxPool);
+                var deps = GetDependencies(txHash).Where(t=>t.Item1 is KnownTxPool).ToList();
 
                 MoveToOrphans(txHash);
 
