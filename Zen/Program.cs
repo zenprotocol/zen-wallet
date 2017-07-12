@@ -24,6 +24,7 @@ namespace Zen
 			bool show_help = false;
 			bool genesis = false;
 			bool rpcServer = false;
+            bool wipe = false;
 
 			var p = new OptionSet() {
 				{ "headless", "start in headless mode",
@@ -50,7 +51,10 @@ namespace Zen
 				{ "g|genesis", "add the genesis block",
 					v => genesis = true },
 
-				{ "h|help",  "show this message and exit", 
+				{ "w|wipe db's on startup",
+					v => wipe = v != null },
+
+                { "h|help",  "show this message and exit", 
 					v => show_help = v != null },
 			};
 
@@ -67,6 +71,13 @@ namespace Zen
 			if (show_help) {
 				ShowHelp (p);
 				return;
+			}
+
+            if (wipe)
+            {
+                app.ResetWalletDB();
+                app.ResetBlockChainDB();
+				Console.WriteLine("Databases wiped.");
 			}
 
             app.Init();
