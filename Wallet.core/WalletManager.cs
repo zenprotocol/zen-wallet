@@ -307,77 +307,63 @@ namespace Wallet.core
         /// <returns>false if could not satisfy</returns>
         /// <param name="asset">Asset.</param>
         /// <param name="amount">Amount.</param>
-        private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, Assets assets)
+        bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, Assets assets)
         {
-            var matchingAssets = new Assets();
+			ulong total = 0;
 
-            var spendableOutputs = new List<Types.Output>();
-
-            _TxStore.All(dbTx).Select(t=>t.Item2).ToList().ForEach(txData =>
+			foreach (var item in _TxStore.All(dbTx))
             {
-                uint idx = 0;
-                txData.Tx.outputs.ToList().ForEach(o =>
+                for (var i = 0; i < item.Item2.Tx.outputs.Length; i++)
                 {
-                    if (o.spend.asset.SequenceEqual(asset))
-                    {
-                        var key = GetKey(o);
+                    var outpoint = new Types.Outpoint(item.Item2.TxHash, (uint)i);
+                    var output = item.Item2.Tx.outputs[i];
 
-                        if (key != null)
-                        {
-                            if (txData.TxState != TxStateEnum.Invalid)
-                            {
-                                matchingAssets.Add(new Asset()
-                                {
-                                    Key = key,
-                                    TxState = txData.TxState,
-                                    Outpoint = new Types.Outpoint(txData.TxHash, idx),
-                                    Output = o
-                                });
-                            }
-                        }
-                    }
-                    idx++;
-                });
-            });
+                    if (!output.spend.asset.SequenceEqual(asset) || item.Item2.TxState == TxStateEnum.Invalid)
+                        continue;
 
-            var unspentMatchingAssets = new Assets();
+					var key = GetKey(output);
 
-			foreach (Asset matchingAsset in matchingAssets)
-			{
-				bool canSpend = false;
-				switch (matchingAsset.TxState)
-				{
-					case TxStateEnum.Confirmed:
-						var isConfirmedUTXOExist = new GetIsConfirmedUTXOExistAction() { Outpoint = matchingAsset.Outpoint }.Publish().Result;
+                    //redundant check?
+                    if (key == null )
+                        continue;
 
-						canSpend = isConfirmedUTXOExist &&
-							!_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint);
+					bool canSpend = false;
+
+					switch (item.Item2.TxState)
+					{
+						case TxStateEnum.Confirmed:
+							canSpend = new GetIsConfirmedUTXOExistAction() { Outpoint = outpoint }.Publish().Result &&
+								!_BlockChain.memPool.TxPool.ContainsOutpoint(outpoint);
+							break;
+						case TxStateEnum.Unconfirmed:
+							canSpend = !_BlockChain.memPool.TxPool.ContainsOutpoint(outpoint) &&
+								_BlockChain.memPool.TxPool.Contains(outpoint.txHash);
+							break;
+					}
+
+                    if (!canSpend)
+                        continue;
+
+					assets.Add(new Asset()
+					{
+						Key = key,
+                        TxState = item.Item2.TxState,
+                        Outpoint = outpoint,
+						Output = output
+					});
+
+                    total += output.spend.amount;
+
+					if (total >= amount)
+					{
 						break;
-					case TxStateEnum.Unconfirmed:
-						canSpend = !_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint) &&
-							_BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash);
-						break;
-				}
-
-				WalletTrace.Information($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
-
-				if (canSpend)
-				{
-					unspentMatchingAssets.Add(matchingAsset);
-				}
-			}
-
-            ulong total = 0;
-
-            foreach (var unspentMatchingAsset in unspentMatchingAssets)
-            {
-                if (total >= amount)
-                {
-                    break;
+					}
                 }
 
-                assets.Add(unspentMatchingAsset);
-                total += unspentMatchingAsset.Output.spend.amount;
+				if (total >= amount)
+				{
+					break;
+				}                
             }
 
             change = total - amount;
@@ -446,7 +432,7 @@ namespace Wallet.core
             outputs.Add(output);
 
             signedTx = TransactionValidation.signTx(new Types.Transaction(
-                1,
+                0,
                 ListModule.OfSeq(assets.Select(t => t.Outpoint)),
                 ListModule.OfSeq(new List<byte[]>()),
                 ListModule.OfSeq(outputs),
@@ -529,7 +515,7 @@ namespace Wallet.core
             }
 
             signedTx = TransactionValidation.signTx(new Types.Transaction(
-                1,
+                0,
                 ListModule.OfSeq(assets.Select(t => t.Outpoint)),
                 ListModule.OfSeq(new List<byte[]>()),
                 ListModule.OfSeq(outputs),
