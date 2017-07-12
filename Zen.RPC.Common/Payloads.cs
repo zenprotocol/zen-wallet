@@ -26,7 +26,7 @@ namespace Zen.RPC.Common
 
 		public override string ToString()
 		{
-			var status = Success ? "" : "Failure";
+			var status = Success ? "Success" : "Failure";
 			var str = $"{this.GetType().Name} {status}";
 
 			if (Message != null)
@@ -160,15 +160,15 @@ namespace Zen.RPC.Common
 		public ulong Amount { get; set; }
 	}
 
-	public class AcquirePayload : BasePayload
+	public class EnsureTestKeyAcquiredPayload : BasePayload
 	{
 		public string PrivateKey { get; set; }
 	}
 
-	public class GetBalancePayload : BasePayload
-	{
-		public byte[] Asset { get; set; }
-	}
+	//public class GetBalancePayload : BasePayload
+	//{
+	//	public byte[] Asset { get; set; }
+	//}
 
 	public class GetBalanceResultPayload : ResultPayload
 	{

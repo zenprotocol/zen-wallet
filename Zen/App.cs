@@ -382,6 +382,12 @@ namespace Zen
 			WalletManager.Import(Key.Create(privateKey));
 		}
 
+        public bool TestKeyImported(string privateKey)
+        {
+            var privateBytes = Key.Create(privateKey).Private;
+            return WalletManager.GetKeys().Any(t => t.Private.SequenceEqual(privateBytes));
+		}
+
 		public async Task Connect()
 		{
             if (_CanConnect)
@@ -502,44 +508,44 @@ namespace Zen
 		//	return ActivateTestContractCode(contractCode, blocks);
 		//}
 
-		public bool ActivateTestContractCode(string contractCode, int blocks)
-		{
-			var outputs = new List<Types.Output>();
-			var inputs = new List<Types.Outpoint>();
-			var hashes = new List<byte[]>();
-			var version = (uint)1;
+		//public bool ActivateTestContractCode(string contractCode, int blocks)
+		//{
+		//	var outputs = new List<Types.Output>();
+		//	var inputs = new List<Types.Outpoint>();
+		//	var hashes = new List<byte[]>();
+		//	var version = (uint)1;
 
-			var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-			var kalapas = (ulong)(contractCode.Length * 1 * blocks);
+		//	var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
+		//	var kalapas = (ulong)(contractCode.Length * 1 * blocks);
 
-			outputs.Add(new Types.Output(
-				Types.OutputLock.NewContractSacrificeLock(
-					new Types.LockCore(0, ListModule.OfSeq(new byte[][] { }))
-				),
-				new Types.Spend(Tests.zhash, kalapas)
-			));
+		//	outputs.Add(new Types.Output(
+		//		Types.OutputLock.NewContractSacrificeLock(
+		//			new Types.LockCore(0, ListModule.OfSeq(new byte[][] { }))
+		//		),
+		//		new Types.Spend(Tests.zhash, kalapas)
+		//	));
 
-			var tx = new Types.Transaction(version,
-				ListModule.OfSeq(inputs),
-				ListModule.OfSeq(hashes),
-				ListModule.OfSeq(outputs),
-				new Microsoft.FSharp.Core.FSharpOption<Types.ExtendedContract>(
-					Types.ExtendedContract.NewContract(
-						new Consensus.Types.Contract(
-							Encoding.ASCII.GetBytes(contractCode),
-							new byte[] { },
-							new byte[] { }
-						)
-					))
-				);
+		//	var tx = new Types.Transaction(version,
+		//		ListModule.OfSeq(inputs),
+		//		ListModule.OfSeq(hashes),
+		//		ListModule.OfSeq(outputs),
+		//		new Microsoft.FSharp.Core.FSharpOption<Types.ExtendedContract>(
+		//			Types.ExtendedContract.NewContract(
+		//				new Consensus.Types.Contract(
+		//					Encoding.ASCII.GetBytes(contractCode),
+		//					new byte[] { },
+		//					new byte[] { }
+		//				)
+		//			))
+		//		);
 
-            if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
-            {
-                return false;
-            }
+  //          if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
+  //          {
+  //              return false;
+  //          }
 
-            return true;
-		}
+  //          return true;
+		//}
 
         public byte[] GetContractHash(string contractCode)
         {
@@ -635,23 +641,23 @@ namespace Zen
             return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
-        public long CalcBalance(byte[] asset)
-        {
-            var txDeltaList = new List<TxDelta>();
+    //    public long CalcBalance(byte[] asset)
+    //    {
+    //        var txDeltaList = new List<TxDelta>();
 
-            Action<TxDelta> addTxDelta = (TxDelta txDelta) =>
-            {
-				txDeltaList
-				.Where(t => t.TxHash.SequenceEqual(txDelta.TxHash))
-				.ToList()
-				.ForEach(t => txDeltaList.Remove(t));
+    //        Action<TxDelta> addTxDelta = (TxDelta txDelta) =>
+    //        {
+				//txDeltaList
+				//.Where(t => t.TxHash.SequenceEqual(txDelta.TxHash))
+				//.ToList()
+				//.ForEach(t => txDeltaList.Remove(t));
 
-				txDeltaList.Add(txDelta);
-            };
+				//txDeltaList.Add(txDelta);
+        //    };
 
-            WalletManager.TxDeltaList.ForEach(addTxDelta);
+        //    WalletManager.TxDeltaList.ForEach(addTxDelta);
 
-            return txDeltaList.Select(t => t.AssetDeltas).Sum(t=>t.ContainsKey(asset) ? t[asset] : 0);
-        }
+        //    return txDeltaList.Select(t => t.AssetDeltas).Sum(t=>t.ContainsKey(asset) ? t[asset] : 0);
+        //}
 	}
 }

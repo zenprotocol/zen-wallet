@@ -9,21 +9,17 @@ using System.Linq;
 using Wallet.core.Data;
 using BlockChain.Data;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace Zen
 {
     public class Server
     {
         readonly int PORT = 5555;
-        readonly int TIMEOUT = 2 * 1000;
 
         App _App;
         NetMQPoller _poller = new NetMQPoller();
         ResponseSocket _responseSocket = new ResponseSocket();
-		bool _Started = false;
-		bool _Stopping = false;
-		Thread _Thread;
-		object _Sync = new object();
 
         public Server(App app)
         {
@@ -122,12 +118,39 @@ namespace Zen
 			{
 				var activateContractPayload = (ActivateContractPayload)payload;
 
-				var _result = _App.ActivateTestContractCode(
-					activateContractPayload.Code,
-					activateContractPayload.Blocks
+				var amount = (ulong)BlockChain.ActiveContractSet.KalapasPerBlock(activateContractPayload.Code) * (ulong)activateContractPayload.Blocks;
+
+				Consensus.Types.Transaction tx;
+
+				var _result = _App.WalletManager.SacrificeToContract(
+					Encoding.ASCII.GetBytes(activateContractPayload.Code),
+					amount,
+					out tx
 				);
 
-				return new ResultPayload { Success = _result };
+				var resultPayload = new ResultPayload();
+
+				if (!_result)
+				{
+					resultPayload.Message = "Could not get signed tx";
+					resultPayload.Success = false;
+				}
+				else
+				{
+					BlockChain.BlockChain.TxResultEnum txResult;
+
+					if (!_App.Transmit(tx, out txResult))
+					{
+						resultPayload.Message = "Could not transmit. Result: ";
+						resultPayload.Success = false;
+					}
+					else
+					{
+						resultPayload.Success = true;
+					}
+				}
+
+				return resultPayload;
 			}
 
 			if (type == typeof(GetACSPayload))
@@ -186,28 +209,29 @@ namespace Zen
 				};
 			}
 
-            if (type == typeof(AcquirePayload))
+            if (type == typeof(EnsureTestKeyAcquiredPayload))
             {
-				var _payload = (AcquirePayload)payload;
+                var privateKey = ((EnsureTestKeyAcquiredPayload)payload).PrivateKey;
 
-                _App.ImportTestKey(_payload.PrivateKey);
+                if (!_App.TestKeyImported(privateKey))
+                    _App.ImportTestKey(privateKey);
 
 				return new ResultPayload
 				{
-					Success = true
+					Success = _App.TestKeyImported(privateKey)
 				};
 			}
 
-			if (type == typeof(GetBalancePayload))
-			{
-				var _payload = (GetBalancePayload)payload;
+			//if (type == typeof(GetBalancePayload))
+			//{
+			//	var _payload = (GetBalancePayload)payload;
 
-				return new GetBalanceResultPayload
-				{
-					Success = true,
-                    Balance = _App.CalcBalance(_payload.Asset)
-				};
-			}
+			//	return new GetBalanceResultPayload
+			//	{
+			//		Success = true,
+   //                 Balance = _App.CalcBalance(_payload.Asset)
+			//	};
+			//}
 			  
 			return null;
 		}
