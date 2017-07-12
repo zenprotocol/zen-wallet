@@ -466,6 +466,7 @@ namespace BlockChain
                 ptx = null;
                 return false;
 			}
+
 			switch (_BlockChain.IsOrphanTx(_DbTx, tx, true, out ptx))
 			{
 				case BlockChain.IsTxOrphanResult.Orphan:
@@ -569,8 +570,8 @@ namespace BlockChain
         {
             //TODO: check maturity
 
-            return tx.witnesses.Count() == 1 && 
-                 BitConverter.ToUInt64(tx.witnesses[0], 0) == _Bk.header.blockNumber;
+            return tx.witnesses.Count()> 0 && tx.witnesses[0].Length > 0 &&
+                 BitConverter.ToUInt32(tx.witnesses[0], 0) == _Bk.header.blockNumber;
         }
 
 		bool IsValidBlockNumber()
