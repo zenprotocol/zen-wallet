@@ -1,0 +1,43 @@
+﻿@model ContractsDiscovery.Web.App_Data.CreateTokenGenerator
+
+<ol class="breadcrumb zen-breadcrumbs">
+  <li><a href="/">Contract Templates</a></li>
+  <li class="active">Secure Token</li>
+</ol>
+
+<div class="titleSection">
+  <h1>Create Secure Token</h1>
+  <h5>You will need a secure token in order to activate your call option later</h5>
+</div>
+
+<div class="row">
+  <div class="col-md-5">
+
+
+
+  @using (@Html.BeginForm("TokenGenerator", "ContractCreation", FormMethod.Post))
+  {
+      <div class="form-group">
+  		  <label for="assetName">Name</label>
+          <input type="text" required="true" class="form-control" id="assetName" name="assetName" placeholder="Asset Name"/>
+      </div>
+
+      <div class="form-group">
+  		  <label for="Destination">Destination Address</label>
+          <input type="text" required="true" class="form-control" id="destination" name="destination" placeholder="Destination" value="@Model.Destination.Value"/>
+      @if (@Model.Destination.Invalid)
+  		{
+  			<small class="form-text text-muted">Invalid input</small>
+  		}
+      </div>
+
+
+          <hr class="form-button-seperator" />
+          <input type="submit" class="zen-button zen-grey-button float-right" value="Submit" />
+
+
+  }
+
+  </div>
+  <div class="col-md-7"></div>
+</div>

@@ -8,6 +8,7 @@ namespace Infrastructure
 {
 	public class JsonLoader<T> : Singleton<JsonLoader<T>> where T : class, new()
 	{
+        private object _sync = new object();
 		public event Action OnSaved;
 
 		private String _FileName = null;
@@ -39,9 +40,13 @@ namespace Infrastructure
 				Ensure ();
 				return _Value; 
 			} 
-			set {
-				_Value = value;
-			}
+			set
+            {
+                lock (_sync)
+                {
+                    _Value = value;
+                }
+            }
 		}
 
 		private void Ensure ()
@@ -74,8 +79,17 @@ namespace Infrastructure
 		}
 
 		public void Save() {
-			File.WriteAllText(_FileName, JsonConvert.SerializeObject(_Value, Formatting.Indented));
-			                   
+            var dir = Path.GetDirectoryName(_FileName);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            lock (_sync)
+            {
+                File.WriteAllText(_FileName, JsonConvert.SerializeObject(_Value, Formatting.Indented));
+            }
+
 			_Corrupt = false;
 			_IsNew = false;
 

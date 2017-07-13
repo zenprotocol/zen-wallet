@@ -1,5 +1,6 @@
 ﻿module Consensus.Types
 
+// Length: 32
 type Hash = byte[]
 
 type LockCore = {version: uint32; lockData: byte[] list}
@@ -46,11 +47,12 @@ type Output = {lock: OutputLock; spend: Spend}
 
 type Outpoint = {txHash: Hash; index: uint32}
 
+// Length: variable
 type Witness = byte[]
 
-type Contract = {code: byte[]; bounds: byte[]; hint: byte[]}
+type Contract = {code: byte[]; bounds: byte[]; hint: byte[]}    //erasable
 
-type ExtendedContract =
+type ExtendedContract =                                         //erasable
     | Contract of Contract
     | HighVContract of version : uint32 * data : byte[]
 
@@ -63,8 +65,15 @@ let PubKeyHashBytes = 32
 let TxHashBytes = 32
 
 //type Transaction = {version: uint32; inputs: Outpoint list; witnesses: Witness list; outputs: Output list; contract: Contract option}
-type Transaction = {version: uint32; inputs: Outpoint list; witnesses: Witness list; outputs: Output list; contract: ExtendedContract option}
+type Transaction = {                                            //erasable
+    version: uint32;
+    inputs: Outpoint list;
+    witnesses: Witness list;
+    outputs: Output list;
+    contract: ExtendedContract option
+    }
 
+//Length: 64
 type Nonce = byte[]
 
 type BlockHeader = {
@@ -74,7 +83,7 @@ type BlockHeader = {
     txMerkleRoot: Hash;
     witnessMerkleRoot: Hash;
     contractMerkleRoot: Hash;
-    extraData: byte[] list;
+    extraData: byte[] list; //Erasable
     timestamp: int64;
     pdiff: uint32;
     nonce: Nonce;

@@ -5,6 +5,7 @@ namespace Wallet
 {
 	public class LogHeaderRow : ILogEntryRow
 	{
+		public byte[] Key { get { return null; } }
 		public Object[] Values { get; private set; } 
 		public int Offset { get; private set; } 
 

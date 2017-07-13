@@ -64,7 +64,7 @@ namespace Infrastructure
 		public StackTrace _CreatorStackTrace;
 #endif
 
-		public EventLoopMessageListener(Action<T> processMessage)
+		public EventLoopMessageListener(Action<T> processMessage, string threadName = null)
 		{
 #if DEBUG
 			_CreatorStackTrace = new StackTrace(true);
@@ -86,7 +86,7 @@ namespace Infrastructure
 						{
 							try
 							{
-								InfrastructureTrace.Information("processMessage: " + message.GetType());
+								//InfrastructureTrace.Information("processMessage: " + message.GetType());
 								processMessage(message.Value);
 							}
 							catch (Exception ex)
@@ -104,7 +104,8 @@ namespace Infrastructure
 				{
 				}
 			}));
-				
+
+			thread.Name = threadName ?? "EventLoopMessageHandler";
 			thread.Start();
 		}
 

@@ -17,9 +17,9 @@ namespace Wallet.core
 
 	class TxStore : ConsensusTypeStore<ulong, TxData>
 	{
-		static string TX_HASHES_TO_IDENTITY = "tx-hashes";
+		static string TX_HASHES_TO_IDENTITY = "wallet-tx-hashes";
 
-		internal TxStore() : base("tx")
+		internal TxStore() : base("wallet-tx")
 		{
 		}
 
@@ -40,7 +40,7 @@ namespace Wallet.core
 
 			Put(dbTx, identity, new TxData()
 			{
-				DateTime = DateTime.Now,
+				DateTime = DateTime.Now.ToUniversalTime(),
 				TxState = txState,
 				Tx = tx,
 				AssetDeltas = assetDeltas,

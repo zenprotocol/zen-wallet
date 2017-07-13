@@ -5,21 +5,43 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using BlockChain.Data;
+using Microsoft.FSharp.Core;
+using Microsoft.FSharp.Collections;
 
 namespace BlockChain
 {
+	using UtxoLookup = FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>;
+
 	public class BlockVerificationHelper
-	{
-		public BkResultEnum Result { get; set; }
-		public readonly HashDictionary<TransactionValidation.PointedTransaction> ConfirmedTxs;
-		public readonly HashDictionary<Types.Transaction> UnconfirmedTxs;
-		public readonly List<QueueAction> QueuedActions;
+    {
+        public BkResult Result { get; set; }
+        public readonly HashDictionary<TransactionValidation.PointedTransaction> ConfirmedTxs;
+        public readonly HashDictionary<Types.Transaction> UnconfirmedTxs;
+        public readonly List<QueueAction> QueueActions;
+
+        UtxoLookup UtxoLookup;
 
 		public enum BkResultEnum
 		{
 			Accepted,
 			AcceptedOrphan,
 			Rejected
+		}
+
+        //TODO: refactor using C# 7.0 and sub-classing each case
+		public class BkResult
+        {
+            public BkResultEnum BkResultEnum { get; set; }
+            public byte[] MissingParent { get; set; }
+
+            public BkResult(BkResultEnum bkResultEnum) {
+                BkResultEnum = bkResultEnum;
+            }
+
+            public BkResult(BkResultEnum bkResultEnum, byte[] missingParent) : this(bkResultEnum)
+			{
+				MissingParent = missingParent;
+			}
 		}
 
 		BlockChain _BlockChain;
@@ -40,8 +62,8 @@ namespace BlockChain
 		)
 		{
 			ConfirmedTxs = confirmedTxs ?? new HashDictionary<TransactionValidation.PointedTransaction>();
-			UnconfirmedTxs = invalidatedTxs ?? new HashDictionary<Types.Transaction>();
-			QueuedActions = queuedActions ?? new List<QueueAction>();
+			UnconfirmedTxs = invalidatedTxs ?? new HashDictionary<Types.Transaction>(); //todo: refactor to set as new obj by default
+			QueueActions = queuedActions ?? new List<QueueAction>();
 
 			_BlockChain = blockChain;
 			_DbTx = dbTx;
@@ -50,8 +72,8 @@ namespace BlockChain
 
 			if (!IsValid())
 			{
-				BlockChainTrace.Information("not valid", bk);
-				Result = BkResultEnum.Rejected;
+				BlockChainTrace.Information($"block {_Bk.header.blockNumber} is invalid", _Bk);
+                Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
@@ -65,7 +87,7 @@ namespace BlockChain
 						reject = !handleBranch;
 						break;
 					case LocationEnum.Orphans:
-						reject = !handleOrphan && !handleBranch;
+                        reject = !handleOrphan && !handleBranch;
 						break;
 					default:
 						reject = true;
@@ -74,23 +96,22 @@ namespace BlockChain
 
 				if (reject)
 				{
-					BlockChainTrace.Information("block already in store: " + blockChain.BlockStore.GetLocation(dbTx, bkHash), bkHash);
-					Result = BkResultEnum.Rejected;
+					Result = new BkResult(BkResultEnum.Rejected);
 					return;
 				}
 			}
 
 			if (bk.transactions.Count() == 0)
 			{
-				BlockChainTrace.Information("empty tx list", bkHash);
-				Result = BkResultEnum.Rejected;
+				BlockChainTrace.Information("empty tx list", bk);
+				Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
 			if (!IsValidTime())
 			{
-				BlockChainTrace.Information("invalid time", bkHash);
-				Result = BkResultEnum.Rejected;
+				BlockChainTrace.Information("invalid time", bk);
+				Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
@@ -110,25 +131,26 @@ namespace BlockChain
 			{
 				if (!IsGenesisValid())
 				{
-					BlockChainTrace.Information("invalid genesis block", _Bk);
-					Result = BkResultEnum.Rejected;
+                    BlockChainTrace.Information("invalid genesis block", bk);
+					Result = new BkResult(BkResultEnum.Rejected);
 					return;
 				}
 				else
 				{
 					blockChain.Timestamps.Init(bk.header.timestamp);
-					ExtendMain(QueuedActions, 0);
-					Result = BkResultEnum.Accepted;
-					BlockChainTrace.Information("accepted genesis block", _Bk);
+					ExtendMain(QueueActions, 0, true);
+					Result = new BkResult(BkResultEnum.Accepted);
+					BlockChainTrace.Information("accepted genesis block", bk);
 					return;
 				}
 			}
 
 			if (IsOrphan())
 			{
-				blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Orphans, 0);
-				BlockChainTrace.Information("block added as orphan", _Bk);
-				Result = BkResultEnum.AcceptedOrphan;
+                var missingParent = GetMissingParent();
+                blockChain.BlockStore.Put(dbTx, bkHash, bk, LocationEnum.Orphans, 0);
+                BlockChainTrace.Information($"block {_Bk.header.blockNumber} added as orphan", bk);
+                Result = new BkResult(BkResultEnum.AcceptedOrphan, missingParent);
 				return;
 			}
 
@@ -136,8 +158,8 @@ namespace BlockChain
 
 			if (!IsValidDifficulty() || !IsValidBlockNumber() || !IsValidTimeStamp())
 			{
-				BlockChainTrace.Information("block rejected", _Bk);
-				Result = BkResultEnum.Rejected;
+				BlockChainTrace.Information($"block {_Bk.header.blockNumber} rejected", bk);
+				Result = new BkResult(BkResultEnum.Rejected);
 				return;
 			}
 
@@ -145,98 +167,51 @@ namespace BlockChain
 
 			var totalWork = TotalWork();
 
+            UtxoLookup = _BlockChain.UtxoLookupFactory(_DbTx, true);
+
+
 			if (handleBranch) // make a branch block main
-			{
-				if (!ExtendMain(QueuedActions, totalWork))
-				{
-					Result = BkResultEnum.Rejected;
-					return;
-				}
-			}
-			else if (IsBranch())
-			{
-				if (IsNewGreatestWork(totalWork))
-				{
-					//if (!IsTransactionsValid(pointedTransactions))
-					//{
-					//	Result = ResultEnum.Rejected;
-					//	return;2
-					//}
+            {
+                if (!ExtendMain(QueueActions, totalWork))
+                {
+                    Result = new BkResult(BkResultEnum.Rejected);
+                    return;
+                }
+            }
+            else if (!IsNewGreatestWork(totalWork))
+            {
+                blockChain.BlockStore.Put(dbTx, bkHash, bk, LocationEnum.Branch, totalWork);
+            }
+            else if (blockChain.BlockStore.IsLocation(dbTx, bk.header.parent, LocationEnum.Main))
+            {
+                if (!ExtendMain(QueueActions, totalWork))
+                {
+                    BlockChainTrace.Information($"block {_Bk.header.blockNumber} rejected", bk);
+                    Result = new BkResult(BkResultEnum.Rejected);
+                    return;
+                }
+            }
+            else
+            {
+				BlockChainTrace.Information($"block {bk.header.blockNumber} extends a branch with new difficulty", bk);
 
-					BlockChainTrace.Information($"block {bk.header.blockNumber} extends a branch with new difficulty.", _Bk);
-
-					var originalTip = blockChain.Tip;
-
-					Keyed<Types.Block> fork = null;
-					var newMainChain = GetNewMainChainStartFromForkToLeaf(new Keyed<Types.Block>(bkHash, bk), out fork);
-
-					blockChain.ChainTip.Context(dbTx).Value = fork.Key;
-					blockChain.Tip = fork;
-
-					var oldMainChain = GetOldMainChainStartFromLeafToFork(fork, originalTip.Key);
-
-					foreach (var block in oldMainChain)
-					{
-						UndoBlock(block.Value, block.Key);
-					}
-
-					//append new chain
-					foreach (var _bk in newMainChain)
-					{
-						var action = new BlockVerificationHelper(
-							blockChain,
-							dbTx,
-							_bk.Key,
-							_bk.Value,
-							false,
-							true,
-							ConfirmedTxs,
-							UnconfirmedTxs,
-							QueuedActions);
-						
-						BlockChainTrace.Information($"new main chain bk {_bk.Value.header.blockNumber} {action.Result}", _bk.Value);
-
-						if (action.Result == BkResultEnum.Rejected)
-						{
-							blockChain.ChainTip.Context(dbTx).Value = originalTip.Key;
-							blockChain.Tip = originalTip;
-							blockChain.InitBlockTimestamps();
-
-							BlockChainTrace.Information("undo reorganization", _bk.Value);
-							Result = BkResultEnum.Rejected;
-							return;
-						}
-					}
-				}
-				else
-				{
-					blockChain.BlockStore.Put(dbTx, new Keyed<Types.Block>(bkHash, bk), LocationEnum.Branch, totalWork);
-				}
-			}
-			else
-			{
-				if (!ExtendMain(QueuedActions, totalWork))
-				{
-					BlockChainTrace.Information("block rejected", _Bk);
-					Result = BkResultEnum.Rejected;
-					return;
-				}
+                Reorg();
 			}
 
-			BlockChainTrace.Information("block accepted", _Bk);
-			Result = BkResultEnum.Accepted;
+            BlockChainTrace.Information($"block {bk.header.blockNumber} accepted", bk);
+            Result = new BkResult(BkResultEnum.Accepted);
 		}
 
-		bool ExtendMain(List<QueueAction> queuedActions, double totalWork)
+		bool ExtendMain(List<QueueAction> queuedActions, double totalWork, bool isGenesis = false)
 		{
-			if (_BlockChain.BlockStore.ContainsKey(_DbTx, _BkHash))
-			{
-				_BlockChain.BlockStore.SetLocation(_DbTx, _BkHash, LocationEnum.Main);
-			}
-			else
-			{
-				_BlockChain.BlockStore.Put(_DbTx, new Keyed<Types.Block>(_BkHash, _Bk), LocationEnum.Main, totalWork);
-			}
+            if (_BlockChain.BlockStore.ContainsKey(_DbTx, _BkHash))
+            {
+            	_BlockChain.BlockStore.SetLocation(_DbTx, _BkHash, LocationEnum.Main);
+            }
+            else
+            {
+            	_BlockChain.BlockStore.Put(_DbTx, _BkHash, _Bk, LocationEnum.Main, totalWork);
+            }
 
 			_BlockChain.Timestamps.Push(_Bk.header.timestamp);
 
@@ -249,108 +224,130 @@ namespace BlockChain
 
 			var confirmedTxs = new HashDictionary<TransactionValidation.PointedTransaction>();
 
-			//TODO: lock with mempool
-			foreach (var transaction in _Bk.transactions)
+            //TODO: lock with mempool
+            for (var txIdx = 0; txIdx < _Bk.transactions.Count(); txIdx++)
 			{
-				var txHash = Merkle.transactionHasher.Invoke(transaction);
+                var tx = _Bk.transactions[txIdx];
+				var txHash = Merkle.transactionHasher.Invoke(tx);
 				TransactionValidation.PointedTransaction ptx;
 
-				if (!IsTransactionValid(transaction, txHash, out ptx))
+                if (!isGenesis)
+                {
+                    if ((txIdx == 0 && !IsCoinbaseTxValid(tx)) || (txIdx > 0 && IsCoinbaseTxValid(tx)))
+                    {
+                        return false;
+                    }
+
+                    if (!IsTransactionValid(tx, txHash, out ptx))
+					{
+						return false;
+					}
+
+					confirmedTxs[txHash] = ptx;
+
+					BlockChainTrace.Information("saved tx", ptx);
+
+                    foreach (var pInput in ptx.pInputs)
+					{
+						_BlockChain.UTXOStore.Remove(_DbTx, pInput.Item1);
+						BlockChainTrace.Information($"utxo spent, amount {pInput.Item2.spend.amount}", ptx);
+						BlockChainTrace.Information($" of", pInput.Item1.txHash);
+						blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(pInput.Item1, pInput.Item2));
+					}
+                } 
+                else
+                {
+                    ptx = TransactionValidation.toPointedTransaction(
+                        tx,
+                        ListModule.Empty<Types.Output>()
+                    );
+                }
+
+                _BlockChain.BlockStore.TxStore.Put(_DbTx, txHash, tx, true);
+
+				var contractExtendSacrifices = new HashDictionary<ulong>();
+                var activationSacrifice = 0UL;
+
+                for (var outputIdx = 0; outputIdx < tx.outputs.Count(); outputIdx++)
 				{
-					return false;
-				}
+                    var output = tx.outputs[outputIdx];
 
-				confirmedTxs[txHash] = ptx;
-
-				BlockChainTrace.Information("saved tx", ptx);
-
-				_BlockChain.BlockStore.TxStore.Put(_DbTx, txHash, transaction);
-
-				uint i = 0;
-				foreach (var input in ptx.pInputs)
-				{
-					//TODO: refactoring is needed.
-					_BlockChain.UTXOStore.Remove(_DbTx, input.Item1);
-					BlockChainTrace.Information($"utxo spent, amount {input.Item2.spend.amount}", ptx);
-					BlockChainTrace.Information($" of", input.Item1.txHash);
-					blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(input.Item1, input.Item2));
-					i++;
-				}
-
-				var contractSacrifices = new HashDictionary<ulong>();
-
-				i = 0;
-				foreach (var output in ptx.outputs)
-				{
-					// extending a contract?
 					if (output.@lock.IsContractSacrificeLock)
 					{
 						if (!output.spend.asset.SequenceEqual(Tests.zhash))
 							continue; // not Zen
 
-						var contractLock = (Types.OutputLock.ContractSacrificeLock)output.@lock;
+                        var contractSacrificeLock = (Types.OutputLock.ContractSacrificeLock)output.@lock;
 
-						if (contractLock.IsHighVLock)
+						if (contractSacrificeLock.IsHighVLock)
 							continue; // not current version
 
-						byte[] contractKey = null;
-
-						if (contractLock.Item.lockData[0] != null && contractLock.Item.lockData[0].Length > 0)
+						if (contractSacrificeLock.Item.lockData.Length > 0 && contractSacrificeLock.Item.lockData[0] != null && contractSacrificeLock.Item.lockData[0].Length > 0)
 						{
-							contractKey = contractLock.Item.lockData[0]; // output-lock-level indicated contract
+							var contractKey = contractSacrificeLock.Item.lockData[0]; // output-lock-level indicated contract
+
+							contractExtendSacrifices[contractKey] =
+								(contractExtendSacrifices.ContainsKey(contractKey) ? contractExtendSacrifices[contractKey] : 0) +
+								output.spend.amount;
 						}
-						else if (transaction.contract.Value != null)
+                        else if (contractSacrificeLock.Item.lockData.Length == 0)
 						{
-							if (transaction.contract.Value.IsHighVContract)
-								continue; // not current version
-
-							contractKey = ((Types.ExtendedContract.Contract)transaction.contract.Value).Item.code;
+                            activationSacrifice += output.spend.amount;
 						}
-
-						contractSacrifices[contractKey] =
-							(contractSacrifices.ContainsKey(contractKey) ? contractSacrifices[contractKey] : 0) +
-							output.spend.amount;
 					}
 
+                    //todo: fix  to exclude CSLocks&FLocks, instead of including by locktype
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
 					{
-						BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", ptx);
-						_BlockChain.UTXOStore.Put(_DbTx, txHash, i, output);
-						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(new Types.Outpoint(txHash, (uint)i), output));
+                        BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", tx);
+                        var outpoint = new Types.Outpoint(txHash, (uint)outputIdx);
+                        _BlockChain.UTXOStore.Put(_DbTx, outpoint, output);
+						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, output));
 					}
-					i++;
 				}
 
-				foreach (var item in contractSacrifices)
-				{
-					if (new ActiveContractSet().IsActive(_DbTx, item.Key))
-					{
-						// snapshot only if first time (not snapshoted before)
-						if (!blockUndoData.ACSDeltas.ContainsKey(item.Key))
-						{
-							blockUndoData.ACSDeltas.Add(item.Key,
-								  new ActiveContractSet().Get(_DbTx, item.Key).Value);
-						}
+                if (FSharpOption<Types.ExtendedContract>.get_IsSome(tx.contract) && !tx.contract.Value.IsHighVContract)
+                {
+                    var codeBytes = ((Types.ExtendedContract.Contract)tx.contract.Value).Item.code;
+                    var contractHash = Merkle.innerHash(codeBytes);
+                    var contractCode = System.Text.Encoding.ASCII.GetString(codeBytes);
 
-						new ActiveContractSet().Extend(_DbTx, item.Key, item.Value);
-					}
-					else
+                    if (_BlockChain.ActiveContractSet.TryActivate(_DbTx, contractCode, activationSacrifice, contractHash, _Bk.header.blockNumber))
 					{
-						new ActiveContractSet().Activate(_DbTx, item.Key, item.Value);
+                        blockUndoData.ACSDeltas.Add(contractHash, new ACSUndoData());
+						ContractsTxsStore.Add(_DbTx.Transaction, contractHash, txHash);
 					}
+                }
+
+				foreach (var item in contractExtendSacrifices)
+				{
+                    var currentACSItem = _BlockChain.ActiveContractSet.Get(_DbTx, item.Key);
+
+                    if (currentACSItem.Value != null)
+                    {
+                        if (_BlockChain.ActiveContractSet.TryExtend(_DbTx, item.Key, item.Value))
+                        {
+                            if (!blockUndoData.ACSDeltas.ContainsKey(item.Key))
+                                blockUndoData.ACSDeltas.Add(item.Key, new ACSUndoData() { LastBlock = currentACSItem.Value.LastBlock });
+                        }
+                    }
 				}
 			}
 
-			var expiringContracts = new ActiveContractSet().GetExpiringList(_DbTx, _Bk.header.blockNumber);
+			var expiringContracts = _BlockChain.ActiveContractSet.GetExpiringList(_DbTx, _Bk.header.blockNumber);
 
 			foreach (var acsItem in expiringContracts)
 			{
-				blockUndoData.ACSDeltas.Add(acsItem.Key, acsItem.Value);
+                if (!blockUndoData.ACSDeltas.ContainsKey(acsItem.Key))
+                    blockUndoData.ACSDeltas.Add(acsItem.Key, new ACSUndoData() { ACSItem = acsItem.Value });
 			}
 
-			_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
+            if (!isGenesis)
+            {
+				_BlockChain.BlockStore.SetUndoData(_DbTx, _BkHash, blockUndoData);
+            }
 
-			new ActiveContractSet().DeactivateContracts(_DbTx, expiringContracts.Select(t=>t.Key));
+			_BlockChain.ActiveContractSet.DeactivateContracts(_DbTx, expiringContracts.Select(t=>t.Key));
 
 			ValidateACS();
 
@@ -359,10 +356,60 @@ namespace BlockChain
 
 			queuedActions.Add(new MessageAction(new BlockMessage(confirmedTxs, true)));
 
-			foreach (var item in confirmedTxs)
-				ConfirmedTxs[item.Key] = item.Value;
+            foreach (var item in confirmedTxs)
+            {
+                ConfirmedTxs[item.Key] = item.Value;
+                UnconfirmedTxs.Remove(item.Key);
+            }
 
 			return true;
+		}
+
+        void Reorg()
+        {
+			var originalTip = _BlockChain.Tip;
+
+			Keyed<Types.Block> fork = null;
+			var newMainChain = GetNewMainChainStartFromForkToLeaf(new Keyed<Types.Block>(_BkHash, _Bk), out fork);
+
+			_BlockChain.ChainTip.Context(_DbTx).Value = fork.Key;
+			_BlockChain.Tip = fork;
+			_BlockChain.InitBlockTimestamps(_DbTx);
+
+			var oldMainChain = GetOldMainChainStartFromLeafToFork(fork, originalTip.Key);
+
+			foreach (var block in oldMainChain)
+			{
+				UndoBlock(block.Value, block.Key);
+			}
+
+			//append new chain
+			foreach (var _bk in newMainChain)
+			{
+				var action = new BlockVerificationHelper(
+					_BlockChain,
+					_DbTx,
+					_bk.Key,
+					_bk.Value,
+					false,
+					true,
+					ConfirmedTxs,
+					UnconfirmedTxs,
+					QueueActions);
+
+				BlockChainTrace.Information($"new main chain bk {_bk.Value.header.blockNumber} {action.Result.BkResultEnum}", _bk.Value);
+
+				if (action.Result.BkResultEnum == BkResultEnum.Rejected)
+				{
+					_BlockChain.ChainTip.Context(_DbTx).Value = originalTip.Key;
+					_BlockChain.Tip = originalTip;
+					_BlockChain.InitBlockTimestamps(_DbTx);
+
+					BlockChainTrace.Information("reorganization undo", _bk.Value);
+					Result = new BkResult(BkResultEnum.Rejected);
+					return;
+				}
+			}
 		}
 
 		bool IsValid()
@@ -384,7 +431,25 @@ namespace BlockChain
 
 		bool IsOrphan()
 		{
-			return !_BlockChain.BlockStore.ContainsKey(_DbTx, _Bk.header.parent);
+            return !_BlockChain.BlockStore.ContainsKey(_DbTx, _Bk.header.parent) || 
+               _BlockChain.BlockStore.IsLocation(_DbTx, _Bk.header.parent, LocationEnum.Orphans);
+		}
+
+        byte[] GetMissingParent()
+        {
+            var blockItr = _Bk.header.parent;
+
+            while (true)
+            {
+                var block = _BlockChain.BlockStore.Get(_DbTx, blockItr);
+
+                if (block == null)
+                {
+                    return blockItr;
+                }
+
+				blockItr = block.Value.BlockHeader.parent;
+			}
 		}
 
 		bool IsInStore()
@@ -392,27 +457,17 @@ namespace BlockChain
 			return _BlockChain.BlockStore.ContainsKey(_DbTx, _BkHash);
 		}
 
-		bool IsBranch()
-		{
-			return 
-				_BlockChain.BlockStore.IsLocation(_DbTx, _Bk.header.parent, LocationEnum.Branch) ||
-				_BlockChain.BlockStore.HasChildren(_DbTx, _Bk.header.parent);
-		}
-
+        // remove
 		bool IsTransactionValid(Types.Transaction tx, byte[] txHash, out TransactionValidation.PointedTransaction ptx)
 		{
-			uint i = 0;
-			foreach (var output in tx.outputs)
+            if (_BlockChain.BlockStore.TxStore.ContainsKey(_DbTx, txHash) && _BlockChain.BlockStore.TxStore.Get(_DbTx, txHash).Value.InMainChain)
 			{
-				if (_BlockChain.UTXOStore.ContainsKey(_DbTx, txHash, i))
-				{
-					BlockChainTrace.Information("tx invalid - exists", tx);
-					ptx = null;
-					return false;
-				}
+				BlockChainTrace.Information("Tx already in store", txHash);
+                ptx = null;
+                return false;
 			}
 
-			switch (_BlockChain.IsOrphanTx(_DbTx, tx, out ptx))
+			switch (_BlockChain.IsOrphanTx(_DbTx, tx, true, out ptx))
 			{
 				case BlockChain.IsTxOrphanResult.Orphan:
 					BlockChainTrace.Information("tx invalid - orphan", tx);
@@ -422,30 +477,32 @@ namespace BlockChain
 					return false;
 			}
 
+            if (_BlockChain.IsDoubleSpend(_DbTx, tx, true))
+                return false;
+
+            //TODO: coinbase validation + check that witness has blocknumber
+
+            if (!BlockChain.IsValidUserGeneratedTx(_DbTx, ptx))
+			{
+				BlockChainTrace.Information("tx invalid - structural", ptx);
+                return false;
+			}
+
 			byte[] contractHash;
 			switch (BlockChain.IsContractGeneratedTx(ptx, out contractHash))
 			{
-				case BlockChain.IsContractGeneratedTxResult.NotContractGenerated:
-					if (!_BlockChain.IsValidTransaction(_DbTx, ptx))
-					{
-						BlockChainTrace.Information("tx invalid - universal", ptx);
-						return false;
-					}
-					break;
 				case BlockChain.IsContractGeneratedTxResult.ContractGenerated:
-					if (!new ActiveContractSet().IsActive(_DbTx, contractHash))
+					if (!_BlockChain.ActiveContractSet.IsActive(_DbTx, contractHash))
 					{
 						BlockChainTrace.Information("tx invalid - contract not active", tx);
 						return false;
-					}
-					if (!_BlockChain.IsValidTransaction(_DbTx, ptx))
+					}				
+                    var acsItem = _BlockChain.ActiveContractSet.Get(_DbTx, contractHash);
+					var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+
+                    if (!BlockChain.IsValidAutoTx(ptx, UtxoLookup, contractHash, contractFunction))
 					{
-						BlockChainTrace.Information("tx invalid - universal", ptx);
-						return false;
-					}
-					if (!BlockChain.IsContractGeneratedTransactionValid(_DbTx, ptx, contractHash))
-					{
-						BlockChainTrace.Information("tx invalid - invalid contract", ptx);
+						BlockChainTrace.Information("auto-tx invalid", ptx);
 						return false;
 					}
 					break;
@@ -460,42 +517,62 @@ namespace BlockChain
 		bool IsValidTimeStamp()
 		{
 			//TODO: assert block's timestamp isn't too far in the future
-			var result = _Bk.header.timestamp > _BlockChain.Timestamps.Median();
+			var result = _Bk.header.timestamp >= _BlockChain.Timestamps.Median();
 
 			if (!result)
-				BlockChainTrace.Information("invalid timestamp", _Bk);
+                BlockChainTrace.Information($"block {_Bk.header.blockNumber} has invalid timestamp", _BkHash);
 			
 			return result;
 		}
 
 		bool IsValidDifficulty()
 		{
-			UInt32 expectedDifficulty;
+            //TODO:
 
-			if (_Bk.header.blockNumber % 2000 == 1)
-			{
-				var lastBlockHash = _BlockChain.BlockNumberDifficulties.GetLast(_DbTx.Transaction);
-				var lastBlock = GetBlock(lastBlockHash);
-				expectedDifficulty = NewDifficulty(lastBlock.Value.header.timestamp, _Bk.header.timestamp);
-			}
-			else
-			{
-				var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
-				var tipBlock = GetBlock(tip).Value;
-				expectedDifficulty = tipBlock.header.pdiff;
-			}
+            //			UInt32 expectedDifficulty;
 
-			var blockDifficulty = _Bk.header.pdiff;
+            //			if (_Bk.header.blockNumber % 2000 == 1)
+            //			{
+            //				var lastBlockHash = _BlockChain.BlockNumberDifficulties.GetLast(_DbTx.Transaction);
+            //				var lastBlock = GetBlock(lastBlockHash);
 
-#if TRACE
-			if (blockDifficulty != expectedDifficulty)
-			{
-				BlockChainTrace.Information($"expecting difficulty {expectedDifficulty}, found {blockDifficulty}", _Bk);
-			}
-#endif
+            //                //
+            //				var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
+            //				var tipBlock = GetBlock(tip).Value;
+            //                //
 
-			return blockDifficulty == expectedDifficulty;
+            //                expectedDifficulty = tipBlock.header.pdiff;
+            //                    //TODO: fix: update difficuly
+            //                    //NewDifficulty(lastBlock.Value.header.timestamp, _Bk.header.timestamp);
+            //			}
+            //			else
+            //			{
+            //				var tip = _BlockChain.ChainTip.Context(_DbTx).Value;
+            //				var tipBlock = GetBlock(tip).Value;
+            //				expectedDifficulty = tipBlock.header.pdiff;
+            //			}
+
+            //			var blockDifficulty = _Bk.header.pdiff;
+
+            //#if TRACE
+            //			if (blockDifficulty != expectedDifficulty)
+            //			{
+            //                BlockChainTrace.Information($"block {_Bk.header.blockNumber}: expecting difficulty {expectedDifficulty}, found {blockDifficulty}", _BkHash);
+            //			}
+            //#endif
+
+            //return blockDifficulty == expectedDifficulty;
+
+            return true;
 		}
+
+        bool IsCoinbaseTxValid(Types.Transaction tx)
+        {
+            //TODO: check maturity
+
+            return tx.witnesses.Count()> 0 && tx.witnesses[0].Length > 0 &&
+                 BitConverter.ToUInt32(tx.witnesses[0], 0) == _Bk.header.blockNumber;
+        }
 
 		bool IsValidBlockNumber()
 		{
@@ -504,7 +581,7 @@ namespace BlockChain
 #if TRACE
 			if (parentBlock.header.blockNumber >= _Bk.header.blockNumber)
 			{
-				BlockChainTrace.Information($"expecting block-number greater than {parentBlock.header.blockNumber}, found {_Bk.header.blockNumber}", _Bk);
+				BlockChainTrace.Information($"block {_Bk.header.blockNumber}: expecting block-number greater than {parentBlock.header.blockNumber}, found {_Bk.header.blockNumber}", _BkHash);
 			}
 #endif
 			return parentBlock.header.blockNumber < _Bk.header.blockNumber;
@@ -520,20 +597,6 @@ namespace BlockChain
 		{
 			return true;
 		}
-
-		//byte[] GetOutputKey(Types.Transaction transaction, int index) //TODO: convert to outpoint
-		//{
-		//	return GetOutputKey(Merkle.transactionHasher.Invoke(transaction), index);
-		//}
-
-		//byte[] GetOutputKey(byte[] txHash, int index) //TODO: convert to outpoint
-		//{
-		//	byte[] outputKey = new byte[txHash.Length + 1];
-		//	txHash.CopyTo(outputKey, 0);
-		//	outputKey[txHash.Length] = (byte)index;
-
-		//	return outputKey;
-		//}
 
 		double TotalWork()
 		{
@@ -560,9 +623,9 @@ namespace BlockChain
 			return true;
 		}
 
-		Keyed<Types.Block> GetBlock(byte[] _BkHash)
+		Keyed<Types.Block> GetBlock(byte[] bkHash)
 		{
-			return _BlockChain.BlockStore.GetBlock(_DbTx, _BkHash);
+			return _BlockChain.BlockStore.GetBlock(_DbTx, bkHash);
 		}
 
 		List<Keyed<Types.Block>> GetNewMainChainStartFromForkToLeaf(Keyed<Types.Block> leaf, out Keyed<Types.Block> fork)
@@ -596,7 +659,7 @@ namespace BlockChain
 
 		void UndoBlock(Types.Block block, byte[] key)
 		{
-			BlockChainTrace.Information("block undo", block);
+            BlockChainTrace.Information($"undoing block {block.header.blockNumber}", block);
 
 			_BlockChain.BlockStore.SetLocation(_DbTx, key, LocationEnum.Branch);
 
@@ -606,26 +669,47 @@ namespace BlockChain
 			{
 				blockUndoData.AddedUTXO.ForEach(u =>
 				{
-					BlockChainTrace.Information($"undo block: utxo removed, amount {u.Item2.spend.amount}", block);
+                    BlockChainTrace.Information($"undo block {block.header.blockNumber}: utxo removed, amount {u.Item2.spend.amount}", block);
 					_BlockChain.UTXOStore.Remove(_DbTx, u.Item1.txHash, u.Item1.index);
 				});
 
 				blockUndoData.RemovedUTXO.ForEach(u =>
 				{
-					BlockChainTrace.Information($"undo block: new utxo, amount {u.Item2.spend.amount}", block);
+					BlockChainTrace.Information($"undo block {block.header.blockNumber}: new utxo, amount {u.Item2.spend.amount}", block);
 					_BlockChain.UTXOStore.Put(_DbTx, u.Item1.txHash, u.Item1.index, u.Item2);
 				});
 
 				foreach (var item in blockUndoData.ACSDeltas)
 				{
-					new ActiveContractSet().Add(_DbTx, item.Value);
+                    if (item.Value.LastBlock.HasValue) // restore last block - undo extend
+                    {
+                        var current = new ActiveContractSet().Get(_DbTx, item.Key);
+
+						if (current != null)
+						{
+                            current.Value.LastBlock = item.Value.LastBlock.Value;
+                            _BlockChain.ActiveContractSet.Add(_DbTx, current.Value);
+						}
+                        else
+                        {
+                            BlockChainTrace.Error("missing ACS item!", new Exception());
+                        }
+                    }
+                    else if (item.Value.ACSItem != null) // restore entire item - undo expire
+					{
+                        _BlockChain.ActiveContractSet.Add(_DbTx, item.Value.ACSItem);
+                    }
+                    else // remove item - undo activate
+                    {
+                        _BlockChain.ActiveContractSet.Remove(_DbTx, item.Key);
+                    }
 				}
 			}
 
 			block.transactions.ToList().ForEach(tx =>
 			{
 				var txHash = Merkle.transactionHasher.Invoke(tx);
-				UnconfirmedTxs[txHash] = tx;
+                UnconfirmedTxs[txHash] = tx;
 			});
 		}
 	}

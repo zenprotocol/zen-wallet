@@ -1,0 +1,28 @@
+@if (!string.IsNullOrEmpty(@ViewBag.Message))
+{
+    <div class="form-group">@ViewBag.Message</div>
+}
+else
+{
+	using (@Html.BeginForm("GetTokens", "Faucet", FormMethod.Post))
+	{
+    <div class="titleSection">
+    	<h1>Zen Faucet</h1>
+    	<h5>Enter your Zen wallet address to get <span class="get-zen">0.5 ZEN</span></h5>
+    </div>
+
+    <div class="row">
+      <form class="form-inline">
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="text" class="form-control" id="address" name="address" placeholder="Address">
+          </div>
+        </div>
+        <div class="col-md-8">
+          <button type="submit" class="zen-button zen-red-button" name="submit">Submit</button>
+        </div>
+      </form>
+    </div>
+
+	}
+}

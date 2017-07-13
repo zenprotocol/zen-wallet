@@ -10,94 +10,121 @@ namespace BlockChain.Store
 {
 	public enum LocationEnum
 	{
-		Genesis = 1,
-		Main = 2,
-		Branch = 3,
-		Orphans = 4
+		Main = 0,
+		Branch = 1,
+		Orphans = 2
 	}
 
-	public class BlockStore : ConsensusTypeStore<Types.BlockHeader>
+    public class Block
+    {
+        public Types.BlockHeader BlockHeader { get; set; }
+        public List<byte[]> TxHashes { get; set; }
+    }
+
+	public class Transaction
+	{
+		public Types.Transaction Tx { get; set; }
+        public bool InMainChain { get; set; }
+	}
+
+    public class TransactionsStore : ConsensusTypeStore<Transaction>
+    {
+        public TransactionsStore(string tableName) : base(tableName)
+        {
+        }
+
+        public void Put(
+            TransactionContext transactionContext,
+            byte[] txHash,
+            Types.Transaction tx,
+            bool inMainChain)
+        {
+            Put(transactionContext, txHash, new Transaction { Tx = tx, InMainChain = inMainChain });
+        }
+    }
+
+	public class BlockStore : ConsensusTypeStore<Block>
 	{
 		private const string BLOCK_HEADERS = "bk-headers";
 		private const string CHILDREN = "bk-children";
 		private const string LOCATIONS = "bk-locations";
 		private const string TOTAL_WORK = "bk-totalwork";
-		private const string BLOCK_TRANSACTIONS = "bk-transactions";
 		private const string TRANSACTIONS = "transactions";
 		private const string BLOCK_UNDO = "block_undo";
 		private const string COINBASETX_BLOCK = "coinbasetx-bk";
 
-		public ConsensusTypeStore<Types.Transaction> TxStore { get; private set; }
+		public TransactionsStore TxStore { get; private set; }
 		public ConsensusTypeStore<BlockUndoData> BlockUndo { get; private set; }
 
 		public BlockStore() : base(BLOCK_HEADERS)
 		{
-			TxStore = new ConsensusTypeStore<Types.Transaction>(TRANSACTIONS);
+			TxStore = new TransactionsStore(TRANSACTIONS);
 			BlockUndo = new ConsensusTypeStore<BlockUndoData>(BLOCK_UNDO);
 		}
 
-		public void Put(
-			TransactionContext transactionContext,
-			Keyed<Types.Block> block,
-			LocationEnum location,
-			double totalWork)
-		{
-			base.Put(transactionContext, block.Key, block.Value.header);
+        public void Put(
+            TransactionContext transactionContext,
+            byte[] BkHash,
+            Types.Block block,
+            LocationEnum location,
+            double totalWork)
+        {
+            var txs = block.transactions.Select(t =>
+            {
+                return new KeyValuePair<byte[], Types.Transaction>(Merkle.transactionHasher.Invoke(t), t);
+            });
+
+            Put(transactionContext, BkHash, new Block
+            {
+                BlockHeader = block.header,
+                TxHashes = txs.Select(t => t.Key).ToList()
+            });
 
 			//children
 			var children = new HashSet<byte[]>();
-			children.Add(block.Key);
+            children.Add(BkHash);
 
 			transactionContext.Transaction.InsertHashSet<byte[], byte[]>(
 				CHILDREN,
-				block.Value.header.parent,
+				block.header.parent,
 				children,
 				0,
 				false
 			);
 
 			//location
-			SetLocation(transactionContext, block.Key, location);
+			transactionContext.Transaction.Insert<byte[], int>(LOCATIONS, BkHash, (int)location);
 
 			//total work
-			transactionContext.Transaction.Insert<byte[], double>(TOTAL_WORK, block.Key, totalWork);
+			transactionContext.Transaction.Insert<byte[], double>(TOTAL_WORK, BkHash, totalWork);
 
 			//transactions
-			var transactionsSet = new HashSet<byte[]>();
 			var isFirstTx = true;
 
-			foreach (var tx in block.Value.transactions)
+			foreach (var tx in txs)
 			{
-				var txHash = Merkle.transactionHasher.Invoke(tx);
-
-				transactionsSet.Add(txHash);
-
-				if (!TxStore.ContainsKey(transactionContext, txHash))
+                if (!TxStore.ContainsKey(transactionContext, tx.Key))
 				{
-					TxStore.Put(transactionContext, txHash, tx);
+                    TxStore.Put(transactionContext, tx.Key, 
+                        new Transaction { 
+	                        Tx = tx.Value, 
+	                        InMainChain = false 
+	                    });
 
 					if (isFirstTx)
 					{
-						transactionContext.Transaction.Insert<byte[], byte[]>(COINBASETX_BLOCK, txHash, block.Key);
+                        transactionContext.Transaction.Insert<byte[], byte[]>(COINBASETX_BLOCK, tx.Key, BkHash);
 						isFirstTx = false;
 					}
 				}
 			}
-
-			transactionContext.Transaction.InsertHashSet<byte[], byte[]>(
-				BLOCK_TRANSACTIONS,
-				block.Key,
-				transactionsSet,
-				0,
-				false
-			);
 		}
 
 		public bool IsCoinbaseTx(TransactionContext transactionContext, byte[] txHash, out Types.BlockHeader blockHeader)
 		{
 			var record = transactionContext.Transaction.Select<byte[], byte[]>(COINBASETX_BLOCK, txHash);
 
-			blockHeader = record.Exists ? Get(transactionContext, record.Value).Value : null;
+			blockHeader = record.Exists ? Get(transactionContext, record.Value).Value.BlockHeader : null;
 
 			return record.Exists;
 		}
@@ -120,15 +147,10 @@ namespace BlockChain.Store
 
 		public Keyed<Types.Block> GetBlock(TransactionContext transactionContext, byte[] key)
 		{
-			var header = base.Get(transactionContext, key);
-			var txs = new List<Types.Transaction>();
+			var _block = Get(transactionContext, key);
+            var txs = _block.Value.TxHashes.Select(t => TxStore.Get(transactionContext, t).Value).ToList();
 
-			foreach (var tx in transactionContext.Transaction.SelectHashSet<byte[], byte[]>(BLOCK_TRANSACTIONS, key, 0))
-			{
-				txs.Add(TxStore.Get(transactionContext, tx).Value);
-			}
-
-			var block = new Types.Block(header.Value, ListModule.OfSeq<Types.Transaction>(txs));
+            var block = new Types.Block(_block.Value.BlockHeader, ListModule.OfSeq<Types.Transaction>(txs.Select(t => t.Tx)));
 
 			return new Keyed<Types.Block>(key, block);
 		}
@@ -146,6 +168,14 @@ namespace BlockChain.Store
 		public void SetLocation(TransactionContext transactionContext, byte[] item, LocationEnum location)
 		{
 			transactionContext.Transaction.Insert<byte[], int>(LOCATIONS, item, (int)location);
+
+            var block = Get(transactionContext, item).Value;
+
+            foreach (var txHash in block.TxHashes)
+            {
+                var tx = TxStore.Get(transactionContext, txHash);
+                TxStore.Put(transactionContext, txHash, tx.Value.Tx, false);
+			}
 		}
 
 		public double TotalWork(TransactionContext transactionContext, byte[] item)
@@ -161,14 +191,6 @@ namespace BlockChain.Store
 				{
 					yield return GetBlock(transactionContext, child);
 				}
-			}
-		}
-
-		public IEnumerable<Keyed<byte[], Types.Transaction>> Transactions(TransactionContext transactionContext, byte[] block)
-		{
-			foreach (var txHash in transactionContext.Transaction.SelectHashSet<byte[], byte[]>(BLOCK_TRANSACTIONS, block, 0))
-			{
-				yield return TxStore.Get(transactionContext, txHash);
 			}
 		}
 

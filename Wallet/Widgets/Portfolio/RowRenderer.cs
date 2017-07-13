@@ -8,8 +8,8 @@ namespace Wallet
 {
 	public class RowRenderer : CellRenderer
 	{
-		public byte[] Asset { private get; set; }
-		public decimal Value { private get; set; }
+		public String Asset { private get; set; }
+		public long Value { private get; set; }
 
 		public override void GetSize (Widget widget, ref Gdk.Rectangle cellArea, out int xOffset, out int yOffset, out int width, out int height)
 		{
@@ -22,17 +22,13 @@ namespace Wallet
 
 		protected override void Render (Drawable window, Widget widget, Gdk.Rectangle backgroundArea, Gdk.Rectangle cellArea, Gdk.Rectangle exposeArea, CellRendererState flags)
 		{
-			if (!App.Instance.Wallet.AssetsMetadata.ContainsKey(Asset))
-				return;
-
 			var gc = widget.Style.TextGC(StateType.Normal);
 
-			var asset = App.Instance.Wallet.AssetsMetadata[Asset];
 
 			var rendererHelper = new RendererHelper(gc, window, widget, exposeArea);
 
-			if (asset.Image != null)
-				rendererHelper.Image(ImagesCache.Instance.GetIcon(asset.Image), 50, 10);
+		//	if (asset.Image != null)
+		//		rendererHelper.Image(ImagesCache.Instance.GetIcon(asset.Image), 50, 10);
 
 			var textRenderer = new TextRenderer (widget);
 
@@ -41,7 +37,7 @@ namespace Wallet
 			int TEXT_PADDING = 14;
 			int TEXT_PADDING_LEFT = 60;
 
-			textRenderer.RenderLayoutText (context, asset.Caption, TEXT_PADDING_LEFT + 60, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
+			textRenderer.RenderLayoutText (context, Asset, TEXT_PADDING_LEFT + 60, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
 			textRenderer.RenderLayoutText(context, string.Format(Constants.Formats.Money, Value), 0, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Right, Pango.EllipsizeMode.End, -TEXT_PADDING_LEFT);
 
 			context.Dispose ();

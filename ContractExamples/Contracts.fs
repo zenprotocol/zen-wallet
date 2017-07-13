@@ -1,7 +1,7 @@
 ﻿module ContractExamples.Contracts
 
 open Consensus.Types
-open Authentication
+open Consensus.Authentication
 
 
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)

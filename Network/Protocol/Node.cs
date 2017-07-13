@@ -155,6 +155,8 @@ namespace NBitcoin.Protocol
 			{
 				new Thread(() =>
 				{
+					Thread.CurrentThread.Name = "Node Listener";
+
 					SentMessage processing = null;
 					Exception unhandledException = null;
 					bool isVerbose = NodeServerTrace.Trace.Switch.ShouldTrace(TraceEventType.Verbose);
@@ -173,8 +175,8 @@ namespace NBitcoin.Protocol
 							processing = kv;
 							var payload = kv.Payload;
 
-							//if(isVerbose)
-							//{
+							if(isVerbose)
+							{
 								Trace.CorrelationManager.ActivityId = kv.ActivityId;
 								if(kv.ActivityId != TraceCorrelation.Activity)
 								{
@@ -182,7 +184,7 @@ namespace NBitcoin.Protocol
 									Trace.CorrelationManager.ActivityId = TraceCorrelation.Activity;
 								}
 								NodeServerTrace.Information("Sending " + payload + " to " + _Node.RemoteSocketAddress);
-							//}
+							}
 
 							var bytes = WireSerialization.Instance.Pack(payload);
 
@@ -250,7 +252,7 @@ namespace NBitcoin.Protocol
 								var payload = WireSerialization.Instance.Unpack(stream);
 
 								//if(NodeServerTrace.Trace.Switch.ShouldTrace(TraceEventType.Verbose))
-								NodeServerTrace.Information("Receiving " + payload + " from " + _Node.RemoteSocketAddress);
+                                NodeServerTrace.Verbose("Receiving " + payload + " from " + _Node.RemoteSocketAddress);
 
 								Node.LastSeen = DateTimeOffset.UtcNow;
 								//Node.Counter.Add(counter);
