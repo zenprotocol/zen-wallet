@@ -1,69 +1,43 @@
 using System.Collections.Generic;
 using Consensus;
-using System.Linq;
+using System;
 
 namespace BlockChain.Data
 {
-	public abstract class TxPoolBase : HashDictionary<TransactionValidation.PointedTransaction>
+    public interface IPool 
+    {
+        bool RemoveWithDependencies(byte[] txHash);   
+    }
+
+	public abstract class TxPoolBase<T> : HashDictionary<T>, IPool
 	{
-		public ICTxPool ICTxPool { get; set; }
 		public ContractPool ContractPool { get; set; }
-		public OrphanTxPool OrphanTxPool { get; set; }
 
 		public bool Contains(byte[] txHash)
 		{
 			return ContainsKey(txHash);
 		}
 
-		public new bool Remove(byte[] txHash)
-		{
-			return base.Remove(txHash);
-		}
+		public abstract bool IsDoubleSpend(T t, IEnumerable<Types.Outpoint> spentOutputs);
+        public abstract IEnumerable<Tuple<IPool, byte[]>> GetDependencies(byte[] txHash);
 
-		public void RemoveDoubleSpends(List<Types.Outpoint> spentOutputs) //TODO sort - efficiency
+		public virtual bool RemoveWithDependencies(byte[] txHash)
 		{
-			Keys.ToList().ForEach(t =>
-			{
-				if (Contains(t))
-				{
-					if (this[t].pInputs.Select(_t => _t.Item1).Count(_t => spentOutputs.Contains(_t)) > 0)
-					{
-						BlockChainTrace.Information("double-spending tx removed from txpool", t);
-						new TxMessage(t, this[t], TxStateEnum.Invalid).Publish();
-						RemoveDependencies(t);
-						ContractPool.Remove(t);
-						OrphanTxPool.RemoveDependencies(t);
-						ICTxPool.RemoveDependencies(t);
-					}
-				}
-			});
-		}
+            if (Contains(txHash))
+            {
+                var deps = GetDependencies(txHash);
+            
+                Remove(txHash);
 
-		public void RemoveDependencies(byte[] txHash)
-		{
-			if (Contains(txHash))
-			{
-				Remove(txHash);
-				foreach (var dep in GetDependencies(txHash)) //todo use toList()
-				{
-					BlockChainTrace.Information("dep tx removed from txpool", dep);
-					RemoveDependencies(dep);
-				}
-			}
+                foreach (var t in deps)
+                {
+                    t.Item1.RemoveWithDependencies(t.Item2);  
+                }
 
-			ContractPool.Remove(txHash);
-			OrphanTxPool.Remove(txHash);
-		}
+                return true;
+            }
 
-		protected IEnumerable<byte[]> GetDependencies(byte[] txHash)
-		{
-			foreach (var item in this)
-			{
-				if (item.Value.pInputs.Select(t => t.Item1).Count(t => t.txHash.SequenceEqual(txHash)) > 0)
-				{
-					yield return item.Key;
-				}
-			}
+            return false;
 		}
-	}
+    }
 }

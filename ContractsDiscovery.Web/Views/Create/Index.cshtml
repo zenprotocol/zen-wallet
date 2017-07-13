@@ -1,0 +1,18 @@
+﻿@using (@Html.BeginForm("Post", "Create", FormMethod.Post))
+{
+    <div class="form-group">
+        <input type="text" required="true" class="form-control" id="assetName" name="assetName" placeholder="Asset Name"/>
+    </div>
+
+    <div class="form-group">
+        <input type="url" class="form-control" id="assetImageURL" name="assetImageURL" placeholder="Asset Image URL"/>
+    </div>
+
+    <div class="form-group">
+        <input type="text" class="form-control" id="assetMatadataVersion" name="assetMatadataVersion" placeholder="Version"/>
+    </div>
+	<div class="form-group">
+	    <textarea rows="20" required="true" class="form-control" id="contractCode" name="contractCode" placeholder="Contract Code"></textarea>
+	</div>
+    <input type="submit" value="Submit" />
+}   

@@ -1,0 +1,39 @@
+﻿@model ContractsDiscovery.Web.App_Data.ContractInteraction
+
+@using (@Html.BeginForm("Action", "ContractInteraction", FormMethod.Post))
+{
+    @Html.HiddenFor(m => m.Action)
+    @Html.HiddenFor(m => m.Address)
+
+    switch (Model.Action)
+    {
+        case "Exercise":
+            <div class="form-group">
+                <label for="return-address">Return address:</label>
+                <input type="text" class="form-control" id="exercise-return-address" name="exercise-return-address" placeholder="Return Address">
+            </div>
+            break;
+    	case "Collateralize":
+            <div class="form-group">
+                <label for="return-address">Return address:</label>
+                <input type="text" class="form-control" id="return-address" name="return-address" placeholder="Return Address">
+            </div>
+    		break;
+        case "Buy":
+            <!--div class="form-group">
+                <label for="buy-amount">Amount:</label>
+			    <input type="number" class="form-control" id="buy-amount" name="buy-amount" placeholder="Amount">
+            </div-->
+            <div class="form-group">
+                <label for="buy-send-address">Send to public key address:</label>
+                <input type="text" class="form-control" id="buy-send-address" name="buy-send-address" placeholder="Address">
+            </div>
+            break;
+        case "GetTokens":
+            <div class="form-group">
+                <label>Click submit to have generated tokens sent to the address specified within the contract.</label>
+            </div>
+            break;
+    }
+    <button type="submit" class="btn btn-primary" name="doAction">Submit</button>
+}

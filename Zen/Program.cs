@@ -1,67 +1,64 @@
-﻿using System;
+using System;
 using NDesk.Options;
 using System.IO;
+using System.Linq;
+using Microsoft.FSharp.Collections;
+using System.Text;
+using Microsoft.FSharp.Core;
+using BlockChain.Data;
 
 namespace Zen
 {
 	class Program {
-		static int verbosity;
+        enum LaunchModeEnum {
+            TUI,
+            GUI,
+            Headless
+        }
 
 		public static void Main (string[] args)
 		{
-			var app = new App();
+            var app = new App();
 
+            var launchMode = LaunchModeEnum.GUI;
 			bool show_help = false;
-			bool headless = false;
-			bool tui = false;
-			string script = null;
+			bool genesis = false;
+			bool rpcServer = false;
+            bool wipe = false;
 
 			var p = new OptionSet() {
 				{ "headless", "start in headless mode",
-					v => headless = true },
+					v => launchMode = LaunchModeEnum.Headless },
+
 				{ "t|tui", "show TUI",
-					v => tui = true },
-				
+					v => launchMode = LaunchModeEnum.TUI },
+
 				{ "n|network=", "use network profile",
-					v =>  app.Settings.NetworkProfile = v },
-				//{ "settings=", "use settings profile",
-				//	v =>  app.Settings.SettingsProfile = v },
-				//{ "k|key=", "add private key",
-				//	v => app.Settings.Keys.Add(v) },
-				//{ "s|save", "save network settings profile (to be used with p option)", 
-				//	v => app.Settings.SaveNetworkProfile = v != null },
-				//{ "save_settings", "save general settings profile (to be used with settings option)",
-				//	v => app.Settings.SaveSettings = v != null },
+					v => app.SetNetwork(v) },
 
-				{ "wallet=", "specify wallet", 
+				{ "wallet=", "wallet DB", 
 					v => app.Settings.WalletDB = v },
 
-				{ "db=", "Wallet DB",
-					v => app.Settings.WalletDB = v },
-
-				{ "d|disable-network", "disable networking",
-					v => app.Settings.DisableNetworking = true },
-
-				{ "s|script=", "execute script",
-					v => script = v.EndsWith(".fs", StringComparison.OrdinalIgnoreCase) ? v : v + ".fs" },
+				{ "blockchain=", "blockchain DB suffix",
+					v => app.Settings.BlockChainDBSuffix = v },
 
 				{ "m|miner", "enable miner",
 					v => app.MinerEnabled = true },
 
-				//{ "o|output=", "add a genesis block transaction output (address, amount)",
-				//	v => app.Settings.AddOutput(v) },
-				//{ "ge|genesis", "init the genesis block",
-				//	v => app.Settings.InitGenesisBlock = v != null },
+				{ "r|rpc", "enable RPC",
+					v => rpcServer = true },
 
-				//{ "v", "increase debug message verbosity",
-				//	v => { if (v != null) ++verbosity; } },
-				{ "h|help",  "show this message and exit", 
+				{ "g|genesis", "add the genesis block",
+					v => genesis = true },
+
+				{ "w|wipe db's on startup",
+					v => wipe = v != null },
+
+                { "h|help",  "show this message and exit", 
 					v => show_help = v != null },
 			};
 
-			//List<string> extra;
 			try {
-				//extra = 
 				p.Parse (args);
 			}
 			catch (OptionException e) {
@@ -76,62 +73,51 @@ namespace Zen
 				return;
 			}
 
-			if (script != null)
-			{
-				object result;
-				var isSuccess = ScriptRunner.Execute(app, Path.Combine("Scripts", script), out result);
-
-				if (isSuccess)
-				{
-					Console.WriteLine(result);
-					Console.ReadKey();
-				}
-				else
-				{
-					Console.ReadKey();
-					app.Dispose();
-					return;
-				}
+            if (wipe)
+            {
+                app.ResetWalletDB();
+                app.ResetBlockChainDB();
+				Console.WriteLine("Databases wiped.");
 			}
 
-			if (tui)
-			{
-				TUI.Start(app, script);
-				return;
-			}
+            app.Init();
 
-			if (!headless)
+            if (genesis)
+            {
+                app.AddGenesisBlock();
+                Console.WriteLine("Genesis block added.");
+            }
+			
+			if (rpcServer)
 			{
-				app.GUI();
-				app.Dispose();
+                app.StartRPCServer();
 			}
-			else
-			{
-				app.Reconnect();
+           
+            switch (launchMode)
+            {
+				case LaunchModeEnum.TUI:
+                    TUI.Start(app);
+					break;
+				case LaunchModeEnum.GUI:
+					app.Connect();
+					app.GUI(true);
+					break;
+				case LaunchModeEnum.Headless:
+                    Console.WriteLine("Running headless.");
+					app.Connect();
+					//TODO: wait for kill signal and only then dispose
+					//app.Dispose();
+					break;
 			}
 		}
 
 		static void ShowHelp (OptionSet p)
 		{
 			Console.WriteLine ("Usage: Zen [OPTIONS]");
-			Console.WriteLine ("Description");
 			Console.WriteLine ();
 			Console.WriteLine ("Options:");
 			p.WriteOptionDescriptions (Console.Out);
 			Console.WriteLine ();
-			Console.WriteLine ("Examples:");
-			Console.WriteLine (" Run using internal IP but don't act as server (to be used for testing purposes, when several nodes on a single machine)");
-			Console.WriteLine ();
-			Console.WriteLine ("mono --debug Zen.exe --internal --ip=");
-			Console.WriteLine ();
-		}
-
-		static void Debug (string format, params object[] args)
-		{
-			if (verbosity > 0) {
-				Console.Write ("# ");
-				Console.WriteLine (format, args);
-			}
 		}
 	}
 }

@@ -88,6 +88,7 @@ namespace Zen
 	public class BlockChainDumper
 	{
 		readonly BlockChain.BlockChain _BlockChain;
+        readonly WalletManager _WalletManager;
 		readonly Graph _Graph = new Graph();
 		readonly HashDictionary<GraphNode> _Keys = new HashDictionary<GraphNode>();
 		readonly HashDictionary<int> _Indexes = new HashDictionary<int>();
@@ -96,14 +97,15 @@ namespace Zen
 
 		byte[] memPool;
 		byte[] myWallet;
-		byte[] utxoSet;
+		//byte[] utxoSet;
 
-		public BlockChainDumper(BlockChain.BlockChain blockChain)
+		public BlockChainDumper(BlockChain.BlockChain blockChain, WalletManager walletManager)
 		{
 			_BlockChain = blockChain;
+            _WalletManager = walletManager;
 		}
 
-		public void Populate(WalletManager walletManager, BlockChain.BlockChain blockChain)
+		public void Populate()
 		{
 			_Graph.Reset();
 
@@ -113,8 +115,8 @@ namespace Zen
 			myWallet = Encoding.ASCII.GetBytes(GraphNodeTypeEnum.MyWallet.ToString());
 			Add(myWallet, new GraphNode(GraphNodeTypeEnum.MyWallet));
 
-			utxoSet = Encoding.ASCII.GetBytes(GraphNodeTypeEnum.UTXOSet.ToString());
-			Add(utxoSet, new GraphNode(GraphNodeTypeEnum.UTXOSet));
+			//utxoSet = Encoding.ASCII.GetBytes(GraphNodeTypeEnum.UTXOSet.ToString());
+			//Add(utxoSet, new GraphNode(GraphNodeTypeEnum.UTXOSet));
 
 			var tip = _BlockChain.Tip;
 
@@ -143,7 +145,7 @@ namespace Zen
 
 					lastKey = bkHash;
 					bkHash = bk.header.parent;
-					bk = _BlockChain.GetBlock(bkHash);
+					bk = new GetBlockAction() { BkHash = bkHash }.Publish().Result;
 				}
 			}
 
@@ -153,7 +155,7 @@ namespace Zen
 			}
 
 			LinkTxOutpoints();
-			LinkMyWallet(walletManager);
+			LinkMyWallet();
 			LinkUTXO();
 		}
 
@@ -171,9 +173,9 @@ namespace Zen
 			}
 		}
 
-		void LinkMyWallet(WalletManager walletManager)
+		void LinkMyWallet()
 		{
-			var keys = walletManager.GetKeys();
+			var keys = _WalletManager.GetKeys();
 
 			foreach (var tx in _Txs.Values)
 			{
@@ -196,7 +198,11 @@ namespace Zen
 		{
 			HashDictionary<List<Types.Output>> txOutputs;
 			HashDictionary<Types.Transaction> txs;
-			_BlockChain.GetUTXOSet(null, out txOutputs, out txs); // TODO: use linq, return enumerator, remove predicate
+
+			var result = new GetUTXOSetAction() { Predicate = null }.Publish().Result;
+
+			txOutputs = result.Item1;
+			txs = result.Item2;
 
 			foreach (var tx in _Txs)
 			{
@@ -206,7 +212,7 @@ namespace Zen
 					{
 						var outputHash = Consensus.Merkle.outputHasher.Invoke(output);
 
-						Add(outputHash, new GraphNode(GraphNodeTypeEnum.Output), utxoSet);
+						//Add(outputHash, new GraphNode(GraphNodeTypeEnum.Output), utxoSet);
 					}
 				}
 			}
@@ -220,7 +226,26 @@ namespace Zen
 			foreach (var output in tx.outputs)
 			{
 				var outputHash = Consensus.Merkle.outputHasher.Invoke(output);
-				var outputGraphNode = new GraphNode(GraphNodeTypeEnum.Output, (output.spend.amount / Math.Pow(10, 8)).ToString());
+
+				string text = output.@lock.IsContractLock ? "C" : "P";
+
+                text += " " + _WalletManager.AssetsMetadata.GetMetadata(output.spend.asset).Result;
+                text += " " + output.spend.amount;
+
+				if (output.spend.asset.SequenceEqual(Consensus.Tests.zhash))
+                {
+					text += " Kalapas";
+				}
+
+				if (output.@lock is Types.OutputLock.ContractLock)
+				{
+					var data = ((Types.OutputLock.ContractLock)output.@lock).data;
+
+					if (data != null)
+						text += " " + Convert.ToBase64String(data);
+				}
+
+				var outputGraphNode = new GraphNode(GraphNodeTypeEnum.Output, text);
 				Add(outputHash, outputGraphNode, txHash);
 
 				var outpointHash = Consensus.Merkle.outpointHasher.Invoke(new Consensus.Types.Outpoint(txHash, i));

@@ -22,6 +22,7 @@ namespace Wallet
 			this.AllowShrink = true;
 			// Container child Wallet.MainWindow.Gtk.Container+ContainerChild
 			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1.Name = "vbox1";
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.MainMenu1 = new global::Wallet.MainMenu();
 			this.MainMenu1.Events = ((global::Gdk.EventMask)(256));

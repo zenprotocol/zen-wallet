@@ -20,3 +20,4 @@ let bytesToBits (bs:byte[]) =
     let ret : bool[] = Array.zeroCreate(bs.Length*8)
     ba.CopyTo(ret,0)
     ret
+
