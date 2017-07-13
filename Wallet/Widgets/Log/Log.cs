@@ -151,35 +151,38 @@ namespace Wallet
                 ulong sent = 0;
                 ulong received = 0;
                 ulong total = 0;
+                long runningBalance = 0;
 
                 if (_TxDeltas != null && _SelectedAsset != null)
                     _TxDeltas.ForEach(
                         txDelta => txDelta.AssetDeltas.Where(
                             assetDelta => assetDelta.Key.SequenceEqual(_SelectedAsset)).ToList().ForEach(
                                 assetDelta =>
-                        {
-                            var absValue = (ulong)Math.Abs(assetDelta.Value);
-
-                            total += absValue;
-
-                            if (assetDelta.Value < 0)
-                            {
-                                sent += absValue;
-                            }
-                            else
-                            {
-                                received += absValue;
-                            }
-
-                            logEntryStore.AppendValues(new LogEntryRow(assetDelta.Key, new LogEntryItem(
-                                absValue,
-                                assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-                                assetDelta.Key,
-                                txDelta.Time,
-                                Convert.ToBase64String(txDelta.TxHash),
-                                txDelta.TxState.ToString(),
-                                assetDelta.Value)));
-                        }));
+                                {
+                                    runningBalance += assetDelta.Value;
+                                    
+                                    var absValue = (ulong)Math.Abs(assetDelta.Value);
+        
+                                    total += absValue;
+        
+                                    if (assetDelta.Value < 0)
+                                    {
+                                        sent += absValue;
+                                    }
+                                    else
+                                    {
+                                        received += absValue;
+                                    }
+        
+                                    logEntryStore.AppendValues(new LogEntryRow(assetDelta.Key, new LogEntryItem(
+                                        absValue,
+                                        assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+                                        assetDelta.Key,
+                                        txDelta.Time,
+                                        Convert.ToBase64String(txDelta.TxHash),
+                                        txDelta.TxState.ToString(),
+                                        runningBalance)));
+                                }));
 
                 TreeIter storeIter;
 
