@@ -5,7 +5,7 @@ namespace Zen.Data
 {
 	public class Output
 	{
-		public string Key { get; set; }
+		public int TestKeyIdx { get; set; }
 		public ulong Amount { get; set; }
 	}
 

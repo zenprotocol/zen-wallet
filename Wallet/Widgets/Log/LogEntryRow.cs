@@ -5,16 +5,17 @@ namespace Wallet
 {
 	public class LogEntryRow : ILogEntryRow
 	{
+        public byte[] Key { get; private set; }
 		public Object[] Values { get; private set; } 
 		public int Offset { get { return 0; }}
 
-		public LogEntryRow (LogEntryItem logEntryItem) {
-			var zenAmount = new Zen(logEntryItem.Amount).ToString();
+        public LogEntryRow (byte[] key, LogEntryItem logEntryItem) {
+            Key = key;
 			Values = new System.Object[] {
 				logEntryItem.Date.TimeAgo(), 
 				logEntryItem.Id, 
-				logEntryItem.Direction == DirectionEnum.Sent ? zenAmount : "0",
-				logEntryItem.Direction == DirectionEnum.Recieved ? zenAmount : "0",
+				logEntryItem.Direction == DirectionEnum.Sent ? logEntryItem.Amount : 0,
+				logEntryItem.Direction == DirectionEnum.Recieved ? logEntryItem.Amount : 0,
 				logEntryItem.Balance
 			};
 		}

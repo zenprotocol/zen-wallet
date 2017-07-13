@@ -10,6 +10,9 @@ using System.Globalization;
 using Wallet.Constants;
 using Wallet.core;
 using Network;
+using System.Linq;
+using System.Threading.Tasks;
+using BlockChain.Data;
 
 namespace Zen
 {
@@ -20,30 +23,29 @@ namespace Zen
 		static ListBox listMenu;
 		static string currentMenu { get; set; }
 
-		public static void Start (App app, String script)
+		public static void Start(App app)
 		{
 			var root = new RootWindow();
 			var options = new Dictionary<string, List<string>>();
 
 			options["main"] = new List<string>();
-			options["main"].Add("Reconnect");
+			options["main"].Add("Connect");
 			options["main"].Add("Start GUI");
 			options["main"].Add("Wallet Menu");
 			options["main"].Add("BlockChain Menu");
 			options["main"].Add("Miner Menu");
-			options["main"].Add("Tests");
 			options["main"].Add("Reset Blockchain DB");
 			options["main"].Add("Reset Wallet DB");
 			options["main"].Add("Generate Graph");
+			options["main"].Add("Active Contract Set");
 			options["main"].Add("Stop");
 			options["main"].Add("Exit");
 
 			options["wallet"] = new List<string>();
 		//	options["wallet"].Add("Reset");
 		//	options["wallet"].Add("Sync");
-			options["wallet"].Add("Add Genesis UTXO");
+			options["wallet"].Add("Import Genesis UTXO Key");
 			options["wallet"].Add("List Keys");
-			options["wallet"].Add("Import Test Key");
 			options["wallet"].Add("Get Receive Address");
 			options["wallet"].Add("My Wallet");
 			options["wallet"].Add("Send Dialog");
@@ -59,18 +61,6 @@ namespace Zen
 			options["miner"].Add("Mine Block");
 			options["miner"].Add("Back");
 
-			options["tests"] = new List<string>();
-
-			foreach (var scriptFile in Directory.GetFiles("Scripts"))
-			{
-				var fileInfo = new FileInfo(scriptFile);
-
-				if (fileInfo.Extension == ".fs")
-					options["tests"].Add(fileInfo.Name);
-			}
-			options["tests"].Add("Back");
-
-
 			var actions = new Dictionary<string, Action<string>>();
 			Action<string> menu = (s) =>
 			{
@@ -84,12 +74,18 @@ namespace Zen
 
 			#region Send Dialog
 			var sendDialog = new Dialog(root) { Text = "Send", Width = 70, Height = 18, Top = 4, Left = 4, Border = BorderStyle.Thick, Visible = false };
-			new Label(sendDialog) { Top = 1, Left = 1, Width = 66, Text = "Destination" };
+
+            new Label(sendDialog) { Top = 1, Left = 1, Width = 66, Text = "Destination" };
 			var address = new SingleLineTextbox(sendDialog) { Top = 3, Left = 1, Width = 65 };
-			new Label(sendDialog) { Top = 5, Left = 1, Width = 66, Text = "Amount" };
+			
+            new Label(sendDialog) { Top = 5, Left = 1, Width = 66, Text = "Amount" };
 			var amount = new SingleLineTextbox(sendDialog) { Top = 7, Left = 1, Width = 65 };
-			var sendDialogSendButton = new Button(sendDialog) { Top = 10, Left = 1, Width = 15, Text = "Send" };
-			var sendDialogCloseButton = new Button(sendDialog) { Top = 10, Left = 20, Width = 15, Text = "Close" };
+
+			new Label(sendDialog) { Top = 9, Left = 1, Width = 66, Text = "Data" };
+			var data = new SingleLineTextbox(sendDialog) { Top = 11, Left = 1, Width = 65 };
+
+			var sendDialogSendButton = new Button(sendDialog) { Top = 14, Left = 1, Width = 15, Text = "Send" };
+			var sendDialogCloseButton = new Button(sendDialog) { Top = 14, Left = 20, Width = 15, Text = "Close" };
 			var status = new Label(sendDialog) { Top = 16, Left = 1, Width = 40, Text = "", Background = ConsoleColor.Black };
 
 			sendDialogCloseButton.Clicked += (sender, e) =>
@@ -124,11 +120,22 @@ namespace Zen
 					return;
 				}
 
-				if (!app.Spend(_amount, _address))
-				{
-					status.Text = "Could not spend";
-					return;
-				}
+                if (string.IsNullOrEmpty(data.Text))
+                {
+                    if (!app.Spend(_address, _amount))
+                    {
+                        status.Text = "Could not spend";
+                        return;
+                    }
+                }
+                else
+                {
+     //               if (!app.SendContract(_address.Bytes, _amount, Convert.FromBase64String(data.Text)))
+					//{
+					//	status.Text = "Could not spend";
+					//	return;
+					//}
+                }
 
 				status.Text = "Success";
 			};
@@ -145,50 +152,64 @@ namespace Zen
 			var minerDialog = new Dialog(root) { Text = "Miner", Width = 70, Height = 18, Top = 2, Left = 6, Border = BorderStyle.Thick, Visible = false };
 			var radioMinerEnabled = new RadioButton(minerDialog) { Top = 1, Left = 1, Id = "minerIsEnabled", Text = "Enabled" };
 			var radioMinerDisabled = new RadioButton(minerDialog) { Top = 2, Left = 1, Id = "minerIsEnabled", Text = "Disabled" };
-			new Label(minerDialog) { Top = 4, Left = 1, Width = 10, Text = "Difficulty" };
+//            var mineEmptyBlock = new Checkbox(minerDialog) { Top = 3, Left = 1, Id = "minerEmptyBlocks", Text = "Empty blocks" };
+            new Label(minerDialog) { Top = 4, Left = 1, Width = 10, Text = "Difficulty" };
 			var difficulty = new SingleLineTextbox(minerDialog) { Top = 4, Left = 15, Width = 10 };
-			var minerDialogMinerButton = new Button(minerDialog) { Top = 1, Left = 32, Width = 15, Text = "Mine Now" };
+//			var minerDialogMinerButton = new Button(minerDialog) { Top = 1, Left = 32, Width = 15, Text = "Mine Now" };
 			var minerDialogCloseButton = new Button(minerDialog) { Top = 1, Left = 50, Width = 18, Text = "Apply and Close" };
 			var minerLog = new ListBox(minerDialog) { Top = 6, Left = 2, Width = 66, Height = 11, Border = BorderStyle.Thin };
 
-			Func<MinerLogData, string> minerLogData = log =>
-			{
-				return $"Block #{log.BlockNumber} {log.Status} with {log.Transactions} txs, in {log.TimeToMine} seconds";
-			};
+			//Func<MinerLogData, string> minerLogData = log =>
+			//{
+			//	return $"Block #{log.BlockNumber} {log.Status.BkResultEnum} with {log.Transactions} txs, in {log.TimeToMine} seconds";
+			//};
 
-			app.NodeManager.Miner.OnMinedBlock += log => minerLog.Items.Add(minerLogData(log));
+//			app.NodeManager.Miner.OnMinedBlock += log => minerLog.Items.Add(minerLogData(log));
+
+   //         mineEmptyBlock.Clicked += (sender, e) => {
+			//	var miner = app.NodeManager.Miner;
+
+   //             miner.SkipTxs = ((Checkbox)sender).Checked;
+			//};
 
 			minerDialogCloseButton.Clicked += (sender, e) =>
 			{
-				var miner = app.NodeManager.Miner;
+                app.SetMinerEnabled(radioMinerEnabled.Checked);
 
-				miner.Difficulty = int.Parse(difficulty.Text);
-				miner.Enabled = radioMinerEnabled.Checked;
+                if (radioMinerEnabled.Checked)
+                {
+                    app.Miner.Difficulty = uint.Parse(difficulty.Text);
+                }
 
 				minerDialog.Hide();
 				dialog.Show();
 			};
 
-			minerDialogMinerButton.Clicked += (sender, e) =>
-			{
-				app.MineBlock();
-			};
+			//minerDialogMinerButton.Clicked += (sender, e) =>
+			//{
+			//	app.MineTestBlock();
+			//};
 
 			Action showMinerDialog = () =>
 			{
-				var miner = app.NodeManager.Miner;
-				difficulty.Text = miner.Difficulty.ToString();
+				var miner = app.Miner;
 
-				if (miner.Enabled)
-					radioMinerEnabled.Checked = true;
-				else
-					radioMinerDisabled.Checked = true;
+                if (miner != null)
+                {
+                    radioMinerEnabled.Checked = true;
+                    difficulty.Text = miner.Difficulty.ToString();
+                }
+                else
+                {
+                    radioMinerDisabled.Checked = true;
+                    difficulty.Text = "0";
+                }
 
 				minerLog.Items.Clear();
-				foreach (var log in app.MinerLogData)
-				{
-					minerLog.Items.Add(minerLogData(log));
-				}
+				//foreach (var log in app.MinerLogData)
+				//{
+				//	minerLog.Items.Add(minerLogData(log));
+				//}
 
 				dialog.Hide();
 				minerDialog.Show();
@@ -206,14 +227,13 @@ namespace Zen
 						menu("blockchain");
 						break;
 					case "Miner Menu":
-						//menu("miner");
 						showMinerDialog();
 						break;
-					case "Reconnect":
-						await app.Reconnect();
+					case "Connect":
+						await app.Connect();
 						break;
 					case "Start GUI":
-						app.GUI();
+						app.GUI(false);
 						root.Detach();
 						root.Run();
 						break;
@@ -226,6 +246,21 @@ namespace Zen
 					case "Generate Graph":
 						app.Dump();
 						break;
+					case "Active Contract Set":
+						options["acs"] = new List<string>();
+
+						foreach (var contractData in new GetActiveContactsAction().Publish().Result)
+						{
+							var info = new Address(contractData.Hash, AddressType.Contract) + " " + contractData.LastBlock;
+
+						//	info += app.GetTotalAssets(contractData.Hash);
+
+							options["acs"].Add(info);
+						}
+						options["acs"].Add("Back");
+
+                        menu("acs");
+						break;
 					case "Reset Blockchain DB":
 						app.ResetBlockChainDB();
 						break;
@@ -234,9 +269,6 @@ namespace Zen
 						break;
 					case "Stop":
 						app.Stop();
-						break;
-					case "Tests":
-						menu("tests");
 						break;
 					case "Exit":
 						app.Dispose();
@@ -269,7 +301,7 @@ namespace Zen
 						app.MinerEnabled = false;
 						break;
 					case "Mine Block":
-						app.MineBlock();
+						app.MineTestBlock();
 						break;
 					case "Back":
 						menu("main");
@@ -277,17 +309,15 @@ namespace Zen
 				}
 			};
 
-			actions["tests"] = a =>
+			actions["acs"] = a =>
 			{
 				switch (a)
 				{
 					case "Back":
-						menu("main");
+                        menu("main");
 						break;
 					default:
-						object result;
-						ScriptRunner.Execute(app, Path.Combine("Scripts", a), out result);
-						listTrace.Items.Add(result);	
+						Console.WriteLine(new GetContractCodeAction(new Address(a).Bytes).Publish().Result);
 						break;
 				}
 			};
@@ -297,13 +327,14 @@ namespace Zen
 			{
 				switch (a)
 				{
-					case "Add Genesis UTXO":
+					case "Import Genesis UTXO Key":
 						wallet_mode = a;
 						listMenu.Items.Clear();
 
 						foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
 						{
-							listMenu.Items.Add(output.Amount + " " + output.Key);
+                            var key = JsonLoader<TestKeys>.Instance.Value.Values[output.TestKeyIdx];
+                            listMenu.Items.Add($"{output.TestKeyIdx} {output.Amount} {key.Desc}");
 						}
 						listMenu.Items.Add("Back");
 						break;
@@ -321,23 +352,6 @@ namespace Zen
 						}
 						listMenu.Items.Add("Back");
 						break;
-					case "Import Test Key":
-						wallet_mode = a;
-
-						listMenu.Items.Clear();
-
-						foreach (var key in  JsonLoader<Keys>.Instance.Value.Values)
-						{
-							listMenu.Items.Add(key);
-						}
-						listMenu.Items.Add("Back");
-						break;
-					//case "Reset":
-					//	app.ResetWallet();
-					//	break;
-					//case "Import":
-					//	app.ImportWallet();
-					//	break;
 					case "Get Receive Address":
 						listTrace.Items.Add(app.WalletManager.GetUnusedKey().Address.ToString());
 						break;
@@ -346,7 +360,7 @@ namespace Zen
 
 						foreach (var txDelta in app.WalletManager.TxDeltaList)
 						{
-							listMenu.Items.Add(GetTxDeltaInfo(txDelta));
+							listMenu.Items.Add(GetTxDeltaInfo(app, txDelta));
 						}
 						listMenu.Items.Add("Back");
 						break;
@@ -359,17 +373,10 @@ namespace Zen
 					default:
 						switch (wallet_mode)
 						{
-							case "Add Genesis UTXO":
-								foreach (var output in JsonLoader<Outputs>.Instance.Value.Values)
-								{
-									if (a == output.Amount + " " + output.Key)
-									{
-										app.WalletManager.Import(Key.Create(output.Key));
-									}
-								}
-								break;
-							case "Import Test Key":
-								app.WalletManager.Import(Key.Create(a));
+							case "Import Genesis UTXO Key":
+                                var idx = int.Parse(a.Split(null)[0]);
+                                var key = Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[idx].Private);
+								app.WalletManager.Import(key);
 								break;
 						}
 						break;
@@ -384,66 +391,91 @@ namespace Zen
 			//	app.Settings.InitGenesisBlock = checkboxGenesis.Checked;
 
 			listMenu.Clicked += (object sender, EventArgs e) => {
-		//		var option = currentMenu + "_" + ((ListBox)sender).SelectedItem;
-
-				if (actions.ContainsKey(currentMenu))
-				{
-					actions[currentMenu](((ListBox)sender).SelectedItem as string);
-				}
-				else
-				{
-					Console.Write("missing " + currentMenu);
-				}
+                //		var option = currentMenu + "_" + ((ListBox)sender).SelectedItem;
+                try
+                {
+                    if (actions.ContainsKey(currentMenu))
+                    {
+                        actions[currentMenu](((ListBox)sender).SelectedItem as string);
+                    }
+                    else
+                    {
+                        Console.Write("missing " + currentMenu);
+                    }
+                } catch {}
 			};
 
-			Action<ResetEventArgs> wallet_OnReset = a =>
-			{
-				foreach (var txDelta in a.TxDeltaList)
-					listTrace.Items.Add(GetTxDeltaInfo(txDelta, "Wallet reset"));
-			};
-
-			Action<TxDeltaItemsEventArgs> wallet_OnItems = a =>
+            Action<List<TxDelta>> wallet_OnItems = a =>
 		   	{
 				foreach (var txDelta in a)
-					listTrace.Items.Add(GetTxDeltaInfo(txDelta, "Wallet item"));
+					listTrace.Items.Add(GetTxDeltaInfo(app, txDelta, "Wallet item"));
 		   	};
 
 			app.WalletOnItemsHandler = wallet_OnItems;
-			app.WalletOnResetHandler = wallet_OnReset;
 
 			//	app.Init();
+
 			root.Run();
 		}
 
-        static string GetTxDeltaInfo(TxDelta txDelta, string prefix = null)
+        static string GetTxDeltaInfo(App app, TxDelta txDelta, string prefix = null)
 		{
-			string info = (prefix == null ? "" : prefix + ": ") + txDelta.TxState.ToString();
+            try
+            {
+                string info = (prefix == null ? "" : prefix + ": ") + txDelta.TxState.ToString().Substring(0, 1);
+                info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
 
-			info += ", " + txDelta.Time.ToString("g", DateTimeFormatInfo.InvariantInfo);
-			if (txDelta.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
-			{
-				var value = txDelta.AssetDeltas[Consensus.Tests.zhash];
-				info += ", " + value;
-			}
-			else
-			{
-				info += ", " + "Other asset";
-			}
+                string assets = string.Empty;
 
-			return info;
+                foreach (var item in txDelta.AssetDeltas)
+                {
+                    var value = item.Key.SequenceEqual(Consensus.Tests.zhash) ? item.Value * Math.Pow(10, -8)  : item.Value;
+                    assets += (assets == string.Empty ? "" : ", ") + value;
+                    assets += " " + app.WalletManager.AssetsMetadata.GetMetadata(item.Key).Result;
+                }
+
+				return info + " " + assets;
+			} catch
+            {
+                return "error"; 
+            }
 		}
 						                
 		public static void WriteColor(string message, ConsoleColor color)
-		{
+		{			
 			if (listTrace != null)
 			{
-				listTrace.Items.Add(message.Split('\n')[0]);
+                try
+                {
+					var lines = message.Split(new string[] { Environment.NewLine }, StringSplitOptions.None); // just split the thing alreadymessage.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)[0]); // just split the thing already
+					var line = lines[0];
 
-				listTrace.SelectedIndex = listTrace.Items.Count - 1;
+					if (line.Length > 75)
+					{
+						line = message.Substring(0, 75);
+						line += "...\n";
+					}
+
+					line = line.Replace("{", "");
+					line = line.Replace("}", "");
+
+					listTrace.Items.Add(line);
+
+					listTrace.SelectedIndex = listTrace.Items.Count - 1;
+                } catch (Exception e) {
+					Console.ForegroundColor = color;
+					Console.WriteLine("error writing message");
+				}
 			}
 			else
 			{
 				Console.ForegroundColor = color;
+
+                if (!message.EndsWith("\n"))
+                {
+                    message += "\n";
+                }
+
 				Console.Write(message);
 			}
 		}

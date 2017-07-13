@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -8,62 +7,66 @@ using Consensus;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
 using System.Linq;
+using System.Diagnostics;
+using System.Web;
+
+#if CSHARP_CONTRACTS
+using Microsoft.CSharp;
+using System.CodeDom.Compiler;
+#endif
 
 namespace BlockChain
 {
-	public class ContractArgs
-	{
-		public Types.ContractContext context { get; set; }
-		public byte[] Message { get; set; }
-		public List<byte[]> witnesses { get; set; }
-		public List<Types.Output> outputs { get; set; }
-		public Types.ExtendedContract option { get; set; }
-	}
+    public class ContractArgs
+    {
+        public byte[] ContractHash { get; set; }
+        public Func<Types.Outpoint, FSharpOption<Types.Output>> tryFindUTXOFunc { get; set; }
+        public byte[] Message { get; set; }
+    }
 
-	public class ContractHelper
-	{
-		const string _OutputPath = "contracts";
-		const string DEPENCENCY_OPTION = " -r ";
+    public class ContractHelper
+    {
+        const string _OutputPath = "contracts";
+        const string DEPENCENCY_OPTION = " -r ";
 
-		static readonly string[] _Dependencies = new string[] {
-				"/home/user/repo/zen-wallet/Consensus/bin/Debug/Consensus.dll",
-				"/usr/lib/cli/nunit.framework-2.6.3/nunit.framework.dll",
-				"/home/user/repo/zen-wallet/Consensus/bin/Debug/MsgPack.dll",
-				"/home/user/repo/zen-wallet/Consensus/bin/Debug/BouncyCastle.Crypto.dll"
-			}; //TODO
+        static readonly string[] _Dependencies = new string[] {
+#if CSHARP_CONTRACTS
+            "System.dll",
+            "System.Core.dll",
+            "FSharp.Core.dll",
+#else
+#endif
+			"Consensus.dll",
+		//	"/usr/lib/cli/nunit.framework-2.6.3/nunit.framework.dll",
+			"MsgPack.dll",
+            "BouncyCastle.Crypto.dll",
+            "ContractsUtils.dll"
+        }; //TODO
 
-		static string _CompilerPath = "/usr/lib/mono/4.5/"; //TODO
 
-		public static bool Execute(byte[] contractHash, out Types.Transaction transaction, ContractArgs contractArgs)
-		{
+        public static bool Execute(out Types.Transaction transaction, ContractArgs contractArgs, bool isWitness)
+        {
 			try
 			{
-				var assembly = Assembly.LoadFrom(GetFileName(contractHash));
-				var module = assembly.GetModules()[0];
-				var type = module.GetTypes()[0];
-				var method = type.GetMethod("run");
+				var fileName = HttpServerUtility.UrlTokenEncode(contractArgs.ContractHash);
+				var contractCode = File.ReadAllText(Path.Combine(_OutputPath, Path.ChangeExtension(fileName, ".fs")));
+				var func = ContractExamples.Execution.compileQuotedContract(contractCode);
 
-				var args = new object[] {
-					contractArgs.context,
-					contractArgs.Message,
-				//	ListModule.OfSeq(contractArgs.inputs),
-					ListModule.OfSeq(contractArgs.witnesses),
-					ListModule.OfSeq(contractArgs.outputs),
-					contractArgs.option
-				};
+                var result = func.Invoke(new Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>(
+                    contractArgs.Message,
+				    contractArgs.ContractHash,
+                    FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>.FromConverter(t => contractArgs.tryFindUTXOFunc(t))));
 
-				var result =
-					(Tuple<IEnumerable<Types.Outpoint>, FSharpList<byte[]>, FSharpList<Types.Output>, Types.ExtendedContract>) 
-					method.Invoke(null, args);
+				var txSkeleton = result as Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
 
-				transaction =
+				transaction = txSkeleton == null || txSkeleton.Item2.Count() == 0 ? null :
 					new Types.Transaction(
-					Tests.tx.version,
-					ListModule.OfSeq(result.Item1),
-					result.Item2,
-					result.Item3,
-					new FSharpOption<Types.ExtendedContract>(result.Item4)
-				);
+						Tests.tx.version,
+						txSkeleton.Item1,
+						ListModule.OfSeq<byte[]>(isWitness ? new byte[][] { contractArgs.Message } : new byte[][] { }),
+						txSkeleton.Item2,
+						FSharpOption<Types.ExtendedContract>.None //TODO: get from txSkeleton.Item3
+					);
 
 				return true;
 			}
@@ -71,71 +74,173 @@ namespace BlockChain
 			{
 				BlockChainTrace.Error("Error executing contract", e);
 			}
+
 			transaction = null;
+
 			return false;
 		}
 
-		public static bool IsTxValid(TransactionValidation.PointedTransaction ptx, byte[] contractHash, List<Tuple<Types.Outpoint, Types.Output>> utxos, Types.BlockHeader blockHeader)
-		{
-			var witnessIdx = -1;
-			byte[] message = null;
+        public static bool Execute_old(out Types.Transaction transaction, ContractArgs contractArgs, bool isWitness)
+        {
+            try
+            {
+                var assembly = Assembly.LoadFrom(GetFileName(contractArgs.ContractHash));
+                var module = assembly.GetModules()[0];
+                var type = module.GetTypes()[0];
 
-			for (var i = 0; i < ptx.witnesses.Length; i++)
-			{
-				if (ptx.witnesses[i].Length > 0)
-					witnessIdx = i;
-			}
+				//**************************************************
+				// used for CSharp based contract debugging
+				var matchedTypes = Assembly.GetEntryAssembly()
+				    .GetModules()[0]
+				    .GetTypes()
+				    .Where(t => t.FullName == type.FullName);
 
-			if (witnessIdx == 0)
-			{
-				message = ptx.witnesses[0];
-			}
-			else if (witnessIdx == -1)
-			{
-				var contractLock = ptx.pInputs[0].Item2.@lock as Types.OutputLock.ContractLock;
-
-				if (contractLock == null)
+				if (matchedTypes.Any())
 				{
-					BlockChainTrace.Information("expected ContractLock, tx invalid");
-					return false;
+				    type = matchedTypes.First();
 				}
 
-				message = contractLock.data;
+				//**************************************************
+				// used for FSharp based contract debugging
+				//var matchedTypes = Assembly.LoadFile("TestFSharpContracts.dll")
+				//    .GetModules()[0]
+				//    .GetTypes()
+				//    .Where(t => t.FullName == type.FullName);
+
+				//if (matchedTypes.Any())
+				//{
+				//    type = matchedTypes.First();
+				//}
+
+				var method = type.GetMethod("main");
+                var args = new object[] {
+#if CSHARP_CONTRACTS
+                    new List<byte>(contractArgs.Message),
+                    contractArgs.ContractHash,
+                    contractArgs.tryFindUTXOFunc,
+#else
+                    contractArgs.Message,
+                    contractArgs.ContractHash,
+                    FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>.FromConverter(t => contractArgs.tryFindUTXOFunc(t))
+#endif
+				};
+
+                var result = method.Invoke(null, args);
+
+#if CSHARP_CONTRACTS
+                var txSkeleton = result as Tuple<IEnumerable<Types.Outpoint>, IEnumerable<Types.Output>, byte[]>;
+#else
+                var txSkeleton = result as Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
+#endif
+
+                transaction = txSkeleton == null || txSkeleton.Item2.Count() == 0 ? null :
+                    new Types.Transaction(
+                        Tests.tx.version,
+#if CSHARP_CONTRACTS
+                        ListModule.OfSeq(txSkeleton.Item1),
+#else
+						txSkeleton.Item1,
+#endif
+						ListModule.OfSeq<byte[]>(isWitness ? new byte[][] { contractArgs.Message } : new byte[][] { }),
+#if CSHARP_CONTRACTS
+						ListModule.OfSeq(txSkeleton.Item2),
+#else
+                        txSkeleton.Item2,
+#endif
+						FSharpOption<Types.ExtendedContract>.None //TODO: get from txSkeleton.Item3
+					);
+
+				return true;
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("Error executing contract", e);
 			}
 
-			var args = new ContractArgs()
-			{
-				context = new Types.ContractContext(contractHash, new FSharpMap<Types.Outpoint, Types.Output>(utxos), blockHeader),
-				Message = message,
-				witnesses = new List<byte[]>(),
-				outputs = ptx.outputs.ToList(),
-				option = Types.ExtendedContract.NewContract(new Types.Contract(new byte[] { }, new byte[] { }, new byte[] { }))
-			};
+			transaction = null;
 
-			Types.Transaction tx;
-			return Execute(contractHash, out tx, args) && TransactionValidation.unpoint(ptx).Equals(tx);
+			return false;
 		}
 
-		public static bool Compile(byte[] fsharpCode, out byte[] contractHash)
+		public static bool Compile(byte[] fsharpCode, byte[] contractHash)
 		{
-			return Compile(Encoding.ASCII.GetString(fsharpCode), out contractHash);
+			return Compile(Encoding.ASCII.GetString(fsharpCode), contractHash);
 		}
 
-//		public async static Task<bool> Extract(byte[] fstarCode, StrongBox<byte[]> fsharpCode)
-		public static bool Extract(byte[] fstarCode, out byte[] fsharpCode)
+		//		public async static Task<bool> Extract(byte[] fstarCode, StrongBox<byte[]> fsharpCode)
+        public static bool Extract(string fstarCode, out string fsharpCode)
 		{
 			//	await Task.Delay(1000);
-			var fsharpCodeExtracted = @"
-module Test
-open Consensus.Types
-let run (context : ContractContext, message: byte[], witnesses: Witness list, outputs: Output list, contract: ExtendedContract) = (context.utxo |> Map.toSeq |> Seq.map fst, witnesses, outputs, contract)
-";
-			fsharpCode = Encoding.ASCII.GetBytes(fsharpCodeExtracted);
+//			var fsharpCodeExtracted = @"
+//module Test
+//open Consensus.Types
+//let run (context : ContractContext, message: byte[], outputs: Output list) = (context.utxo |> Map.toSeq |> Seq.map fst, outputs)
+//";
+//			fsharpCode = Encoding.ASCII.GetBytes(fsharpCodeExtracted);
 
+			fsharpCode = fstarCode;
 			return true;
 		}
 
-		public static bool Compile(String fsharpCode, out byte[] contractHash)
+#if CSHARP_CONTRACTS
+		public static bool Compile(String csharpCode, out byte[] contractHash)
+		{
+			var provider = new CSharpCodeProvider();
+			var parameters = new CompilerParameters();
+
+			foreach (var dependency in _Dependencies)
+			{
+				parameters.ReferencedAssemblies.Add(dependency);
+			}
+
+			if (!Directory.Exists(_OutputPath))
+			{
+				Directory.CreateDirectory(_OutputPath);
+			}
+			contractHash = GetHash(csharpCode);
+
+			parameters.GenerateInMemory = false;
+			parameters.GenerateExecutable = false;
+			parameters.OutputAssembly = GetFileName(contractHash); 
+			var results = provider.CompileAssemblyFromSource(parameters, csharpCode);
+
+			if (results.Errors.HasErrors)
+			{
+				StringBuilder sb = new StringBuilder();
+
+				foreach (CompilerError error in results.Errors)
+				{
+					sb.AppendLine(String.Format("Error ({0}): {1}", error.ErrorNumber, error.ErrorText));
+				}
+
+				BlockChainTrace.Error(sb.ToString(), new Exception());
+                //throw new InvalidOperationException(sb.ToString());
+
+                return false;
+			}
+
+			return true;
+		}
+#else
+        public static bool Compile(String fsharpCode, byte[] contractHash)
+        {
+			contractHash = GetHash(fsharpCode);
+
+			if (!Directory.Exists(_OutputPath))
+			{
+				Directory.CreateDirectory(_OutputPath);
+			}
+
+			var fileName = HttpServerUtility.UrlTokenEncode(contractHash);
+
+			var contractSourceFile = Path.Combine(_OutputPath, Path.ChangeExtension(fileName, ".fs"));
+
+			File.WriteAllText(contractSourceFile, fsharpCode);
+
+            return true;
+        }
+
+        public static bool Compile_old(String fsharpCode, out byte[] contractHash)
 		{
 			var tempSourceFile = Path.ChangeExtension(Path.GetTempFileName(), ".fs");
 			var process = new Process();
@@ -151,16 +256,18 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 
 			if (IsRunningOnMono())
 			{
-				process.StartInfo.FileName = "mono";
-				process.StartInfo.Arguments = $"{ Path.Combine(_CompilerPath, "fsc.exe") } -o { GetFileName(contractHash) } -a {tempSourceFile}{DEPENCENCY_OPTION + string.Join(DEPENCENCY_OPTION, _Dependencies)}";
-
-			//	Console.WriteLine();
-			//	Console.WriteLine(process.StartInfo.Arguments);
+				process.StartInfo.FileName = "fsharpc";
+				process.StartInfo.Arguments = $"-o { GetFileName(contractHash) } -a {tempSourceFile}{DEPENCENCY_OPTION + string.Join(DEPENCENCY_OPTION, _Dependencies)}";
 			}
 			else
 			{
 				//TODO
 			}
+
+			process.OutputDataReceived += (sender, args1) =>
+			{
+			    Console.WriteLine("## " + args1.Data);
+			};
 
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.RedirectStandardOutput = true;
@@ -170,13 +277,22 @@ let run (context : ContractContext, message: byte[], witnesses: Witness list, ou
 				BlockChainTrace.Information(args1.Data);
 			};
 
-			process.Start();
-			process.BeginOutputReadLine();
-			process.WaitForExit();
+			try
+			{
+				process.Start();
+				process.BeginOutputReadLine();
+				process.WaitForExit();
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("process", e);
+			}
+
 			File.Delete(tempSourceFile);
 
 			return process.ExitCode == 0;
 		}
+#endif
 
 		private static byte[] GetHash(string value)
 		{

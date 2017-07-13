@@ -16,10 +16,11 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class Contract : Bin, ContractView
 	{
+        ContractController _ContractController;
 		public Contract ()
 		{
 			this.Build ();
-			ContractController.Instance.ContractView = this;
+            _ContractController = new ContractController(this);
 
 			txtStatus.ModifyBase (StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
 			txtContractCode.ModifyBase (StateType.Normal, new Gdk.Color (0x01d, 0x025, 0x030));
@@ -32,7 +33,7 @@ namespace Wallet
 			labelStatus.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text.Gdk);
 
 			eventboxCreateOrExtend.ButtonPressEvent += delegate {
-				ContractController.Instance.CreateOrExtend();
+				_ContractController.CreateOrExtend();
 			};
 
 			bool isGenerateBusy = false;
@@ -45,7 +46,7 @@ namespace Wallet
 
 				isGenerateBusy = true;
 				labelStatus.Text = "Generating...";
-				var contractGenerationData = await ContractController.Instance.Verify(Code);
+				var contractGenerationData = await _ContractController.Verify(Code);
 
 				Gtk.Application.Invoke(delegate
 				{
@@ -57,11 +58,11 @@ namespace Wallet
 			};
 
 			eventboxLoad.ButtonPressEvent += delegate {
-				ContractController.Instance.Load();
+				_ContractController.Load();
 			};
 
 			buttonSave.Clicked += delegate {
-				ContractController.Instance.Save();
+				_ContractController.Save();
 			};
 
 			txtContractCode.Buffer.Changed += txtContractCode_Changed;
@@ -71,7 +72,7 @@ namespace Wallet
 		{
 			var textView = sender as TextBuffer;
 
-			ContractController.Instance.UpdateContractInfo(textView.Text);
+			_ContractController.UpdateContractInfo(textView.Text);
 		}
 
 		public String Code { 
@@ -111,7 +112,7 @@ namespace Wallet
 		{
 			set
 			{
-				_Hash = BitConverter.ToString(value).Replace("-", string.Empty);
+				_Hash = Convert.ToBase64String(value);
 				txtContractHash.Text = _Hash;
 				UpdateStatus();
 			}

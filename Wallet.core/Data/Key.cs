@@ -26,17 +26,7 @@ namespace Wallet.core.Data
 				case AddressType.PK:
 					return Types.OutputLock.NewPKLock(Bytes);
 				case AddressType.Contract:
-					if (Data != null)
-					{
-						return Types.OutputLock.NewContractLock(Bytes, Data);
-					}
-					//case AddressType.ContractSacrifice:
-					else
-					{
-						return Types.OutputLock.NewContractSacrificeLock(
-							new Types.LockCore(0, ListModule.OfSeq(new byte[][] { Bytes }))
-						);
-					}
+					return Types.OutputLock.NewContractLock(Bytes, Data);
 			}
 
 			return null;
@@ -45,13 +35,13 @@ namespace Wallet.core.Data
 		public Address(string raw)
 		{
 			AddressType = (AddressType)raw[0];
-			Data = null;
+            Data = new byte[] {};
 			Bytes = Convert.FromBase64String(raw.Substring(1));
 		}
 
 		public Address(byte[] bytes, AddressType addressType)
 		{
-			Data = null;
+			Data = new byte[] { };
 			AddressType = addressType;
 			Bytes = bytes;
 		}
@@ -66,7 +56,7 @@ namespace Wallet.core.Data
 			}
 			else 
 			{
-				throw new NotImplementedException();
+				return false;
 			}
 		}
 

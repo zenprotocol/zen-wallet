@@ -28,6 +28,7 @@ namespace Wallet
 			this.Name = "Wallet.WalletReceiveLayout";
 			// Container child Wallet.WalletReceiveLayout.Gtk.Container+ContainerChild
 			this.vbox1 = new global::Gtk.VBox();
+			this.vbox1.Name = "vbox1";
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.hboxTop = new global::Gtk.HBox();
 			this.hboxTop.Name = "hboxTop";

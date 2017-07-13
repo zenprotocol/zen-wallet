@@ -31,7 +31,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			WalletController.Instance.TransactionsView = this;
+		//	WalletController.Instance.TransactionsView = this;
 
 			ScrolledWindow sw = new ScrolledWindow();
 
@@ -83,11 +83,13 @@ namespace Wallet
 			bool hasSelection = ((TreeSelection)sender).GetSelected (out selectionIter);
 
 			TreeIter storeIter;
-			listStore.GetIterFirst (out storeIter);
+			var canIter = listStore.GetIterFirst (out storeIter);
 
-			do {
-				listStore.SetValue (storeIter, (int)Columns.IsExpanded, hasSelection && storeIter.Equals (selectionIter));
-			} while (listStore.IterNext (ref storeIter));
+            while (canIter)
+            {
+                listStore.SetValue(storeIter, (int)Columns.IsExpanded, hasSelection && storeIter.Equals(selectionIter));
+                canIter = listStore.IterNext(ref storeIter);
+            }
 		}
 			
 		private void RenderCell (Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter)
@@ -100,22 +102,32 @@ namespace Wallet
 
 		public List<TransactionItem> TransactionsList { 
 			set {
-				listStore.Clear ();
+                Gtk.Application.Invoke(delegate
+                {
+                    listStore.Clear();
 
-				foreach (TransactionItem transactionItem in value) {
-					AddTransactionItem(transactionItem);
-				}
+                    foreach (TransactionItem transactionItem in value)
+                    {
+                        AddTransactionItem(transactionItem);
+                    }
+                });
 			}
 		}
 
-		public void Clear()
-		{
-			listStore.Clear();
-		}
+        public void Clear()
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                listStore.Clear();
+            });
+        }
 
 		public void AddTransactionItem(TransactionItem transactionItem)
 		{
-			listStore.AppendValues(false, transactionItem);
-		}
+            Gtk.Application.Invoke(delegate
+            {
+                listStore.AppendValues(false, transactionItem);
+            });
+        }   
 	}
 }

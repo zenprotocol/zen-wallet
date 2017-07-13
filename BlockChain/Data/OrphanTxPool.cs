@@ -8,31 +8,22 @@ using System;
 
 namespace BlockChain.Data
 {
-	public class OrphanTxPool : HashDictionary<Types.Transaction>
+    public class OrphanTxPool : TxPoolBase<Types.Transaction>
 	{
-		public void RemoveDependencies(byte[] txHash)
+        public override IEnumerable<Tuple<IPool, byte[]>> GetDependencies(byte[] txHash)
 		{
-			if (ContainsKey(txHash))
+			foreach (var item in this)
 			{
-				BlockChainTrace.Information("orphan tx removed from orphan pool", txHash);
-				Remove(txHash);
-				foreach (var dep in GetOrphansOf(txHash).ToList())
+				if (item.Value.inputs.Any(t => t.txHash.SequenceEqual(txHash)))
 				{
-					BlockChainTrace.Information("orphan tx dependency removed from orphan pool", txHash);
-					RemoveDependencies(dep);
+					yield return new Tuple<IPool, byte[]>(this, item.Key);
 				}
 			}
 		}
 
-		public IEnumerable<byte[]> GetOrphansOf(byte[] txHash)
+        public override bool IsDoubleSpend(Types.Transaction t, IEnumerable<Types.Outpoint> spentOutputs)
 		{
-			foreach (var item in this)
-			{
-				if (item.Value.inputs.Count(t => t.txHash.SequenceEqual(txHash)) > 0)
-				{
-					yield return item.Key;
-				}
-			}
+            return t.inputs.Any(_t => spentOutputs.Contains(_t));
 		}
-	}
+    }
 }

@@ -23,6 +23,7 @@ namespace Wallet
 					return;
 
 				var txResultEnum = App.Instance.Node.Transmit(_Tx);
+
 				switch (txResultEnum)
 				{
 					case BlockChain.BlockChain.TxResultEnum.Accepted:
