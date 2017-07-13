@@ -2,21 +2,13 @@ using System;
 using System.Collections.Generic;
 using BlockChain.Data;
 using Consensus;
-using Store;
+using System.Linq;
 
 namespace Wallet.core
 {
-	public class ResetEventArgs
-	{
-		public TxDeltaItemsEventArgs TxDeltaList { get; set; }
-	}
-
-	public class TxDeltaItemsEventArgs : List<TxDelta>
-	{
-	}
-
 	public class AssetDeltas : HashDictionary<long>
 	{
+        
 	}
 
 	public class TxDelta
@@ -27,7 +19,7 @@ namespace Wallet.core
 		public AssetDeltas AssetDeltas { get; set; }
 		public DateTime Time { get; set; }
 
-		public TxDelta(TxStateEnum txState, byte[] txHash, Types.Transaction transaction, AssetDeltas assetDeltas) : this(txState, txHash, transaction, assetDeltas, DateTime.Now)
+		public TxDelta(TxStateEnum txState, byte[] txHash, Types.Transaction transaction, AssetDeltas assetDeltas) : this(txState, txHash, transaction, assetDeltas, DateTime.Now.ToUniversalTime())
 		{
 		}
 

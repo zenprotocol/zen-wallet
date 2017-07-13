@@ -60,6 +60,7 @@ namespace Wallet
 			this.txtContractCode = new global::Gtk.TextView();
 			this.txtContractCode.CanFocus = true;
 			this.txtContractCode.Name = "txtContractCode";
+			this.txtContractCode.WrapMode = ((global::Gtk.WrapMode)(3));
 			this.GtkScrolledWindow1.Add(this.txtContractCode);
 			this.hbox2.Add(this.GtkScrolledWindow1);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.GtkScrolledWindow1]));

@@ -5,7 +5,7 @@ namespace Wallet
 {
 	public class MainAreaController : Singleton<MainAreaController>
 	{
-		private const int DEFAULT_MENU_TOP_IDX = 1;
+		private const int DEFAULT_MENU_TOP_IDX = 0;
 
 		private Type DEFAULT_CONTROL = typeof(LogLayout);//Wallet);
 

@@ -2,29 +2,31 @@
 using System.Linq;
 using System.Collections.Generic;
 using Consensus;
+using Store;
 
 namespace BlockChain.Data
 {
-	public class ICTxPool : TxPoolBase
-	{
-		public TxPool TxPool { get; set; }
-
-		public void Purge(HashSet activeContracts, List<Tuple<Types.Outpoint, Types.Output>> utxos, Types.BlockHeader blockHeader)
+    public class ICTxPool : KnownTxPool
+    {
+		public override IEnumerable<Tuple<IPool, byte[]>> GetDependencies(byte[] txHash)
 		{
-			foreach (var key in Keys.ToList())
+			foreach (var item in this)
 			{
-				var tx = this[key];
-				var contractHash = ((Types.OutputLock.ContractLock)tx.pInputs.Head.Item2.@lock).contractHash;
-
-				if (activeContracts.Contains(contractHash) && ContractHelper.IsTxValid(tx, contractHash, utxos, blockHeader))
+				if (item.Value.pInputs.Select(t => t.Item1).Any(t => t.txHash.SequenceEqual(txHash)))
 				{
-					Remove(key);
-					TxPool.Add(key, tx);
-					new TxMessage(key, tx, TxStateEnum.Unconfirmed).Publish();
-					new HandleOrphansOfTxAction(key).Publish();
-					// todo check if ptx **activates a contract** and update contractpool if it does
+					yield return new Tuple<IPool, byte[]>(this, item.Key);
 				}
 			}
+
+			foreach (var item in OrphanTxPool.GetDependencies(txHash))
+			{
+				yield return item;
+			}
 		}
-	}
+
+		public override bool IsDoubleSpend(TransactionValidation.PointedTransaction t, IEnumerable<Types.Outpoint> spentOutputs)
+		{
+			return t.pInputs.Select(_t => _t.Item1).Any(_t => spentOutputs.Contains(_t));
+		}
+    }
 }

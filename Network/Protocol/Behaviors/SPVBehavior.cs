@@ -6,6 +6,7 @@ using NBitcoin.Protocol.Behaviors;
 using NBitcoin;
 using Consensus;
 using System.Linq;
+using BlockChain.Data;
 
 namespace NBitcoin.Protocol.Behaviors
 {
@@ -89,7 +90,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 				foreach (var item in invPayload.Where(i => i.Type == InventoryType.MSG_TX))
 				{
-					var tx = _BlockChain.GetTransaction(item.Hash);
+					var tx = new GetTxAction() { TxHash = item.Hash }.Publish().Result;
 
 					if (tx == null)
 					{
@@ -104,7 +105,7 @@ namespace NBitcoin.Protocol.Behaviors
 			{
 				foreach (var inventory in getData.Inventory.Where(i => i.Type == InventoryType.MSG_TX))
 				{
-					var tx = _BlockChain.GetTransaction(inventory.Hash);
+					var tx = new GetTxAction() { TxHash = inventory.Hash }.Publish().Result;
 
 					if (tx != null)
 					{
@@ -115,7 +116,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 			message.IfPayloadIs<Types.Transaction>(tx =>
 			{
-				switch (_BlockChain.HandleTransaction(tx))
+				switch (new HandleTransactionAction() { Tx = tx }.Publish().Result)
 				{
 					case BlockChain.BlockChain.TxResultEnum.Accepted:
 						foreach (var other in Nodes)
@@ -132,8 +133,8 @@ namespace NBitcoin.Protocol.Behaviors
 							Message = "tx"
 						});
 						break;
-					case BlockChain.BlockChain.TxResultEnum.OrphanMissingInputs:
-					case BlockChain.BlockChain.TxResultEnum.OrphanIC:
+					case BlockChain.BlockChain.TxResultEnum.Orphan:
+					case BlockChain.BlockChain.TxResultEnum.InactiveContract:
 					case BlockChain.BlockChain.TxResultEnum.DoubleSpend:
 					case BlockChain.BlockChain.TxResultEnum.Known:
 						break;

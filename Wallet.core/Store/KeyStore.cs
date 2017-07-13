@@ -15,7 +15,7 @@ namespace Wallet.core.Store
 
 	public class KeyStore : MsgPackStore<Key>
 	{
-		public KeyStore() : base("key")
+		public KeyStore() : base("wallet-key")
 		{
 		}
 
@@ -57,8 +57,8 @@ namespace Wallet.core.Store
 		public List<Key> List(TransactionContext context, bool? used = null, bool? isChange = null)
 		{
 			return All (context)
-				.Where (v => (!used.HasValue || v.Value.Used == used.Value) && (!isChange.HasValue || v.Value.Change == isChange.Value))
-				.Select (t => t.Value)
+				.Where (v => (!used.HasValue || v.Item2.Used == used.Value) && (!isChange.HasValue || v.Item2.Change == isChange.Value))
+				.Select (t => t.Item2)
 				.ToList ();
 		}
 

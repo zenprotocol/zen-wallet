@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Consensus;
 using Wallet.core.Data;
+using System.Linq;
 
 namespace Wallet
 {
@@ -21,22 +22,6 @@ namespace Wallet
 			var i = 0;
 			int selectedIdx = 0;
 			var keys = new Dictionary<string, byte[]>();
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata)
-			{
-				keys[_asset.Value.Caption] = _asset.Key;
-
-				if (WalletController.Instance.AssetType.Caption == _asset.Value.Caption)
-				{
-					selectedIdx = i;
-					asset = _asset.Key;
-				}
-				else
-				{
-					i++;
-				}
-
-				dialogcombofieldAsset.ComboBox.AppendText(_asset.Value.Caption);
-			}
 
 			Gtk.TreeIter iter;
 			dialogcombofieldAsset.ComboBox.Model.IterNthChild(out iter, selectedIdx);
@@ -46,10 +31,12 @@ namespace Wallet
 			{
 				var comboBox = sender as Gtk.ComboBox;
 
-				comboBox.GetActiveIter(out iter);
-				var value = new GLib.Value();
-				comboBox.Model.GetValue(iter, 0, ref value);
-				asset = keys[value.Val as string];
+                if (comboBox.GetActiveIter(out iter))
+                {
+                    var value = new GLib.Value();
+                    comboBox.Model.GetValue(iter, 0, ref value);
+                    asset = keys[value.Val as string];
+                }
 			};
 
 			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
@@ -95,7 +82,7 @@ namespace Wallet
 				}
 				else
 				{
-					labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[asset];
+                    labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(asset).Result;
 				}
 			};
 

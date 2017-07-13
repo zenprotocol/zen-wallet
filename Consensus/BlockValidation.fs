@@ -90,7 +90,26 @@ let checkContractMerkleRoot block =
     //stub
     true
 
+
 type BlockContext = {difficulty: Difficulty}
+
+let coinbaseClaimable (block:Block) (contractSacs:Map<Hash,uint64>) = 
+    let reward = uint64 <| ChainParameters.rewardInBlock block.header.blockNumber
+    let feeOutputs =
+        block.transactions.Tail |> 
+        List.map (fun ptx -> ptx.outputs) |> 
+        List.concat |>
+        List.filter
+            (fun output ->
+                match output with
+                | {lock=FeeLock _} -> true
+                | _ -> false)
+    let feeMap = spendMap feeOutputs
+    let sacs = Map.toList contractSacs |> List.sumBy snd
+    let zenFee = feeMap.TryFind(zhash)
+    if zenFee = None then feeMap.Add (zhash, sacs + reward)
+    else feeMap.Add (zhash, zenFee.Value + sacs + reward)
+
 
 let validateBlock blockcontext (block:Block) =
    checkHeader block.header &&

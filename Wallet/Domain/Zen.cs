@@ -48,17 +48,23 @@ namespace Wallet
 			return String.Format(Formats.Money, Value);
 		}
 
-		public static bool IsValidText(string text)
+		public static bool IsValidText(string text, out Zen zen)
 		{
 			var parts = text.Trim().Split('.');
+            zen = null;
 
 			if (parts.Length == 2 && parts[1].Length > 8)
 			{
 				return false;
 			}
 
-			decimal temp;
-			return decimal.TryParse(text, out temp);
+			long kalapas;
+			var isValid = long.TryParse(text, out kalapas);
+
+            if (isValid)
+                zen = new Zen(kalapas);
+
+            return isValid;
 		}
 	}
 }

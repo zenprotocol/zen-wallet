@@ -1,20 +1,59 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Consensus;
 using ContractGenerator;
 using Gtk;
 using Infrastructure;
 
 namespace Wallet
 {
-	public class ContractController : Singleton<ContractController>
+    public class ContractActivationResult
+    {
+        public enum ResultEnum
+        {
+            Success,
+            NotEnoughZen,
+            Error,
+        }
+
+        public ResultEnum Result { get; set; }
+        public BlockChain.BlockChain.TxResultEnum TxResult { get; set; }
+    }
+
+	public class ContractController
 	{
 		byte[] _Code;
 		byte[] _Hash;
-		public ContractView ContractView { set; get; }
+
+        ContractView _ContractView;
+
+		public ContractController(ContractView contractView)
+        {
+            _ContractView = contractView;
+        }
+
+        Func<ulong, byte[], byte[], ContractActivationResult> ActivateContract = (kalapas, code, secureToken) =>
+        {
+            Types.Transaction tx;
+            if (!App.Instance.Wallet.SacrificeToContract(code, kalapas, out tx, secureToken))
+            {
+                return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.NotEnoughZen };
+            }
+
+            var txResult = App.Instance.Node.Transmit(tx);
+
+            if (txResult != BlockChain.BlockChain.TxResultEnum.Accepted)
+            {
+                return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.Error, TxResult = txResult };
+            }
+
+            return new ContractActivationResult() { Result = ContractActivationResult.ResultEnum.Success };
+        };
 
 		public void CreateOrExtend() {
-			new ContractActivation().ShowDialog(_Hash, _Code);
+			new ContractActivation().ShowDialog(_Hash, _Code, ActivateContract);
 		}
 
 		public void UpdateContractInfo(string contractText)
@@ -22,8 +61,8 @@ namespace Wallet
 			_Code = Encoding.ASCII.GetBytes(contractText);
 			_Hash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractText));
 
-			ContractView.Hash = _Hash;
-			ContractView.IsActive = App.Instance.Wallet.IsContractActive(_Hash);
+			_ContractView.Hash = _Hash;
+			_ContractView.IsActive = App.Instance.Wallet.IsContractActive(_Hash);
 		}
 
 		public void Save()
@@ -36,7 +75,7 @@ namespace Wallet
 
 			if (filechooser.Run() == (int)ResponseType.Accept)
 			{
-				File.WriteAllText(filechooser.Filename, ContractView.Code);
+				File.WriteAllText(filechooser.Filename, _ContractView.Code);
 			}
 
 			filechooser.Destroy();
@@ -51,7 +90,7 @@ namespace Wallet
 
 			if (filechooser.Run() == (int)ResponseType.Accept)
 			{
-				ContractView.Code = File.ReadAllText(filechooser.Filename);
+				_ContractView.Code = File.ReadAllText(filechooser.Filename);
 			}
 
 			filechooser.Destroy();

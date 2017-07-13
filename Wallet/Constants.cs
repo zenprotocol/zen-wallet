@@ -50,7 +50,7 @@ namespace Wallet.Constants
 		public static String Sent = "Sent";
 		public static String Date = "Date";
 		public static String Balance = "Balance";
-		public static String TransactionId = "Transaction ID";
+		public static String TransactionId = "Status";
 		public static String TotalReceived = "Total Received";
 		public static String TotalBalance = "Total Balance";
 		public static String TotalSent = "Total Sent";
