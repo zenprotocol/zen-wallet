@@ -62,6 +62,10 @@ namespace Wallet
 				notebook1.Page = RECEIVE_PAGE;
 			};
 
+			buttonKeys.Clicked += delegate {
+				new KeysDialog().ShowDialog();
+			};
+
 			notebook1.ShowTabs = false;
 
 			Init();

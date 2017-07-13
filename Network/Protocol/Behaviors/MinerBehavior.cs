@@ -160,16 +160,14 @@ namespace NBitcoin.Protocol.Behaviors
 	{
 		ConcurrentDictionary<byte[], BlockBroadcast> _HashToBlock = new ConcurrentDictionary<byte[], BlockBroadcast>(new ByteArrayComparer());
 		ConcurrentDictionary<ulong, BlockBroadcast> _PingToBlock = new ConcurrentDictionary<ulong, BlockBroadcast>();
-		private Miner _Miner;
 
-		public MinerBehavior(Miner miner) : this(miner, new BlockBroadcastHub()) {
+		public MinerBehavior() : this(new BlockBroadcastHub())
+		{
 		}
 
-		private MinerBehavior(Miner miner, BlockBroadcastHub blockBroadcastHub) 
+		MinerBehavior(BlockBroadcastHub blockBroadcastHub) 
 		{
 			_BlockBroadcastHub = blockBroadcastHub;
-			_Miner = miner;
-			_Miner.BlockBroadcastHub = _BlockBroadcastHub;
 
 			foreach (var tx in _BlockBroadcastHub.BroadcastedBlock)
 			{
@@ -184,6 +182,11 @@ namespace NBitcoin.Protocol.Behaviors
 //				_BlockBroadcastHub.BroadcastBlockAsync (Message.Block);
 //			}));
 		}
+
+        public void BroadcastBlock(Types.Block bk)
+        {
+            _BlockBroadcastHub.BroadcastBlockAsync(bk);
+        }
 
 		private readonly BlockBroadcastHub _BlockBroadcastHub;
 		public BlockBroadcastHub BlockBroadcastHub
@@ -230,15 +233,15 @@ namespace NBitcoin.Protocol.Behaviors
 			}
 			return result;
 		}
+
 		void AttachedNode_StateChanged(Node node, NodeState oldState)
 		{
 			if (node.State == NodeState.HandShaked)
 			{
 				_BlockBroadcastHub.Nodes.TryAdd(node, node);
-				AnnounceAll();
 			}
 		}
-			
+
 		private void AnnounceAll()
 		{
 			foreach (var broadcasted in _HashToBlock)
@@ -278,7 +281,7 @@ namespace NBitcoin.Protocol.Behaviors
 		Timer _Flush;
 		protected override void AttachCore()
 		{
-			AttachedNode.StateChanged += AttachedNode_StateChanged;
+            AttachedNode.StateChanged += AttachedNode_StateChanged;
 			AttachedNode.MessageReceived += AttachedNode_MessageReceived;
 			_Flush = new Timer(o =>
 			{
@@ -288,7 +291,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		protected override void DetachCore()
 		{
-			AttachedNode.StateChanged -= AttachedNode_StateChanged;
+            AttachedNode.StateChanged -= AttachedNode_StateChanged;
 			AttachedNode.MessageReceived -= AttachedNode_MessageReceived;
 
 			Node unused;
@@ -315,7 +318,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 		public override object Clone()
 		{
-			return new MinerBehavior(_Miner, _BlockBroadcastHub);
+			return new MinerBehavior(_BlockBroadcastHub);
 		}
 
 		public IEnumerable<BlockBroadcast> Broadcasts

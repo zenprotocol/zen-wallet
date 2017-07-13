@@ -7,15 +7,33 @@ using Wallet.core;
 using Wallet.core.Data;
 using Consensus;
 using Wallet.Constants;
+using Newtonsoft.Json.Linq;
+using Wallet;
 
 namespace Wallet
 {
+    public class WitnessData
+    {
+		public byte[] Initial { get; set; }
+		public byte[] Final { get; set; }
+	}
+
 	public class SendInfo
 	{
 		public bool Signed { get; set; }
-		public BlockChain.BlockChain.TxResultEnum? Result { get; set; }
+		public bool AutoTxCreated { get; set; }
+        public bool NeedAutoTx = false;
+        public WitnessData WitnessData { get; set; }
+
+		public BlockChain.BlockChain.TxResultEnum? TxResult { get; set; }
+		public BlockChain.BlockChain.TxResultEnum? AutoTxResult { get; set; }
 
 		public byte[] Asset
+		{
+			get; set;
+		}
+
+		public byte[] SecureToken
 		{
 			get; set;
 		}
@@ -30,6 +48,16 @@ namespace Wallet
 			get; set;
 		}
 
+        public JObject Data
+		{
+			get; set;
+		}
+
+		public bool DataValid
+		{
+			get; set;
+		}
+
 		public bool HasEnough
 		{
 			get; set;
@@ -39,20 +67,25 @@ namespace Wallet
 		{
 			get
 			{
-				return Amount > 0 && Destination != null && Asset != null && HasEnough;
+                return Amount > 0 && Destination != null && Asset != null && HasEnough && (Data == null || DataValid);
 			}
 		}
 
-		public SendInfo()
+		public void Reset()
 		{
 			Signed = false;
-			Result = null;
+            NeedAutoTx = false;
+			TxResult = null;
+            AutoTxResult = null;
+            WitnessData = null;
 		}
 	}
 
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class WalletSendLayout : WidgetBase, IPortfolioVIew
+    public partial class WalletSendLayout : WidgetBase, IPortfolioVIew, IAssetsView
 	{
+        readonly DeltasController _DeltasController;
+        readonly AssetsController _AssetsController;
 		public static SendInfo SendInfo
 		{
 			get; private set;
@@ -64,34 +97,109 @@ namespace Wallet
 			get { return _Tx; }
 		}
 
-		AssetDeltas _AssetDeltas = null;
-		ulong _AssetBalance = 0;
+        byte[] _CurrentAsset;
+        UpdatingStore<byte[]> _AssetsStore = new UpdatingStore<byte[]>(0, typeof(byte[]), typeof(string));
+        UpdatingStore<byte[]> _AssetsStoreSecureToken = new UpdatingStore<byte[]>(0, typeof(byte[]), typeof(string));
+
+		public ICollection<AssetMetadata> Assets 
+        { 
+            set 
+            {
+                Gtk.Application.Invoke(delegate
+                {
+                    foreach (var _asset in value)
+                    {
+                        var iter = _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
+
+                        if (_CurrentAsset != null && _asset.Asset.SequenceEqual(_CurrentAsset))
+                        {
+                            comboboxAsset.SetActiveIter(iter);
+                        }
+
+                        _AssetsStoreSecureToken.AppendValues(_asset.Asset, _asset.Display);
+                    }
+                });
+            } 
+        }
+
+        public AssetMetadata AssetUpdated
+        {
+            set
+            {
+                Gtk.Application.Invoke(delegate
+                {
+                    _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                    _AssetsStoreSecureToken.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+
+                    if (_CurrentAsset != null && _CurrentAsset.SequenceEqual(value.Asset))
+                    {
+                        Gtk.Application.Invoke(delegate
+                        {
+                            labelSelectedAsset.Text = value.Display;
+                            labelSelectedAsset1.Text = value.Display;
+                        });
+                    }
+                });
+            }
+        }
+
+        AssetDeltas _AssetDeltas = null;
+		long _AssetBalance = 0;
 
 		public WalletSendLayout()
 		{
 			this.Build();
+
 			SendInfo = new SendInfo();
+
+			_DeltasController = new DeltasController(this);
+			_AssetsController = new AssetsController(this);
 
 			_Tx = null;
 			buttonSignAndReview.Sensitive = false;
 
-			buttonPaste.Clicked += delegate {
-				var clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
-				var target = Gdk.Atom.Intern("text/plain", true);
-				var selection = clipboard.WaitForContents(target);
-
-				if (selection != null)
+			buttonPaste.Clicked += delegate
+			{
+				try
 				{
-					entryDestination.Text = System.Text.Encoding.UTF8.GetString(selection.Data, 0, selection.Data.Length);
+					var clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", true));
+					entryDestination.Text = clipboard.WaitForText();
 				}
+				catch { }
 			};
+
+			buttonPasteData.Clicked += delegate
+			{
+				try
+				{
+					var clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", true));
+					txtData.Buffer.Text = clipboard.WaitForText();
+				}
+				catch { }
+			};
+
+			vboxMainInner.Remove(eventboxData);
+			vboxMainInner.Remove(eventboxSecureToken);
 
 			entryDestination.Changed += (sender, e) =>
 			{
 				try
 				{
-					SendInfo.Destination = new Address(((Entry)sender).Text);
+					var address = new Address(((Entry)sender).Text);
+					SendInfo.Destination = address;
 					labelDestinationError.Text = "";
+
+					vboxMainInner.Remove(eventboxData);
+					vboxMainInner.Remove(eventboxSecureToken);
+
+                    if (address.AddressType == AddressType.Contract)
+                    {
+                        //vboxMainInner.Add(eventboxSecureToken);
+						//vboxMainInner.ReorderChild(eventboxSecureToken, 1);
+
+						vboxMainInner.Add(eventboxData);
+						vboxMainInner.ReorderChild(eventboxData, 1);
+					}
 				}
 				catch
 				{
@@ -101,6 +209,35 @@ namespace Wallet
 
 				buttonSignAndReview.Sensitive = SendInfo.Valid;
 			};
+
+			txtData.Buffer.Changed += (sender, e) =>
+			{
+                var text = ((TextBuffer)sender).Text;
+
+				if (string.IsNullOrWhiteSpace(text) || text.Trim().Length == 0)
+				{
+					SendInfo.Data = null;
+					SendInfo.DataValid = true;
+                    labelDataError.Text = "";
+				}
+				else
+				{
+					try
+					{
+						SendInfo.Data = JObject.Parse(text); //TODO: deeper validation
+						SendInfo.DataValid = true;
+                        labelDataError.Text = "";
+					}
+					catch
+					{
+						SendInfo.Data = null;
+						SendInfo.DataValid = false;
+						labelDataError.Text = "Invalid data";
+					}
+				}
+
+				buttonSignAndReview.Sensitive = SendInfo.Valid;
+            };
 
 			entryAmount.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
 			entryAmount.ModifyFont(Constants.Fonts.ActionBarSmall);
@@ -115,14 +252,15 @@ namespace Wallet
 				}
 				else
 				{
-					if (!Zen.IsValidText(text))
+                    Zen zen;
+					if (!Zen.IsValidText(text, out zen))
 					{
 						SendInfo.Amount = 0;
 						labelAmountError.Text = "Invalid amount";
 					}
 					else
 					{
-						SendInfo.Amount = new Zen(text).Kalapas;
+						SendInfo.Amount = zen.Kalapas;
 						CheckAssetAmount();
 					}
 				}
@@ -130,102 +268,171 @@ namespace Wallet
 				buttonSignAndReview.Sensitive = SendInfo.Valid;
 			};
 
-			Apply((Label label) =>
-			{
-				label.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
-				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, labelDestinationError, labelAmountError);
+            Apply((Label label) =>
+            {
+                label.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
+                label.ModifyFont(Constants.Fonts.ActionBarSmall);
+            }, labelDestinationError, labelDataError, labelAmountError);
 
 			Apply((EventBox eventbox) =>
 			{
 				eventbox.ModifyBg(StateType.Normal, Constants.Colors.Textbox.Gdk);
-			}, eventboxDestination, eventboxAsset, eventboxAmount);
+            }, eventboxDestination, eventboxData, eventboxSecureToken, eventboxAsset, eventboxAmount);
 
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarIntermediate);
-			}, labelDestination, labelAsset, labelAmount, labelBalanceValue);
+			}, labelDestination, labelData, labelAsset, labelSecureToken, labelAmount, labelBalanceValue);
 
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, labelSelectedAsset, labelSelectedAsset1, labelSelectOtherAsset, labelBalance);
+            }, labelSelectedAsset, labelSelectedAsset1, labelSelectOtherAsset, labelSelectSecureToken, labelBalance);
 
 			Apply((Entry entry) =>
 			{
 				entry.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
 				entry.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, entryDestination);	
+            }, entryDestination);
+
+            txtData.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
+            txtData.ModifyFont(Constants.Fonts.ActionBarSmall);
 
 			buttonBack.Clicked += Back;
 
-			var i = 0;
-			int selectedIdx = 0;
-			var keys = new Dictionary<string, byte[]>();
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata)
-			{
-				keys[_asset.Value.Caption] = _asset.Key;
+			comboboxAsset.Model = _AssetsStore;
+			var textRenderer = new CellRendererText();
+			comboboxAsset.PackStart(textRenderer, false);
+			comboboxAsset.AddAttribute(textRenderer, "text", 1);
 
-				if (WalletController.Instance.AssetType.Caption == _asset.Value.Caption)
-				{
-					SendInfo.Asset = _asset.Key;
-					selectedIdx = i;
-				}
-				else
-				{
-					i++;
-				}
+			var secureTokenComboboxStore = new ListStore(typeof(byte[]), typeof(string));
 
-				comboboxAsset.AppendText(_asset.Value.Caption);
-			}
+			comboboxSecureToken.Model = secureTokenComboboxStore;
+			var textRendererSecukreToken = new CellRendererText();
+			comboboxSecureToken.PackStart(textRendererSecukreToken, false);
+			comboboxSecureToken.AddAttribute(textRendererSecukreToken, "text", 1);
 
-			TreeIter iter;
-			comboboxAsset.Model.IterNthChild(out iter, selectedIdx);
-			comboboxAsset.SetActiveIter(iter);
+            secureTokenComboboxStore.AppendValues(new byte[] {}, "None");
 
 			comboboxAsset.Changed += (sender, e) =>
 			{
 				var comboBox = sender as Gtk.ComboBox;
+                TreeIter iter;
 
-				comboBox.GetActiveIter(out iter);
-				var value = new GLib.Value();
-				comboBox.Model.GetValue(iter, 0, ref value);
+                if (comboBox.GetActiveIter(out iter))
+                {
+                    var value = new GLib.Value();
+                    comboBox.Model.GetValue(iter, 0, ref value);
+                    byte[] asset = value.Val as byte[];
+                    SendInfo.Asset = asset;
+                }
+                else
+                {
+                    SendInfo.Asset = null;
+				}
 
-				SendInfo.Asset = keys[value.Val as string]; 
-				var assetType = App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+                var assetMatadataList = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(SendInfo.Asset));
 
-				labelSelectedAsset.Text = labelSelectedAsset1.Text = assetType.Caption;
-				imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
+                if (assetMatadataList.Count() != 0)
+                {
+					labelSelectedAsset.Text = assetMatadataList.First().Display;
+					labelSelectedAsset1.Text = assetMatadataList.First().Display;
+				}
 
 				UpdateBalance();
+			};
+
+            comboboxSecureToken.Changed += (sender, e) =>
+			{
+			    var comboBox = sender as Gtk.ComboBox;
+			    TreeIter iter;
+                if (comboBox.GetActiveIter(out iter))
+                {
+                    var value = new GLib.Value();
+                    comboBox.Model.GetValue(iter, 0, ref value);
+                    byte[] asset = value.Val as byte[];
+                    SendInfo.SecureToken = asset;
+                }
+                else
+                {
+                    SendInfo.SecureToken = null;
+                }
 			};
 
 			UpdateBalance();
 
 			buttonSignAndReview.Clicked += delegate {
-				SendInfo.Result = null;
+                SendInfo.Reset();
 
-				SendInfo.Signed = App.Instance.Wallet.Sign(
-					SendInfo.Destination,
-					SendInfo.Asset,
-					SendInfo.Amount,
-					out _Tx
-				);
+                if (SendInfo.Destination.AddressType == AddressType.Contract && SendInfo.Data != null)
+                {
+                    try
+                    {
+                        var data = SendInfo.Data;
 
-				if (SendInfo.Signed)
+                        byte[] firstData = null;
+
+                        if (data["first"] is JObject)
+                        {
+                            byte[] signature;
+
+                            var pubkey = Convert.FromBase64String(data["first"]["pubkey"].ToString());
+                            var toSign = Convert.FromBase64String(data["first"]["toSign"].ToString());
+
+                            if (!App.Instance.Wallet.SignData(pubkey, toSign, out signature))
+                            {
+                                labelDataError.Text = "Could not sign data";
+                                return;
+                            }
+
+                            byte[] _data = Convert.FromBase64String(data["first"]["data"].ToString());
+
+                            firstData = _data.Concat(signature).ToArray();
+                        }
+                        else
+                        {
+                            firstData = Convert.FromBase64String(data["first"].ToString());
+                        }
+
+                        SendInfo.Destination.Data = firstData;
+
+                        if (data["second"] is JObject)
+                        {
+                            SendInfo.WitnessData = new WitnessData()
+                            {
+                                Initial = Convert.FromBase64String(data["second"]["initial"].ToString()),
+                                Final = Convert.FromBase64String(data["second"]["final"].ToString())
+                            };
+
+                            SendInfo.NeedAutoTx = true;
+                        }
+                    } catch {
+                        labelDataError.Text = "Could not parse data";
+                        return;
+                    }
+                }
+
+                SendInfo.Signed = App.Instance.Wallet.Sign(
+                    SendInfo.Destination,
+                    SendInfo.Asset,
+                    SendInfo.Amount,
+                    out _Tx
+                );
+
+				if (!SendInfo.Signed)
 				{
-					FindParent<Notebook>().Page = 3;
-					FindParent<WalletLayout>().FindChild<WalletSendConfirmationLayout>().Init();
+                    labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result;
+					return;
 				}
-				else
-				{
-					labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
-				}
+
+                FindParent<Notebook>().Page = 3;
+                FindParent<WalletLayout>().FindChild<WalletSendConfirmationLayout>().Init();
 			};
 
-			PortfolioController.Instance.AddVIew(this);
+            //Assets' images not implemented, remove ui elements
+            hboxAsset.Remove(hboxAsset.Children[0]);
 		}
 
 		void Back(object sender, EventArgs e)
@@ -233,43 +440,37 @@ namespace Wallet
 			FindParent<Notebook>().Page = 0;
 		}
 
-		public void Clear()
+        public AssetDeltas PortfolioDeltas
 		{
-
-		}
-
-		public void SetDeltas(AssetDeltas assetDeltas)
-		{
-			_AssetDeltas = assetDeltas;
-			UpdateBalance();
+            set
+            {
+                _AssetDeltas = value;
+                UpdateBalance();
+            }
 		}
 
 		void UpdateBalance()
 		{
-			_AssetBalance = _AssetDeltas == null || !_AssetDeltas.ContainsKey(SendInfo.Asset) ? 0 : (ulong) _AssetDeltas[SendInfo.Asset];
+            if (SendInfo.Asset == null)
+            {
+                SendInfo.Asset = Consensus.Tests.zhash;
+            }
 
-			string value;
+            _AssetBalance = _AssetDeltas != null && _AssetDeltas.ContainsKey(SendInfo.Asset) ? _AssetDeltas[SendInfo.Asset] : 0;
 
-			if (SendInfo.Asset.SequenceEqual(Tests.zhash))
-			{
-				value = new Zen(_AssetBalance).ToString();
-			}
-			else
-			{
-				value = String.Format(Formats.Money, _AssetBalance);
-			}
+			string value = SendInfo.Asset.SequenceEqual(Tests.zhash) ? new Zen(_AssetBalance).ToString() : String.Format(Formats.Money, _AssetBalance);
 
-			labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata[SendInfo.Asset]}";
+            labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result}";
 			CheckAssetAmount();
 		}
 
 		void CheckAssetAmount()
 		{
-			SendInfo.HasEnough = SendInfo.Amount <= _AssetBalance;
+			SendInfo.HasEnough = SendInfo.Amount <= (ulong)_AssetBalance && _AssetBalance > 0;
 
 			if (!SendInfo.HasEnough)
 			{
-				labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata[SendInfo.Asset];
+                labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result;
 			}
 			else
 			{

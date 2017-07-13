@@ -13,8 +13,6 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class ActionBar : WidgetBase, ActionBarView
 	{
-		private WalletController WalletController = WalletController.Instance ;
-
 		public ActionBar ()
 		{
 			this.Build ();
@@ -31,7 +29,7 @@ namespace Wallet
 			}, labelAmount, labelAmountConverted);
 
 			ButtonPressEvent (eventboxSend, () => {
-				new SendDialog(WalletController.Instance.AssetType).ShowDialog();
+				//new SendDialog(WalletController.Instance.Asset).ShowDialog();
 			});
 
 			ButtonPressEvent(eventboxReceive, () =>

@@ -1,0 +1,51 @@
+﻿@if (!string.IsNullOrEmpty(@ViewBag.Message))
+{
+    <div class="form-group">@ViewBag.Message</div>
+    <button type="button" class="btn btn-primary" onclick="window.history.back();">Back</button>
+}
+else
+{
+
+  <div class="row">
+    <div class="col-md-10">
+
+      <div class="titleSection">
+        <h1>Contract Details</h1>
+        <h5>Copy the contract code bellow and use it to activate the contract through the Zen Wallet</h5>
+      </div>
+
+      <div class="form-group">
+          <label for="amount">Compiled Contract Hash:</label>
+        <div class="row">
+          <div class="col-md-10">
+            <input readonly type="text" class="form-control" id="hash" name="hash" value="@ViewBag.Hash"/>
+          </div>
+          <div class="col-md-2">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="amount">Contract Code:</label>
+        <div class="row">
+          <div class="col-md-10">
+            <h1 id="loading">Loading</h1>
+            <textarea readonly id="code" style="display:none" rows="20" class="form-control" placeholder="Code">@ViewBag.Code</textarea>
+          </div>
+          <div class="col-md-2">
+            <button class="zen-button zen-grey-button" data-copytarget="#code">Copy</button>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+    <div class="col-md-2"></div>
+  </div>
+
+}
+
+<script>
+	$("#loading").hide()
+	$("#code").show()
+</script>

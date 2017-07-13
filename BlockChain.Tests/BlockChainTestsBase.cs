@@ -8,6 +8,9 @@ using BlockChain.Data;
 using NUnit.Framework;
 using System.IO;
 using System.Reflection;
+using static BlockChain.BlockChain;
+using static BlockChain.BlockVerificationHelper;
+using System.Threading;
 
 namespace BlockChain
 {
@@ -17,7 +20,7 @@ namespace BlockChain
 		byte[] _GenesisBlockHash;
 		IDisposable _TxMessagesListenerScope;
 		HashDictionary<TxStateEnum> _TxStates = new HashDictionary<TxStateEnum>();
-
+        HashDictionary<Tuple<ManualResetEvent, TxStateEnum>> _TxStateEvents = new HashDictionary<Tuple<ManualResetEvent, TxStateEnum>>();
 		protected BlockChain _BlockChain;
 		protected Types.Block _GenesisBlock;
 
@@ -58,6 +61,16 @@ namespace BlockChain
 			{
 				var txMessage = (TxMessage)m;
 				_TxStates[txMessage.TxHash] = ((TxMessage)m).State;
+
+                if (_TxStateEvents.ContainsKey(txMessage.TxHash))
+                {
+                    var expectedTxState = _TxStateEvents[txMessage.TxHash].Item2;
+
+                    if (((TxMessage)m).State == expectedTxState)
+                    {
+                        _TxStateEvents[txMessage.TxHash].Item1.Set();
+                    }
+                }
 			}
 			else if (m is BlockMessage)
 			{
@@ -70,11 +83,7 @@ namespace BlockChain
 
 		protected LocationEnum Location(Types.Block block)
 		{
-			using (var dbTx = _BlockChain.GetDBTransaction())
-			{
-				var key = Merkle.blockHeaderHasher.Invoke(block.header);
-				return _BlockChain.BlockStore.GetLocation(dbTx, key);
-			}
+            return new GetBlockLocationAction { Block = Merkle.blockHeaderHasher.Invoke(block.header) }.Publish().Result;
 		}
 
 		protected TxStateEnum? TxState(Types.Transaction tx)
@@ -84,13 +93,25 @@ namespace BlockChain
 			return null;
 		}
 
+        protected void RegisterTxEvent(Types.Transaction tx, TxStateEnum txState)
+        {
+            _TxStateEvents[Merkle.transactionHasher.Invoke(tx)] =
+	            new Tuple<ManualResetEvent, TxStateEnum>(
+	                new ManualResetEvent(false),
+	                txState
+	            );
+		}
+
+        protected bool WaitTxState(Types.Transaction tx)
+        {
+            return _TxStateEvents[Merkle.transactionHasher.Invoke(tx)].Item1.WaitOne(1500, false);
+		}
+
 		protected bool CheckUTXOCOntains(Types.Output output)
 		{
-			HashDictionary<List<Types.Output>> txOutputs;
-			HashDictionary<Types.Transaction> txs;
-			_BlockChain.GetUTXOSet(null, out txOutputs, out txs);
-			           
-			foreach (var item in txOutputs)
+			var utxos = new GetUTXOSetAction().Publish().Result;
+
+            foreach (var item in utxos.Item1)
 			{
 				if (item.Value.Contains(output))
 				{
@@ -100,5 +121,16 @@ namespace BlockChain
 
 			return false;
 		}
+
+        protected TxResultEnum HandleTransaction(Types.Transaction tx)
+        {
+            return new HandleTransactionAction { Tx = tx }.Publish().Result;
+        }
+
+
+        protected BkResultEnum HandleBlock(Types.Block bk)
+        {
+            return new HandleBlockAction(bk).Publish().Result.BkResultEnum;
+        }
 	}
 }

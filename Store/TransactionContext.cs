@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using DBreeze;
 using DBreeze.Transactions;
 
@@ -6,7 +7,7 @@ namespace Store
 {
 	public class TransactionContext : IDisposable
 	{
-		private DBContext _Engine;
+		DBContext _Engine;
 		public Transaction Transaction { get; private set; }
 
 		public TransactionContext(DBContext engine, Transaction transaction)

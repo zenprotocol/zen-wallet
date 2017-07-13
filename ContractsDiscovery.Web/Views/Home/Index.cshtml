@@ -1,0 +1,31 @@
+﻿@using ContractsDiscovery.Web.App_Data
+@model IEnumerable<ActiveContract>
+
+<div class="titleSection">
+	<h1>Contract Explorer</h1>
+	<h5>Browse active and inactive contracts</h5>
+</div>
+
+<table class="table zen-table">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Contract Type</th>
+			<th>Underlying</th>
+			<th>Active&nbsp;Until</th>
+			<th>Address</th>
+		</tr>
+	</thead>
+    <tbody>
+	@foreach (var item in Model)
+	{
+		<tr>
+			<td><p class="text-left">@item.AssetName</p></td>
+			<td><p class="text-left">@item.Description</p></td>
+			<td><p class="text-left">@item.Underlying</p></td>
+			<td><p class="text-left">@item.ActiveUntil</p></td>
+			<td><p class="text-left">@Html.ActionLink(@item.Address, "Index", "Contract", new { @id = @item.AddressUrl }, null)</p></td>
+		</tr>
+    }
+	</tbody>
+</table>

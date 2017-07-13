@@ -38,7 +38,7 @@ namespace Wallet
 			SetContent(senddialogstep1);
 		}
 
-		public SendDialog (AssetType asset)
+		public SendDialog (byte[] asset)
 		{
 			this.Build();
 
@@ -57,7 +57,9 @@ namespace Wallet
 //				entry.ModifyBase(Gtk.StateType.Normal, Colors.Textbox.Gdk);
 //			}, entryTo, entryAmount);
 		
-			imageCurrency.Pixbuf = Utils.ToPixbuf(Images.AssetLogo(asset.Image));
+ 
+            //App.Instance.Wallet.AssetsMetadata.
+			//imageCurrency.Pixbuf = Utils.ToPixbuf(Images.AssetLogo(asset.Image));
 		}
 			
 		public void Close() {

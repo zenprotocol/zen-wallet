@@ -75,7 +75,6 @@ namespace Wallet
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.labelAmount = new global::Gtk.Label();
 			this.labelAmount.Name = "labelAmount";
-			this.labelAmount.LabelProp = global::Mono.Unix.Catalog.GetString("label1");
 			this.hbox1.Add(this.labelAmount);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.labelAmount]));
 			w2.Position = 0;

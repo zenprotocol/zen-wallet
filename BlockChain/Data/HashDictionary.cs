@@ -35,7 +35,7 @@ namespace BlockChain.Data
 		{
 		}
 
-		public HashSet(IEnumerable<byte[]> values) : base(new ByteArrayComparer())
+		public HashSet(IEnumerable<byte[]> values) : this()
 		{
 			AddRange(values);
 		}
