@@ -9,7 +9,7 @@ namespace Store
 	{
 		System.Collections.Generic.List<TransactionContext> _List = new System.Collections.Generic.List<TransactionContext>();
 		DBreezeEngine _Engine = null;
-		ManualResetEvent _Event = new ManualResetEvent(false);
+	//	ManualResetEvent _Event = new ManualResetEvent(false);
 		string _dbName;
 
 		public DBContext(string dbName)
@@ -27,8 +27,9 @@ namespace Store
 				}
 
 				var t = new TransactionContext(this, _Engine.GetTransaction());
+
 				_List.Add(t);
-				_Event.Reset();
+				//_Event.Reset();
 
 				return t;
 			}
@@ -40,28 +41,35 @@ namespace Store
 			{
 				_List.Remove(transaction);
 
-				if (_List.Count == 0)
-				{
-					_Event.Set();
-				}
+			//	if (_List.Count == 0)
+			//	{
+					//_Event.Set();
+					Monitor.PulseAll(_List);
+			//	}
 			}
 		}
 
 		public void Dispose()
 		{
-			_Event.WaitOne();
-
-			if (_Engine != null)
+			lock(_List)
 			{
-				_Engine.Dispose();
-				_Engine = null;
+				//_Event.WaitOne();
+
+				while (_List.Count > 0)
+					Monitor.Wait(_List);
+
+				if (_Engine != null)
+				{
+					_Engine.Dispose();
+					_Engine = null;
+				}
 			}
 		}
 
-		public void Wait()
-		{
-			_Event.WaitOne();
-		}
+		//public void Wait()
+		//{
+		//	_Event.WaitOne();
+		//}
 
 	}
 }

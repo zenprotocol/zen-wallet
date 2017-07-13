@@ -1,2 +1,37 @@
-{"Values":["+SSHThfOF6MREkeSsYljBF1PBYoaMSwYSCSGbtjfqjAyPITmDsnsfO/vRjtRmCkVz+L2Dkc1mjf4sJ915C1UWw=="]}
+{
+  "Values": [
+    {
+      "Private": "eSDcO3+z2jXUTmxAdR5MeKUHucJkvX/jqfgvZywoj5m5GpEnJfyPT4pnLFOEPtDYmMhJA5OleDZvRDIk/AJ1Zw=="
+    },
+    {
+      "Private": "CCA5uIg76U4HvRuuqj5FgMGdacfTWc5Xpo4ysX29p83nzQif0vrmMIqs1DLTEUPx7ji2VaTJnSak4K7XGUSW2g=="
+    },
+    {
+      "Private": "K4k24IPcq4PUD+gqAunwGVgAZPtZkHlbxpjyXpc0PHjxCxkwllo3Ngnii7BZZ49uN13OQDezvYaFcbhsAE43Yw=="
+    },
+    {
+      "Private": "88ts06ce7c1sUh3BG7sZ8xrrnvq+Aktj5LX7+UsbKmXrnl52nv65PFelog+Y4ha3PDF7wb9NlcM9O/qg70Z05w=="
+    },
+    {
+      "Private": "R0t7XSaR0QkQu8HCzVSe8raY6PdMdDELNO4KMJZndfAAug3afvIiHxnZX70KiOuYwr+igTkU9l/RU74NwloNSA=="
+    },
+    {
+      "Private": "59aok4qFfUus/xpeHA0B12ruiIEROeTJmIRxUzFDjf03sJLIHphadQNwdxo9FO4JyrfvsWXF/JeUkBLW/Vpyog=="
+    },
+    {
+      "Private": "gU12CGApCEYIbBuNdoBjZUcXnw6otuxEkB59u/2rjNxT2afhVl4tPX5hg1MFFeQzvGubbFVpt5on6i4SkNxXQA=="
+    },
+    {
+      "Private": "6wziz9WFnKwZ/koOnUDTMwC+XjwKhySntDHQoPoTg2w/3ymnBielxwPMC1zPmO6HDpPfh/MRXE2SQaSDnZAASw=="
+    },
+    {
+      "Private": "vwR6RJNAhTBauFTC2JxVlwr3hIjPPPbv+9/5Cbko/lB2Whs6H/uSVmQ2LnSoR0KP5x8Lz+uDzqcBK+1HdDQ8qw==",
+      "Desc": "To be used by testnet-faucet"
+    },
+    {
+      "Private": "a6PTIZoZsZjLJ8uGPUtp6+PNH0ICyh9mqkevHfMpCGQhY59VOT5fCvLMSgXULY1fiHVwSX2oZ6Ld799/7s0FZw==",
+      "Desc": "To be used by demo-oracle"
+    }
+  ]
+}
 

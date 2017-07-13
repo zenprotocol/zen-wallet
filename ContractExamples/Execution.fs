@@ -21,12 +21,13 @@
 
 
 open Microsoft.FSharp.Quotations
+open Microsoft.FSharp.Quotations.Patterns;;
 open Swensen.Unquote.Operators
 open MBrace.FsPickler.Combinators
 
 // Repeated code
 open Consensus.Types
-open Authentication
+open Consensus.Authentication
 
 let auth = sign
 
@@ -105,7 +106,7 @@ open MBrace.FsPickler.Combinators
 
 // Repeated code
 open Consensus.Types
-open ContractExamples.Authentication
+open Consensus.Authentication
 let pickler = Pickler.auto<ContractExamples.Contracts.ContractFunction>
 
 
@@ -205,3 +206,34 @@ let compile (code:string) = maybe {
 
 let deserialize (bs:byte[]) = bs |> Binary.unpickle pickler
 
+type ContractMetadata =
+    public
+    | Oracle of ContractExamples.QuotedContracts.OracleParameters
+    | CallOption of ContractExamples.QuotedContracts.CallOptionParameters
+    | SecureToken of ContractExamples.QuotedContracts.SecureTokenParameters
+
+let (|ContractMetadata|_|) (name:string) (parameters:obj) =
+    match name, parameters with
+    | "calloption", (:? ContractExamples.QuotedContracts.CallOptionParameters as cparams) ->
+        Some <| CallOption (cparams)
+    | "oracle", (:? ContractExamples.QuotedContracts.OracleParameters as oparams) ->
+        Some <| Oracle (oparams)
+    | "securetoken", (:? ContractExamples.QuotedContracts.SecureTokenParameters as sparams) ->
+        Some <| SecureToken (sparams)
+    | _ -> None
+
+let tryParseContractMetadata (s:string) =
+    None // Not implemented
+
+let metadata (s:string) =
+    match s with
+    | Prefix "QQQ\n" rest ->
+        let qc = Json.unpickle quotePickler rest
+        match qc with
+        | Let (v1,Value(:? string as cType,_), Let(v2, ValueWithName(m,_,_), _)) when v1.Name = "contractType" && v2.Name= "meta" ->
+            match m with
+            | ContractMetadata cType md -> Some md
+            | _ -> None
+        | _ -> None
+    | _ ->
+        tryParseContractMetadata s

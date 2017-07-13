@@ -8,6 +8,8 @@ open QuotedContracts
 open Consensus.Types
 open Sodium
 
+type TickerItem = Oracle.TickerItem
+
 let zenAsset = Array.create 32 0uy
 let fakeControl = Array.create 32 1uy
 let fakeOracle= Array.create 32 2uy
@@ -25,16 +27,21 @@ let callParams = {
     controlAssetReturn=Consensus.Merkle.innerHash keypair.PublicKey;
     oracle=fakeOracle;
     underlying="GOOG";
-    price=1337.00M;
+    price=40.00M;
+    strike=900.00M;
     minimumCollateralRatio=0.2M;
     ownerPubKey=keypair.PublicKey
     }
+let secureParams = {destination= Consensus.Merkle.innerHash keypair.PublicKey}
 
-let quotedOracle = oracle oracleParams
+
+let quotedOracle = oracleFactory oracleParams
 let quotedCall = callOptionFactory callParams
+let quotedSecure = secureTokenFactory secureParams
 
 let compiledOracle = Swensen.Unquote.Operators.eval quotedOracle
 let compiledCall = Swensen.Unquote.Operators.eval quotedCall
+let compiledSecure = Swensen.Unquote.Operators.eval quotedSecure
 
 let BadTx = Swensen.Unquote.Operators.eval QuotedContracts.BadTx
 let utxosOf (d:Map<Outpoint, Output>) k = d.TryFind(k)
@@ -47,14 +54,22 @@ let ``Oracle contract makes BadTx when invoked with nonsense``() =
 
 let oracleOutpoint = {txHash = Array.create 32 77uy; index=0u}
 let oracleOutpointSerialized = simplePackOutpoint oracleOutpoint
-let oracleData = Array.zeroCreate<byte> 32
-Random(1234).NextBytes oracleData
+let auditMap, oracleData = Oracle.commitments
+                                [
+                                    {underlying="GOOG"; price=940.0M; timestamp=636332463397970490L};
+                                    {underlying="MSFT"; price=1243.3M; timestamp=636332463397970490L}
+                                ]
+                                [|0uy;1uy;2uy|]
+let proof = auditMap.["GOOG"] |> Oracle.pathData |> System.Text.Encoding.ASCII.GetBytes
+     
 let oracleMsg = Array.append oracleOutpointSerialized oracleData
-let oracleSig = Authentication.sign oracleMsg keypair.PrivateKey
+let oracleSig = Consensus.Authentication.sign oracleMsg keypair.PrivateKey
 let oracleWit = Array.append oracleMsg oracleSig
 let oracleOutput:Output = {lock=ContractLock (fakeOracle,[||]);spend={asset=zenAsset; amount = 50000UL}}
 let oracleOutputMap = Map.add oracleOutpoint oracleOutput Map.empty
 let oracleRes = compiledOracle (oracleWit,fakeOracle,utxosOf oracleOutputMap )
+
+let oracleOutput2 = {oracleOutput with lock=ContractLock(fakeOracle, oracleData)}
 
 [<Test>]
 let ``Oracle contract succeeds when invoked with authentication``() =
@@ -86,6 +101,7 @@ let callOutpointsSerialized = List.init 3 (fun _ -> Array.zeroCreate<byte> 33)
 List.iter (fun x -> rng.NextBytes x) callOutpointsSerialized
 let callOutpoints = List.map makeOutpoint callOutpointsSerialized 
 
+let outpointsForExercise = List.append callOutpointsSerialized [oracleOutpointSerialized]
 
 [<Test>]
 let ``Call option accepts collateral from authenticated source, increments counter``() =
@@ -147,13 +163,13 @@ let ``Call option contract Buy operation sends correct number of assets to purch
 [<Test>]
 let ``Call option contract Exercise operation sends correct amount of numeraire to exerciser``() =
     let callExercise = {
-        lock=ContractLock(fakeCall, makeExerciseData fakeReturnPubKeyHash);
+        lock=ContractLock(fakeCall, makeExerciseData fakeReturnPubKeyHash proof);
         spend={asset=fakeCall; amount=3UL }
     }
-    let callFundedData = {callInitialData with lock=ContractLock(fakeCall, makeData(20UL, 1000000UL, 1UL))}
-    let callMoreFunds = {callFunds with spend={callFunds.spend with amount=1000000UL}}
-    let utxos = utxosOf (Map.ofList <| List.zip callOutpoints [callExercise; callFundedData; callMoreFunds])
-    let msg = [|2uy|] :: callOutpointsSerialized |> Array.concat
+    let callFundedData = {callInitialData with lock=ContractLock(fakeCall, makeData(20UL, 100_000_000UL, 1UL))}
+    let callMoreFunds = {callFunds with spend={callFunds.spend with amount=100_000_000UL}}
+    let utxos = utxosOf (Map.ofList <| List.zip (oracleOutpoint :: callOutpoints) [oracleOutput2; callExercise; callFundedData; callMoreFunds])
+    let msg = [|2uy|] :: outpointsForExercise |> Array.concat
     let res = compiledCall (msg, fakeCall, utxos)
 
     Assert.That((res=BadTx), Is.False)
@@ -164,7 +180,7 @@ let ``Call option contract Exercise operation sends correct amount of numeraire 
         | _ -> raise <| AssertionException (sprintf "bad purchase output: %A" puts.[0])
     Assert.That(destination, Is.EqualTo fakeReturnPubKeyHash)
     Assert.That(payoff.asset, Is.EqualTo callParams.numeraire)
-    Assert.That(payoff.amount, 3M*callParams.price |> floor |> uint64 |> Is.EqualTo)
+    Assert.That(payoff.amount, 3M*(940M-callParams.strike) |> floor |> uint64 |> Is.EqualTo)
 
 [<Test>]
 let ``Call option contract Close returns funds and control token on auth``()=
@@ -232,3 +248,15 @@ let ``Compiled raw contract deserialized correctly``() =
         let f:ContractFunction = Execution.deserialize c
         let x = f ([||],[||],fun _ -> None)
         Assert.That((x=BadTx), Is.True)
+
+[<Test>]
+let ``Quoted contract metadata extracts``()=
+    let callStr = Execution.quotedToString quotedCall
+    let m = Execution.metadata callStr
+    Assert.That(m, Is.Not.EqualTo(None))
+
+[<Test>]
+let ``Quoted secure token metadata extracts``()=
+    let secureStr = Execution.quotedToString quotedSecure
+    let m = Execution.metadata secureStr
+    Assert.That(m, Is.Not.EqualTo(None))

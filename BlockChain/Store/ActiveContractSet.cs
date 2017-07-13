@@ -4,108 +4,126 @@ using Store;
 using System.Linq;
 using BlockChain.Data;
 using System.Text;
+using Consensus;
+using Microsoft.FSharp.Core;
 
 namespace BlockChain
 {
 	public class ACSItem
 	{
 		public byte[] Hash { get; set; }
-		public string AssemblyFile { get; set; }
+		public byte[] CompiledContract { get; set; }
+        public string Code { get; set; }
 		public byte[] CostFn { get; set; }
 		public ulong KalapasPerBlock { get; set; }
 		public UInt32 LastBlock { get; set; }
 	}
 
-	public class ActiveContractSet : MsgPackStore<ACSItem>
-	{
-		public ActiveContractSet() : base("contract-set") { }
+    public class ActiveContractSet : MsgPackStore<ACSItem>
+    {
+        private const int KALAPAS_PER_BYTE = 1;
 
-		public void Add(TransactionContext dbTx, ACSItem item)
-		{
-			Put(dbTx, item.Hash, item);
-		}
+        public ActiveContractSet() : base("contract-set") { }
 
-		public HashSet Keys(TransactionContext dbTx)
-		{
-			return new HashSet(All(dbTx).Select(t => t.Value.Hash));
-		}
+        public void Add(TransactionContext dbTx, ACSItem item)
+        {
+            Put(dbTx, item.Hash, item);
+        }
 
-		public bool IsActive(TransactionContext dbTx, byte[] contractHash)
-		{
-			return ContainsKey(dbTx, contractHash);
-		}
+        //public HashSet Keys(TransactionContext dbTx)
+        //{
+        //    return new HashSet(All(dbTx).Select(t => t.Item2.Hash));
+        //}
 
-		public UInt32 LastBlock(TransactionContext dbTx, byte[] contractHash)
-		{
-			return Get(dbTx, contractHash).Value.LastBlock;
-		}
+        public bool IsActive(TransactionContext dbTx, byte[] contractHash)
+        {
+            return ContainsKey(dbTx, contractHash);
+        }
 
-		public void Extend(TransactionContext dbTx, byte[] contractHash, ulong kalapas)
-		{
-			var acsItem = Get(dbTx, contractHash);
-			acsItem.Value.LastBlock += (uint)(kalapas / acsItem.Value.KalapasPerBlock);
+        public UInt32 LastBlock(TransactionContext dbTx, byte[] contractHash)
+        {
+            return Get(dbTx, contractHash).Value.LastBlock;
+        }
 
-			Add(dbTx, acsItem.Value);
-		}
+        public bool TryExtend(TransactionContext dbTx, byte[] contractHash, ulong kalapas)
+        {
+            if (!IsActive(dbTx, contractHash))
+            {
+                return false;
+            }
 
-		public static ulong KalapasPerBlock(string fsharpCode)
-		{
-			if (string.IsNullOrEmpty(fsharpCode))
-				return 0;
-			
-			return KalapasPerBlock(Encoding.ASCII.GetBytes(fsharpCode));
-		}
+            var acsItem = Get(dbTx, contractHash);
+            acsItem.Value.LastBlock += (uint)(kalapas / acsItem.Value.KalapasPerBlock);
 
-		public static ulong KalapasPerBlock(byte[] fsharpCode)
-		{
-			if (fsharpCode == null)
-				return 0;
-			
-			return (ulong)fsharpCode.Length * 1000;
-		}
+            Add(dbTx, acsItem.Value);
 
-		public bool Activate(TransactionContext dbTx, byte[] contractCode, ulong kalapas)
-		{
-			byte[] fsharpCode;
-			ContractHelper.Extract(contractCode, out fsharpCode);
-			//	var fsharpCode = new StrongBox<byte[]>();
-			//	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
+            return true;
+        }
 
-			byte[] contractHash;
-			if (ContractHelper.Compile(contractCode, out contractHash))
-			{
-				var kalapasPerBlock = KalapasPerBlock(fsharpCode);
+        public static ulong KalapasPerBlock(string serializedContract)
+        {
+            return (ulong)serializedContract.Length * KALAPAS_PER_BYTE;
+        }
 
-				if (kalapas < kalapasPerBlock)
-				{
-					return false;
-				}
+        public bool TryActivate(TransactionContext dbTx, string contractCode, ulong kalapas, byte[] contractHash, uint blockNumber)
+        {
+            if (IsActive(dbTx, contractHash))
+            {
+                return false;
+            }
 
-				Add(dbTx, new ACSItem()
-				{
-					Hash = contractHash,
-					KalapasPerBlock = kalapasPerBlock,
-					LastBlock = Convert.ToUInt32(kalapas / kalapasPerBlock)
-				});
+          //  string fsharpCode;
+          //  ContractHelper.Extract(contractCode, out fsharpCode);
+            //	var fsharpCode = new StrongBox<byte[]>();
+            //	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
 
-				return true;
-			}
-			//	}, TaskContinuationOptions.OnlyOnRanToCompletion).Wait();
+            FSharpOption<byte[]> compiledCodeOpt;
 
-			return false;
+            try
+            {
+                compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
+            }
+            catch (Exception e)
+            {
+                BlockChainTrace.Information("Error compiling contract");
+                return false;
+            }
+
+            if (FSharpOption<byte[]>.get_IsNone(compiledCodeOpt))
+                return false;
+            
+            var compiledCode = compiledCodeOpt.Value;
+
+            var kalapasPerBlock = KalapasPerBlock(contractCode);
+
+            if (kalapas < kalapasPerBlock)
+            {
+                return false;
+            }
+
+            Add(dbTx, new ACSItem()
+            {
+                Hash = contractHash,
+                KalapasPerBlock = kalapasPerBlock,
+                LastBlock = blockNumber + Convert.ToUInt32(kalapas / kalapasPerBlock),
+                Code = contractCode,
+                CompiledContract = compiledCode
+            });
+
+            return true;
 		}
 
 		public HashDictionary<ACSItem> GetExpiringList(TransactionContext dbTx, uint blockNumber)
 		{
 #if TRACE
-			All(dbTx).Where(t => t.Value.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}", t.Key));
+			All(dbTx).Where(t => t.Item2.LastBlock == blockNumber).ToList().ForEach(t => BlockChainTrace.Information($"contract due to expire at {blockNumber}", t.Item1));
 #endif
 
 			var values = new HashDictionary<ACSItem>();
 
-			foreach (var contract in All(dbTx).Where(t => t.Value.LastBlock <= blockNumber))
+			foreach (var contract in All(dbTx).Where(t => t.Item2.LastBlock <= blockNumber))
 			{
-				values[contract.Key] = contract.Value;
+				values[contract.Item1] = contract.Item2;
 			}
 
 			return values;

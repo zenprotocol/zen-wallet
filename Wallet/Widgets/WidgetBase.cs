@@ -54,9 +54,9 @@ namespace Wallet
 			return FindParentRecursive<T>(parentWidget);
 		}
 			
-		public delegate void Apply<T>(T t) where T : Widget;
+		public delegate void Action<T>(T t) where T : Widget;
 
-		public void Apply<T>(Apply<T> apply, params T[] arr) where T : Widget
+		public void Apply<T>(Action<T> apply, params T[] arr) where T : Widget
 		{
 			foreach (T child in arr) {
 				if (child is T) {

@@ -8,7 +8,7 @@ namespace Wallet
 	{
 		private Gtk.ListStore _Store;
 
-		public KeysDialog (Action<Key> keySelected)
+		public KeysDialog ()
 		{
 			this.Build ();
 
@@ -18,17 +18,17 @@ namespace Wallet
 				CloseDialog(); 
 			};
 
-			buttonSelect.Clicked += delegate { 
-				CloseDialog(); 
-				keySelected(Selection);
+			buttonSign.Clicked += delegate { 
+				//CloseDialog(); 
+				new SignMessageDialog(Selection).ShowDialog();
 			};
 
-			buttonAdd.Clicked += delegate
-			{
-				//new AddKeyDialog(delegate {
-				//	App.Instance.Wallet.Import();
-				//}).ShowDialog();
-			};
+			//buttonAdd.Clicked += delegate
+			//{
+			//	new AddKeyDialog(delegate {
+			//		App.Instance.Wallet.Import();
+			//	}).ShowDialog();
+			//};
 		}
 
 		private Key Selection { 
@@ -59,15 +59,15 @@ namespace Wallet
 
 		private void Populate(Gtk.TreeView treeView, bool? used = null, bool? isChange = null)
 		{
-			//foreach (var key in App.Instance.Wallet.ListKeys(used, isChange))
-			//{
-			//	_Store.AppendValues(key, DisplayKey(key.Address), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
-			//};
+			foreach (var key in App.Instance.Wallet.GetKeys())
+			{
+				_Store.AppendValues(key, key.Address.ToString(), DisplayKey(key.Private), key.Used ? "Yes" : "No", key.Change ? "Yes" : "No");
+			};
 		}
 
 		private String DisplayKey(byte[] key)
 		{
-			return key == null ? "" : System.Convert.ToBase64String(key);//.Substring (0, 15);
+			return key == null ? "" : System.Convert.ToBase64String(key);//.Substring (0, 15
 		}
 	}
 }

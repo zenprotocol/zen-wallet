@@ -12,13 +12,13 @@ namespace BlockChain
 		[Test]
 		public void ShouldRejectFutureTimestampedBlock()
 		{
-			_BlockChain.HandleBlock(_GenesisBlock);
+			HandleBlock(_GenesisBlock);
 			var block = Child(_GenesisBlock, 1);
-			Assert.That(_BlockChain.HandleBlock(block), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
+			Assert.That(HandleBlock(block), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 			block = Child(block, 2);
-			Assert.That(_BlockChain.HandleBlock(block), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
+			Assert.That(HandleBlock(block), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 			block = Child(block, 3);
-			Assert.That(_BlockChain.HandleBlock(block), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Rejected));
+			Assert.That(HandleBlock(block), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Rejected));
 		}
 
 		Types.Block Child(Types.Block bk, int addHours)

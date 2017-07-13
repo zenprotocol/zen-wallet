@@ -14,7 +14,7 @@ namespace Wallet
 		{
 			this.Build ();
 
-			WalletController.Instance.WalletView = this;
+			//WalletController.Instance.WalletView = this;
 
 //			ExposeEvent += (object o, ExposeEventArgs args) => {
 //				ActionBar actionBar = FindChild<ActionBar>();

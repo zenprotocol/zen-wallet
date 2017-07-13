@@ -48,7 +48,7 @@ namespace BlockChain
 
 		internal static void Information(string info, Consensus.Types.Block bk)
 		{
-			Information(info, Consensus.Merkle.blockHeaderHasher.Invoke(bk.header));
+            Information(info, Consensus.Merkle.blockHeaderHasher.Invoke(bk.header));
 		}
 
 		internal static void Information(string info, byte[] key)

@@ -1,0 +1,30 @@
+﻿@using ContractsDiscovery.Web.App_Data
+@using ContractsDiscovery.Web.App_Code
+@model IEnumerable<Ticker>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ticker</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td><p class="text-left">@item.Name</p></td>
+            <td><p class="text-left">@item.Value</p></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<!--form>
+  <div class="form-group">
+    <small id="help" class="form-text text-muted">@ViewData["Time"]</small>
+    <input type="text" class="form-control" id="data" aria-describedby="help" value="@ViewData["MerkleRoot"]">
+  </div>
+</form-->
+
+<button type="button" class="btn btn-primary" onclick="window.history.back();">Back</button>
