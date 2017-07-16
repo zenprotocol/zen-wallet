@@ -258,10 +258,8 @@ namespace Miner
 				}
 			}
 
-            ///////////////////////////////////////////
-            /// 
-           // if (_TransactionQueue.IsStuck)
-          //      _Hasher.Pause("temp: stuck, so - wait for txs");
+            if (_ValidatedTxs.Count == 0)
+                return; // don't allow empty blocks
 
             CalculateCoinbase();
 
