@@ -59,7 +59,6 @@
     <Compile Include="Utils.cs" />
     <Compile Include="BlockVerificationTests.cs" />
     <Compile Include="CSharpContractTests.cs" />
-    <Compile Include="MinerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

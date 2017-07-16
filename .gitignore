@@ -9,4 +9,3 @@ packaging/OSX/Zen.app
 packaging/OSX/Zen.dmg
 packaging/linux/zen.tar.gz
 .DS_Store
-.idea
