@@ -81,6 +81,10 @@
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
       <Name>Store</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Miner\Miner.csproj">
+      <Project>{9FF89573-7428-4194-9872-15D943B83CE5}</Project>
+      <Name>Miner</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
