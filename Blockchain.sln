@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}"
@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC", "Zen.RPC\Zen.RPC.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miner", "Miner\Miner.csproj", "{9FF89573-7428-4194-9872-15D943B83CE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain.Tests", "BlockChain.Tests\BlockChain.Tests.csproj", "{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -53,10 +55,6 @@ Global
 		{1D6CF29D-253C-44BB-813A-701676A1349F}.Debug|x86.Build.0 = Debug|Any CPU
 		{1D6CF29D-253C-44BB-813A-701676A1349F}.Release|x86.ActiveCfg = Release|Any CPU
 		{1D6CF29D-253C-44BB-813A-701676A1349F}.Release|x86.Build.0 = Release|Any CPU
-		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Debug|x86.Build.0 = Debug|Any CPU
-		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Release|x86.ActiveCfg = Release|Any CPU
-		{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}.Release|x86.Build.0 = Release|Any CPU
 		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Debug|x86.Build.0 = Debug|Any CPU
 		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Release|x86.ActiveCfg = Release|Any CPU
@@ -105,5 +103,11 @@ Global
 		{9FF89573-7428-4194-9872-15D943B83CE5}.Debug|x86.Build.0 = Debug|Any CPU
 		{9FF89573-7428-4194-9872-15D943B83CE5}.Release|x86.ActiveCfg = Release|Any CPU
 		{9FF89573-7428-4194-9872-15D943B83CE5}.Release|x86.Build.0 = Release|Any CPU
+		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.ActiveCfg = Debug|x86
+		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.Build.0 = Debug|x86
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.Build.0 = Debug|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.ActiveCfg = Release|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

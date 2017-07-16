@@ -55,7 +55,7 @@ namespace Miner
         public MinerManager(BlockChain.BlockChain blockChain, Address address)
         {
             TxsPerBlockLimit = 100; //TODO
-            Difficulty = 14;
+            Difficulty = 10;
 
             _Address = address;
 			_BlockChain = blockChain;
@@ -89,7 +89,6 @@ namespace Miner
             });
 
 			Populate();
-			RecalculateHeader();
 		}
 
         void Populate()
@@ -132,48 +131,88 @@ namespace Miner
 
         bool IsTransactionValid(TransactionValidation.PointedTransaction ptx)
         {
-			UtxoLookup utxoLookup = UtxoLookup.FromConverter(outpoint =>
+			if (!HasUtxos(ptx))
+			{
+				MinerTrace.Information("could not validate tx - utxo missing");
+				return false;
+			}
+
+            var utxoLookup = UtxoLookup.FromConverter(outpoint =>
 			{
                 var outputs = _UtxoSet.Where(t => t.Item1.Equals(outpoint)).Select(t => t.Item2);
                 return !outputs.Any() ? FSharpOption<Types.Output>.None : new FSharpOption<Types.Output>(outputs.First());
             });
 
-            FSharpFunc<byte[], FSharpOption<ContractFunction>> contractLookup =
-                FSharpFunc<byte[], FSharpOption<ContractFunction>>.FromConverter(contractHash =>
+            var contractLookup = FSharpFunc<byte[], FSharpOption<ContractFunction>>.FromConverter(contractHash =>
             {
                 return !_ActiveContracts.ContainsKey(contractHash) ? 
                        FSharpOption<ContractFunction>.None :
                        new FSharpOption<ContractFunction>(_ActiveContracts[contractHash]);
             });
 
-            var result = TransactionValidation.validateNonCoinbaseTx(
+            if (!TransactionValidation.validateNonCoinbaseTx(
                 ptx,
                 utxoLookup,
                 contractLookup
-            );
+            ))
+            {
+                MinerTrace.Information("could not validate tx");
+                return false;
+            }
 
-			if (!result)
-			{
-				MinerTrace.Information("Tx invalid");
+			MinerTrace.Information("validated tx");
+			return true;
+        }
+
+        //TODO: refactore for efficiency
+        bool HasUtxos(TransactionValidation.PointedTransaction ptx)
+        {
+            foreach (var input in ptx.pInputs)
+            {
+				foreach (var tx in _ValidatedTxs)
+				{
+                    foreach (var txInput in tx.pInputs)
+                    {
+                        if (input.Item1.Equals(txInput))
+                        {
+                            return false;
+                        }
+                    }
+				}
 			}
 
-			return result;
-        }
+			foreach (var input in ptx.pInputs)
+			{
+				foreach (var tx in _ValidatedTxs)
+				{
+					var txHash = Merkle.transactionHasher.Invoke(TransactionValidation.unpoint(ptx));
+                    for (var i = 0; i < tx.outputs.Length; i++)
+					{
+						var outpoint = new Types.Outpoint(txHash, (uint)i);
+						
+                        if (input.Item1.Equals(outpoint))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+			foreach (var input in ptx.pInputs)
+            {
+                if (!_UtxoSet.Any(t => t.Item1.Equals(input.Item1)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+		}
 
 		void HandleTx(TransactionValidation.PointedTransaction ptx)
 		{
-            foreach (var pInput in ptx.pInputs)
-            {
-                var toremove = _UtxoSet.Where(t => t.Item1.Equals(pInput.Item1));
-
-                if (toremove.Any())
-                {
-                    toremove.ToList().ForEach(t => _UtxoSet.Remove(t));
-                }
-			}
-
-            //TODO: try simplify using hash from message
-            var txHash = Merkle.transactionHasher.Invoke(TransactionValidation.unpoint(ptx));
+			//TODO: try simplify using hash from message
+			var txHash = Merkle.transactionHasher.Invoke(TransactionValidation.unpoint(ptx));
 			
             var activationSacrifice = 0UL;
 
