@@ -1,4 +1,4 @@
-﻿module Consensus.TransactionValidation
+﻿﻿module Consensus.TransactionValidation
 
 open System
 open MsgPack
@@ -191,13 +191,13 @@ type PKWitness =
     PKWitness of publicKey:byte[] * edSignature:byte[] * hashtype:SigHashType
     with
     static member TryMake(wit:Witness) =
-        if wit.Length <> 65 then None
+        if wit.Length <> 97 then None
         else
-            Some <| PKWitness (wit.[0..31], wit.[32..63], SigHashType.Make wit.[64])
+            Some <| PKWitness (wit.[0..31], wit.[32..95], SigHashType.Make wit.[96])
     member this.toWitness : Witness =
         match this with
         | PKWitness (publicKey=publicKey;edSignature=edSignature;hashtype=hashtype) ->
-            Array.concat [publicKey; edSignature; [|hashtype.Byte|]]
+            Array.concat [publicKey; edSignature; [|hashtype.Byte|]]    
 
 let reducedTx tx index (SigHashType (itype, otype)) =
     let inputs =
