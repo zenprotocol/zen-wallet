@@ -6,7 +6,7 @@ A bootstrap application for the Zen protocol's p2p node. Can be run as both a he
 
 Linux
 
-installing dependencies:
+Install these dependencies:
 
 - fsharp
 
@@ -20,9 +20,9 @@ installing dependencies:
 
 		sudo apt-get install libsodium-dev
 
-- Mono, version 5.0.1.1:
+- Mono, version 5+:
 
-	Linux: see http://www.mono-project.com/docs/getting-started/install/linux/#usage
+	see http://www.mono-project.com/docs/getting-started/install/linux/#usage
 
 ## Contributors
 
