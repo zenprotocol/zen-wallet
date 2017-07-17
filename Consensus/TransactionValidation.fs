@@ -1,4 +1,4 @@
-﻿﻿module Consensus.TransactionValidation
+﻿module Consensus.TransactionValidation
 
 open System
 open MsgPack
