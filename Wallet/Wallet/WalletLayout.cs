@@ -63,7 +63,9 @@ namespace Wallet
 			};
 
 			buttonKeys.Clicked += delegate {
-				new KeysDialog().ShowDialog();
+				//new KeysDialog().ShowDialog();
+				Clipboard _clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
+				_clipboard.Text = System.Convert.ToBase64String(App.Instance.Wallet.GetUnusedKey().Public);
 			};
 
 			notebook1.ShowTabs = false;
