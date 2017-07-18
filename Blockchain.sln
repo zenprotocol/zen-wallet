@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC", "Zen.RPC\Zen.RPC.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miner", "Miner\Miner.csproj", "{9FF89573-7428-4194-9872-15D943B83CE5}"
 EndProject
-Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Zen.Lib", "Zen.Lib\Zen.Lib.fsproj", "{46BF6E86-E7DD-41BE-B7E2-DF18327A66E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain.Tests", "BlockChain.Tests\BlockChain.Tests.csproj", "{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -109,9 +109,9 @@ Global
 		{9FF89573-7428-4194-9872-15D943B83CE5}.Release|x86.Build.0 = Release|Any CPU
 		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.ActiveCfg = Debug|x86
 		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.Build.0 = Debug|x86
-		{46BF6E86-E7DD-41BE-B7E2-DF18327A66E2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{46BF6E86-E7DD-41BE-B7E2-DF18327A66E2}.Debug|x86.Build.0 = Debug|Any CPU
-		{46BF6E86-E7DD-41BE-B7E2-DF18327A66E2}.Release|x86.ActiveCfg = Release|Any CPU
-		{46BF6E86-E7DD-41BE-B7E2-DF18327A66E2}.Release|x86.Build.0 = Release|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Debug|x86.Build.0 = Debug|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.ActiveCfg = Release|Any CPU
+		{DC90AD8D-CCD8-4E03-B2D1-21C3565BD93B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
