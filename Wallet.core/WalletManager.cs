@@ -248,129 +248,143 @@ namespace Wallet.core
             balances[output.spend.asset] += isSpending ? -1 * (long)output.spend.amount : (long)output.spend.amount;
         }
 
-        //    public void Sync()
-        //    {
-        //_HandledTransactions.Clear();
-        //var utxoSet = _BlockChain.GetUTXOSet();
-        //WalletTrace.Information($"loading blockchain's {utxoSet.Count()} utxos");
-        //var transactions = new List<Types.Transaction>();
+		//    public void Sync()
+		//    {
+		//_HandledTransactions.Clear();
+		//var utxoSet = _BlockChain.GetUTXOSet();
+		//WalletTrace.Information($"loading blockchain's {utxoSet.Count()} utxos");
+		//var transactions = new List<Types.Transaction>();
 
 
-        //var tipItr = _BlockChain.Tip.Key;
+		//var tipItr = _BlockChain.Tip.Key;
 
-        //while (tipItr != null && !tipItr.SequenceEqual(new byte[] { }))
-        //{
-        //    using (var context = _DBContext.GetTransactionContext()) // TODO: encap
-        //    {
-        //        foreach (var transaction in _BlockChain.BlockStore.Transactions(context, tipItr))
-        //        {
-        //            transactions.Add(transaction.Value);
-        //        }
-        //    }
+		//while (tipItr != null && !tipItr.SequenceEqual(new byte[] { }))
+		//{
+		//    using (var context = _DBContext.GetTransactionContext()) // TODO: encap
+		//    {
+		//        foreach (var transaction in _BlockChain.BlockStore.Transactions(context, tipItr))
+		//        {
+		//            transactions.Add(transaction.Value);
+		//        }
+		//    }
 
-        //    tipItr = _BlockChain.GetBlockHeader(tipItr).parent;
-        //}
+		//    tipItr = _BlockChain.GetBlockHeader(tipItr).parent;
+		//}
 
-        //using (var context = _DBContext.GetTransactionContext())
-        //{
-        //    //_OutpointAssetsStore.RemoveAll(context);
-        //    _UTXOStore.RemoveAll(context);
-        //    _BalanceStore.RemoveAll(context);
+		//using (var context = _DBContext.GetTransactionContext())
+		//{
+		//    //_OutpointAssetsStore.RemoveAll(context);
+		//    _UTXOStore.RemoveAll(context);
+		//    _BalanceStore.RemoveAll(context);
 
-        //    foreach (var item in utxoSet)
-        //    {
-        //        if (_KeyStore.Find(context, item.Value, true))
-        //        {
-        //            _UTXOStore.Put(context, item);
+		//    foreach (var item in utxoSet)
+		//    {
+		//        if (_KeyStore.Find(context, item.Value, true))
+		//        {
+		//            _UTXOStore.Put(context, item);
 
-        //            //_AssetsManager.Add(item);
-        //            //AddToRunningBalance(item.Value);
-        //            //if (!myTransactions.Contains(item.Item1.txHash))
-        //            //{
-        //            //    myTransactions.Add(item.Item1.txHash);
-        //            //}
-        //        }
-        //    }
+		//            //_AssetsManager.Add(item);
+		//            //AddToRunningBalance(item.Value);
+		//            //if (!myTransactions.Contains(item.Item1.txHash))
+		//            //{
+		//            //    myTransactions.Add(item.Item1.txHash);
+		//            //}
+		//        }
+		//    }
 
-        //    context.Commit();
-        //}
+		//    context.Commit();
+		//}
 
-        //foreach (var transaction in transactions)
-        //{
-        //    HandleTransaction(new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction), true);
-        //}
-        //    }
+		//foreach (var transaction in transactions)
+		//{
+		//    HandleTransaction(new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction), true);
+		//}
+		//    }
 
-        /// <summary>
-        /// get a set of outpoints with matching keys using greedy algorithm 
-        /// </summary>
-        /// <returns>false if could not satisfy</returns>
-        /// <param name="asset">Asset.</param>
-        /// <param name="amount">Amount.</param>
-        bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, Assets assets)
-        {
+		/// <summary>
+		/// get a set of outpoints with matching keys using greedy algorithm 
+		/// </summary>
+		/// <returns>false if could not satisfy</returns>
+		/// <param name="asset">Asset.</param>
+		/// <param name="amount">Amount.</param>
+		private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, Assets assets)
+		{
+			var matchingAssets = new Assets();
+
+			var spendableOutputs = new List<Types.Output>();
+
+			_TxStore.All(dbTx).Select(t => t.Item2).ToList().ForEach(txData =>
+			  {
+				  uint idx = 0;
+				  txData.Tx.outputs.ToList().ForEach(o =>
+				  {
+					  if (o.spend.asset.SequenceEqual(asset))
+					  {
+						  var key = GetKey(o);
+
+						  if (key != null)
+						  {
+							  if (txData.TxState != TxStateEnum.Invalid)
+							  {
+								  matchingAssets.Add(new Asset()
+								  {
+									  Key = key,
+									  TxState = txData.TxState,
+									  Outpoint = new Types.Outpoint(txData.TxHash, idx),
+									  Output = o
+								  });
+							  }
+						  }
+					  }
+					  idx++;
+				  });
+			  });
+
+			var unspentMatchingAssets = new Assets();
+
+			foreach (Asset matchingAsset in matchingAssets)
+			{
+				bool canSpend = false;
+				switch (matchingAsset.TxState)
+				{
+					case TxStateEnum.Confirmed:
+						var isConfirmedUTXOExist = new GetIsConfirmedUTXOExistAction() { Outpoint = matchingAsset.Outpoint }.Publish().Result;
+
+						canSpend = isConfirmedUTXOExist &&
+							!_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint);
+						break;
+					case TxStateEnum.Unconfirmed:
+						canSpend = !_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint) &&
+							_BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash);
+						break;
+				}
+
+				WalletTrace.Information($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
+
+				if (canSpend)
+				{
+					unspentMatchingAssets.Add(matchingAsset);
+				}
+			}
+
 			ulong total = 0;
 
-			foreach (var item in _TxStore.All(dbTx))
-            {
-                for (var i = 0; i < item.Item2.Tx.outputs.Length; i++)
-                {
-                    var outpoint = new Types.Outpoint(item.Item2.TxHash, (uint)i);
-                    var output = item.Item2.Tx.outputs[i];
-
-                    if (!output.spend.asset.SequenceEqual(asset) || item.Item2.TxState == TxStateEnum.Invalid)
-                        continue;
-
-					var key = GetKey(output);
-
-                    //redundant check?
-                    if (key == null )
-                        continue;
-
-					bool canSpend = false;
-
-					switch (item.Item2.TxState)
-					{
-						case TxStateEnum.Confirmed:
-							canSpend = new GetIsConfirmedUTXOExistAction() { Outpoint = outpoint }.Publish().Result &&
-								!_BlockChain.memPool.TxPool.ContainsOutpoint(outpoint);
-							break;
-						case TxStateEnum.Unconfirmed:
-							canSpend = !_BlockChain.memPool.TxPool.ContainsOutpoint(outpoint) &&
-								_BlockChain.memPool.TxPool.Contains(outpoint.txHash);
-							break;
-					}
-
-                    if (!canSpend)
-                        continue;
-
-					assets.Add(new Asset()
-					{
-						Key = key,
-                        TxState = item.Item2.TxState,
-                        Outpoint = outpoint,
-						Output = output
-					});
-
-                    total += output.spend.amount;
-
-					if (total >= amount)
-					{
-						break;
-					}
-                }
-
+			foreach (var unspentMatchingAsset in unspentMatchingAssets)
+			{
 				if (total >= amount)
 				{
 					break;
-				}                
-            }
+				}
 
-            change = total - amount;
-            return total >= amount;
-        }
+				assets.Add(unspentMatchingAsset);
+				total += unspentMatchingAsset.Output.spend.amount;
+			}
 
-        public bool CanSpend(byte[] asset, ulong amount)
+			change = total - amount;
+			return total >= amount;
+		}
+
+		public bool CanSpend(byte[] asset, ulong amount)
         {
             using (TransactionContext dbTx = _DBContext.GetTransactionContext())
             {
