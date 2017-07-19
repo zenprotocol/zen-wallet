@@ -101,14 +101,18 @@ namespace BlockChain
                 return false;
             }
 
+            var blocks = Convert.ToUInt32(kalapas / kalapasPerBlock);
+
             Add(dbTx, new ACSItem()
             {
                 Hash = contractHash,
                 KalapasPerBlock = kalapasPerBlock,
-                LastBlock = blockNumber + Convert.ToUInt32(kalapas / kalapasPerBlock),
+                LastBlock = blockNumber + blocks,
                 Code = contractCode,
                 CompiledContract = compiledCode
             });
+
+            BlockChainTrace.Information($"Contract activated for {blocks} blocks", contractHash);
 
             return true;
 		}
