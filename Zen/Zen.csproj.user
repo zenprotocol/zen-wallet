@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartProgram></StartProgram>
+    <StartProgram>
+    </StartProgram>
     <StartArguments>-t -n=lan_client -d</StartArguments>
     <ExternalConsole>true</ExternalConsole>
     <ConsolePause>false</ConsolePause>
@@ -36,5 +37,8 @@
     <StartAction>Project</StartAction>
     <StartArguments>-s=lan_receiver -headless</StartArguments>
     <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <StartArguments>-t -n=lan_host</StartArguments>
   </PropertyGroup>
 </Project>
