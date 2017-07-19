@@ -82,10 +82,16 @@ namespace Miner
 
             acsList.ForEach(t =>
             {
-                //TODO: cache compiled?
-                var contractFunction = ContractExamples.Execution.deserialize(t.CompiledContract);
+                try
+                {
+                    //TODO: cache compiled?
+                    var contractFunction = ContractExamples.Execution.deserialize(t.CompiledContract);
 
-                _ActiveContracts[t.Hash] = contractFunction;
+                    _ActiveContracts[t.Hash] = contractFunction;
+                } catch (Exception e)
+                {
+                    MinerTrace.Information("Could not deserialize contract " + Convert.ToBase64String(t.Hash));
+                }
             });
 
 			Populate();
