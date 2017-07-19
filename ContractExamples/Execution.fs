@@ -195,7 +195,7 @@ let compile (code:string) = maybe {
         let compilationResult =
             checker.CompileToDynamicAssembly(compilationParameters, Some(stdout, stderr))
         let errors, exitCode, dynamicAssembly = Async.RunSynchronously compilationResult
-        if errors.Length <> 0 then return! None
+        if exitCode <> 0 then return! None // ignore compiler warning messages
         match dynamicAssembly with
         | None -> return! None
         | Some asm ->
