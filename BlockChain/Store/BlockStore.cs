@@ -148,11 +148,20 @@ namespace BlockChain.Store
 		public Keyed<Types.Block> GetBlock(TransactionContext transactionContext, byte[] key)
 		{
 			var _block = Get(transactionContext, key);
-            var txs = _block.Value.TxHashes.Select(t => TxStore.Get(transactionContext, t).Value).ToList();
 
-            var block = new Types.Block(_block.Value.BlockHeader, ListModule.OfSeq<Types.Transaction>(txs.Select(t => t.Tx)));
+            if (_block == null)
+            {
+                BlockChainTrace.Information("Block not found: " + Convert.ToBase64String(key));
+                return null;
+            }
+            else
+            {
+                var txs = _block.Value.TxHashes.Select(t => TxStore.Get(transactionContext, t).Value).ToList();
 
-			return new Keyed<Types.Block>(key, block);
+                var block = new Types.Block(_block.Value.BlockHeader, ListModule.OfSeq<Types.Transaction>(txs.Select(t => t.Tx)));
+
+                return new Keyed<Types.Block>(key, block);
+            }
 		}
 
 		public bool IsLocation(TransactionContext transactionContext, byte[] item, LocationEnum location)
