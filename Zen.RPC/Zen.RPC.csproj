@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -45,7 +45,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
+    <ProjectReference Include="..\Zen.RPC.Common\Zen.RPC.Common.csproj">
       <Project>{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}</Project>
       <Name>Zen.RPC.Common</Name>
     </ProjectReference>

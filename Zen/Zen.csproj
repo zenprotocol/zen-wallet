@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{1F030257-FBB4-4538-BBD8-4B241FD73B13}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Zen</RootNamespace>
     <AssemblyName>zen</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
@@ -36,12 +36,12 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NDesk.Options, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="Consensus">
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
-    </Reference>
-    <Reference Include="NDesk.Options">
-      <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
     <Reference Include="CLRCLI">
       <HintPath>..\packages\CLRCLI.1.0.0.5\lib\net45\CLRCLI.dll</HintPath>
@@ -60,6 +60,7 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="FSharp.Data">
       <HintPath>..\packages\FSharp.Data.2.3.3\lib\net40\FSharp.Data.dll</HintPath>
@@ -152,10 +153,6 @@
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
       <Name>Wallet.core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
-      <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
-      <Name>Infrastructure.TestingGtk</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Network\Network.csproj">
       <Project>{4741344C-3334-42C6-B3BF-5AB10280E6C4}</Project>
       <Name>Network</Name>
@@ -177,7 +174,5 @@
       <Name>Miner</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

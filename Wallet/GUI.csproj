@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -219,20 +219,11 @@
     <None Include="todo.txt" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Widgets\Log\" />
-    <Folder Include="Widgets\Portfolio\" />
-    <Folder Include="Widgets\SendDialog\" />
-    <Folder Include="Wallet\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
-      <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
-      <Name>Infrastructure.TestingGtk</Name>
     </ProjectReference>
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
