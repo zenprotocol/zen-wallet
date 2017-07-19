@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Consensus;
 using System;
+using System.Linq;
 
 namespace BlockChain.Data
 {
@@ -25,14 +26,11 @@ namespace BlockChain.Data
 		{
             if (Contains(txHash))
             {
-                var deps = GetDependencies(txHash);
+                var deps = GetDependencies(txHash).ToList();
             
                 Remove(txHash);
 
-                foreach (var t in deps)
-                {
-                    t.Item1.RemoveWithDependencies(t.Item2);  
-                }
+                deps.ForEach(t => t.Item1.RemoveWithDependencies(t.Item2));
 
                 return true;
             }
