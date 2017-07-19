@@ -37,6 +37,9 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestTrace.cs" />
@@ -60,6 +63,7 @@
     <Compile Include="BlockVerificationTests.cs" />
     <Compile Include="CSharpContractTests.cs" />
     <Compile Include="MinerTests.cs" />
+    <Compile Include="ContractTemplateTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -86,6 +90,17 @@
       <Project>{9FF89573-7428-4194-9872-15D943B83CE5}</Project>
       <Name>Miner</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
+      <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
+      <Name>ContractExamples</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ContractTemplates\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ContractTemplates\SecureToken.txt" />
+    <EmbeddedResource Include="ContractTemplates\CallOption.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
