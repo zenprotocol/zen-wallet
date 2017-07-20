@@ -40,9 +40,6 @@
       <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="Consensus">
-      <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
-    </Reference>
     <Reference Include="CLRCLI">
       <HintPath>..\packages\CLRCLI.1.0.0.5\lib\net45\CLRCLI.dll</HintPath>
     </Reference>
@@ -164,13 +161,13 @@
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
-      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
-      <Name>Consensus</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Miner\Miner.csproj">
       <Project>{9FF89573-7428-4194-9872-15D943B83CE5}</Project>
       <Name>Miner</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Consensus\Consensus.fsproj">
+      <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
+      <Name>Consensus</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
