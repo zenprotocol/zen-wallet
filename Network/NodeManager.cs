@@ -66,13 +66,13 @@ namespace Network
 			{
 				ipAddress = IPAddress.Parse(networkInfo.ExternalIPAddress);
 			}
-			else
+            else if (!networkInfo.DisableUPnP)
 			{
-
 				await natManager.Init();
 
 				if (natManager.DeviceFound &&
 					natManager.Mapped.Value &&
+                    natManager.ExternalIPVerified.HasValue &&
 					natManager.ExternalIPVerified.Value)
 				{
 					ipAddress = natManager.ExternalIPAddress;
