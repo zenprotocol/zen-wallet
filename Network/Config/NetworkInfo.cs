@@ -11,6 +11,7 @@ namespace Network
 		public int PeersToFind { get; set; }
 		public int MaximumNodeConnection { get; set; }
 		public string ExternalIPAddress { get; set; }
+		public bool DisableUPnP { get; set; }
 
 #if DEBUG
 		public bool IsLANClient { get; set; }
@@ -19,6 +20,7 @@ namespace Network
 
 		public NetworkInfo() {
 			Seeds = new List<string> ();
+			DisableUPnP = false;
 		}
 	}
 }
