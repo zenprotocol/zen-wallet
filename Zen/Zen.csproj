@@ -76,7 +76,6 @@
     <Compile Include="BlockChainDumper.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="App.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
