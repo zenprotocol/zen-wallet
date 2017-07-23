@@ -92,7 +92,7 @@ namespace Wallet
 						}
 					}
 
-					if (accepted == maxRequested)
+					if (accepted >= maxRequested)
 					{
 						text = $"Tip: {accepted}";
 					}
