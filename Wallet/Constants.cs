@@ -13,17 +13,17 @@ namespace Wallet.Constants
 		public static String AssetLogo(String key) { return "Wallet.Assets.misc." + key + ".png"; }
 	}
 
-	public class Colors
+    public class Colors
 	{
 		public static Color Text = new Color (0x0ff, 0x0ff, 0x0ff);
 		public static Color Text2 = new Color(0x0f7, 0x0f7, 0x0f7);
 		public static Color SubText = new Color (0x0af, 0x0af, 0x0af);
 	//	public static Color SubText2 = new Color(0x0c7, 0x0c7, 0x0c7);
-		public static Color Base = new Color (0x024, 0x030, 0x03e);
-		public static Color ButtonUnselected = new Color(0x01d,0x025,0x030);
-		public static Color ButtonSelected = new Color(0x028,0x02f,0x037);
+		public static Color Base = new Color (0x01c, 0x01b, 0x033); // BG of everything
+        public static Color ButtonUnselected = new Color(0x02d, 0x02c, 0x047); // BG of top menu - 2d2c47
+		public static Color ButtonSelected = new Color(0x03f,0x03e,0x05a); // BG of top menu - 3f3e5a
 		public static Color Textbox = new Color(0x034,0x047,0x05a);
-		public static Color DialogBackground = new Color(0x022,0x02c,0x039);
+		public static Color DialogBackground = new Color(0x01c, 0x01b,0x033);
 		public static Color Error = new Color(0x0ff, 0x00, 0x00);
 		public static Color Success = new Color(0x00, 0x0ff, 0x00);
 }
