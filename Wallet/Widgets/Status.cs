@@ -39,6 +39,8 @@ namespace Wallet.Widgets
         {
             this.Build();
 
+            eventbox1.ModifyBg(Gtk.StateType.Normal, Constants.Colors.ButtonUnselected.Gdk);
+
             Text1 = "Connecting...";
             Text2 = "Inbound connectivity initializing...";
             Text3 = "Blockchain initializing...";

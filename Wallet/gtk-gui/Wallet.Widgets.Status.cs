@@ -4,6 +4,8 @@ namespace Wallet.Widgets
 {
 	public partial class Status
 	{
+		private global::Gtk.EventBox eventbox1;
+
 		private global::Gtk.HBox hbox2;
 
 		private global::Gtk.Label label1;
@@ -19,6 +21,9 @@ namespace Wallet.Widgets
 			global::Stetic.BinContainer.Attach(this);
 			this.Name = "Wallet.Widgets.Status";
 			// Container child Wallet.Widgets.Status.Gtk.Container+ContainerChild
+			this.eventbox1 = new global::Gtk.EventBox();
+			this.eventbox1.Name = "eventbox1";
+			// Container child eventbox1.Gtk.Container+ContainerChild
 			this.hbox2 = new global::Gtk.HBox();
 			this.hbox2.Name = "hbox2";
 			this.hbox2.Homogeneous = true;
@@ -43,13 +48,13 @@ namespace Wallet.Widgets
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.label3 = new global::Gtk.Label();
 			this.label3.Name = "label3";
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString("label3");
 			this.hbox2.Add(this.label3);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.label3]));
 			w3.Position = 2;
 			w3.Expand = false;
 			w3.Fill = false;
-			this.Add(this.hbox2);
+			this.eventbox1.Add(this.hbox2);
+			this.Add(this.eventbox1);
 			if ((this.Child != null))
 			{
 				this.Child.ShowAll();
