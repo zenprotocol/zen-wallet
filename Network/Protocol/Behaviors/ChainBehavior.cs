@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using BlockChain.Data;
+using Network;
 
 namespace NBitcoin.Protocol.Behaviors
 {
@@ -62,6 +63,7 @@ namespace NBitcoin.Protocol.Behaviors
 						}
 						break;
 					case BlockChain.BlockVerificationHelper.BkResultEnum.AcceptedOrphan:
+						StatusMessageProducer.LastOrphan = bk.header.blockNumber;
 						node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
                             new InventoryVector(InventoryType.MSG_BLOCK, result.MissingParent)
 						}));

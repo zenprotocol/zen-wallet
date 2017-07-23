@@ -13,13 +13,15 @@ namespace BlockChain.Data
 
 	public class BlockMessage : BlockChainMessage
 	{
-		public bool IsTip { get; set; }
+		public uint BlockNumber { get; set; }
 		public HashDictionary<TransactionValidation.PointedTransaction> PointedTransactions { get; set; }
 
-		public BlockMessage(HashDictionary<TransactionValidation.PointedTransaction> pointedTransactions, bool isTip = false)
+		public BlockMessage(HashDictionary<TransactionValidation.PointedTransaction> pointedTransactions, uint? blockNumber = null)
 		{
 			PointedTransactions = pointedTransactions;
-			IsTip = isTip;
+
+            if (blockNumber.HasValue)
+                BlockNumber = blockNumber.Value;
 		}
 	}
 

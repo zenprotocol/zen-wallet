@@ -133,10 +133,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Wallet\GUI.csproj">
-      <Project>{6B1189D4-2B5A-4764-A1D7-6E8258730303}</Project>
-      <Name>GUI</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
@@ -168,6 +164,10 @@
     <ProjectReference Include="..\Consensus\Consensus.fsproj">
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wallet\GUI.csproj">
+      <Project>{6B1189D4-2B5A-4764-A1D7-6E8258730303}</Project>
+      <Name>GUI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
