@@ -13,16 +13,14 @@ using static BlockChain.BlockVerificationHelper;
 
 namespace Network
 {
-	public class NodeManager : ResourceOwner//, INodeManager
+	public class NodeManager : ResourceOwner
 	{
 		Server _Server = null;
 		BlockChain.BlockChain _BlockChain = null;
 		NodeConnectionParameters _NodeConnectionParameters;
 		BroadcastHubBehavior _BroadcastHubBehavior;
-        MinerBehavior _MinerBehavior;
+		MinerBehavior _MinerBehavior;
 		NodesGroup _NodesGroup;
-
-		//public readonly Miner Miner;
 
 		public NodeManager(BlockChain.BlockChain blockChain)
 		{
@@ -32,11 +30,6 @@ namespace Network
 			_NodeConnectionParameters = new NodeConnectionParameters();
 			var addressManagerBehavior = new AddressManagerBehavior(addressManager);
 			_NodeConnectionParameters.TemplateBehaviors.Add(addressManagerBehavior);
-
-			//Miner = new Miner();
-
-            //OwnResource(Miner);
-			//Miner.BlockChain_ = blockChain;
 		}
 
 		public async Task Connect(NetworkInfo networkInfo)
@@ -55,10 +48,10 @@ namespace Network
 				ipAddress = null;
 				networkInfo.PeersToFind = 1;
 
-                if (networkInfo.Seeds.Count == 0 && natManager.InternalIPAddress != null && !networkInfo.Seeds.Contains(natManager.InternalIPAddress.ToString()))
-                {
-                    networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
-                }
+				if (networkInfo.Seeds.Count == 0 && natManager.InternalIPAddress != null && !networkInfo.Seeds.Contains(natManager.InternalIPAddress.ToString()))
+				{
+					networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
+				}
 			}
 			else
 #endif
@@ -66,24 +59,34 @@ namespace Network
 			{
 				ipAddress = IPAddress.Parse(networkInfo.ExternalIPAddress);
 			}
-            else if (!networkInfo.DisableUPnP)
+			else if (networkInfo.DisableUPnP)
 			{
+				StatusMessageProducer.OutboundStatus = OutboundStatusEnum.Disabled;
+			}
+			else
+			{
+				StatusMessageProducer.OutboundStatus = OutboundStatusEnum.Initializing;
 				await natManager.Init();
 
 				if (natManager.DeviceFound &&
 					natManager.Mapped.Value &&
-                    natManager.ExternalIPVerified.HasValue &&
+					natManager.ExternalIPVerified.HasValue &&
 					natManager.ExternalIPVerified.Value)
 				{
+					StatusMessageProducer.OutboundStatus = OutboundStatusEnum.HasValidAddress;
 					ipAddress = natManager.ExternalIPAddress;
+				}
+				else
+				{
+					StatusMessageProducer.OutboundStatus = OutboundStatusEnum.HasInvalidAddress;
 				}
 			}
 
 			_BroadcastHubBehavior = new BroadcastHubBehavior();
-            _MinerBehavior = new MinerBehavior();
+			_MinerBehavior = new MinerBehavior();
 
 			_NodeConnectionParameters.TemplateBehaviors.Add(_BroadcastHubBehavior);
-            _NodeConnectionParameters.TemplateBehaviors.Add(_MinerBehavior);
+			_NodeConnectionParameters.TemplateBehaviors.Add(_MinerBehavior);
 			_NodeConnectionParameters.TemplateBehaviors.Add(new SPVBehavior(_BlockChain, _BroadcastHubBehavior.BroadcastHub));
 			_NodeConnectionParameters.TemplateBehaviors.Add(new ChainBehavior(_BlockChain));
 
@@ -100,13 +103,14 @@ namespace Network
 			}
 
 			if (ipAddress != null)
-			{ 
+			{
 				_Server = new Server(ipAddress, networkInfo, _NodeConnectionParameters);
 				OwnResource(_Server);
 
 				if (_Server.Start())
 				{
 					NodeServerTrace.Information($"Server started at {ipAddress}:{networkInfo.DefaultPort}");
+					StatusMessageProducer.OutboundStatus = OutboundStatusEnum.Accepting;
 				}
 				else
 				{
@@ -126,10 +130,12 @@ namespace Network
 				_NodesGroup.AllowSameGroup = true; //TODO
 				_NodesGroup.MaximumNodeConnection = networkInfo.MaximumNodeConnection;
 
+#if TRACE
 				_NodesGroup.ConnectedNodes.Added += (object sender, NodeEventArgs e) =>
 				{
 					NodeServerTrace.Information("Peer found: " + e.Node.RemoteSocketAddress + ":" + e.Node.RemoteSocketPort);
 				};
+#endif
 
 				_NodesGroup.Connect();
 			}
@@ -149,16 +155,9 @@ namespace Network
 			return result;
 		}
 
-  //      public BkResultEnum Transmit(Types.Block bk)
-		//{
-  //          var result = new HandleBlockAction(bk).Publish().Result.BkResultEnum;
-
-  //          if (result == BkResultEnum.Accepted)
-  //              _MinerBehavior.BroadcastBlock(bk);
-
-		//	return result;
-		//}
-
+		/// <summary>
+		/// Transmits a block on the network.
+		/// </summary>
 		public void Transmit(Types.Block bk)
 		{
             if (_MinerBehavior != null)

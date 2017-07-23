@@ -1,15 +1,21 @@
 using System;
+using BlockChain.Data;
 using Infrastructure;
+using Network;
 using Wallet.core;
 
 namespace Wallet
 {
 	public class App : Singleton<App>
 	{
-        public event Action OnClose;
-		Gtk.Window _MainWindow;
+		public event Action OnClose;
+		public MainWindow MainWindow { get; private set; }
+
+		//TODO: remove wallet and node, remove singleton, make into resource-owner
 		public WalletManager Wallet { get; private set; }
 		public Network.NodeManager Node { get; private set; }
+
+        ResourceOwner resources = new ResourceOwner();
 
 		public App()
 		{
@@ -29,24 +35,52 @@ namespace Wallet
 			Wallet = walletManager;
 			Node = nodeManager;
 
+            resources.OwnResource(MessageProducer<BlockChainMessage>.Instance.AddMessageListener(new MessageListener<BlockChainMessage>(message => {
+                if (message is BlockMessage)
+                {
+                    StatusMessage(new BlockChainAcceptedMessage { Value = ((BlockMessage)message).BlockNumber });
+                }
+            })));
+
+            resources.OwnResource(Singleton<MessageProducer<IStatusMessage>>.Instance.AddMessageListener(new MessageListener<IStatusMessage>(StatusMessage)));
+
 			Gtk.Application.Init();
 
-			_MainWindow = new MainWindow();
-			DialogBase.parent = _MainWindow;
-			_MainWindow.Show();
+			MainWindow = new MainWindow();
+			DialogBase.parent = MainWindow;
+			MainWindow.Show();
 
 			Gtk.Application.Run();
 		}
 
+        void StatusMessage(IStatusMessage message)
+		{
+			if (MainWindow != null)
+			{
+				Gtk.Application.Invoke(delegate
+				{
+					MainWindow.MainWindowController.StatusMessage = message;
+				});
+			}
+			else
+			{
+				//TODO
+				Console.WriteLine("App listener: " + message);
+			}
+		}
+
 		public void Quit()
 		{
-			_MainWindow.Hide();
+            resources.Dispose();
+			MainWindow.Hide();
 			Gtk.Application.Quit();
-            //	a.RetVal = true;
-            //	Hide();
 
+			//	a.RetVal = true;
+			//	Hide();
+
+	
             if (OnClose != null)
-                OnClose();
+				OnClose();
 		}
 	}
 }
