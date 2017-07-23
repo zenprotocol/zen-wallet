@@ -108,6 +108,7 @@
     <Compile Include="NodeManager.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Config\NetworkInfo.cs" />
+    <Compile Include="StatusMessageProducer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Protocol\" />

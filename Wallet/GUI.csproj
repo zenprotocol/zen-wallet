@@ -137,7 +137,7 @@
     <Compile Include="Widgets\Contract\Contract.cs" />
     <Compile Include="gtk-gui\Wallet.Contract.cs" />
     <Compile Include="Controllers\ContractController.cs" />
-    <Compile Include="Controllers\MainAreaController.cs" />
+    <Compile Include="Controllers\MainWindowController.cs" />
     <Compile Include="gtk-gui\Wallet.MainWindow.cs" />
     <Compile Include="gtk-gui\Wallet.MainMenu.cs" />
     <Compile Include="gtk-gui\Wallet.MenuButton.cs" />
@@ -212,6 +212,8 @@
     <Compile Include="Widgets\SignMessageDialog.cs" />
     <Compile Include="gtk-gui\Wallet.SignMessageDialog.cs" />
     <Compile Include="UpdatingStore.cs" />
+    <Compile Include="Widgets\Status.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Status.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

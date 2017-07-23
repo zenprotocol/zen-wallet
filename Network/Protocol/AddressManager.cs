@@ -1082,6 +1082,8 @@ namespace NBitcoin.Protocol
 								peerTableFull.Cancel();
 							else
 								NodeServerTrace.Information("Need " + (-found + peerToFind) + " more peers");
+
+							StatusMessageProducer.Connections = new Tuple<int, int>(found, peerToFind);
 						});
 					}
 					catch(OperationCanceledException)

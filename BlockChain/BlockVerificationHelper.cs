@@ -352,9 +352,10 @@ namespace BlockChain
 			ValidateACS();
 
 			_BlockChain.ChainTip.Context(_DbTx).Value = _BkHash;
+			//TODO: only update after commit
 			_BlockChain.Tip = new Keyed<Types.Block>(_BkHash, _Bk);
 
-			queuedActions.Add(new MessageAction(new BlockMessage(confirmedTxs, true)));
+            queuedActions.Add(new MessageAction(new BlockMessage(confirmedTxs, _Bk.header.blockNumber)));
 
             foreach (var item in confirmedTxs)
             {

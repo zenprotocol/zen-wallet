@@ -49,9 +49,6 @@ namespace Wallet
 				}).Start();
 			};
 
-			//entryAddress.FocusInEvent += (o, args) => { 
-			//};
-
 			buttonSend.Clicked += delegate
 			{
 				notebook1.Page = SEND_PAGE;
@@ -63,7 +60,6 @@ namespace Wallet
 			};
 
 			buttonKeys.Clicked += delegate {
-				//new KeysDialog().ShowDialog();
 				Clipboard _clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 				_clipboard.Text = System.Convert.ToBase64String(App.Instance.Wallet.GetUnusedKey().Public);
 			};

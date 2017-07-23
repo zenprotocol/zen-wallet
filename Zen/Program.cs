@@ -6,6 +6,7 @@ using Microsoft.FSharp.Collections;
 using System.Text;
 using Microsoft.FSharp.Core;
 using BlockChain.Data;
+using System.Threading;
 
 namespace Zen
 {
@@ -16,15 +17,17 @@ namespace Zen
             Headless
         }
 
+		static App app;
+		static LaunchModeEnum launchMode = LaunchModeEnum.GUI;
+		static bool genesis = false;
+		static bool rpcServer = false;
+		static bool wipe = false;
+
 		public static void Main (string[] args)
 		{
-            var app = new App();
+            app = new App();
 
-            var launchMode = LaunchModeEnum.GUI;
 			bool show_help = false;
-			bool genesis = false;
-			bool rpcServer = false;
-            bool wipe = false;
 
 			var p = new OptionSet() {
 				{ "headless", "start in headless mode",
@@ -73,41 +76,42 @@ namespace Zen
 				return;
 			}
 
-            if (wipe)
-            {
-                app.ResetWalletDB();
-                app.ResetBlockChainDB();
+			if (launchMode == LaunchModeEnum.GUI)
+			{
+                Init(); //new Thread(Init).Start();
+				app.GUI(true);
+			}
+			else
+			{
+				Init();
+			}
+		}
+
+		static void Init()
+		{
+			if (wipe)
+			{
+				app.ResetWalletDB();
+				app.ResetBlockChainDB();
 				Console.WriteLine("Databases wiped.");
 			}
 
-            app.Init();
+			app.Init();
 
-            if (genesis)
-            {
-                app.AddGenesisBlock();
-                Console.WriteLine("Genesis block added.");
-            }
-			
+			if (genesis)
+			{
+				app.AddGenesisBlock();
+				Console.WriteLine("Genesis block added.");
+			}
+
 			if (rpcServer)
 			{
-                app.StartRPCServer();
+				app.StartRPCServer();
 			}
-           
-            switch (launchMode)
-            {
-				case LaunchModeEnum.TUI:
-                    TUI.Start(app);
-					break;
-				case LaunchModeEnum.GUI:
-					app.Connect();
-					app.GUI(true);
-					break;
-				case LaunchModeEnum.Headless:
-                    Console.WriteLine("Running headless.");
-					app.Connect();
-					//TODO: wait for kill signal and only then dispose
-					//app.Dispose();
-					break;
+
+			if (launchMode != LaunchModeEnum.TUI)
+			{
+				app.Connect();
 			}
 		}
 

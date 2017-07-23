@@ -68,7 +68,7 @@ namespace Wallet
 		public void Save()
 		{
 			var filechooser = new FileChooserDialog("Choose contract file",
-				(Window)MainAreaController.Instance.MainView,
+				App.Instance.MainWindow,
                 FileChooserAction.Save,
 				"Cancel", ResponseType.Cancel,
 				"Save", ResponseType.Accept);
@@ -83,7 +83,7 @@ namespace Wallet
 
 		public void Load() {
 			var filechooser = new FileChooserDialog("Choose contract file",
-				(Window)MainAreaController.Instance.MainView,
+				App.Instance.MainWindow,
 				FileChooserAction.Open,
 				"Cancel", ResponseType.Cancel,
 				"Open", ResponseType.Accept);
