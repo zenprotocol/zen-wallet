@@ -20,11 +20,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractGenerator", "Contra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC.Common", "Zen.RPC.Common\Zen.RPC.Common.csproj", "{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ContractUtilities", "ContractUtilities\ContractUtilities.fsproj", "{52C99661-71D0-4037-858E-B605CE5F562C}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractUtilities", "ContractUtilities\ContractUtilities.fsproj", "{52C99661-71D0-4037-858E-B605CE5F562C}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ContractExamples", "ContractExamples\ContractExamples.fsproj", "{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractExamples", "ContractExamples\ContractExamples.fsproj", "{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractsDiscovery.Web", "ContractsDiscovery.Web\ContractsDiscovery.Web.csproj", "{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}"
 EndProject
@@ -62,7 +62,8 @@ Global
 		{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}.Release|x86.Build.0 = Release|Any CPU
 		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.ActiveCfg = Debug|x86
 		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Debug|x86.Build.0 = Debug|x86
-		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Release|x86.ActiveCfg = Debug|x86
+		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Release|x86.ActiveCfg = Release|x86
+		{1F030257-FBB4-4538-BBD8-4B241FD73B13}.Release|x86.Build.0 = Release|x86
 		{4741344C-3334-42C6-B3BF-5AB10280E6C4}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{4741344C-3334-42C6-B3BF-5AB10280E6C4}.Debug|x86.Build.0 = Debug|Any CPU
 		{4741344C-3334-42C6-B3BF-5AB10280E6C4}.Release|x86.ActiveCfg = Release|Any CPU
@@ -73,14 +74,16 @@ Global
 		{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}.Release|x86.Build.0 = Release|Any CPU
 		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Debug|x86.Build.0 = Debug|Any CPU
-		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Release|x86.ActiveCfg = Debug|Any CPU
+		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Release|x86.ActiveCfg = Release|Any CPU
+		{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}.Release|x86.Build.0 = Release|Any CPU
 		{52C99661-71D0-4037-858E-B605CE5F562C}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{52C99661-71D0-4037-858E-B605CE5F562C}.Debug|x86.Build.0 = Debug|Any CPU
 		{52C99661-71D0-4037-858E-B605CE5F562C}.Release|x86.ActiveCfg = Release|Any CPU
 		{52C99661-71D0-4037-858E-B605CE5F562C}.Release|x86.Build.0 = Release|Any CPU
 		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Debug|x86.Build.0 = Debug|Any CPU
-		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Release|x86.ActiveCfg = Debug|Any CPU
+		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Release|x86.ActiveCfg = Release|Any CPU
+		{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}.Release|x86.Build.0 = Release|Any CPU
 		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{50605A21-04D2-4E72-B943-32F24676373D}.Debug|x86.Build.0 = Debug|Any CPU
 		{50605A21-04D2-4E72-B943-32F24676373D}.Release|x86.ActiveCfg = Release|Any CPU
