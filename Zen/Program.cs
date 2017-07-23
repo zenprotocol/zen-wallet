@@ -85,6 +85,15 @@ namespace Zen
 			{
 				Init();
 			}
+
+            if (launchMode == LaunchModeEnum.TUI)
+            {
+                TUI.Start(app);
+            }
+            else
+            {
+				app.Connect();
+			}
 		}
 
 		static void Init()
@@ -107,11 +116,6 @@ namespace Zen
 			if (rpcServer)
 			{
 				app.StartRPCServer();
-			}
-
-			if (launchMode != LaunchModeEnum.TUI)
-			{
-				app.Connect();
 			}
 		}
 
