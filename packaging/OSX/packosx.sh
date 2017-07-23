@@ -22,7 +22,7 @@ cd ..
 mkdir Resources
 cd Resources
 
-MODE="${1:-Debug}"
+MODE="${1:-Release}"
 echo "Packing $MODE mode"
 
 ZENPATH="../../../../../Zen/bin/$MODE"
