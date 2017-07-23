@@ -33,9 +33,13 @@ namespace Wallet
 
 		public object Data { get; set; }
 
+		string imageName;
+
 		public String ImageName { 
 			set
 			{
+				imageName = value;
+
 				if (value != null)
 				{
 					image = new Image();
@@ -46,6 +50,10 @@ namespace Wallet
 					vbox1.PackEnd(image, true, true, 0);
 					image.Show();
 				}
+			}
+			get
+			{
+				return imageName;
 			}
 		}
 
