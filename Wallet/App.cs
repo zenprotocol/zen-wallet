@@ -50,6 +50,18 @@ namespace Wallet
 			DialogBase.parent = MainWindow;
 			MainWindow.Show();
 
+            if (StatusMessageProducer._Queue != null)
+            {
+                lock (StatusMessageProducer._Queue)
+                {
+                    IStatusMessage message;
+                    while (StatusMessageProducer._Queue.TryDequeue(out message))
+                    {
+                        StatusMessage(message);
+                    }
+                }
+            }
+
 			Gtk.Application.Run();
 		}
 

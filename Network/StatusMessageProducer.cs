@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+
 namespace Network
 {
 	public interface IStatusMessage { }
@@ -39,8 +41,14 @@ namespace Network
 
 	public class StatusMessageProducer : Infrastructure.MessageProducer<IStatusMessage>
 	{
+        //TODO: refactor
+        public static ConcurrentQueue<IStatusMessage> _Queue = new ConcurrentQueue<IStatusMessage>();
+
 		static void Publish(IStatusMessage message)
 		{
+            if (_Queue != null)
+                _Queue.Enqueue(message); 
+            
 			Instance.PushMessage(message);
 		}
 
