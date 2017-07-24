@@ -150,7 +150,7 @@ namespace Wallet
 
                 ulong sent = 0;
                 ulong received = 0;
-                ulong total = 0;
+                long total = 0;
                 long runningBalance = 0;
 
                 if (_TxDeltas != null && _SelectedAsset != null)
@@ -160,11 +160,10 @@ namespace Wallet
                                 assetDelta =>
                                 {
                                     runningBalance += assetDelta.Value;
+							        total += assetDelta.Value;
                                     
                                     var absValue = (ulong)Math.Abs(assetDelta.Value);
-        
-                                    total += absValue;
-        
+ 
                                     if (assetDelta.Value < 0)
                                     {
                                         sent += absValue;

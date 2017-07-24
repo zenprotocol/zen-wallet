@@ -104,6 +104,8 @@ namespace Wallet
 
 		private global::Gtk.Label labelBalanceValue;
 
+		private global::Gtk.Label labelBalanceAsset;
+
 		private global::Gtk.HBox hbox4;
 
 		private global::Gtk.Button buttonSignAndReview;
@@ -488,7 +490,6 @@ namespace Wallet
 			// Container child hbox6.Gtk.Box+BoxChild
 			this.labelSelectedAsset1 = new global::Gtk.Label();
 			this.labelSelectedAsset1.Name = "labelSelectedAsset1";
-			this.labelSelectedAsset1.LabelProp = global::Mono.Unix.Catalog.GetString("Zen");
 			this.hbox6.Add(this.labelSelectedAsset1);
 			global::Gtk.Box.BoxChild w41 = ((global::Gtk.Box.BoxChild)(this.hbox6[this.labelSelectedAsset1]));
 			w41.Position = 2;
@@ -531,18 +532,26 @@ namespace Wallet
 			w45.Position = 1;
 			w45.Expand = false;
 			w45.Fill = false;
-			this.vbox4.Add(this.hbox8);
-			global::Gtk.Box.BoxChild w46 = ((global::Gtk.Box.BoxChild)(this.vbox4[this.hbox8]));
-			w46.Position = 1;
+			// Container child hbox8.Gtk.Box+BoxChild
+			this.labelBalanceAsset = new global::Gtk.Label();
+			this.labelBalanceAsset.Name = "labelBalanceAsset";
+			this.hbox8.Add(this.labelBalanceAsset);
+			global::Gtk.Box.BoxChild w46 = ((global::Gtk.Box.BoxChild)(this.hbox8[this.labelBalanceAsset]));
+			w46.Position = 2;
 			w46.Expand = false;
 			w46.Fill = false;
+			this.vbox4.Add(this.hbox8);
+			global::Gtk.Box.BoxChild w47 = ((global::Gtk.Box.BoxChild)(this.vbox4[this.hbox8]));
+			w47.Position = 1;
+			w47.Expand = false;
+			w47.Fill = false;
 			this.eventboxAmount.Add(this.vbox4);
 			this.vboxMainInner.Add(this.eventboxAmount);
-			global::Gtk.Box.BoxChild w48 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxAmount]));
-			w48.Position = 4;
-			w48.Expand = false;
-			w48.Fill = false;
-			w48.Padding = ((uint)(5));
+			global::Gtk.Box.BoxChild w49 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.eventboxAmount]));
+			w49.Position = 4;
+			w49.Expand = false;
+			w49.Fill = false;
+			w49.Padding = ((uint)(5));
 			// Container child vboxMainInner.Gtk.Box+BoxChild
 			this.hbox4 = new global::Gtk.HBox();
 			this.hbox4.Name = "hbox4";
@@ -557,21 +566,21 @@ namespace Wallet
 			this.buttonSignAndReview.UseUnderline = true;
 			this.buttonSignAndReview.Label = global::Mono.Unix.Catalog.GetString("Sign & Review");
 			this.hbox4.Add(this.buttonSignAndReview);
-			global::Gtk.Box.BoxChild w49 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.buttonSignAndReview]));
-			w49.Position = 1;
-			w49.Expand = false;
-			w49.Fill = false;
-			this.vboxMainInner.Add(this.hbox4);
-			global::Gtk.Box.BoxChild w50 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.hbox4]));
-			w50.PackType = ((global::Gtk.PackType)(1));
-			w50.Position = 5;
+			global::Gtk.Box.BoxChild w50 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.buttonSignAndReview]));
+			w50.Position = 1;
 			w50.Expand = false;
 			w50.Fill = false;
-			this.vbox3.Add(this.vboxMainInner);
-			global::Gtk.Box.BoxChild w51 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.vboxMainInner]));
-			w51.Position = 1;
+			this.vboxMainInner.Add(this.hbox4);
+			global::Gtk.Box.BoxChild w51 = ((global::Gtk.Box.BoxChild)(this.vboxMainInner[this.hbox4]));
+			w51.PackType = ((global::Gtk.PackType)(1));
+			w51.Position = 5;
 			w51.Expand = false;
 			w51.Fill = false;
+			this.vbox3.Add(this.vboxMainInner);
+			global::Gtk.Box.BoxChild w52 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.vboxMainInner]));
+			w52.Position = 1;
+			w52.Expand = false;
+			w52.Fill = false;
 			this.Add(this.vbox3);
 			if ((this.Child != null))
 			{

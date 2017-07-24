@@ -57,7 +57,7 @@ namespace Wallet
                             text = "Inbound connectivity disabled";
                             break;
                         case OutboundStatusEnum.Initializing:
-                            text = "Initializing...";
+                            text = "Querying UPnP device...";
                             break;
 						case OutboundStatusEnum.Accepting:
                             text = "Accepting inbound connections";
@@ -66,7 +66,7 @@ namespace Wallet
                             text = "Found external IP";
                             break;
                         case OutboundStatusEnum.HasInvalidAddress:
-							text = "Found invalid external IP";
+							text = "No inbound connectivity";
 							break;
                     }
                     StatusView.Text2 = text;
