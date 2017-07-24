@@ -53,7 +53,7 @@ namespace ContractsDiscovery.Web.Controllers
 
                     createCallOption.ControlAssets = GetSecureTokens();
 					//createCallOption.OracleServiceUrl = WebConfigurationManager.AppSettings["oracleService"];
-                    createCallOption.Tickers.AddRange(new List<String> { "GOOG", "GOOGL", "YHOO", "TSLA", "INTC", "AMZN" });
+                    createCallOption.Tickers.AddRange(new List<String>(WebConfigurationManager.AppSettings["tickers"].Split(',')));
 
 					model = createCallOption;
 					break;
