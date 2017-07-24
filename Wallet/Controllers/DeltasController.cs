@@ -23,7 +23,6 @@ namespace Wallet
 
             AddTxDeltas(App.Instance.Wallet.TxDeltaList);
 
-			App.Instance.Wallet.OnItems -= AddTxDeltas;
 			App.Instance.Wallet.OnItems += AddTxDeltas;
 
             UpdateView();

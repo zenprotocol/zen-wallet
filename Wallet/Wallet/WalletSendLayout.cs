@@ -105,20 +105,17 @@ namespace Wallet
         { 
             set 
             {
-                Gtk.Application.Invoke(delegate
+                foreach (var _asset in value)
                 {
-                    foreach (var _asset in value)
+                    var iter = _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
+
+                    if (_CurrentAsset != null && _asset.Asset.SequenceEqual(_CurrentAsset))
                     {
-                        var iter = _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
-
-                        if (_CurrentAsset != null && _asset.Asset.SequenceEqual(_CurrentAsset))
-                        {
-                            comboboxAsset.SetActiveIter(iter);
-                        }
-
-                        _AssetsStoreSecureToken.AppendValues(_asset.Asset, _asset.Display);
+                        comboboxAsset.SetActiveIter(iter);
                     }
-                });
+
+                    _AssetsStoreSecureToken.AppendValues(_asset.Asset, _asset.Display);
+                }
             } 
         }
 
@@ -126,20 +123,18 @@ namespace Wallet
         {
             set
             {
-                Gtk.Application.Invoke(delegate
-                {
-                    _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
-                    _AssetsStoreSecureToken.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                _AssetsStoreSecureToken.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
 
-                    if (_CurrentAsset != null && _CurrentAsset.SequenceEqual(value.Asset))
+                if (_CurrentAsset != null && _CurrentAsset.SequenceEqual(value.Asset))
+                {
+                    Gtk.Application.Invoke(delegate
                     {
-                        Gtk.Application.Invoke(delegate
-                        {
-                            labelSelectedAsset.Text = value.Display;
-                            labelSelectedAsset1.Text = value.Display;
-                        });
-                    }
-                });
+                        labelSelectedAsset.Text = value.Display;
+                        labelSelectedAsset1.Text = value.Display;
+                        labelBalanceAsset.Text = value.Display;
+                    });
+                }
             }
         }
 
@@ -289,7 +284,7 @@ namespace Wallet
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-            }, labelSelectedAsset, labelSelectedAsset1, labelSelectOtherAsset, labelSelectSecureToken, labelBalance);
+            }, labelSelectedAsset, labelSelectedAsset1, labelBalanceAsset, labelSelectOtherAsset, labelSelectSecureToken, labelBalance);
 
 			Apply((Entry entry) =>
 			{
@@ -333,7 +328,7 @@ namespace Wallet
                     SendInfo.Asset = null;
 				}
 
-                var assetMatadataList = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(SendInfo.Asset));
+                var assetMatadataList = AssetsMetadata.Instance.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(SendInfo.Asset));
 
                 if (assetMatadataList.Count() != 0)
                 {
@@ -343,6 +338,10 @@ namespace Wallet
 
 				UpdateBalance();
 			};
+
+			TreeIter iterDefault;
+			if (_AssetsStore.Find(t => t.SequenceEqual(Consensus.Tests.zhash), out iterDefault))
+				comboboxAsset.SetActiveIter(iterDefault);
 
             comboboxSecureToken.Changed += (sender, e) =>
 			{
@@ -423,7 +422,7 @@ namespace Wallet
 
 				if (!SendInfo.Signed)
 				{
-                    labelAmountError.Text = "Error: not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result;
+                    labelAmountError.Text = "Error: not enough " + AssetsMetadata.Instance.TryGetValue(SendInfo.Asset);
 					return;
 				}
 
@@ -449,8 +448,8 @@ namespace Wallet
             }
 		}
 
-		void UpdateBalance()
-		{
+        void UpdateBalance()
+        {
             if (SendInfo.Asset == null)
             {
                 SendInfo.Asset = Consensus.Tests.zhash;
@@ -458,9 +457,10 @@ namespace Wallet
 
             _AssetBalance = _AssetDeltas != null && _AssetDeltas.ContainsKey(SendInfo.Asset) ? _AssetDeltas[SendInfo.Asset] : 0;
 
-			string value = SendInfo.Asset.SequenceEqual(Tests.zhash) ? new Zen(_AssetBalance).ToString() : String.Format(Formats.Money, _AssetBalance);
+            string value = SendInfo.Asset.SequenceEqual(Tests.zhash) ? new Zen(_AssetBalance).ToString() : String.Format(Formats.Money, _AssetBalance);
 
-            labelBalanceValue.Text = $"{value} {App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result}";
+            labelBalanceValue.Text = string.Format(Constants.Formats.Money, value);
+            labelBalanceAsset.Text = AssetsMetadata.Instance.TryGetValue(SendInfo.Asset);
 			CheckAssetAmount();
 		}
 
@@ -470,7 +470,7 @@ namespace Wallet
 
 			if (!SendInfo.HasEnough)
 			{
-                labelAmountError.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(SendInfo.Asset).Result;
+                labelAmountError.Text = "Not enough " + AssetsMetadata.Instance.TryGetValue(SendInfo.Asset);
 			}
 			else
 			{

@@ -233,7 +233,7 @@ namespace Zen
 
 				string text = output.@lock.IsContractLock ? "C" : "P";
 
-                text += " " + _WalletManager.AssetsMetadata.GetMetadata(output.spend.asset).Result;
+                text += " " + Convert.ToBase64String(output.spend.asset);
                 text += " " + output.spend.amount;
 
 				if (output.spend.asset.SequenceEqual(Consensus.Tests.zhash))

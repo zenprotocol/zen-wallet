@@ -3,6 +3,7 @@ using Wallet.core;
 using Wallet.Domain;
 using System.Linq;
 using Infrastructure;
+using System.Collections.Generic;
 
 namespace Wallet
 {
@@ -14,13 +15,12 @@ namespace Wallet
 		{
             _AssetsView = assetsView;
 
-			App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged -= AssetsMetadata_AssetMatadataChanged;
-			App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += AssetsMetadata_AssetMatadataChanged;
+			AssetsMetadata.Instance.AssetMatadataChanged += AssetsMetadata_AssetMatadataChanged;
 
-			_AssetsView.Assets = App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList();
+			_AssetsView.Assets = AssetsMetadata.Instance.GetAssetMatadataList();
 		}
 
-		void AssetsMetadata_AssetMatadataChanged(AssetMetadata assetMetadata)
+        void AssetsMetadata_AssetMatadataChanged(AssetMetadata assetMetadata)
 		{
             _AssetsView.AssetUpdated = assetMetadata;
 		}

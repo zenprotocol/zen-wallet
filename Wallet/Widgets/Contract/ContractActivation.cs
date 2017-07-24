@@ -7,7 +7,7 @@ using System.Linq;
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class ContractActivation : DialogBase
+    public partial class ContractActivation : DialogBase, IAssetsView
 	{
 		bool _IsActive;
 		byte[] _Hash;
@@ -17,9 +17,19 @@ namespace Wallet
         Func<ulong, byte[], byte[], ContractActivationResult> _ActivateFunc;
 		byte[] SecureToken = null;
 
-		public ContractActivation()
+        UpdatingStore<byte[]> _SecureTokenComboboxStore = new UpdatingStore<byte[]>(
+			0,
+			typeof(byte[]),
+			typeof(string)
+		);
+
+        readonly AssetsController _AssetsController;
+
+        public ContractActivation()
 		{
 			Build();
+
+            _AssetsController = new AssetsController(this);
 
 			hboxStatus.Visible = false; // just hide the f@cking thing already
 			hboxStatus.Hide(); // just hide the f@cking thing already
@@ -35,7 +45,7 @@ namespace Wallet
 				label.ModifyFont(Constants.Fonts.DialogContent);
             }, label1, label5, label3, labelKalapas, labelSelectSecureToken, labelStatus);
 
-			buttonApply.Clicked += delegate {
+			buttonActivate.Clicked += delegate {
                 var result = _ActivateFunc(_TotalKalapas, _Code, SecureToken);
 
                 switch (result.Result)
@@ -59,56 +69,12 @@ namespace Wallet
 				UpdateZenAmount((SpinButton)sender);
 			};
 
-			var secureTokenComboboxStore = new ListStore(typeof(byte[]), typeof(string));
-
-			comboboxSecureToken.Model = secureTokenComboboxStore;
+			comboboxSecureToken.Model = _SecureTokenComboboxStore;
 			var textRendererSecukreToken = new CellRendererText();
 			comboboxSecureToken.PackStart(textRendererSecukreToken, false);
 			comboboxSecureToken.AddAttribute(textRendererSecukreToken, "text", 1);
 
-			secureTokenComboboxStore.AppendValues(new byte[] { }, "None");
-
-			foreach (var _asset in App.Instance.Wallet.AssetsMetadata.GetAssetMatadataList())
-			{
-				secureTokenComboboxStore.AppendValues(_asset.Asset, _asset.Display);
-			}
-
-            App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
-            {
-                Gtk.Application.Invoke(delegate
-                {
-                    try
-                    {
-                        bool found = false;
-                        TreeIter iter;
-                        var canIter = secureTokenComboboxStore.GetIterFirst(out iter);
-
-                        while (canIter)
-                        {
-                            var key = new GLib.Value();
-                            secureTokenComboboxStore.GetValue(iter, 0, ref key);
-                            byte[] _asset = key.Val as byte[];
-
-                            if (_asset != null && _asset.SequenceEqual(t.Asset))
-                            {
-                                secureTokenComboboxStore.SetValue(iter, 1, t.Display);
-                                found = true;
-                                break;
-                            }
-                            canIter = secureTokenComboboxStore.IterNext(ref iter);
-                        }
-
-			            if (!found)
-			            {
-			                secureTokenComboboxStore.AppendValues(t.Asset, t.Display);
-			            }
-			        }
-			        catch
-			        {
-			            Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
-			        }
-			    });
-			};
+			_SecureTokenComboboxStore.AppendValues(new byte[] { }, "None");
 
 			comboboxSecureToken.Changed += (sender, e) =>
 			{
@@ -134,12 +100,12 @@ namespace Wallet
 
 			if (App.Instance.Wallet.CanSpend(Tests.zhash, _TotalKalapas))
 			{
-				buttonApply.Sensitive = true;
+				buttonActivate.Sensitive = true;
                 labelKalapas.Text = new Zen(_TotalKalapas) + " Zen";
 			}
 			else
 			{
-				buttonApply.Sensitive = false;
+				buttonActivate.Sensitive = false;
 				labelKalapas.Text = "Not enough Zen";
 			}
 		}
@@ -148,7 +114,7 @@ namespace Wallet
 		{
 			//UInt32 nextBlocks;
 			_IsActive = App.Instance.Wallet.IsContractActive(hash/*, out nextBlocks*/);
-            _KalapasPerBlock = ActiveContractSet.KalapasPerBlock(System.Text.Encoding.ASCII.GetString(code));
+            _KalapasPerBlock = code == null || code.Length == 0 ? 0 : ActiveContractSet.KalapasPerBlock(System.Text.Encoding.ASCII.GetString(code));
 			_Code = code;
             _ActivateFunc = activateFunc;
 
@@ -166,6 +132,23 @@ namespace Wallet
 
 			UpdateZenAmount(spinBlocks);
 			ShowDialog();
+		}
+
+        public ICollection<AssetMetadata> Assets 
+        { 
+            set
+            {
+                foreach (var item in value)
+					_SecureTokenComboboxStore.UpdateColumn(t => t.SequenceEqual(item.Asset), 1, item.Display);
+			} 
+        }
+
+		public AssetMetadata AssetUpdated
+		{
+			set
+			{
+				_SecureTokenComboboxStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
+			}
 		}
 	}
 }
