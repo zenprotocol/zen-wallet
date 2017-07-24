@@ -11,8 +11,9 @@ using Newtonsoft.Json;
 using System.Linq;
 using System.Web;
 using System.Collections.Concurrent;
+using Wallet.core;
 
-namespace Wallet.core
+namespace Wallet
 {
 	public class AssetMetadata
 	{
@@ -29,7 +30,7 @@ namespace Wallet.core
 		//public string version;
 	}
 
-    public class AssetsMetadata
+    public class AssetsMetadata : Singleton<AssetsMetadata>
     {
         static class Utils
         {
@@ -55,85 +56,68 @@ namespace Wallet.core
         {
             try
             {
-                string directory = Utils.PathCombine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), Utils.Config("assetsDir"));
+                string directory = Utils.PathCombine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), Utils.Config("assetsDir"));
                 _CacheJsonStore.FileName = Utils.PathCombine(directory, "metadata.json");
                 _CacheJsonStore.Value.ToList().ForEach(t => _Cache.TryAdd(t.Key, new AssetMetadata() { Asset = Convert.FromBase64String(t.Key), Display = t.Value.name }));
                 _Cache.TryAdd(Convert.ToBase64String(Consensus.Tests.zhash), new AssetMetadata() { Asset = Consensus.Tests.zhash, Display = ZEN });
-            } catch (Exception e)
+
+				App.Instance.Wallet.OnItems += OnItems;
+			} catch (Exception e)
             {
-                WalletTrace.Error("AssetsMetadata ctor", e);
+                InfrastructureTrace.Error("AssetsMetadata ctor", e);
             }
         }
 
-        //public async Task GetMetadata(byte[] asset)
-        //{
-        //    var key = Convert.ToBase64String(asset);
+		void OnItems(List<TxDelta> txDeltas)
+		{
+            foreach (var txDelta in txDeltas)
+            {
+                foreach (var asset in txDelta.AssetDeltas.Keys)
+                {
+                    var key = Convert.ToBase64String(asset);
 
-        //    if (_Cache.ContainsKey(key))
-        //        return;
+                    if (!_Cache.ContainsKey(key))
+                    {
+                        GetMetadata(key, asset);
+                    }
+                }
+            }
+		}
 
-        //    var assetMetadata = new AssetMetadata() { Asset = asset, Display = key };
+		//public async Task GetMetadata(byte[] asset)
+		//{
+		//    var key = Convert.ToBase64String(asset);
 
-        //    _Cache.TryAdd(key, assetMetadata);
-        //    AssetMatadataChanged(assetMetadata); // firstly, with initial Display
-        //    await GetAssetMatadataAsync(assetMetadata);
-        //    AssetMatadataChanged(assetMetadata); // again, now with updated Display
-        //}
+		//    if (_Cache.ContainsKey(key))
+		//        return;
 
-        public Task<string> GetMetadata(byte[] asset)
+		//    var assetMetadata = new AssetMetadata() { Asset = asset, Display = key };
+
+		//    _Cache.TryAdd(key, assetMetadata);
+		//    AssetMatadataChanged(assetMetadata); // firstly, with initial Display
+		//    await GetAssetMatadataAsync(assetMetadata);
+		//    AssetMatadataChanged(assetMetadata); // again, now with updated Display
+		//}
+
+		public void GetMetadata(string key, byte[] asset)
         {
-            var taskCompletion = new TaskCompletionSource<string>();
+            Task.Factory.StartNew(async () => {
+				var assetMetadata = new AssetMetadata() { Asset = asset, Display = key };
 
-			var key = Convert.ToBase64String(asset);
+				_Cache.TryAdd(key, assetMetadata);
 
-			if (!_Cache.ContainsKey(key))
-            {
-                Task.Factory.StartNew(async () => {
-					var assetMetadata = new AssetMetadata() { Asset = asset, Display = key };
-
-					_Cache.TryAdd(key, assetMetadata);
-
-                    try
-                    {
-                        if (AssetMatadataChanged != null)
-                            AssetMatadataChanged(assetMetadata); // firstly, with initial Display
-                    }
-                    catch (Exception e)
-                    {
-                        WalletTrace.Information($"Error invoking subscriber: {e.Message}");
-                    }
-
-					await GetAssetMatadataAsync(assetMetadata);
-
-					try
-					{
-						if (AssetMatadataChanged != null)
-							AssetMatadataChanged(assetMetadata); // again, now with updated Display
-					}
-					catch (Exception e)
-					{
-						WalletTrace.Information($"Error invoking subscriber: {e.Message}");
-					}
-
-					taskCompletion.SetResult(assetMetadata.Display);
-                });
-			} 
-            else 
-            {
-                taskCompletion.SetResult(_Cache[key].Display);
+				await GetAssetMatadataAsync(assetMetadata);
 
 				try
 				{
 					if (AssetMatadataChanged != null)
-						AssetMatadataChanged(_Cache[key]); // ensure subscribers get value from cache
+						AssetMatadataChanged(assetMetadata);
 				}
 				catch (Exception e)
 				{
-					WalletTrace.Information($"Error invoking subscriber: {e.Message}");
+					InfrastructureTrace.Information($"Error invoking subscriber: {e.Message}");
 				}
-			}
-
-			return taskCompletion.Task;
+            });
         }
 
         public ICollection<AssetMetadata> GetAssetMatadataList()
@@ -141,11 +125,26 @@ namespace Wallet.core
             return _Cache.Values;
         }
 
+        public string TryGetValue(byte[] asset)
+        {
+            var key = Convert.ToBase64String(asset);
+
+            if (_Cache.ContainsKey(key))
+            {
+                return _Cache[key].Display;
+            }
+            else
+            {
+                GetMetadata(key, asset);
+                return key;
+            }
+        }
+
         async Task GetAssetMatadataAsync(AssetMetadata assetMetadata)
         {
             var uri = new Uri(string.Format($"http://{Utils.Config("assetsDiscovery")}/AssetMetadata/Index/" + HttpServerUtility.UrlTokenEncode(assetMetadata.Asset)));
 			
-            WalletTrace.Information($"Loading asset metadata from web: {uri.AbsoluteUri}");
+            InfrastructureTrace.Information($"Loading asset metadata from web: {uri.AbsoluteUri}");
             using (var response = await new HttpClient().GetAsync(uri.AbsoluteUri))
             {
 				if (response.IsSuccessStatusCode)
@@ -181,7 +180,7 @@ namespace Wallet.core
 					catch (Exception e)
 					{
 
-                        WalletTrace.Information($"Error fetching asset metadata from url: {uri.AbsoluteUri}");
+                        InfrastructureTrace.Information($"Error fetching asset metadata from url: {uri.AbsoluteUri}");
                         assetMetadata.Display += " (Metadata error)";
 					}
                 }

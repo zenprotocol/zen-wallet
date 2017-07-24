@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gtk;
@@ -12,9 +13,10 @@ namespace Wallet
 	}
 
     [System.ComponentModel.ToolboxItem (true)]
-    public partial class Portfolio : WidgetBase, IPortfolioVIew
+    public partial class Portfolio : WidgetBase, IPortfolioVIew, IAssetsView
     {
 		readonly DeltasController _DeltasController;
+        readonly AssetsController _AssetsController;
 
 		UpdatingStore<byte[]> listStore = new UpdatingStore<byte[]>(
             0,
@@ -28,6 +30,7 @@ namespace Wallet
             this.Build ();
 
 			_DeltasController = new DeltasController(this);
+            _AssetsController = new AssetsController(this);
 
 			Apply((Label label) =>
             {
@@ -42,37 +45,6 @@ namespace Wallet
             }, labelZen);
 
             ConfigureList();
-
-            App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
-            {
-                Gtk.Application.Invoke(delegate
-                {
-                    try
-                    {
-                        TreeIter iter;
-
-                        var canIter = listStore.GetIterFirst(out iter);
-
-                        while (canIter)
-                        {
-                            var key = new GLib.Value();
-                            listStore.GetValue(iter, 0, ref key);
-                            byte[] _asset = key.Val as byte[];
-
-                            if (_asset != null && _asset.SequenceEqual(t.Asset))
-                            {
-                                listStore.SetValue(iter, 0, t.Display);
-                                break;
-                            }
-
-                            canIter = listStore.IterNext(ref iter);
-                        }
-                    } catch 
-                    {
-                        Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
-                    }
-                });
-            };
         }
 
         private void ConfigureList()
@@ -119,10 +91,27 @@ namespace Wallet
 					}
 					else
 					{
-						listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.Wallet.AssetsMetadata.GetMetadata(item.Key).Result, item.Value);
+                        listStore.Update(t => t.SequenceEqual(item.Key), item.Key, AssetsMetadata.Instance.TryGetValue(item.Key), item.Value);
 					}
 				}
 			} 
+        }
+
+        public ICollection<AssetMetadata> Assets
+        {
+            set
+            {
+                foreach (var item in value)
+    				listStore.UpdateColumn(t => t.SequenceEqual(item.Asset), 1, item.Display);
+			}
+        }
+
+        public AssetMetadata AssetUpdated 
+        {
+            set
+            {
+                listStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
+            }
         }
     }
 }
