@@ -30,7 +30,21 @@ namespace Wallet
             });
 		}
 
-        public bool Find(Predicate<TKey> keyMatchPredicate, out TreeIter iter)
+        public void UpdateColumn(Predicate<TKey> keyMatchPredicate, int column, object value)
+		{
+			Gtk.Application.Invoke(delegate
+			{
+				TreeIter iter;
+				var found = Find(keyMatchPredicate, out iter);
+
+				if (found)
+				{
+					SetValue(iter, column, value);
+				}
+			});
+		}
+
+		public bool Find(Predicate<TKey> keyMatchPredicate, out TreeIter iter)
         {
 			var canIter = GetIterFirst(out iter);
 
