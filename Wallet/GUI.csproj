@@ -76,6 +76,8 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -214,6 +216,7 @@
     <Compile Include="UpdatingStore.cs" />
     <Compile Include="Widgets\Status.cs" />
     <Compile Include="gtk-gui\Wallet.Widgets.Status.cs" />
+    <Compile Include="Controllers\AssetsMetadata.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

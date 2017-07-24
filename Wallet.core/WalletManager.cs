@@ -26,7 +26,6 @@ namespace Wallet.core
         private EventLoopMessageListener<BlockChainMessage> _BlockChainListener;
 
         public List<TxDelta> TxDeltaList { get; private set; }
-        public AssetsMetadata AssetsMetadata { get; private set; }
 
         public event Action<List<TxDelta>> OnItems;
 
@@ -40,7 +39,6 @@ namespace Wallet.core
             _TxStore = new TxStore();
 
             TxDeltaList = new List<TxDelta>();
-            AssetsMetadata = new AssetsMetadata();
 
             _BlockChainListener = new EventLoopMessageListener<BlockChainMessage>(OnBlockChainMessage, "Wallet Consumer");
             OwnResource(MessageProducer<BlockChainMessage>.Instance.AddMessageListener(_BlockChainListener));
@@ -56,10 +54,6 @@ namespace Wallet.core
                     switch (item.Item2.TxState)
                     {
                         case TxStateEnum.Confirmed:
-                            foreach (var output in item.Item2.Tx.outputs)
-                            {
-                                AssetsMetadata.GetMetadata(output.spend.asset);
-                            }
                             TxDeltaList.Add(new TxDelta(item.Item2.TxState, item.Item2.TxHash, item.Item2.Tx, item.Item2.AssetDeltas, item.Item2.DateTime));
                             break;
                         case TxStateEnum.Unconfirmed:
@@ -123,7 +117,6 @@ namespace Wallet.core
                     foreach (var output in item.Value)
                     {
                         AddOutput(assetDeltas, output);
-                        AssetsMetadata.GetMetadata(output.spend.asset);
                     }
 
                     _TxStore.Put(dbTx, item.Key, txs[item.Key], assetDeltas, TxStateEnum.Confirmed);
@@ -192,7 +185,6 @@ namespace Wallet.core
             ptx.outputs.Where(IsMatch).ToList().ForEach(o =>
             {
                 AddOutput(_deltas, o, !isValid);
-                AssetsMetadata.GetMetadata(o.spend.asset);
             });
 
             ptx.pInputs.ToList().ForEach(pInput =>
@@ -455,13 +447,6 @@ namespace Wallet.core
             return true;
         }
 
-        /// <summary>
-        /// Constract and sign a transaction activating a contract
-        /// </summary>
-        /// <returns>The sign.</returns>
-        /// <param name="address">Address.</param>
-        /// <param name="asset">Asset.</param>
-        /// <param name="amount">Amount.</param>
         public bool SacrificeToContract(byte[] code, ulong zenAmount, out Types.Transaction signedTx, byte[] secureTokenHash = null)
         {
             ulong change;
