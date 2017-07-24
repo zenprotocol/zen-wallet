@@ -30,7 +30,7 @@ namespace Wallet
 
 		private global::Gtk.HBox hbox2;
 
-		private global::Gtk.Button buttonApply;
+		private global::Gtk.Button buttonActivate;
 
 		private global::Gtk.HBox hboxStatus;
 
@@ -147,13 +147,13 @@ namespace Wallet
 			this.hbox2.Homogeneous = true;
 			this.hbox2.Spacing = 6;
 			// Container child hbox2.Gtk.Box+BoxChild
-			this.buttonApply = new global::Gtk.Button();
-			this.buttonApply.CanFocus = true;
-			this.buttonApply.Name = "buttonApply";
-			this.buttonApply.UseUnderline = true;
-			this.buttonApply.Label = global::Mono.Unix.Catalog.GetString("Button");
-			this.hbox2.Add(this.buttonApply);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonApply]));
+			this.buttonActivate = new global::Gtk.Button();
+			this.buttonActivate.CanFocus = true;
+			this.buttonActivate.Name = "buttonActivate";
+			this.buttonActivate.UseUnderline = true;
+			this.buttonActivate.Label = global::Mono.Unix.Catalog.GetString("Activate");
+			this.hbox2.Add(this.buttonActivate);
+			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonActivate]));
 			w12.Position = 1;
 			w12.Expand = false;
 			w12.Fill = false;
