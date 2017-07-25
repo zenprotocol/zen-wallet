@@ -78,16 +78,21 @@ namespace Zen
 
 			if (launchMode == LaunchModeEnum.GUI)
 			{
-                Init(); //new Thread(Init).Start();
+                Init(true); //new Thread(Init).Start();
 				app.GUI(true);
 			}
 			else
 			{
-				Init();
+				Init(launchMode != LaunchModeEnum.TUI);
 			}
+
+            if (launchMode == LaunchModeEnum.TUI)
+            {
+                TUI.Start(app);
+            }
 		}
 
-		static void Init()
+		static void Init(bool connect)
 		{
 			if (wipe)
 			{
@@ -109,10 +114,10 @@ namespace Zen
 				app.StartRPCServer();
 			}
 
-			if (launchMode != LaunchModeEnum.TUI)
-			{
-				app.Connect();
-			}
+            if (connect)
+            {
+                app.Connect();
+            }
 		}
 
 		static void ShowHelp (OptionSet p)

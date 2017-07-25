@@ -82,7 +82,7 @@ namespace Wallet
 				}
 				else
 				{
-                    labelMessage.Text = "Not enough " + App.Instance.Wallet.AssetsMetadata.GetMetadata(asset).Result;
+                    labelMessage.Text = "Not enough " + AssetsMetadata.Instance.TryGetValue(asset);
 				}
 			};
 

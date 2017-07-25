@@ -431,7 +431,7 @@ namespace Zen
                 {
                     var value = item.Key.SequenceEqual(Consensus.Tests.zhash) ? item.Value * Math.Pow(10, -8)  : item.Value;
                     assets += (assets == string.Empty ? "" : ", ") + value;
-                    assets += " " + app.WalletManager.AssetsMetadata.GetMetadata(item.Key).Result;
+                    assets += " " + Wallet.AssetsMetadata.Instance.TryGetValue(item.Key);
                 }
 
 				return info + " " + assets;

@@ -13,7 +13,7 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem (true)]
 	public partial class VerticalMenu : MenuBase, IVerticalMenu
 	{
-		AssetsMetadata AssetsMetadata = App.Instance.Wallet.AssetsMetadata;
+		//AssetsMetadata AssetsMetadata = App.Instance.Wallet.AssetsMetadata;
 
 		public VerticalMenu ()
 		{

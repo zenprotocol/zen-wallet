@@ -74,7 +74,7 @@ namespace ContractsDiscovery.Web.Controllers
 				return View();
 			}
 
-			_StockAPI.Tickers = new string[] { "GOOG", "GOOGL", "YHOO", "TSLA", "INTC", "AMZN" }; //, "APPL" };
+			_StockAPI.Tickers = WebConfigurationManager.AppSettings["tickers"].Split(',');
 
             var rawTickers = _StockAPI.FetchResults().Result;
 			var now = DateTime.Now.ToUniversalTime();
