@@ -7,7 +7,7 @@ rm -rf zen
 mkdir zen
 cd zen
 
-MODE="${1:-Debug}"
+MODE="${1:-Release}"
 
 echo "Packing $MODE mode"
 
