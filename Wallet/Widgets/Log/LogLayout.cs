@@ -46,10 +46,6 @@ namespace Wallet
 				if (ctl.GetActiveIter(out iter))
 					FindChild<Log>().SelectedAsset = (byte[])ctl.Model.GetValue(iter, 0);
 			};
-
-            TreeIter iterDefault;
-            if (_AssetsStore.Find(t => t.SequenceEqual(Consensus.Tests.zhash), out iterDefault))
-                comboboxAsset.SetActiveIter(iterDefault);
 		}
 
 		public AssetMetadata AssetUpdated
@@ -73,7 +69,11 @@ namespace Wallet
                     {
                         _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
                     }
-                });
+
+					TreeIter iterDefault;
+					if (_AssetsStore.Find(t => t.SequenceEqual(Consensus.Tests.zhash), out iterDefault))
+						comboboxAsset.SetActiveIter(iterDefault);
+				});
 			}
 		}
 	}

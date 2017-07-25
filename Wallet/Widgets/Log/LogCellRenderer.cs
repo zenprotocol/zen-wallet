@@ -32,8 +32,7 @@ namespace Wallet
 		{
 			Gdk.GC gc = widget.Style.TextGC(StateType.Normal);
 
-			//TODO: look for setting color in a different way. this relates to a display bug in Mac
-			gc.RgbFgColor = LogEntryRow is LogHeaderRow ? Constants.Colors.Text.Gdk : Constants.Colors.SubText.Gdk;
+			var fgColor = LogEntryRow is LogHeaderRow ? Constants.Colors.Text : Constants.Colors.SubText;
 
 			RendererHelper rendererHelper = new RendererHelper(gc, window, widget, exposeArea);
 
@@ -52,7 +51,8 @@ namespace Wallet
 					PADDING  + (i + offset) * exposeArea.Width / (length + offset), 
 					TEXT_PADDING, 
 					LogEntryRow is LogHeaderRow ? Constants.Fonts.LogHeader : Constants.Fonts.LogText,
-					exposeArea.Width / (length + offset) - PADDING
+					exposeArea.Width / (length + offset) - PADDING,
+                    fgColor
 				);
 			}
 		}

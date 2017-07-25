@@ -71,7 +71,7 @@ namespace Wallet
 
 		public async void Init()
 		{
-            var assetName = await App.Instance.Wallet.AssetsMetadata.GetMetadata(WalletSendLayout.SendInfo.Asset);
+            var assetName = AssetsMetadata.Instance.TryGetValue(WalletSendLayout.SendInfo.Asset);
 
 		//	imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
 			labelSelectedAsset.Text = labelSelectedAsset1.Text = assetName;
