@@ -37,10 +37,12 @@ namespace Wallet
 				TreeIter iter;
 				var found = Find(keyMatchPredicate, out iter);
 
-				if (found)
+				if (!found)
 				{
-					SetValue(iter, column, value);
+                    iter = Append();
 				}
+
+				SetValue(iter, column, value);
 			});
 		}
 
