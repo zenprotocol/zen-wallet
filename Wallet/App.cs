@@ -14,8 +14,9 @@ namespace Wallet
 		//TODO: remove wallet and node, remove singleton, make into resource-owner
 		public WalletManager Wallet { get; private set; }
 		public Network.NodeManager Node { get; private set; }
+        public AssetsMetadata AssetsMetadata { get; private set; }
 
-        ResourceOwner resources = new ResourceOwner();
+		ResourceOwner resources = new ResourceOwner();
 
 		public App()
 		{
@@ -34,6 +35,8 @@ namespace Wallet
 		{
 			Wallet = walletManager;
 			Node = nodeManager;
+
+            AssetsMetadata = new AssetsMetadata(Wallet);
 
             resources.OwnResource(MessageProducer<BlockChainMessage>.Instance.AddMessageListener(new MessageListener<BlockChainMessage>(message => {
                 if (message is BlockMessage)
