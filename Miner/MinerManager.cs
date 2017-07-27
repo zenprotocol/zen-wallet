@@ -308,7 +308,10 @@ namespace Miner
 			}
 
             if (_ValidatedTxs.Count == 0)
-                return; // don't allow empty blocks
+            {
+				MinerTrace.Information("No txs");
+				return; // don't allow empty blocks
+            }
 
             CalculateCoinbase();
 
@@ -331,7 +334,7 @@ namespace Miner
                 new byte[12]
             );
 
-            MinerTrace.Information($"Mining block number {_BlockChain.Tip.Value.header.blockNumber} with {_ValidatedTxs.Count()} txs");
+            MinerTrace.Information($"Mining block number {_BlockChain.Tip.Value.header.blockNumber + 1} with {_ValidatedTxs.Count()} txs");
 
 			_Hasher.SetHeader(_Header);
             _Hasher.Continue();
