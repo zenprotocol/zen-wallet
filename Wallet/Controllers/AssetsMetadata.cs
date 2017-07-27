@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -30,7 +30,7 @@ namespace Wallet
 		//public string version;
 	}
 
-    public class AssetsMetadata : Singleton<AssetsMetadata>
+    public class AssetsMetadata
     {
         static class Utils
         {
@@ -52,7 +52,7 @@ namespace Wallet
 
         public event Action<AssetMetadata> AssetMatadataChanged;
 
-        public AssetsMetadata()
+        public AssetsMetadata(WalletManager wallet)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace Wallet
                 _CacheJsonStore.Value.ToList().ForEach(t => _Cache.TryAdd(t.Key, new AssetMetadata() { Asset = Convert.FromBase64String(t.Key), Display = t.Value.name }));
                 _Cache.TryAdd(Convert.ToBase64String(Consensus.Tests.zhash), new AssetMetadata() { Asset = Consensus.Tests.zhash, Display = ZEN });
 
-				App.Instance.Wallet.OnItems += OnItems;
+				wallet.OnItems += OnItems;
 			} catch (Exception e)
             {
                 InfrastructureTrace.Error("AssetsMetadata ctor", e);

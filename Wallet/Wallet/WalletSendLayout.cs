@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Gdk;
 using Gtk;
@@ -330,7 +330,7 @@ namespace Wallet
                     SendInfo.Asset = null;
 				}
 
-                var assetMatadataList = AssetsMetadata.Instance.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(SendInfo.Asset));
+                var assetMatadataList = App.Instance.AssetsMetadata.GetAssetMatadataList().Where(t => t.Asset.SequenceEqual(SendInfo.Asset));
 
                 if (assetMatadataList.Count() != 0)
                 {
@@ -424,7 +424,7 @@ namespace Wallet
 
 				if (!SendInfo.Signed)
 				{
-                    labelAmountError.Text = "Error: not enough " + AssetsMetadata.Instance.TryGetValue(SendInfo.Asset);
+                    labelAmountError.Text = "Error: not enough " + App.Instance.AssetsMetadata.TryGetValue(SendInfo.Asset);
 					return;
 				}
 
@@ -461,7 +461,7 @@ namespace Wallet
             string value = SendInfo.Asset.SequenceEqual(Tests.zhash) ? new Zen(_AssetBalance).ToString() : String.Format(Formats.Money, _AssetBalance);
 
             labelBalanceValue.Text = string.Format(Constants.Formats.Money, value);
-            labelBalanceAsset.Text = AssetsMetadata.Instance.TryGetValue(SendInfo.Asset);
+            labelBalanceAsset.Text = App.Instance.AssetsMetadata.TryGetValue(SendInfo.Asset);
 			CheckAssetAmount();
 		}
 
@@ -471,7 +471,7 @@ namespace Wallet
 
 			if (!SendInfo.HasEnough)
 			{
-                labelAmountError.Text = "Not enough " + AssetsMetadata.Instance.TryGetValue(SendInfo.Asset);
+                labelAmountError.Text = "Not enough " + App.Instance.AssetsMetadata.TryGetValue(SendInfo.Asset);
 			}
 			else
 			{
