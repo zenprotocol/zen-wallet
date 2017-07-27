@@ -61,7 +61,7 @@ namespace BlockChain
 			   .Replace("__ownerPubKey__", Convert.ToBase64String(address.Bytes));
 
 			var metadata = new { Type = "call-option" };
-		//	code = code + "\n// " + JsonConvert.SerializeObject(metadata);
+			code = code + "\n// " + JsonConvert.SerializeObject(metadata);
 
 			var compiled = ContractExamples.Execution.compile(code);
 
