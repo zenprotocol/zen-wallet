@@ -89,7 +89,7 @@ namespace NBitcoin.Protocol.Behaviors
 
 					if (bk != null)
 					{
-						NodeServerTrace.Information("Sending tip: " + System.Convert.ToBase64String(tip.Key));
+                        NodeServerTrace.Information("Sending tip: " + tip.Value.header.blockNumber);
 						node.SendMessageAsync(bk);
 					}
 					else
