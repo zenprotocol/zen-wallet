@@ -82,7 +82,7 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem(true)]
-    public partial class WalletSendLayout : WidgetBase, IPortfolioVIew, IAssetsView
+    public partial class WalletSendLayout : WidgetBase, IPortfolioVIew, IAssetsView, IControlInit
 	{
         readonly DeltasController _DeltasController;
         readonly AssetsController _AssetsController;
@@ -180,14 +180,16 @@ namespace Wallet
 			{
 				try
 				{
-					var address = new Address(((Entry)sender).Text);
+                    var value = ((Entry)sender).Text;
+
+                    var address = string.IsNullOrEmpty(value) ? null : new Address(value);
 					SendInfo.Destination = address;
 					labelDestinationError.Text = "";
 
 					vboxMainInner.Remove(eventboxData);
 					vboxMainInner.Remove(eventboxSecureToken);
 
-                    if (address.AddressType == AddressType.Contract)
+                    if (address != null && address.AddressType == AddressType.Contract)
                     {
                         //vboxMainInner.Add(eventboxSecureToken);
 						//vboxMainInner.ReorderChild(eventboxSecureToken, 1);
@@ -302,14 +304,14 @@ namespace Wallet
 			comboboxAsset.PackStart(textRenderer, false);
 			comboboxAsset.AddAttribute(textRenderer, "text", 1);
 
-			var secureTokenComboboxStore = new ListStore(typeof(byte[]), typeof(string));
+			//var secureTokenComboboxStore = new ListStore(typeof(byte[]), typeof(string));
 
-			comboboxSecureToken.Model = secureTokenComboboxStore;
-			var textRendererSecukreToken = new CellRendererText();
-			comboboxSecureToken.PackStart(textRendererSecukreToken, false);
-			comboboxSecureToken.AddAttribute(textRendererSecukreToken, "text", 1);
+			//comboboxSecureToken.Model = secureTokenComboboxStore;
+			//var textRendererSecukreToken = new CellRendererText();
+			//comboboxSecureToken.PackStart(textRendererSecukreToken, false);
+			//comboboxSecureToken.AddAttribute(textRendererSecukreToken, "text", 1);
 
-            secureTokenComboboxStore.AppendValues(new byte[] {}, "None");
+            //secureTokenComboboxStore.AppendValues(new byte[] {}, "None");
 
 			comboboxAsset.Changed += (sender, e) =>
 			{
@@ -426,8 +428,7 @@ namespace Wallet
 					return;
 				}
 
-                FindParent<Notebook>().Page = 3;
-                FindParent<WalletLayout>().FindChild<WalletSendConfirmationLayout>().Init();
+                FindParent<WalletLayout>().NextPage();
 			};
 
             //Assets' images not implemented, remove ui elements
@@ -436,7 +437,7 @@ namespace Wallet
 
 		void Back(object sender, EventArgs e)
 		{
-			FindParent<Notebook>().Page = 0;
+            FindParent<WalletLayout>().SetPage(0);
 		}
 
         public AssetDeltas PortfolioDeltas
@@ -477,5 +478,19 @@ namespace Wallet
 				labelAmountError.Text = "";
 			}
 		}
-	}
+
+        public void Init()
+        {
+            entryDestination.Text = "";
+            txtData.Buffer.Text = "";
+            entryAmount.Text = "";
+
+			vboxMainInner.Remove(eventboxData);
+			vboxMainInner.Remove(eventboxSecureToken);
+
+            TreeIter iter;
+            comboboxAsset.Model.GetIterFirst(out iter);
+            comboboxAsset.SetActiveIter(iter);
+        }
+    }
 }

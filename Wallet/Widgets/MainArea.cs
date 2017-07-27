@@ -20,13 +20,19 @@ namespace Wallet
 			set { 
 				for (int i = 0; i < FindChild<Notebook>().Children.Length; i++) {
 					var ctl = FindChild<Notebook>().GetNthPage(i);
+                    var visible = false;
 
-					if (ctl is IControlInit)
-					{
-						((IControlInit)ctl).Init();
-					}
+                    if (ctl.GetType() == value)
+                    {
+                        if (ctl is IControlInit)
+                        {
+                            ((IControlInit)ctl).Init();
+                        }
 
-					FindChild<Notebook>().GetNthPage (i).Visible = ctl.GetType () == value;
+                        visible = true;
+                    }
+
+                    FindChild<Notebook>().GetNthPage (i).Visible = visible;
 				}
 			}
 		}
