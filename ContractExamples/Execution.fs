@@ -103,11 +103,19 @@ let compilationTemplate = """
 module Zen.Main
 open Microsoft.FSharp.Quotations
 open MBrace.FsPickler.Combinators
+open System.Collections.Generic
+open Newtonsoft.Json.Linq
 
 // Repeated code
 open Consensus.Types
 open Consensus.Authentication
 let pickler = Pickler.auto<ContractExamples.Contracts.ContractFunction>
+
+
+    //TODO
+type AuditPath = {data:byte[]; location:uint32; path: byte [] []}
+
+
 
 
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
@@ -195,6 +203,11 @@ let compile (code:string) = maybe {
         let compilationResult =
             checker.CompileToDynamicAssembly(compilationParameters, Some(stdout, stderr))
         let errors, exitCode, dynamicAssembly = Async.RunSynchronously compilationResult
+
+        printfn "%A" source
+        printfn "errors: %A" errors
+        printfn "exitCode: %A" exitCode 
+
         if exitCode <> 0 then return! None // ignore compiler warning messages
         match dynamicAssembly with
         | None -> return! None
