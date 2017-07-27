@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Gdk;
 using Gtk;
@@ -71,7 +71,7 @@ namespace Wallet
 
 		public void Init()
 		{
-            var assetName = AssetsMetadata.Instance.TryGetValue(WalletSendLayout.SendInfo.Asset);
+            var assetName = App.Instance.AssetsMetadata.TryGetValue(WalletSendLayout.SendInfo.Asset);
 
 		//	imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
 			labelSelectedAsset.Text = labelSelectedAsset1.Text = assetName;

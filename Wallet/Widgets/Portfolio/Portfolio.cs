@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -91,7 +91,7 @@ namespace Wallet
 					}
 					else
 					{
-                        listStore.Update(t => t.SequenceEqual(item.Key), item.Key, AssetsMetadata.Instance.TryGetValue(item.Key), item.Value);
+                        listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.AssetsMetadata.TryGetValue(item.Key), item.Value);
 					}
 				}
 			} 
