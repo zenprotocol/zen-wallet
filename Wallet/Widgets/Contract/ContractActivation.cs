@@ -85,7 +85,7 @@ namespace Wallet
                     var value = new GLib.Value();
                     comboBox.Model.GetValue(iter, 0, ref value);
                     byte[] asset = value.Val as byte[];
-                    SecureToken = asset.Length == 0 ? null : asset;
+                    SecureToken = asset != null && asset.Length == 0 ? null : asset;
                 }
                 else
                 {
@@ -139,7 +139,7 @@ namespace Wallet
             set
             {
                 foreach (var item in value)
-					_SecureTokenComboboxStore.UpdateColumn(t => t.SequenceEqual(item.Asset), 1, item.Display);
+                    _SecureTokenComboboxStore.Update(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
 			} 
         }
 
