@@ -4,10 +4,12 @@ using BlockChain;
 using Consensus;
 using Gtk;
 using System.Linq;
+using Wallet.core;
+
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem(true)]
-    public partial class ContractActivation : DialogBase, IAssetsView
+    public partial class ContractActivation : DialogBase, IAssetsView, IPortfolioVIew
 	{
 		bool _IsActive;
 		byte[] _Hash;
@@ -29,6 +31,7 @@ namespace Wallet
 		{
 			Build();
 
+            new DeltasController(this);
             _AssetsController = new AssetsController(this);
 
 			hboxStatus.Visible = false; // just hide the f@cking thing already
@@ -64,8 +67,7 @@ namespace Wallet
                 }
 			};
 
-			spinBlocks.Changed += (sender, e) =>
-			{
+            spinBlocks.ValueChanged += (sender, e) => {
 				UpdateZenAmount((SpinButton)sender);
 			};
 
@@ -94,11 +96,16 @@ namespace Wallet
 			};
 		}
 
-		void UpdateZenAmount(SpinButton button)
-		{
+        void UpdateZenAmount(SpinButton button)
+        {
             _TotalKalapas = (ulong)button.Value * _KalapasPerBlock;
 
-			if (App.Instance.Wallet.CanSpend(Tests.zhash, _TotalKalapas))
+            if (PortfolioDeltas == null || !PortfolioDeltas.ContainsKey(Tests.zhash))
+            {
+				buttonActivate.Sensitive = false;
+				labelKalapas.Text = "";
+            }
+            else if (PortfolioDeltas[Tests.zhash] >= (long)_TotalKalapas)
 			{
 				buttonActivate.Sensitive = true;
                 labelKalapas.Text = new Zen(_TotalKalapas) + " Zen";
@@ -150,5 +157,7 @@ namespace Wallet
 				_SecureTokenComboboxStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
 			}
 		}
-	}
+
+        public AssetDeltas PortfolioDeltas { get; set; }
+    }
 }
