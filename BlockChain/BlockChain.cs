@@ -80,29 +80,31 @@ namespace BlockChain
 			_DBContext = new DBContext(dbName);
 			OwnResource(_DBContext);
 
-			using (var context = _DBContext.GetTransactionContext())
-			{
-				var chainTip = ChainTip.Context(context).Value;
-
-				//TODO: check if makred as main?
-				Tip = chainTip == null ? null : BlockStore.GetBlock(context, chainTip);
-
-				if (Tip != null)
-					BlockChainTrace.Information("Tip's block number is " + Tip.Value.header.blockNumber);
-				else
-					BlockChainTrace.Information("No tip.");
-
-				InitBlockTimestamps(context);
-			}
-
-
 			//var listener = new EventLoopMessageListener<QueueAction>(HandleQueueAction, "BlockChain listener");
 			//OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(listener));
-
-
-	        var buffer = new BufferBlock<QueueAction>();
+			var buffer = new BufferBlock<QueueAction>();
 			QueueAction.Target = buffer;
 			var consumer = ConsumeAsync(buffer);
+
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+                var chainTip = ChainTip.Context(dbTx).Value;
+
+				//TODO: check if makred as main?
+				Tip = chainTip == null ? null : BlockStore.GetBlock(dbTx, chainTip);
+
+				if (Tip != null)
+                {
+					BlockChainTrace.Information("Tip's block number is " + Tip.Value.header.blockNumber);
+
+					//Try to validate orphans of tip, if any. this would be the case when a sync action was interrupted
+					BlockStore.Orphans(dbTx, Tip.Key).ToList().ForEach(t => new HandleBlockAction(t.Key, t.Value, true).Publish());
+				}
+                else
+					BlockChainTrace.Information("No tip.");
+
+				InitBlockTimestamps(dbTx);
+			}
 		}
 
 		//void HandleQueueAction(QueueAction action)
