@@ -41,7 +41,7 @@ namespace Wallet
 			};
 
 			buttonBack.Clicked += delegate {
-				FindParent<Gtk.Notebook>().Page = 0;
+                FindParent<WalletLayout>().SetPage(0);
 			};
 
 			var qrGenerator = new QRCodeGenerator();

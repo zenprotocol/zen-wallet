@@ -376,17 +376,6 @@ namespace Wallet.core
 			return total >= amount;
 		}
 
-		public bool CanSpend(byte[] asset, ulong amount)
-        {
-            using (TransactionContext dbTx = _DBContext.GetTransactionContext())
-            {
-                ulong change;
-                var assets = new Assets();
-
-                return Require(dbTx, asset, amount, out change, assets);
-            }
-        }
-
         public bool Parse(byte[] rawTxBytes, out Types.Transaction tx)
         {
             try
