@@ -80,6 +80,7 @@ namespace BlockChain
 			if (IsInStore())
 			{
 				var reject = false;
+                byte[] missingParent = null;
 
 				switch (blockChain.BlockStore.GetLocation(dbTx, bkHash))
 				{
@@ -87,7 +88,9 @@ namespace BlockChain
 						reject = !handleBranch;
 						break;
 					case LocationEnum.Orphans:
-                        reject = !handleOrphan && !handleBranch;
+						missingParent = GetMissingParent();
+						
+						reject = !handleOrphan && !handleBranch;
 						break;
 					default:
 						reject = true;
@@ -96,7 +99,7 @@ namespace BlockChain
 
 				if (reject)
 				{
-					Result = new BkResult(BkResultEnum.Rejected);
+                    Result = new BkResult(BkResultEnum.Rejected, missingParent);
 					return;
 				}
 			}
