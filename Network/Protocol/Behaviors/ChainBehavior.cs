@@ -69,6 +69,14 @@ namespace NBitcoin.Protocol.Behaviors
 						}));
 						break;
 					case BlockChain.BlockVerificationHelper.BkResultEnum.Rejected:
+                        if (result.MissingParent != null)
+                        {
+                            node.SendMessageAsync(new GetDataPayload(new InventoryVector[] {
+                               new InventoryVector(InventoryType.MSG_BLOCK, result.MissingParent)
+                            }));
+                        }
+						
+                        //TODO: refine possible state (don't reject blocks that were requested by GetTip; reply with DUPLICATE instead of INVALID, ...)
 						node.SendMessageAsync(new RejectPayload()
 						{
 							Hash = Consensus.Merkle.blockHeaderHasher.Invoke(bk.header),
