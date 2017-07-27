@@ -66,7 +66,7 @@ namespace Wallet
                             text = "Found external IP";
                             break;
                         case OutboundStatusEnum.HasInvalidAddress:
-							text = "No inbound connectivity";
+							text = "Outbound connectivity only";
 							break;
                     }
                     StatusView.Text2 = text;
@@ -94,15 +94,15 @@ namespace Wallet
 
 					if (accepted >= maxRequested)
 					{
-						text = $"Tip: {accepted}";
+						text = $"Blockchain synced. Last block: {accepted}";
 					}
                     else if (accepted > 0)
 					{
-                        text = $"Accepted: {accepted}/{maxRequested}, Downloaded: {maxRequested - requested}";
+                        text = $"Blocks accepted: {accepted}/{maxRequested}, Blocks downloaded: {maxRequested - requested}";
 					}
                     else
                     {
-                        text = $"Downloaded: {maxRequested - requested}/{maxRequested}";
+                        text = $"Blocks downloaded: {maxRequested - requested}/{maxRequested}";
 					}
 
 					StatusView.Text3 = text;
