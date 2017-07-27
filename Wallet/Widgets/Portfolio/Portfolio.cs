@@ -102,7 +102,8 @@ namespace Wallet
             set
             {
                 foreach (var item in value)
-    				listStore.UpdateColumn(t => t.SequenceEqual(item.Asset), 1, item.Display);
+                    if (!item.Asset.SequenceEqual(Consensus.Tests.zhash))
+						listStore.Update(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
 			}
         }
 
@@ -110,7 +111,8 @@ namespace Wallet
         {
             set
             {
-                listStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
+				if (!value.Asset.SequenceEqual(Consensus.Tests.zhash))
+					listStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
             }
         }
     }
