@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Consensus;
 using Wallet.core.Data;
@@ -82,7 +82,7 @@ namespace Wallet
 				}
 				else
 				{
-                    labelMessage.Text = "Not enough " + AssetsMetadata.Instance.TryGetValue(asset);
+                    labelMessage.Text = "Not enough " + App.Instance.AssetsMetadata.TryGetValue(asset);
 				}
 			};
 

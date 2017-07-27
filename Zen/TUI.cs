@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using CLRCLI.Widgets;
 using CLRCLI;
 using System.IO;
@@ -431,7 +431,7 @@ namespace Zen
                 {
                     var value = item.Key.SequenceEqual(Consensus.Tests.zhash) ? item.Value * Math.Pow(10, -8)  : item.Value;
                     assets += (assets == string.Empty ? "" : ", ") + value;
-                    assets += " " + Wallet.AssetsMetadata.Instance.TryGetValue(item.Key);
+                    //assets += " " + Wallet.AssetsMetadata.Instance.TryGetValue(item.Key);
                 }
 
 				return info + " " + assets;
