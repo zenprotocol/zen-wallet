@@ -6,8 +6,10 @@ namespace Wallet
 	[System.ComponentModel.ToolboxItem(true)]
 	public partial class WalletLayout : WidgetBase, IControlInit
 	{
+        int _CurrentPage;
 		const int RECEIVE_PAGE = 1;
 		const int SEND_PAGE = 2;
+		//const int SEND_CONFIRM_PAGE = 2;
 
 		public WalletLayout()
 		{
@@ -51,12 +53,12 @@ namespace Wallet
 
 			buttonSend.Clicked += delegate
 			{
-				notebook1.Page = SEND_PAGE;
+                SetPage(SEND_PAGE);
 			};
 
 			buttonQR.Clicked += delegate
 			{
-				notebook1.Page = RECEIVE_PAGE;
+                SetPage(RECEIVE_PAGE);
 			};
 
 			buttonKeys.Clicked += delegate {
@@ -71,7 +73,37 @@ namespace Wallet
 
 		public void Init()
 		{
-			notebook1.Page = 0;
+            _CurrentPage = notebook1.Page;
+            SetPage(0);
+		}
+
+        public void SetPage(int page)
+        {
+            _CurrentPage = page;
+            InitCurrentPage();
+		}
+
+        void InitCurrentPage(bool init = true)
+        {
+            notebook1.Page = _CurrentPage;
+            var ctl = notebook1.GetNthPage(_CurrentPage);
+
+			if (init && ctl is IControlInit)
+			{
+				((IControlInit)ctl).Init();
+			}
+		}
+
+        public void PrevPage(bool init = true)
+        {
+            _CurrentPage--;
+            InitCurrentPage(init);
+        }
+
+		public void NextPage(bool init = true)
+		{
+			_CurrentPage++;
+			InitCurrentPage(init);
 		}
 	}
 }
