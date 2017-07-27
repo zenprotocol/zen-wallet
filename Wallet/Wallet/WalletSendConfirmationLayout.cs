@@ -8,7 +8,7 @@ using Consensus;
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class WalletSendConfirmationLayout : WidgetBase
+    public partial class WalletSendConfirmationLayout : WidgetBase, IControlInit
 	{
 		public WalletSendConfirmationLayout()
 		{
@@ -69,7 +69,7 @@ namespace Wallet
 			};
 		}
 
-		public async void Init()
+		public void Init()
 		{
             var assetName = AssetsMetadata.Instance.TryGetValue(WalletSendLayout.SendInfo.Asset);
 
@@ -79,27 +79,27 @@ namespace Wallet
 			labelAmountValue.Text = WalletSendLayout.SendInfo.Amount.ToString();
 			entryDestination.Text = WalletSendLayout.SendInfo.Destination.ToString();
 
-			UpdateStatus();
+			UpdateStatusInner(false);
 		}
 
 		void Back(object sender, EventArgs e)
 		{
-			FindParent<Notebook>().Page -= 1;
+            FindParent<WalletLayout>().PrevPage(false);
 		}
 
 		void UpdateStatus()
 		{
             var error = false;
-            var messasge = string.Empty;
+            var message = string.Empty;
             var sendInfo = WalletSendLayout.SendInfo;
                 
 			if (sendInfo.Signed)
 			{
-				messasge += "Transaction signed successfully. ";
+				message += "Transaction signed successfully. ";
 			}
 			else
 			{
-				messasge += "Transaction signing error. ";
+				message += "Transaction signing error. ";
                 error = true;
             }
 
@@ -107,22 +107,22 @@ namespace Wallet
             {
                 if (sendInfo.AutoTxCreated)
                 {
-                    messasge += "AutoTX created successfully. ";
+                    message += "AutoTX created successfully. ";
                 }
                 else
                 {
-                    messasge += "Error creating AutoTX. ";
+                    message += "Error creating AutoTX. ";
                     error = true;
                 }
             }
 
             if (sendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
             {
-                messasge += "Transaction broadcasted successfully.";
+                message += "Transaction broadcasted successfully.";
             }
             else
             {
-                messasge += "Transaction broadcasted failed, reason: " + WalletSendLayout.SendInfo.TxResult;
+                message += "Transaction broadcasted failed, reason: " + WalletSendLayout.SendInfo.TxResult;
                 error = true;
             }
 
@@ -130,21 +130,26 @@ namespace Wallet
             {
                 if (sendInfo.AutoTxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
                 {
-                    messasge += "AutoTX broadcasted successfully.";
+                    message += "AutoTX broadcasted successfully.";
                 }
                 else
                 {
-                    messasge += "AutoTX broadcasted failed, reason: " + WalletSendLayout.SendInfo.AutoTxResult;
+                    message += "AutoTX broadcasted failed, reason: " + WalletSendLayout.SendInfo.AutoTxResult;
                     error = true;
                 }
             }
 
-            labelStatus.Text = messasge;
+            UpdateStatusInner(error, message);
+		}
+
+        void UpdateStatusInner(bool error, string message = null) 
+        {
+			labelStatus.Text = message;
 
 			if (error)
 				labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
 			else
-                labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Success.Gdk);
+				labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Success.Gdk);
 		}
 	}
 }
