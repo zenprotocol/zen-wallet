@@ -15,9 +15,9 @@ namespace Wallet
 		{
             _AssetsView = assetsView;
 
-			AssetsMetadata.Instance.AssetMatadataChanged += AssetsMetadata_AssetMatadataChanged;
+            App.Instance.AssetsMetadata.AssetMatadataChanged += AssetsMetadata_AssetMatadataChanged;
 
-			_AssetsView.Assets = AssetsMetadata.Instance.GetAssetMatadataList();
+            _AssetsView.Assets = App.Instance.AssetsMetadata.GetAssetMatadataList();
 		}
 
         void AssetsMetadata_AssetMatadataChanged(AssetMetadata assetMetadata)
