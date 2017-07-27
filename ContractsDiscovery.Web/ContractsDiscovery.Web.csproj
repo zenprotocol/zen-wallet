@@ -97,6 +97,7 @@
     <Folder Include="Views\Oracle\" />
     <Folder Include="Views\OracleData\" />
     <Folder Include="assets\img\" />
+    <Folder Include="Templates\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\ContractCreationController.cs" />
