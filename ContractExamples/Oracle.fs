@@ -1,9 +1,7 @@
 ﻿module ContractExamples.Oracle
 
-open FSharp.Data
 open Newtonsoft.Json.Linq
 let innerHash = Consensus.Merkle.innerHash
-type AuditPath = Merkle.AuditPath
 type Outpoint = Consensus.Types.Outpoint
 let deserializeOutpoint = Consensus.TransactionValidation.guardedDeserialise<Outpoint>
 
@@ -41,11 +39,12 @@ let commitments (items: TickerItem seq) (secret: byte[]) =
 
 let proofMapSerializer =
     System.Runtime.Serialization.Json.DataContractJsonSerializer(
-        typeof<Map<string,AuditPath>>)
+        typeof<Map<string,byte[] * uint32 * byte[][]>>)
 
-let pathToTypedJson (path:AuditPath) =
+let pathToTypedJson (path:byte[] * uint32 * byte[][]) =
     let (data, loc, pa) = 
-        (System.Convert.ToBase64String path.data, int64 path.location, Array.map (System.Convert.ToBase64String) path.path)
+        match path with
+        | (data, loc, pa) -> System.Convert.ToBase64String data, int64 loc, Array.map (System.Convert.ToBase64String) pa
     new JObject(
         [
             new JProperty("data", data);
@@ -56,7 +55,7 @@ let pathToTypedJson (path:AuditPath) =
 
 let pathData = pathToTypedJson >> (fun d -> d.ToString())
 
-let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
+let rawDataTypedJson (path:byte[] * uint32 * byte[][], outpoint:Outpoint) =
     let opnt = Consensus.Merkle.serialize outpoint |> System.Convert.ToBase64String
     new JObject(
         [
@@ -64,36 +63,36 @@ let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
             new JProperty("outpoint", opnt)
         ]
     )
-let fromPath (s:string) : AuditPath =
+let fromPath (s:string) : byte[] * uint32 * byte[][] =
     let raw = JObject.Parse s
 
     let jsonPaths = raw.Item("path").Children()
     let paths = Seq.toArray <| Seq.map<JToken, string> (fun x -> x.Value<string>()) jsonPaths
 
-    {
-        data = System.Convert.FromBase64String <| raw.Item("data").Value<string>();
-        location = uint32 <| raw.Item("location").Value<string>();
-        path = Array.map (System.Convert.FromBase64String) <| paths
-    }
+    (
+        System.Convert.FromBase64String <| raw.Item("data").Value<string>(),
+        uint32 <| raw.Item("location").Value<string>(),
+        Array.map (System.Convert.FromBase64String) <| paths
+    )
 
 let rawData = rawDataTypedJson >> (fun d -> d.ToString())
 
-let fromRawData (s:string) : (AuditPath * Outpoint) =
+let fromRawData (s:string) : ((byte[] * uint32 * byte[][]) * Outpoint) =
     let raw = JObject.Parse(s)
     let rawAuditPath = raw.Item("auditPath")
     let rawOutpoint = raw.Item("outpoint").Value<string>()
-    let auditPath:AuditPath = {
-        data = System.Convert.FromBase64String <| rawAuditPath.Item("data").Value<string>();
-        location = uint32 <| rawAuditPath.Item("location").Value<string>();
-        path = Array.map (System.Convert.FromBase64String) <| rawAuditPath.Item("path").Value<string[]>()
-        }
+    let auditPath:byte[] * uint32 * byte[][] = (
+        System.Convert.FromBase64String <| rawAuditPath.Item("data").Value<string>(),
+        uint32 <| rawAuditPath.Item("location").Value<string>(),
+        Array.map (System.Convert.FromBase64String) <| rawAuditPath.Item("path").Value<string[]>()
+    )
     let outpoint = rawOutpoint |> System.Convert.FromBase64String |> deserializeOutpoint
     (auditPath, outpoint)
 
-let priceTable (m:Map<string,Merkle.AuditPath>) =
+let priceTable (m:Map<string,byte[] * uint32 * byte[][]>) =
     let price (bs:byte[]) =
         let item = JObject.Parse(System.Text.Encoding.ASCII.GetString bs)
         item.Item("item").Item("price")
     let s = Map.toList m
-    [ for (underlying, path) in s -> (underlying, price <| path.data)]
+    [ for (underlying, path) in s -> (underlying, price <| match path with | (data,_,_) -> data)]
 
