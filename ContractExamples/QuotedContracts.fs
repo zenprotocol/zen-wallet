@@ -322,7 +322,7 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun _op
                     with
                         | _ -> None
                 if root <> Merkle.rootFromAuditPath auditPath then return! None
-                let auditJson = JObject.Parse(System.Text.Encoding.ASCII.GetString auditPath.data)
+                let auditJson = JObject.Parse(System.Text.Encoding.ASCII.GetString <| match auditPath with | (data,_,_) -> data)
                 let underlying, price, timestamp =
                     auditJson.Item("item") |> fun it -> it.Item("underlying").Value<string>(), it.Item("price").Value<decimal>(), it.Item("timestamp").Value<string>()
                 let _underlying = unbox<string> <| optionParams.Item "underlying"
