@@ -1,5 +1,20 @@
-﻿﻿fun (message,contracthash,utxos) ->
+﻿fun (message, contracthash, utxos) ->
+    let tryParseData (data:byte[]) =
+        maybe {
+            try
+                if data.Length <> 24 then
+                    failwith "data of wrong length"
+                let tokens, collateral, counter = data.[0..7], data.[8..15], data.[16..23]
+                return (bytesToUInt64 tokens, bytesToUInt64 collateral, bytesToUInt64 counter)
+            with _ ->
+                return! None
+        }
+
+    let makeData (tokens, collateral, counter) = Array.concat <| List.map uint64ToBytes [tokens; collateral; counter]
+    let returnToSender (opoint:Outpoint, oput:Output) = List.singleton opoint, List.singleton oput, Array.empty<byte>
+
     let innerHash = Consensus.Merkle.innerHash
+
     let merkleTree : byte[] [] -> byte[] [] [] = fun xs ->
         let l = xs.Length
         if l = 0 then failwith "Empty array"
@@ -58,7 +73,6 @@
                 new JProperty("path", pa)
             ]
         )
-
     let pathData = pathToTypedJson >> (fun d -> d.ToString())
 
     let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
@@ -86,15 +100,15 @@
 
 /////////////////////////////////////////////////////////
     let optParams = dict[
-        "numeraire", box <| _optParams.numeraire;
-        "controlAsset", box <| _optParams.controlAsset;
-        "controlAssetReturn", box <| _optParams.controlAssetReturn;
-        "oracle", box <| _optParams.oracle;
-        "underlying", box <| _optParams.underlying;
-        "price", box <| _optParams.price;
-        "strike", box <| _optParams.strike;
-        "minimumCollateralRatio", box <| _optParams.minimumCollateralRatio;
-        "ownerPubKey", box <| _optParams.ownerPubKey
+        "numeraire", box <| System.Convert.FromBase64String "__numeraire__";
+        "controlAsset", box <| System.Convert.FromBase64String "__controlAsset__";
+        "controlAssetReturn", box <| System.Convert.FromBase64String "__controlAssetReturn__";
+        "oracle", box <| System.Convert.FromBase64String "__oracle__";
+        "underlying", box <| "__underlying__";
+        "price", box <| __price__;
+        "strike", box <| __strike__;
+        "minimumCollateralRatio", box <| __minimumCollateralRatio__;
+        "ownerPubKey", box <| System.Convert.FromBase64String "__ownerPubKey__";
     ]
 
     let (|Collateralize|_|) (data:byte[]) =
@@ -263,11 +277,11 @@
                     try
                      auditB
                          |> System.Text.Encoding.ASCII.GetString
-                         |> Oracle.fromPath
+                         |> fromPath
                          |> Some
                     with
                         | _ -> None
-                if root <> Merkle.rootFromAuditPath auditPath then return! None
+                if root <> rootFromAuditPath auditPath then return! None
                 let auditJson = JObject.Parse(System.Text.Encoding.ASCII.GetString auditPath.data)
                 let underlying, price, timestamp =
                     auditJson.Item("item") |> fun it -> it.Item("underlying").Value<string>(), it.Item("price").Value<decimal>(), it.Item("timestamp").Value<string>()
@@ -435,4 +449,4 @@
 
         return txskeleton
 
-    } |> Option.defaultValue %BadTx
+    } |> Option.defaultValue BadTx
