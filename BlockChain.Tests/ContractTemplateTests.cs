@@ -24,15 +24,13 @@ namespace BlockChain
 		public void CanCompileSecureTokenCodeFromTemplate()
 		{
 			var tpl = GetTemplate("SecureToken");
-
 			var address = new Wallet.core.Data.Address("1rGUTQWEMgCt1fZoQ9gRzoyX8+AfSDRJHtflmCLenwaw=");
-
-			var code = tpl.Replace("__ADDRESS__", Convert.ToBase64String(address.Bytes));
-
-			var metadata = new { Type = "secure-token-generator" };
-			code = code + "\n// " + JsonConvert.SerializeObject(metadata);
-
-			var compiled = ContractExamples.Execution.compile(code);
+            var destination = Convert.ToBase64String(address.Bytes);
+            var metadata = new { contractType = "securetoken", destination = destination };
+            var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
+            var code = tpl.Replace("__ADDRESS__", destination);
+            code += "\n" + jsonHeader;
+            var compiled = ContractExamples.Execution.compile(code);
 
 			Assert.That(compiled, Is.Not.Null, "should compile code");
 			Assert.That(FSharpOption<byte[]>.get_IsNone(compiled), Is.False, "should compile code");
@@ -40,7 +38,11 @@ namespace BlockChain
 		    Console.WriteLine(code);
 
 			var metadataParsed = ContractExamples.Execution.metadata(code);
-		}
+
+            Assert.That(FSharpOption<ContractExamples.Execution.ContractMetadata>.get_IsNone(metadataParsed), Is.False, "should parse metadata");
+            Assert.That(metadataParsed.Value, Is.TypeOf(typeof(ContractExamples.Execution.ContractMetadata.SecureToken)));
+            Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.SecureToken).Item.destination, Is.EquivalentTo(address.Bytes));
+        }
 
 		[Test]
 		public void CanCompileCallOptionCodeFromTemplate()
