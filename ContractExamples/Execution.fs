@@ -29,6 +29,9 @@ open MBrace.FsPickler.Combinators
 open Consensus.Types
 open Consensus.Authentication
 
+open QuotedContracts
+open Newtonsoft.Json.Linq
+
 let auth = sign
 
 
@@ -230,7 +233,25 @@ let (|ContractMetadata|_|) (name:string) (parameters:obj) =
     | _ -> None
 
 let tryParseContractMetadata (s:string) =
-    None // Not implemented
+    let json = s.Split '\n' |> fun s -> s |> Array.item (s.Length - 1) |> fun s -> s.Substring 2 |> JObject.Parse
+    match json.Item("contractType").Value<string>() with
+    | "oracle" ->
+        Some <| Oracle {ownerPubKey = System.Convert.FromBase64String <| json.Item("ownerPubKey").Value<string>()}
+    | "calloption" ->
+        Some <| CallOption {
+            numeraire = System.Convert.FromBase64String <| json.Item("numeraire").Value<string>();
+            controlAsset = System.Convert.FromBase64String <| json.Item("controlAsset").Value<string>();
+            controlAssetReturn = System.Convert.FromBase64String <| json.Item("controlAssetReturn").Value<string>();
+            oracle = System.Convert.FromBase64String <| json.Item("oracle").Value<string>();
+            underlying = json.Item("underlying").Value<string>();
+            price = json.Item("price").Value<decimal>();
+            strike = json.Item("strike").Value<decimal>();
+            minimumCollateralRatio = json.Item("minimumCollateralRatio").Value<decimal>();
+            ownerPubKey = System.Convert.FromBase64String <| json.Item("ownerPubKey").Value<string>()
+        }
+    | "securetoken" ->
+        Some <| SecureToken {destination = System.Convert.FromBase64String <| json.Item("destination").Value<string>()}
+    | _ -> None
 
 let metadata (s:string) =
     match s with
