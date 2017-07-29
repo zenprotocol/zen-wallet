@@ -39,9 +39,9 @@
             yield sib i
         |]
 
-    let auditPath r (tree:byte[][][]) = {data=tree.[0].[(int)r]; location=r; path=siblings r tree}
-
-    let rootFromAuditPath {data=item; location=location; path=hashes} =
+    let auditPath r (tree:byte[][][]) = (tree.[0].[(int)r], r, siblings r tree)
+                      
+    let rootFromAuditPath (item, location, hashes) =
         fst <|
         Array.fold
                 (fun (v, loc) h ->
@@ -61,11 +61,12 @@
 
     let proofMapSerializer =
         System.Runtime.Serialization.Json.DataContractJsonSerializer(
-            typeof<Map<string,AuditPath>>)
+            typeof<Map<string,byte[] * uint32 * byte[][]>>)
 
-    let pathToTypedJson (path:AuditPath) =
-        let (data, loc, pa) =
-            (System.Convert.ToBase64String path.data, int64 path.location, Array.map (System.Convert.ToBase64String) path.path)
+    let pathToTypedJson (path:byte[] * uint32 * byte[][]) =
+        let (data, loc, pa) = 
+            match path with
+            | (data, loc, pa) -> System.Convert.ToBase64String data, int64 loc, Array.map (System.Convert.ToBase64String) pa
         new JObject(
             [
                 new JProperty("data", data);
@@ -73,9 +74,10 @@
                 new JProperty("path", pa)
             ]
         )
+
     let pathData = pathToTypedJson >> (fun d -> d.ToString())
 
-    let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
+    let rawDataTypedJson (path:byte[] * uint32 * byte[][], outpoint:Outpoint) =
         let opnt = Consensus.Merkle.serialize outpoint |> System.Convert.ToBase64String
         new JObject(
             [
@@ -83,17 +85,17 @@
                 new JProperty("outpoint", opnt)
             ]
         )
-    let fromPath (s:string) : AuditPath =
+    let fromPath (s:string) : byte[] * uint32 * byte[][] =
         let raw = JObject.Parse s
 
         let jsonPaths = raw.Item("path").Children()
         let paths = Seq.toArray <| Seq.map<JToken, string> (fun x -> x.Value<string>()) jsonPaths
 
-        {
-            data = System.Convert.FromBase64String <| raw.Item("data").Value<string>();
-            location = uint32 <| raw.Item("location").Value<string>();
-            path = Array.map (System.Convert.FromBase64String) <| paths
-        }
+        (
+            System.Convert.FromBase64String <| raw.Item("data").Value<string>(),
+            uint32 <| raw.Item("location").Value<string>(),
+            Array.map (System.Convert.FromBase64String) <| paths
+        )
 
 
 
@@ -282,7 +284,7 @@
                     with
                         | _ -> None
                 if root <> rootFromAuditPath auditPath then return! None
-                let auditJson = JObject.Parse(System.Text.Encoding.ASCII.GetString auditPath.data)
+                let auditJson = JObject.Parse(System.Text.Encoding.ASCII.GetString <| match auditPath with | (data,_,_) -> data)
                 let underlying, price, timestamp =
                     auditJson.Item("item") |> fun it -> it.Item("underlying").Value<string>(), it.Item("price").Value<decimal>(), it.Item("timestamp").Value<string>()
                 let _underlying = unbox<string> <| optionParams.Item "underlying"

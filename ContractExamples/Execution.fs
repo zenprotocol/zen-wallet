@@ -112,12 +112,6 @@ open Consensus.Authentication
 let pickler = Pickler.auto<ContractExamples.Contracts.ContractFunction>
 
 
-    //TODO
-type AuditPath = {data:byte[]; location:uint32; path: byte [] []}
-
-
-
-
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
 type TransactionSkeleton = Outpoint list * Output list * byte[]
 type ContractFunction = ContractFunctionInput -> TransactionSkeleton
