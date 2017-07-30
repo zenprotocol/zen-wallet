@@ -26,11 +26,12 @@ let siblings : uint32 -> byte[] [] [] -> byte[] [] = fun r tree ->
         yield sib i
     |]
 
-type AuditPath = {data:byte[]; location:uint32; path: byte [] []}
+//TODO: remove references (in other projects)
+//type AuditPath = {data:byte[]; location:uint32; path: byte [] []}
 
-let auditPath r (tree:byte[][][]) = {data=tree.[0].[(int)r]; location=r; path=siblings r tree}
-
-let rootFromAuditPath {data=item; location=location; path=hashes} =
+let auditPath r (tree:byte[][][]) = (tree.[0].[(int)r], r, siblings r tree)
+                      
+let rootFromAuditPath (item, location, hashes) =
     fst <|
     Array.fold
             (fun (v, loc) h ->
