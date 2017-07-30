@@ -106,5 +106,12 @@ namespace ContractsDiscovery.Web
 				activeContract.Type = "Error getting metadata";
 			}
 		}
+
+		public static string GetTemplate(string name)
+		{
+			var fileName = Path.ChangeExtension(Path.Combine("Templates", name), ".txt");
+
+			return File.ReadAllText(fileName);
+		}
     }
 }

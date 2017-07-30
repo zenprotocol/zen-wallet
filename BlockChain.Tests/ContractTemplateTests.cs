@@ -40,6 +40,18 @@ namespace BlockChain
             Assert.That(FSharpOption<ContractExamples.Execution.ContractMetadata>.get_IsNone(metadataParsed), Is.False, "should parse metadata");
             Assert.That(metadataParsed.Value, Is.TypeOf(typeof(ContractExamples.Execution.ContractMetadata.SecureToken)));
             Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.SecureToken).Item.destination, Is.EquivalentTo(destinationAddress));
+
+            object deserialized = null;
+
+            try
+            {
+                deserialized = ContractExamples.Execution.deserialize(compiled.Value);
+            }
+            catch 
+            {
+                
+            }
+            Assert.That(deserialized, Is.Not.Null);
         }
 
 		[Test]
@@ -114,6 +126,18 @@ namespace BlockChain
 			Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.CallOption).Item.strike, Is.EqualTo(strike));
 			Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.CallOption).Item.minimumCollateralRatio, Is.EqualTo(minimumCollateralRatio));
 			Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.CallOption).Item.ownerPubKey, Is.EqualTo(ownerPubKey));
+
+			object deserialized = null;
+
+			try
+			{
+				deserialized = ContractExamples.Execution.deserialize(compiled.Value);
+			}
+			catch
+			{
+
+			}
+			Assert.That(deserialized, Is.Not.Null);
 		}
 	}
 }
