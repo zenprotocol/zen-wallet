@@ -100,9 +100,36 @@ namespace ContractsDiscovery.Web.Controllers
 						createCallOption.MinimumCollateralRatio.Decimal,
                         createCallOption.OwnerPubKey.PublicKey);
 
-                    var contract = ContractExamples.QuotedContracts.callOptionFactory(callOptionParameters);
-                    var contractCode = ContractExamples.Execution.quotedToString(contract);
-					
+					//var contract = ContractExamples.QuotedContracts.callOptionFactory(callOptionParameters);
+					//var contractCode = ContractExamples.Execution.quotedToString(contract);
+					var tpl = GetTemplate("CallOption");
+
+					var metadata = new
+					{
+						contractType = "calloption",
+						numeraire = Convert.ToBase64String(callOptionParameters.numeraire),
+						controlAsset = Convert.ToBase64String(callOptionParameters.controlAsset),
+						controlAssetReturn = Convert.ToBase64String(callOptionParameters.controlAssetReturn),
+						oracle = Convert.ToBase64String(callOptionParameters.oracle),
+						underlying = callOptionParameters.underlying,
+						price = "" + callOptionParameters.price,
+						strike = "" + callOptionParameters.strike,
+						minimumCollateralRatio = "" + callOptionParameters.minimumCollateralRatio,
+						ownerPubKey = Convert.ToBase64String(callOptionParameters.ownerPubKey)
+					};
+                    var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
+					var contractCode = tpl
+						 .Replace("__numeraire__", Convert.ToBase64String(callOptionParameters.numeraire))
+						 .Replace("__controlAsset__", Convert.ToBase64String(callOptionParameters.controlAsset))
+						 .Replace("__controlAssetReturn__", Convert.ToBase64String(callOptionParameters.controlAssetReturn))
+						 .Replace("__oracle__", Convert.ToBase64String(callOptionParameters.oracle))
+						 .Replace("__underlying__", callOptionParameters.underlying)
+						 .Replace("__price__", "" + callOptionParameters.price)
+						 .Replace("__strike__", "" + callOptionParameters.strike)
+						 .Replace("__minimumCollateralRatio__", "" + callOptionParameters.minimumCollateralRatio)
+						 .Replace("__ownerPubKey__", Convert.ToBase64String(callOptionParameters.ownerPubKey));
+					contractCode += "\n" + jsonHeader;
+
                     var code = Utils.Dos2Unix(contractCode);
                     var contractHash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
 
@@ -133,41 +160,6 @@ namespace ContractsDiscovery.Web.Controllers
 			}
 		}
 
-		public ActionResult Oracle()
-		{
-			var createOracle = new CreateOracle();
-
-			createOracle.OwnerPubKey.SetValue(Request["ownerPubKey"]);
-
-			if (createOracle.Invalid)
-			{
-				return View("Oracle", createOracle);
-			}
-			else
-			{
-				try
-				{
-					var oracleParameters = new ContractExamples.QuotedContracts.OracleParameters(
-						createOracle.OwnerPubKey.Address.Bytes);
-
-                    var contract = ContractExamples.QuotedContracts.oracleFactory(oracleParameters);
-					var contractCode = ContractExamples.Execution.quotedToString(contract);
-
-					var code = Utils.Dos2Unix(contractCode);
-					var hash = Convert.ToBase64String(Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)));
-
-					ViewBag.Code = code;
-					ViewBag.Hash = hash;
-				}
-				catch (Exception e)
-				{
-					ViewBag.Message = "Error creating contract: " + e.Message;
-				}
-
-				return View("Result");
-			}
-		}
-
 		public ActionResult TokenGenerator()
 		{
 			var createTokenGenerator = new CreateTokenGenerator();
@@ -185,8 +177,14 @@ namespace ContractsDiscovery.Web.Controllers
 					var secureTokenParameters = new ContractExamples.QuotedContracts.SecureTokenParameters(
 											createTokenGenerator.Destination.Address.Bytes);
 
-					var contract = ContractExamples.QuotedContracts.secureTokenFactory(secureTokenParameters);
-					var contractCode = ContractExamples.Execution.quotedToString(contract);
+                    //var contract = ContractExamples.QuotedContracts.secureTokenFactory(secureTokenParameters);
+                    //var contractCode = ContractExamples.Execution.quotedToString(contract);
+                    var tpl = GetTemplate("SecureToken");
+
+                    var metadata = new { contractType = "securetoken", destination = Convert.ToBase64String(secureTokenParameters.destination) };
+					var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
+					var contractCode = tpl.Replace("__ADDRESS__", Convert.ToBase64String(secureTokenParameters.destination));
+					contractCode += "\n" + jsonHeader;
 
 					var code = Utils.Dos2Unix(contractCode);
                     var contractHash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
@@ -276,6 +274,13 @@ namespace ContractsDiscovery.Web.Controllers
             })
                             .Where(t=>t.Type == "secure-token-generator")
                             .ToDictionary(t=>t.Address, t=> string.IsNullOrEmpty(t.AssetName) ? t.Address : $"{t.AssetName} ({t.Address})");
+		}
+
+		string GetTemplate(string name)
+		{
+            var fileName = Path.ChangeExtension(Path.Combine("Templates", name), ".txt");
+
+            return System.IO.File.ReadAllText(fileName);
 		}
     }
 }
