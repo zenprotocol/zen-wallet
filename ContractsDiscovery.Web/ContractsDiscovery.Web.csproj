@@ -190,6 +190,10 @@
       <Name>BlockChain</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\CallOption.txt" />
+    <EmbeddedResource Include="Templates\SecureToken.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <MonoDevelop>

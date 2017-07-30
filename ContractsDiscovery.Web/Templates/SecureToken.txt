@@ -1,0 +1,23 @@
+﻿fun (message, contracthash, utxos) ->
+    let p = dict [
+        "destination", box <| System.Convert.FromBase64String "__ADDRESS__";
+    ]
+
+    maybe {
+        let! opcode, outpoints = tryParseInvokeMessage message
+        let! fundsLoc = Array.tryHead outpoints   
+        let! funds = utxos fundsLoc
+        let! commandSpend =
+            match funds with
+            | {
+                lock=ContractLock (contractHash=contractHash);
+                spend=spend
+              } when contractHash=contracthash
+                -> Some spend
+            | _ -> None
+        let destination = unbox<byte[]> <| p.Item "destination"
+        let oput = {lock=PKLock destination; spend=commandSpend}
+        // send a contract token as well
+        let cput = {lock=PKLock destination; spend={asset=contracthash; amount=1000UL}}
+        return ([fundsLoc;],[oput; cput;],[||])
+    } |> Option.defaultValue BadTx
