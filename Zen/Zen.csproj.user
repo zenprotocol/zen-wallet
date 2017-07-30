@@ -4,7 +4,7 @@
     <StartAction>Project</StartAction>
     <StartProgram>
     </StartProgram>
-    <StartArguments>-t -n=lan_client -d</StartArguments>
+    <StartArguments>-t</StartArguments>
     <ExternalConsole>true</ExternalConsole>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>

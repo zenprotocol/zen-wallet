@@ -92,7 +92,7 @@ let fromRawData (s:string) : ((byte[] * uint32 * byte[][]) * Outpoint) =
 let priceTable (m:Map<string,byte[] * uint32 * byte[][]>) =
     let price (bs:byte[]) =
         let item = JObject.Parse(System.Text.Encoding.ASCII.GetString bs)
-        item.Item("item").Item("price")
+        item.Item("item").Item("price").Value<decimal>()
     let s = Map.toList m
     [ for (underlying, path) in s -> (underlying, price <| match path with | (data,_,_) -> data)]
 
