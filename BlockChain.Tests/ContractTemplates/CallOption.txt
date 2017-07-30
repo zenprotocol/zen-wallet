@@ -106,10 +106,10 @@
         "controlAsset", box <| System.Convert.FromBase64String "__controlAsset__";
         "controlAssetReturn", box <| System.Convert.FromBase64String "__controlAssetReturn__";
         "oracle", box <| System.Convert.FromBase64String "__oracle__";
-        "underlying", box <| "__underlying__";
-        "price", box <| __price__;
-        "strike", box <| __strike__;
-        "minimumCollateralRatio", box <| __minimumCollateralRatio__;
+        "underlying", box "__underlying__";
+        "price", box __price__m;
+        "strike", box __strike__m;
+        "minimumCollateralRatio", box __minimumCollateralRatio__m;
         "ownerPubKey", box <| System.Convert.FromBase64String "__ownerPubKey__";
     ]
 

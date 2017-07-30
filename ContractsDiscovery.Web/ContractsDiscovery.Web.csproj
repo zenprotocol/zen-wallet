@@ -194,6 +194,9 @@
     <EmbeddedResource Include="Templates\CallOption.txt" />
     <EmbeddedResource Include="Templates\SecureToken.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Oracle.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <MonoDevelop>

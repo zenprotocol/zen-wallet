@@ -8,6 +8,7 @@ using Sodium;
 using System.Text;
 using System.Collections.Generic;
 using Wallet.core.Data;
+using Newtonsoft.Json;
 
 namespace ContractsDiscovery.Web.App_Code
 {
@@ -108,8 +109,16 @@ namespace ContractsDiscovery.Web.App_Code
             }
 
             var @params = new ContractExamples.QuotedContracts.OracleParameters(publicKey);
-            var contract = ContractExamples.QuotedContracts.oracleFactory(@params);
-            var contractCode = ContractExamples.Execution.quotedToString(contract);
+			//var contract = ContractExamples.QuotedContracts.oracleFactory(@params);
+			//var contractCode = ContractExamples.Execution.quotedToString(contract);
+            var tpl = Utils.GetTemplate("Oracle");
+
+			var metadata = new { contractType = "oracle", ownerPubKey = Convert.ToBase64String(@params.ownerPubKey) };
+			var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
+			var contractCode = tpl.Replace("__ownerPubKey__", Convert.ToBase64String(@params.ownerPubKey));
+			contractCode += "\n" + jsonHeader;
+
+
             System.IO.File.WriteAllText(System.IO.Path.Combine("db", "oracle-contract.txt"), contractCode);
             return contractCode;
         }

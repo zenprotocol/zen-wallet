@@ -1,0 +1,18 @@
+﻿fun (message,contracthash,utxos) ->
+    let p = dict [
+        "ownerPubKey", box <| System.Convert.FromBase64String "__ownerPubKey__";
+    ]
+
+    maybe {
+        if message.Length <> 129 then return! None
+        let m, s = message.[0..64], message.[65..128]
+        let ownerPubKey = unbox<byte[]> <| p.Item "ownerPubKey"
+        if not <| verify s m ownerPubKey then return! None
+        let opoint = {txHash=m.[1..32]; index = (uint32)m.[0]}
+        let! oput = utxos opoint
+        let dataOutput = {
+            spend={asset=contracthash; amount=1UL};
+            lock=ContractLock (contracthash, m.[33..64])
+        }
+        return ([opoint;], [oput; dataOutput], [||])
+    } |> Option.defaultValue BadTx

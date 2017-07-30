@@ -106,12 +106,13 @@
         "controlAsset", box <| System.Convert.FromBase64String "__controlAsset__";
         "controlAssetReturn", box <| System.Convert.FromBase64String "__controlAssetReturn__";
         "oracle", box <| System.Convert.FromBase64String "__oracle__";
-        "underlying", box <| "__underlying__";
-        "price", box <| __price__;
-        "strike", box <| __strike__;
-        "minimumCollateralRatio", box <| __minimumCollateralRatio__;
+        "underlying", box "__underlying__";
+        "price", box __price__m;
+        "strike", box __strike__m;
+        "minimumCollateralRatio", box __minimumCollateralRatio__m;
         "ownerPubKey", box <| System.Convert.FromBase64String "__ownerPubKey__";
     ]
+
 
     let (|Collateralize|_|) (data:byte[]) =
         maybe {
@@ -233,10 +234,14 @@
                     return! None
                 let! optionsPurchased =
                     maybe { try
+                                //TODO: remove printfn lines
+                                printfn "**********"
                                 let price = unbox<decimal> <| optionParams.Item "price"
+                                printfn "**********:%A" price
                                 let res = ((decimal)b.spend.amount / price) |> fun frac ->
                                     if frac <= 0m then failwith "non-positive"
                                     else frac |> floor |> (uint64)
+                                printfn "**********>%A" res
                                 return res
                             with _ -> return! None
                     }

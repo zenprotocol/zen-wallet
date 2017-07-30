@@ -102,7 +102,7 @@ namespace ContractsDiscovery.Web.Controllers
 
 					//var contract = ContractExamples.QuotedContracts.callOptionFactory(callOptionParameters);
 					//var contractCode = ContractExamples.Execution.quotedToString(contract);
-					var tpl = GetTemplate("CallOption");
+                    var tpl = Utils.GetTemplate("CallOption");
 
 					var metadata = new
 					{
@@ -179,7 +179,7 @@ namespace ContractsDiscovery.Web.Controllers
 
                     //var contract = ContractExamples.QuotedContracts.secureTokenFactory(secureTokenParameters);
                     //var contractCode = ContractExamples.Execution.quotedToString(contract);
-                    var tpl = GetTemplate("SecureToken");
+                    var tpl = Utils.GetTemplate("SecureToken");
 
                     var metadata = new { contractType = "securetoken", destination = Convert.ToBase64String(secureTokenParameters.destination) };
 					var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
@@ -274,13 +274,6 @@ namespace ContractsDiscovery.Web.Controllers
             })
                             .Where(t=>t.Type == "secure-token-generator")
                             .ToDictionary(t=>t.Address, t=> string.IsNullOrEmpty(t.AssetName) ? t.Address : $"{t.AssetName} ({t.Address})");
-		}
-
-		string GetTemplate(string name)
-		{
-            var fileName = Path.ChangeExtension(Path.Combine("Templates", name), ".txt");
-
-            return System.IO.File.ReadAllText(fileName);
 		}
     }
 }

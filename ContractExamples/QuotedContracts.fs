@@ -140,15 +140,15 @@ let callOptionFactory : CallOptionParameters -> Expr<ContractFunction> = fun _op
     let meta = _optParams
 
     let optParams = dict[
-        "numeraire", box <| _optParams.numeraire;
-        "controlAsset", box <| _optParams.controlAsset;
-        "controlAssetReturn", box <| _optParams.controlAssetReturn;
-        "oracle", box <| _optParams.oracle;
-        "underlying", box <| _optParams.underlying;
-        "price", box <| _optParams.price;
-        "strike", box <| _optParams.strike;
-        "minimumCollateralRatio", box <| _optParams.minimumCollateralRatio;
-        "ownerPubKey", box <| _optParams.ownerPubKey
+        "numeraire", box _optParams.numeraire;
+        "controlAsset", box _optParams.controlAsset;
+        "controlAssetReturn", box _optParams.controlAssetReturn;
+        "oracle", box _optParams.oracle;
+        "underlying", box _optParams.underlying;
+        "price", box _optParams.price;
+        "strike", box _optParams.strike;
+        "minimumCollateralRatio", box _optParams.minimumCollateralRatio;
+        "ownerPubKey", box _optParams.ownerPubKey
     ]
 
     let (|Collateralize|_|) (data:byte[]) =
