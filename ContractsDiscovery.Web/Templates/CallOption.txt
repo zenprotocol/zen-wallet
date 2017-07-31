@@ -234,14 +234,10 @@
                     return! None
                 let! optionsPurchased =
                     maybe { try
-                                //TODO: remove printfn lines
-                                printfn "**********"
                                 let price = unbox<decimal> <| optionParams.Item "price"
-                                printfn "**********:%A" price
                                 let res = ((decimal)b.spend.amount / price) |> fun frac ->
                                     if frac <= 0m then failwith "non-positive"
                                     else frac |> floor |> (uint64)
-                                printfn "**********>%A" res
                                 return res
                             with _ -> return! None
                     }
