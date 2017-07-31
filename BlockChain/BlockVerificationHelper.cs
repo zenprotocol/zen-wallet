@@ -500,11 +500,10 @@ namespace BlockChain
 					{
 						BlockChainTrace.Information("tx invalid - contract not active", tx);
 						return false;
-					}				
-                    var acsItem = _BlockChain.ActiveContractSet.Get(_DbTx, contractHash);
-					var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+					}
+                    var contractFunction = _BlockChain.ActiveContractSet.GetContractFunction(_DbTx, contractHash);
 
-                    if (!BlockChain.IsValidAutoTx(ptx, UtxoLookup, contractHash, contractFunction))
+					if (!BlockChain.IsValidAutoTx(ptx, UtxoLookup, contractHash, contractFunction))
 					{
 						BlockChainTrace.Information("auto-tx invalid", ptx);
 						return false;

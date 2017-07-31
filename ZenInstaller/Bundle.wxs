@@ -18,7 +18,7 @@
       <PackageGroupRef Id="NetFx462Web"/>    
       <ExePackage SourceFile="gtk2-runtime-2.24.10-2012-10-10-ash.exe" InstallCommand="/S" PerMachine="yes" Permanent="yes" />
       <MsiPackage SourceFile="gtk-sharp-2.12.44.msi" ForcePerMachine="yes" Permanent="yes" />
-      <ExePackage SourceFile="vc_redist.x86.exe" InstallCommand="/S" PerMachine="yes" Permanent="yes" />
+      <ExePackage SourceFile="vc_redist.x86.exe" InstallCommand="/S" PerMachine="yes" Permanent="yes" Vital="no" />
 			<MsiPackage SourceFile="$(var.ZenPackage.TargetPath)" />
 		</Chain>
 	</Bundle>

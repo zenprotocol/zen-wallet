@@ -1,110 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="ZenWallet" Language="1033" Version="0.0.0.3" Manufacturer="Zen Protocol" UpgradeCode="1cd2b1b7-c0fb-4f00-8be0-a6cdd022c3b3">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" InstallPrivileges="limited" />
+	<Product Id="*" Name="ZenWallet" Language="1033" Version="0.0.0.3" Manufacturer="Zen Protocol" UpgradeCode="1cd2b1b7-c0fb-4f00-8be0-a6cdd022c3b3">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" InstallPrivileges="limited" />
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-    <MediaTemplate />
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate />
 
-    <Icon Id="Icon" SourceFile="icon.ico" />
+		<Icon Id="Icon" SourceFile="icon.ico" />
 
-    <!--<Directory Id="TARGETDIR" Name="SourceDir">
+		<!--<Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLFOLDER" Name="ZenWallet" />
       </Directory>
     </Directory>-->
 
-    <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="LocalAppDataFolder" Name="AppData">
-        <Directory Id="AppRootDirectory" Name="ZenWallet"/>
-      </Directory>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="LocalAppDataFolder" Name="AppData">
+				<Directory Id="AppRootDirectory" Name="ZenWallet"/>
+			</Directory>
 
-      <Directory Id="ProgramMenuFolder">
-        <Directory Id="ApplicationProgramsFolder" Name="Zen Wallet"/>
-      </Directory>
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="ApplicationProgramsFolder" Name="Zen Wallet"/>
+			</Directory>
 
-      <Directory Id="DesktopFolder" />
-    </Directory>
+			<Directory Id="DesktopFolder" />
+		</Directory>
 
-    <DirectoryRef Id="AppRootDirectory">
+		<DirectoryRef Id="AppRootDirectory">
 
-      <Component Id="ZenWallet" Guid="027a40a6-fe81-4c12-afea-e9bd4538aae1">
-        <CreateFolder />
-        <RemoveFolder Id="RemoveAppRootDirectory" On="uninstall"/>
-        <RegistryKey Root="HKCU" Key="Software\Zen\Wallet" Action="createAndRemoveOnUninstall">
-          <RegistryValue Name="Version" Value="[ProductVersion]" Type="string" KeyPath="yes"/>
-        </RegistryKey>
+			<Component Id="ZenWallet" Guid="027a40a6-fe81-4c12-afea-e9bd4538aae1">
+				<CreateFolder />
+				<RemoveFolder Id="RemoveAppRootDirectory" On="uninstall"/>
+				<RegistryKey Root="HKCU" Key="Software\Zen\Wallet" Action="createAndRemoveOnUninstall">
+					<RegistryValue Name="Version" Value="[ProductVersion]" Type="string" KeyPath="yes"/>
+				</RegistryKey>
 
-        <File Name="$(var.Zen.TargetFileName)" Source="$(var.Zen.TargetPath)" DiskId="1" />
-        <File Name="$(var.Zen.TargetFileName).config" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="atk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="BlockChain.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="BouncyCastle.Crypto.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="CLRCLI.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Consensus.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="ContractGenerator.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="DBreeze.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="FSharp.Core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="gdk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="glib-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="gtk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Infrastructure.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Infrastructure.TestingGtk.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Mono.Cairo.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Mono.Posix.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="MsgPack.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="NDesk.Options.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Network.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Newtonsoft.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Open.Nat.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="pango-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="QRCoder.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Sodium.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="libsodium.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Store.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="System.Threading.Tasks.Dataflow.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="UnityEngine.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Wallet.core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="Wallet.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="graph.html" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="d3.min.js" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="genesis_outputs.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="keys.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="lan_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="lan_host.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="standalone.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="testnet_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-        <File Name="testnet_host.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-      </Component>
-    </DirectoryRef>
+				<File Name="libsodium.dll" DiskId="1" />
+        <!--File Name="$(var.Zen.Cmd.TargetFileName)" Source="$(var.Zen.Cmd.TargetPath)" DiskId="1" /-->
+				<!--File Name="$(var.Zen.Cmd.TargetFileName).config" Source="$(var.Zen.Cmd.TargetDir)" DiskId="1" /-->
+				<File Name="$(var.Zen.TargetFileName)" Source="$(var.Zen.TargetPath)" DiskId="1" />
+				<File Name="$(var.Zen.TargetFileName).config" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="atk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="BlockChain.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="BouncyCastle.Crypto.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="CLRCLI.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Consensus.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="ContractExamples.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="ContractGenerator.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="DBreeze.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="FSharp.Compiler.Service.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="FSharp.Core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="FSharp.Data.DesignTime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="FsPickler.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="FsPickler.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="gdk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="glib-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="gtk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Infrastructure.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Miner.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Mono.Cairo.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Mono.Posix.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="MsgPack.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="NDesk.Options.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="NetMQ.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Network.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Newtonsoft.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="nunit.framework.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />				
+				<File Name="Open.Nat.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="pango-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="QRCoder.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Sodium.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Store.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="System.Collections.Immutable.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="System.Reflection.Metadata.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="System.Threading.Tasks.Dataflow.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="UnityEngine.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Unquote.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Wallet.core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Wallet.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />				
+				<File Name="Zen.RPC.Common.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />								
+				<File Name="graph.html" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="d3.min.js" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="genesis_outputs.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="keys.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="lan_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="lan_host.json" Source="$(var.Zen.TargetDir)" DiskId="1" />				
+				<File Name="testnet_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="staging_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="demo_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+			</Component>
+		</DirectoryRef>
 
-    <DirectoryRef Id="ApplicationProgramsFolder">
-      <Component Id="ApplicationShortcut" Guid="1b5b8703-5779-4775-8823-1524f452a642">
-        <Shortcut Id="ApplicationStartMenuShortcut"
-                 Name="Zen Wallet"
-                 Description="Zen Wallet"
-                 Target="[#$(var.Zen.TargetFileName)]"
-                 WorkingDirectory="AppRootDirectory"/>
-        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
-        <RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
-      </Component>
-    </DirectoryRef>
+		<DirectoryRef Id="ApplicationProgramsFolder">
+			<Component Id="ApplicationShortcut" Guid="1b5b8703-5779-4775-8823-1524f452a642">
+				<Shortcut Id="ApplicationStartMenuShortcut"
+						 Name="Zen Wallet"
+						 Description="Zen Wallet"
+						 Target="[#$(var.Zen.TargetFileName)]"
+						 WorkingDirectory="AppRootDirectory"/>
+				<RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+				<RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
 
-    <DirectoryRef Id="DesktopFolder">
-      <Component Id="DesktopApplicationShortcut" Guid="19ce7c89-74ad-4cf0-9c22-c076fea24528">
-        <Shortcut Id="ApplicationDesktopShortcut"
-                 Name="Zen Wallet"
-                 Description="Zen Wallet"
-                 Target="[#$(var.Zen.TargetFileName)]"
-                 WorkingDirectory="AppRootDirectory"/>
-        <RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="desktop" Type="integer" Value="1" KeyPath="yes"/>
-      </Component>
-    </DirectoryRef>
+		<DirectoryRef Id="DesktopFolder">
+			<Component Id="DesktopApplicationShortcut" Guid="19ce7c89-74ad-4cf0-9c22-c076fea24528">
+				<Shortcut Id="ApplicationDesktopShortcut"
+						 Name="Zen Wallet"
+						 Description="Zen Wallet"
+						 Target="[#$(var.Zen.TargetFileName)]"
+						 WorkingDirectory="AppRootDirectory"/>
+				<RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="desktop" Type="integer" Value="1" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
 
-    <Feature Id="ProductFeature" Title="Zen Wallet" Level="1">
-      <ComponentRef Id="ZenWallet" />
-      <ComponentRef Id="ApplicationShortcut"/>
-      <ComponentRef Id="DesktopApplicationShortcut"/>
-    </Feature>
-  </Product>
+		<Feature Id="ProductFeature" Title="Zen Wallet" Level="1">
+			<ComponentRef Id="ZenWallet" />
+			<ComponentRef Id="ApplicationShortcut"/>
+			<ComponentRef Id="DesktopApplicationShortcut"/>
+		</Feature>
+	</Product>
 </Wix>

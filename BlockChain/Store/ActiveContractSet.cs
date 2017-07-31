@@ -6,9 +6,12 @@ using BlockChain.Data;
 using System.Text;
 using Consensus;
 using Microsoft.FSharp.Core;
+using Microsoft.FSharp.Collections;
 
 namespace BlockChain
 {
+	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
+
 	public class ACSItem
 	{
 		public byte[] Hash { get; set; }
@@ -141,6 +144,56 @@ namespace BlockChain
 					Remove(dbTx, item);
 				else
 					throw new Exception();
+			}
+		}
+
+		public ContractFunction GetContractFunction(TransactionContext dbTx, byte[] contractHash)
+		{
+            var acsItem = Get(dbTx, contractHash);
+
+            if (acsItem == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+            }
+            catch (Exception e)
+            {
+                BlockChainTrace.Error("Could not deserialize contract, trying to recompile. exception: " + Convert.ToBase64String(contractHash), e);
+            }
+
+			FSharpOption<byte[]> compilationResult;
+
+			try
+			{
+                compilationResult = ContractExamples.Execution.compile(acsItem.Value.Code);
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("Could not recompile contract " + Convert.ToBase64String(contractHash), e);
+				return null;
+			}
+
+			if (FSharpOption<byte[]>.get_IsNone(compilationResult))
+			{
+				BlockChainTrace.Information("Could not recompile contract " + Convert.ToBase64String(contractHash));
+				return null;
+			}
+
+            acsItem.Value.CompiledContract = compilationResult.Value;
+            Put(dbTx, contractHash, acsItem.Value);
+
+			try
+			{
+				return ContractExamples.Execution.deserialize(compilationResult.Value);
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("Could not deserialize contract " + Convert.ToBase64String(contractHash), e);
+				return null;
 			}
 		}
 	}
