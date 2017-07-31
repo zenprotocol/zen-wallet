@@ -299,9 +299,9 @@ namespace Wallet.core
 		/// <returns>false if could not satisfy</returns>
 		/// <param name="asset">Asset.</param>
 		/// <param name="amount">Amount.</param>
-		private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, Assets assets)
+		private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, List<Asset> assets)
 		{
-			var matchingAssets = new Assets();
+			var matchingAssets = new List<Asset>();
 
 			var spendableOutputs = new List<Types.Output>();
 
@@ -332,7 +332,7 @@ namespace Wallet.core
 				  });
 			  });
 
-			var unspentMatchingAssets = new Assets();
+            var unspentMatchingAssets = new List<Asset>();
 
 			foreach (Asset matchingAsset in matchingAssets)
 			{
@@ -360,6 +360,7 @@ namespace Wallet.core
 			}
 
 			ulong total = 0;
+            unspentMatchingAssets.Sort();
 
 			foreach (var unspentMatchingAsset in unspentMatchingAssets)
 			{
@@ -370,6 +371,8 @@ namespace Wallet.core
 
 				assets.Add(unspentMatchingAsset);
 				total += unspentMatchingAsset.Output.spend.amount;
+
+				WalletTrace.Information($"require: output with amount {unspentMatchingAsset.Output.spend.amount} will be spent");
 			}
 
 			change = total - amount;
@@ -399,7 +402,7 @@ namespace Wallet.core
         bool Sign(Types.Output output, byte[] asset, ulong amount, out Types.Transaction signedTx)
         {
             ulong change;
-            var assets = new Assets();
+            var assets = new List<Asset>();
 
             var outputs = new List<Types.Output>();
 
@@ -439,7 +442,7 @@ namespace Wallet.core
         public bool SacrificeToContract(byte[] code, ulong zenAmount, out Types.Transaction signedTx, byte[] secureTokenHash = null)
         {
             ulong change;
-            var assets = new Assets();
+            var assets = new List<Asset>();
 
             var outputs = new List<Types.Output>();
 
