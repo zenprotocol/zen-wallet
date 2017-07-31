@@ -36,8 +36,8 @@
 				</RegistryKey>
 
 				<File Name="libsodium.dll" DiskId="1" />
-				<File Name="$(var.Zen.Cmd.TargetFileName)" Source="$(var.Zen.Cmd.TargetPath)" DiskId="1" />
-				<File Name="$(var.Zen.Cmd.TargetFileName).config" Source="$(var.Zen.Cmd.TargetDir)" DiskId="1" />
+        <!--File Name="$(var.Zen.Cmd.TargetFileName)" Source="$(var.Zen.Cmd.TargetPath)" DiskId="1" /-->
+				<!--File Name="$(var.Zen.Cmd.TargetFileName).config" Source="$(var.Zen.Cmd.TargetDir)" DiskId="1" /-->
 				<File Name="$(var.Zen.TargetFileName)" Source="$(var.Zen.TargetPath)" DiskId="1" />
 				<File Name="$(var.Zen.TargetFileName).config" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="atk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
