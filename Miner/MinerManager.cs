@@ -86,14 +86,16 @@ namespace Miner
                 {
                     try
                     {
-                    //TODO: cache compiled?
-                    var contractFunction = ContractExamples.Execution.deserialize(t.CompiledContract);
+						var compiledCodeOpt = ContractExamples.Execution.compile(t.Code);
 
-                        _ActiveContracts[t.Hash] = contractFunction;
+						if (FSharpOption<byte[]>.get_IsSome(compiledCodeOpt))
+						{
+							_ActiveContracts[t.Hash] = ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
+						}
                     }
                     catch (Exception e)
                     {
-                        MinerTrace.Information("Could not deserialize contract " + Convert.ToBase64String(t.Hash));
+                        MinerTrace.Error("Could not compile contract " + Convert.ToBase64String(t.Hash), e);
                     }
                 });
             }
@@ -275,7 +277,7 @@ namespace Miner
 						}
 						catch (Exception e)
 						{
-                            MinerTrace.Information("Error compiling contract");
+							MinerTrace.Error("Could not compile contract " + Convert.ToBase64String(contractHash), e);
 						}
 					}
                 }
