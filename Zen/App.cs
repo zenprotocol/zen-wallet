@@ -457,7 +457,7 @@ namespace Zen
 					var inputs = new List<Types.Outpoint>();
 					var hashes = new List<byte[]>();
 					var version = (uint)1;
-					var date = "2000-02-02";
+					var date = "2000-02-03";
 
                     for (var i = 0; i < JsonLoader<TestKeys>.Instance.Value.Values.Count; i++)
                     {
