@@ -291,8 +291,7 @@ namespace BlockChain
 							}
 
             				var utxoLookup = UtxoLookupFactory(dbTx, false, ptx);
-                            var acsItem = ActiveContractSet.Get(dbTx, contractHash);
-							var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+							var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
                             if (!IsValidAutoTx(ptx, utxoLookup, contractHash, contractFunction))
 							{
@@ -463,10 +462,9 @@ namespace BlockChain
                 if (IsContractGeneratedTx(ptx, out contractHash) == IsContractGeneratedTxResult.ContractGenerated)
                 {
 					var utxoLookup = UtxoLookupFactory(dbTx, false, ptx);
-					var acsItem = ActiveContractSet.Get(dbTx, contractHash);
-					var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+					var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
-                    if (!IsValidAutoTx(ptx, utxoLookup, contractHash, contractFunction))
+					if (!IsValidAutoTx(ptx, utxoLookup, contractHash, contractFunction))
 					{
 						BlockChainTrace.Information("invalid auto-tx removed from mempool", item.Value);
 						memPool.TxPool.RemoveWithDependencies(item.Key);
