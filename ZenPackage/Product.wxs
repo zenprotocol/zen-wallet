@@ -50,7 +50,7 @@
 				<File Name="DBreeze.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="FSharp.Compiler.Service.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="FSharp.Core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="FSharp.Data.DesignTime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<!--File Name="FSharp.Data.DesignTime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" /-->
 				<File Name="FsPickler.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="FsPickler.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="gdk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
