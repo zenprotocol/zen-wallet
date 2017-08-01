@@ -42,33 +42,38 @@ namespace Infrastructure
 			} 
 			set
             {
-                lock (_sync)
-                {
-                    _Value = value;
-                }
+                _Value = value;
             }
 		}
 
 		private void Ensure ()
 		{
-			if (_Value != null)
-			{
-				return;
-			}
+            lock (_sync)
+            {
+                if (_Value != null)
+                {
+                    return;
+                }
 
-			if (_FileName == null) {
-				throw new Exception ("Missing file name for " + GetType ());
-			}
+                if (_FileName == null)
+                {
+                    throw new Exception("Missing file name for " + GetType());
+                }
 
-			if (File.Exists (_FileName)) {
-				try {
-					_Value = JsonConvert.DeserializeObject<T> (File.ReadAllText (_FileName));
-					_Corrupt = false;
-				} catch {
-					InfrastructureTrace.Warning($"File corrupt: {_FileName}");
-					_Corrupt = true;
-				}
-			}
+                if (File.Exists(_FileName))
+                {
+                    try
+                    {
+                        _Value = JsonConvert.DeserializeObject<T>(File.ReadAllText(_FileName));
+                        _Corrupt = false;
+                    }
+                    catch
+                    {
+                        InfrastructureTrace.Warning($"File corrupt: {_FileName}");
+                        _Corrupt = true;
+                    }
+                }
+            }
 
 			if (_Value == null) {
 				_IsNew = true;
