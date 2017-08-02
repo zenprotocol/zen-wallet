@@ -16,7 +16,6 @@ namespace BlockChain.Data
 				CostFn = acsItem.CostFn,
 				KalapasPerBlock = acsItem.KalapasPerBlock,
 				Refs = 0,
-                CompiledContract = acsItem.CompiledContract,
 			};
 		}
 	}
