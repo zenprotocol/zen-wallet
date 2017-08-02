@@ -399,16 +399,16 @@ namespace BlockChain
             {
                 dbTx.Commit();
 
-                var activeContracts = new HashDictionary<byte[]>();
+                var activeContracts = new HashSet();
 
                 foreach (var item in ActiveContractSet.All(dbTx))
                 {
-                    activeContracts[item.Item1] = item.Item2.CompiledContract;
+                    activeContracts.Add(item.Item1);
                 }
 
                 foreach (var item in memPool.ContractPool)
                 {
-                    activeContracts[item.Key] = item.Value.CompiledContract;
+					activeContracts.Add(item.Key);
                 }
 
                 RemoveConfirmedTxsFromMempool(confirmedTxs);
@@ -429,7 +429,7 @@ namespace BlockChain
                     byte[] contractHash;
                     IsContractGeneratedTx(t.Value, out contractHash);
 
-                    return activeContracts.ContainsKey(contractHash);
+                    return activeContracts.Contains(contractHash);
                 })
                .ToList().ForEach(t =>
                {
@@ -908,12 +908,10 @@ namespace BlockChain
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
                 var utxoLookup = UtxoLookupFactory(dbTx, false);
-				var acsItem = ActiveContractSet.Get(dbTx, contractHash);
+                var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
-                if (acsItem != null)
+                if (contractFunction != null)
                 {
-                    var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
-
                     return ExecuteContract(contractHash, contractFunction, message, out transaction, utxoLookup, isWitness);
                 }
 
