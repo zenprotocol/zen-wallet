@@ -84,7 +84,6 @@ namespace BlockChain
 			//OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(listener));
 			var buffer = new BufferBlock<QueueAction>();
 			QueueAction.Target = buffer;
-			var consumer = ConsumeAsync(buffer);
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
@@ -105,6 +104,8 @@ namespace BlockChain
 
 				InitBlockTimestamps(dbTx);
 			}
+
+			var consumer = ConsumeAsync(buffer);
 		}
 
 		//void HandleQueueAction(QueueAction action)
