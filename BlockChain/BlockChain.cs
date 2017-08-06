@@ -184,13 +184,11 @@ namespace BlockChain
 				}
 				catch (Exception e)
 				{
-					BlockChainTrace.Error("BlockChain handler", e);
-
 #if DEBUG
-                    if (action.StackTrace != null)
-    					BlockChainTrace.Information("Original invocation scope: " + action.StackTrace);
+					BlockChainTrace.Error("Blockchain request handle got an exception.\n\nOriginal caller's stack:\n\n" + action.StackTrace + "\n\nException:\n\n", e);
+#else
+                    BlockChainTrace.Error("Blockchain request exception", e);
 #endif
-
 				}
             }
         }
