@@ -382,6 +382,9 @@ namespace BlockChain
 				}
 			}
 
+            //TODO: memory management issues. trying to explicitly collect DynamicMethods
+			GC.Collect();
+
 			action.QueueActions.ForEach(t =>
 			{
 				if (t is MessageAction)
