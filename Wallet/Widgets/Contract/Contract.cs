@@ -14,7 +14,7 @@ namespace Wallet
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
-	public partial class Contract : Bin, ContractView
+    public partial class Contract : Bin, ContractView, IControlInit
 	{
         ContractController _ContractController;
 		public Contract ()
@@ -150,6 +150,11 @@ namespace Wallet
 
 			txtStatus.Buffer.Text = stringBuilder.ToString();
 		}
-	}
+
+		public void Init()
+		{
+			txtContractCode.Buffer.Text = string.Empty;
+		}
+    }
 }
 
