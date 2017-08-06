@@ -403,13 +403,13 @@ namespace BlockChain
 
                 foreach (var item in ActiveContractSet.All(dbTx))
                 {
-                    activeContracts.Add(item.Item1);
-                }
+					activeContracts.Add(item.Item1);
+				}
 
                 foreach (var item in memPool.ContractPool)
                 {
 					activeContracts.Add(item.Key);
-                }
+				}
 
                 RemoveConfirmedTxsFromMempool(confirmedTxs);
 
@@ -908,10 +908,12 @@ namespace BlockChain
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
                 var utxoLookup = UtxoLookupFactory(dbTx, false);
-                var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
+				var acsItem = ActiveContractSet.Get(dbTx, contractHash);
 
-                if (contractFunction != null)
+                if (acsItem != null)
                 {
+                    var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+
                     return ExecuteContract(contractHash, contractFunction, message, out transaction, utxoLookup, isWitness);
                 }
 
