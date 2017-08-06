@@ -192,29 +192,6 @@ namespace Zen
 			return false;
 		}
 
-        //TODO: refactor
-        public bool Spend(Address address, ulong amount, byte[] data, byte[] asset, out Types.Transaction tx)
-		{
-			address.Data = data;
-
-			if (asset == null)
-			{
-				asset = Consensus.Tests.zhash;
-			}
-
-			if (WalletManager.Sign(address, asset, amount, out tx))
-			{
-                return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
-			}
-
-			return false;
-		}
-
-		public bool Sign(ulong amount, out Types.Transaction tx, Address address = null)
-		{
-			return WalletManager.Sign(address ?? Key.Create().Address, Consensus.Tests.zhash, amount, out tx);
-		}
-
 		internal bool Transmit(Types.Transaction tx)
 		{
             return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
@@ -224,21 +201,6 @@ namespace Zen
 		{
             result = NodeManager.Transmit(tx);
 			return result == BlockChain.BlockChain.TxResultEnum.Accepted;
-		}
-
-		internal long AssetMount()
-		{
-			long amount = 0;
-
-			WalletManager.TxDeltaList.ForEach((obj) =>
-			{
-				if (obj.TxState != TxStateEnum.Invalid && obj.AssetDeltas.ContainsKey(Consensus.Tests.zhash))
-				{
-					amount += obj.AssetDeltas[Consensus.Tests.zhash];
-				}
-			});
-
-			return amount;
 		}
 
 		internal void CloseGUI()
@@ -372,11 +334,6 @@ namespace Zen
 			Settings.NetworkProfile = networkProfile;
 		}
 
-		public void ImportTestKey(int keyIndex)
-		{
-			WalletManager.Import(Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[keyIndex].Private));
-		}
-
 		public void ImportTestKey(string privateKey)
 		{
 			WalletManager.Import(Key.Create(privateKey));
@@ -425,14 +382,6 @@ namespace Zen
 				//			File.Delete("nodes.js");
 			}
 		}
-
-        public void PurgeAssetsCache()
-        {
-            var assetsDir = ConfigurationManager.AppSettings.Get("assetsDir");
-
-            if (Directory.Exists(assetsDir))
-                Directory.Delete(assetsDir, true);
-        }
 
 		public void Dispose()
 		{
@@ -500,164 +449,5 @@ namespace Zen
 				return _GenesisBlock;
 			}
 		}
-
-		//public bool ActivateTestContract(string name, int blocks)
-		//{
-		//	string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
-
-		//	return ActivateTestContractCode(contractCode, blocks);
-		//}
-
-		//public bool ActivateTestContractCode(string contractCode, int blocks)
-		//{
-		//	var outputs = new List<Types.Output>();
-		//	var inputs = new List<Types.Outpoint>();
-		//	var hashes = new List<byte[]>();
-		//	var version = (uint)1;
-
-		//	var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-		//	var kalapas = (ulong)(contractCode.Length * 1 * blocks);
-
-		//	outputs.Add(new Types.Output(
-		//		Types.OutputLock.NewContractSacrificeLock(
-		//			new Types.LockCore(0, ListModule.OfSeq(new byte[][] { }))
-		//		),
-		//		new Types.Spend(Tests.zhash, kalapas)
-		//	));
-
-		//	var tx = new Types.Transaction(version,
-		//		ListModule.OfSeq(inputs),
-		//		ListModule.OfSeq(hashes),
-		//		ListModule.OfSeq(outputs),
-		//		new Microsoft.FSharp.Core.FSharpOption<Types.ExtendedContract>(
-		//			Types.ExtendedContract.NewContract(
-		//				new Consensus.Types.Contract(
-		//					Encoding.ASCII.GetBytes(contractCode),
-		//					new byte[] { },
-		//					new byte[] { }
-		//				)
-		//			))
-		//		);
-
-  //          if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
-  //          {
-  //              return false;
-  //          }
-
-  //          return true;
-		//}
-
-        public byte[] GetContractHash(string contractCode)
-        {
-            return Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-        }
-
-		public Address GetTestContractAddress(string name)
-		{
-			string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
-
-            return GetTestContractAddress(Encoding.ASCII.GetBytes(contractCode));
-		}
-
-		public Address GetTestContractAddress(byte[] contractHash)
-		{
-			return new Address(contractHash, AddressType.Contract);
-		}
-
-        public Types.Outpoint GetFirstContractLockOutpoint(Types.Transaction tx)
-        {
-			int i = 0;
-			for (; i < tx.outputs.Length; i++)
-			{
-				if (tx.outputs[i].@lock is Consensus.Types.OutputLock.ContractLock)
-					break;
-			}
-
-			return new Consensus.Types.Outpoint(Consensus.Merkle.transactionHasher.Invoke((tx)), (uint)i);
-		}
-
-        public byte[] GetOutpointBytes(Types.Outpoint outpoint)
-        {
-            return new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
-        }
-
-		public bool SendTestContractTx(string name, ulong amount, byte[] data)
-		{
-			var address = GetTestContractAddress(name);
-
-			//byte[] dataCombined = new byte[data.Sum(a => a.Length)];
-			//int offset = 0;
-			//   foreach (byte[] array in data) {
-			//       System.Buffer.BlockCopy(array, 0, dataCombined, offset, array.Length);
-			//       offset += array.Length;
-			//   }
-
-			address.Data = data;
-
-			Types.Transaction tx;
-
-			if (!WalletManager.Sign(address, Tests.zhash, amount, out tx))
-				return false;
-
-            if (NodeManager.Transmit(tx) != BlockChain.BlockChain.TxResultEnum.Accepted)
-			{
-				return false;
-			}
-
-            Types.Transaction autoTx;
-
-            if (!WalletManager.SendContract(address.Bytes, Merkle.transactionHasher.Invoke(tx), out autoTx))
-            {
-                return false;
-            }
-
-            return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
-		}
-
-        public bool SendTestContract(string name, byte[] data)
-        {
-            string contractCode = File.ReadAllText(Path.Combine("TestContracts", name));
-            var contractHash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
-
-            Types.Transaction autoTx;
-
-			if (!WalletManager.SendContract(contractHash, data, out autoTx))
-			{
-				return false;
-			}
-
-            return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
-        }
-
-		public bool SendTestQuotedContract(byte[] contractHash, byte[] data)
-		{
-			Types.Transaction autoTx;
-
-			if (!WalletManager.SendContract(contractHash, data, out autoTx))
-			{
-				return false;
-			}
-
-            return NodeManager.Transmit(autoTx) == BlockChain.BlockChain.TxResultEnum.Accepted;
-		}
-
-    //    public long CalcBalance(byte[] asset)
-    //    {
-    //        var txDeltaList = new List<TxDelta>();
-
-    //        Action<TxDelta> addTxDelta = (TxDelta txDelta) =>
-    //        {
-				//txDeltaList
-				//.Where(t => t.TxHash.SequenceEqual(txDelta.TxHash))
-				//.ToList()
-				//.ForEach(t => txDeltaList.Remove(t));
-
-				//txDeltaList.Add(txDelta);
-        //    };
-
-        //    WalletManager.TxDeltaList.ForEach(addTxDelta);
-
-        //    return txDeltaList.Select(t => t.AssetDeltas).Sum(t=>t.ContainsKey(asset) ? t[asset] : 0);
-        //}
 	}
 }
