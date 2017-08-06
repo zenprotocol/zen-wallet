@@ -35,14 +35,14 @@ namespace BlockChain.Data
 			return false;
 		}
 
-        public void MoveToICTxPool(HashDictionary<byte[]> activeContracts)
+        public void MoveToICTxPool(HashSet activeContracts)
 		{
 			foreach (var item in this.ToList())
 			{
 				byte[] contractHash;
 
 				if (BlockChain.IsContractGeneratedTx(item.Value, out contractHash) == BlockChain.IsContractGeneratedTxResult.ContractGenerated && 
-                    !activeContracts.ContainsKey(contractHash))
+                    !activeContracts.Contains(contractHash))
 				{
 					BlockChainTrace.Information("inactive contract-generated tx moved to ICTxPool", contractHash);
 					Remove(item.Key);
