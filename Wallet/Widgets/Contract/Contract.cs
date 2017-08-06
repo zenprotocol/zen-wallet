@@ -151,10 +151,10 @@ namespace Wallet
 			txtStatus.Buffer.Text = stringBuilder.ToString();
 		}
 
-        public void Init()
-        {
-            txtContractCode.Buffer.Text = string.Empty;
-        }
+		public void Init()
+		{
+			txtContractCode.Buffer.Text = string.Empty;
+		}
     }
 }
 
