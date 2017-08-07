@@ -40,17 +40,17 @@ namespace Network
 #if DEBUG
 			if (networkInfo.IsLANHost)
 			{
-				ipAddress = natManager.InternalIPAddress;
+                ipAddress = natManager.InternalIPAddress ?? IPAddress.Loopback;
 				networkInfo.PeersToFind = 0;
 			}
 			else if (networkInfo.IsLANClient)
 			{
-				ipAddress = null;
+                var ipAddressStr = (natManager.InternalIPAddress ?? IPAddress.Loopback).ToString();
 				networkInfo.PeersToFind = 1;
 
-				if (networkInfo.Seeds.Count == 0 && natManager.InternalIPAddress != null && !networkInfo.Seeds.Contains(natManager.InternalIPAddress.ToString()))
+                if (networkInfo.Seeds.Count == 0 && !networkInfo.Seeds.Contains(ipAddressStr))
 				{
-					networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
+					networkInfo.Seeds.Add(ipAddressStr);
 				}
 			}
 			else
