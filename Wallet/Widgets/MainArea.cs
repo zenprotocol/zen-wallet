@@ -17,10 +17,11 @@ namespace Wallet
 		}
 
 		public Type Control { 
-			set { 
+			set {
+                int page = 0;
+
 				for (int i = 0; i < FindChild<Notebook>().Children.Length; i++) {
 					var ctl = FindChild<Notebook>().GetNthPage(i);
-                    var visible = false;
 
                     if (ctl.GetType() == value)
                     {
@@ -28,12 +29,11 @@ namespace Wallet
                         {
                             ((IControlInit)ctl).Init();
                         }
-
-                        visible = true;
+                        page = i;
                     }
-
-                    FindChild<Notebook>().GetNthPage (i).Visible = visible;
 				}
+
+				FindChild<Notebook>().CurrentPage = page;
 			}
 		}
 	}
