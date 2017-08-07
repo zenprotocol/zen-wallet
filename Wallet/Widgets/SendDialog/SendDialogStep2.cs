@@ -19,22 +19,26 @@ namespace Wallet
 			dialogfieldAmount.IsEditable = false;
 			dialogfieldTo.IsEditable = false;
 
-			eventboxBack.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) => {
+            eventboxBack.ButtonReleaseEvent += delegate 
+            {
 				FindParent<SendDialog>().Back();
 			};
 
-			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
+			eventboxSend.ButtonReleaseEvent += async delegate
 			{
-				var result = App.Instance.Node.Transmit(Tx);
+				var result = await Task.Run(() => App.Instance.Node.Transmit(Tx));
 
-				if (result == BlockChain.BlockChain.TxResultEnum.Accepted)
-				{
-					FindParent<SendDialog>().Close();
-				}
-				else
-				{
-					new MessageBox("Rejected, reason: " + result).ShowDialog();
-				}
+                Gtk.Application.Invoke(delegate
+                {
+                    if (result == BlockChain.BlockChain.TxResultEnum.Accepted)
+                    {
+                        FindParent<SendDialog>().Close();
+                    }
+                    else
+                    {
+                        new MessageBox("Rejected, reason: " + result).ShowDialog();
+                    }
+                });
 			};
 
 			expander.Activated += (object sender, EventArgs e) => {

@@ -9,6 +9,7 @@ using Consensus;
 using Wallet.Constants;
 using Newtonsoft.Json.Linq;
 using Wallet;
+using System.Threading.Tasks;
 
 namespace Wallet
 {
@@ -364,7 +365,7 @@ namespace Wallet
 
 			UpdateBalance();
 
-			buttonSignAndReview.Clicked += delegate {
+			buttonSignAndReview.Clicked += async delegate {
                 SendInfo.Reset();
 
                 if (SendInfo.Destination.AddressType == AddressType.Contract && SendInfo.Data != null)
@@ -379,8 +380,8 @@ namespace Wallet
                         {
                             byte[] signature;
 
-                            var pubkey = Convert.FromBase64String(data["first"]["pubkey"].ToString());
-                            var toSign = Convert.FromBase64String(data["first"]["toSign"].ToString());
+                            var pubkey = Convert.FromBase64String(data["first"]["pubkey"].Value<string>());
+                            var toSign = Convert.FromBase64String(data["first"]["toSign"].Value<string>());
 
                             if (!App.Instance.Wallet.SignData(pubkey, toSign, out signature))
                             {
@@ -388,7 +389,7 @@ namespace Wallet
                                 return;
                             }
 
-                            byte[] _data = Convert.FromBase64String(data["first"]["data"].ToString());
+                            byte[] _data = Convert.FromBase64String(data["first"]["data"].Value<string>());
 
                             firstData = _data.Concat(signature).ToArray();
                         }
@@ -403,8 +404,8 @@ namespace Wallet
                         {
                             SendInfo.WitnessData = new WitnessData()
                             {
-                                Initial = Convert.FromBase64String(data["second"]["initial"].ToString()),
-                                Final = Convert.FromBase64String(data["second"]["final"].ToString())
+                                Initial = Convert.FromBase64String(data["second"]["initial"].Value<string>()),
+                                Final = Convert.FromBase64String(data["second"]["final"].Value<string>())
                             };
 
                             SendInfo.NeedAutoTx = true;
@@ -415,21 +416,25 @@ namespace Wallet
                     }
                 }
 
-                SendInfo.Signed = App.Instance.Wallet.Sign(
+                _Tx = await Task.Run(() => App.Instance.Wallet.Sign(
                     SendInfo.Destination,
                     SendInfo.Asset,
-                    SendInfo.Amount,
-                    out _Tx
-                );
+                    SendInfo.Amount
+                ));
 
-				if (!SendInfo.Signed)
-				{
-                    labelAmountError.Text = "Error: not enough " + App.Instance.AssetsMetadata.TryGetValue(SendInfo.Asset);
-					return;
-				}
+                SendInfo.Signed = _Tx != null;
 
-                FindParent<WalletLayout>().NextPage();
-			};
+                Gtk.Application.Invoke(delegate
+                {
+                    if (!SendInfo.Signed)
+                    {
+                        labelAmountError.Text = "Error: not enough " + App.Instance.AssetsMetadata.TryGetValue(SendInfo.Asset);
+                        return;
+                    }
+
+                    FindParent<WalletLayout>().NextPage();
+                });
+            };
 
             //Assets' images not implemented, remove ui elements
             hboxAsset.Remove(hboxAsset.Children[0]);

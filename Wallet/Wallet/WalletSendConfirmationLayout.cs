@@ -4,6 +4,8 @@ using Gdk;
 using Gtk;
 using System.Linq;
 using Consensus;
+using System.Threading.Tasks;
+using BlockChain.Data;
 
 namespace Wallet
 {
@@ -45,27 +47,39 @@ namespace Wallet
 
 			buttonBack.Clicked += Back;
 
-			buttonTransmit.Clicked += delegate {
-				WalletSendLayout.SendInfo.TxResult = App.Instance.Node.Transmit(WalletSendLayout.Tx);
+			buttonTransmit.Clicked += async delegate {
+                buttonTransmit.Sensitive = false;
 
-                if (WalletSendLayout.SendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted && WalletSendLayout.SendInfo.NeedAutoTx)
-				{
-					var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
-					var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
-					var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
+                await Task.Run(() => {
+                    WalletSendLayout.SendInfo.TxResult = App.Instance.Node.Transmit(WalletSendLayout.Tx).Result;
 
-                    byte[] witnessData = WalletSendLayout.SendInfo.WitnessData.Initial.Concat(outpointBytes).ToArray();
-					witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Final).ToArray();
+	                if (WalletSendLayout.SendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted && WalletSendLayout.SendInfo.NeedAutoTx)
+					{
+						var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
+						var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
+						var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
 
-					Types.Transaction autoTx;
-					WalletSendLayout.SendInfo.AutoTxCreated = App.Instance.Wallet.SendContract(WalletSendLayout.SendInfo.Destination.Bytes, witnessData, out autoTx);
+	                    byte[] witnessData = WalletSendLayout.SendInfo.WitnessData.Initial.Concat(outpointBytes).ToArray();
+						witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Final).ToArray();
 
-                    if (WalletSendLayout.SendInfo.AutoTxCreated)
-                    {
-                        WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTx);
-                    }
-				}
-              	UpdateStatus();
+	                    var autoTxResult = new ExecuteContractAction() { 
+	                        ContractHash = WalletSendLayout.SendInfo.Destination.Bytes, 
+	                        Message = witnessData 
+	                    }.Publish().Result;
+
+	                    WalletSendLayout.SendInfo.AutoTxCreated = autoTxResult.Item1;
+
+	                    if (WalletSendLayout.SendInfo.AutoTxCreated)
+	                    {
+                            WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTxResult.Item2).Result;
+	                    }
+					}
+                });
+
+                Gtk.Application.Invoke(delegate {
+                    buttonTransmit.Sensitive = true;
+                    UpdateStatus();
+                });
 			};
 		}
 

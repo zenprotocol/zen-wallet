@@ -122,7 +122,7 @@ namespace Zen
 
                 if (string.IsNullOrEmpty(data.Text))
                 {
-                    if (!app.Spend(_address, _amount))
+                    if (!app.Spend(_address, _amount).Result)
                     {
                         status.Text = "Could not spend";
                         return;
@@ -348,7 +348,7 @@ namespace Zen
 							if (key.Change)
 								info += ",change";
 									
-							listMenu.Items.Add(info + " " + key.PrivateAsString);
+                            listMenu.Items.Add(info + " " + System.Convert.ToBase64String(key.Private));
 						}
 						listMenu.Items.Add("Back");
 						break;

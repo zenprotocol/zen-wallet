@@ -174,33 +174,23 @@ namespace Zen
             return Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[keyIndex].Private).Address;
 		}
 
-		public bool Spend(Address address, ulong amount, byte[] data = null, byte[] asset = null)
+		public async Task<bool> Spend(Address address, ulong amount, byte[] data = null, byte[] asset = null)
 		{
 			address.Data = data;
-            Consensus.Types.Transaction tx;
 
             if (asset == null)
             {
-                asset = Consensus.Tests.zhash;
+                asset = Tests.zhash;
             }
 
-			if (WalletManager.Sign(address, asset, amount, out tx))
+            var tx = WalletManager.Sign(address, asset, amount);
+
+            if (tx != null)
 			{
-                return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
+                return (await NodeManager.Transmit(tx)) == BlockChain.BlockChain.TxResultEnum.Accepted;
 			}
 
 			return false;
-		}
-
-		internal bool Transmit(Types.Transaction tx)
-		{
-            return NodeManager.Transmit(tx) == BlockChain.BlockChain.TxResultEnum.Accepted;
-		}
-
-		internal bool Transmit(Types.Transaction tx, out BlockChain.BlockChain.TxResultEnum result)
-		{
-            result = NodeManager.Transmit(tx);
-			return result == BlockChain.BlockChain.TxResultEnum.Accepted;
 		}
 
 		internal void CloseGUI()

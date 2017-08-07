@@ -88,20 +88,20 @@ namespace Wallet.core
 
             using (var context = _DBContext.GetTransactionContext())
             {
-                _KeyStore.AddKey(context, key.PrivateAsString);
+                _KeyStore.AddKey(context, System.Convert.ToBase64String(key.Private));
                 context.Commit();
             }
 
-			//TODO: store the key in DB?
+            //TODO: store the key in DB?
             _Keys.Add(key);
 
             HashDictionary<List<Types.Output>> txOutputs;
             HashDictionary<Types.Transaction> txs;
 
-			var result = new GetUTXOSetAction() { Predicate = IsMatch }.Publish().Result;
+            var result = new GetUTXOSetAction() { Predicate = IsMatch }.Publish().Result;
 
-			txOutputs = result.Item1;
-			txs = result.Item2;
+            txOutputs = result.Item1;
+            txs = result.Item2;
 
             TxDeltaList.Clear();
 
@@ -240,118 +240,134 @@ namespace Wallet.core
             balances[output.spend.asset] += isSpending ? -1 * (long)output.spend.amount : (long)output.spend.amount;
         }
 
-		//    public void Sync()
-		//    {
-		//_HandledTransactions.Clear();
-		//var utxoSet = _BlockChain.GetUTXOSet();
-		//WalletTrace.Information($"loading blockchain's {utxoSet.Count()} utxos");
-		//var transactions = new List<Types.Transaction>();
+        //    public void Sync()
+        //    {
+        //_HandledTransactions.Clear();
+        //var utxoSet = _BlockChain.GetUTXOSet();
+        //WalletTrace.Information($"loading blockchain's {utxoSet.Count()} utxos");
+        //var transactions = new List<Types.Transaction>();
 
 
-		//var tipItr = _BlockChain.Tip.Key;
+        //var tipItr = _BlockChain.Tip.Key;
 
-		//while (tipItr != null && !tipItr.SequenceEqual(new byte[] { }))
-		//{
-		//    using (var context = _DBContext.GetTransactionContext()) // TODO: encap
-		//    {
-		//        foreach (var transaction in _BlockChain.BlockStore.Transactions(context, tipItr))
-		//        {
-		//            transactions.Add(transaction.Value);
-		//        }
-		//    }
+        //while (tipItr != null && !tipItr.SequenceEqual(new byte[] { }))
+        //{
+        //    using (var context = _DBContext.GetTransactionContext()) // TODO: encap
+        //    {
+        //        foreach (var transaction in _BlockChain.BlockStore.Transactions(context, tipItr))
+        //        {
+        //            transactions.Add(transaction.Value);
+        //        }
+        //    }
 
-		//    tipItr = _BlockChain.GetBlockHeader(tipItr).parent;
-		//}
+        //    tipItr = _BlockChain.GetBlockHeader(tipItr).parent;
+        //}
 
-		//using (var context = _DBContext.GetTransactionContext())
-		//{
-		//    //_OutpointAssetsStore.RemoveAll(context);
-		//    _UTXOStore.RemoveAll(context);
-		//    _BalanceStore.RemoveAll(context);
+        //using (var context = _DBContext.GetTransactionContext())
+        //{
+        //    //_OutpointAssetsStore.RemoveAll(context);
+        //    _UTXOStore.RemoveAll(context);
+        //    _BalanceStore.RemoveAll(context);
 
-		//    foreach (var item in utxoSet)
-		//    {
-		//        if (_KeyStore.Find(context, item.Value, true))
-		//        {
-		//            _UTXOStore.Put(context, item);
+        //    foreach (var item in utxoSet)
+        //    {
+        //        if (_KeyStore.Find(context, item.Value, true))
+        //        {
+        //            _UTXOStore.Put(context, item);
 
-		//            //_AssetsManager.Add(item);
-		//            //AddToRunningBalance(item.Value);
-		//            //if (!myTransactions.Contains(item.Item1.txHash))
-		//            //{
-		//            //    myTransactions.Add(item.Item1.txHash);
-		//            //}
-		//        }
-		//    }
+        //            //_AssetsManager.Add(item);
+        //            //AddToRunningBalance(item.Value);
+        //            //if (!myTransactions.Contains(item.Item1.txHash))
+        //            //{
+        //            //    myTransactions.Add(item.Item1.txHash);
+        //            //}
+        //        }
+        //    }
 
-		//    context.Commit();
-		//}
+        //    context.Commit();
+        //}
 
-		//foreach (var transaction in transactions)
-		//{
-		//    HandleTransaction(new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction), true);
-		//}
-		//    }
+        //foreach (var transaction in transactions)
+        //{
+        //    HandleTransaction(new Keyed<Types.Transaction>(Merkle.transactionHasher.Invoke(transaction), transaction), true);
+        //}
+        //    }
 
-		/// <summary>
-		/// get a set of outpoints with matching keys using greedy algorithm 
-		/// </summary>
-		/// <returns>false if could not satisfy</returns>
-		/// <param name="asset">Asset.</param>
-		/// <param name="amount">Amount.</param>
-		private bool Require(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, List<Asset> assets)
-		{
-			var matchingAssets = new List<Asset>();
+        /// <summary>
+        /// get a set of outpoints with matching keys using greedy algorithm 
+        /// </summary>
+        /// <returns>false if could not satisfy</returns>
+        /// <param name="asset">Asset.</param>
+        /// <param name="amount">Amount.</param>
+        private bool GetAssets(TransactionContext dbTx, byte[] asset, ulong amount, out ulong change, List<Asset> assets)
+        {
+            var matchingAssets = new List<Asset>();
 
-			var spendableOutputs = new List<Types.Output>();
+            var spendableOutputs = new List<Types.Output>();
 
-			_TxStore.All(dbTx).Select(t => t.Item2).ToList().ForEach(txData =>
-			  {
-				  uint idx = 0;
-				  txData.Tx.outputs.ToList().ForEach(o =>
-				  {
-					  if (o.spend.asset.SequenceEqual(asset))
-					  {
-						  var key = GetKey(o);
+            _TxStore.All(dbTx).Select(t => t.Item2).ToList().ForEach(txData =>
+              {
+                  uint idx = 0;
+                  txData.Tx.outputs.ToList().ForEach(o =>
+                  {
+                      if (o.spend.asset.SequenceEqual(asset))
+                      {
+                          var key = GetKey(o);
 
-						  if (key != null)
-						  {
-							  if (txData.TxState != TxStateEnum.Invalid)
-							  {
-								  matchingAssets.Add(new Asset()
-								  {
-									  Key = key,
-									  TxState = txData.TxState,
-									  Outpoint = new Types.Outpoint(txData.TxHash, idx),
-									  Output = o
-								  });
-							  }
-						  }
-					  }
-					  idx++;
-				  });
-			  });
+                          if (key != null)
+                          {
+                              if (txData.TxState != TxStateEnum.Invalid)
+                              {
+                                  matchingAssets.Add(new Asset()
+                                  {
+                                      Key = key,
+                                      TxState = txData.TxState,
+                                      Outpoint = new Types.Outpoint(txData.TxHash, idx),
+                                      Output = o
+                                  });
+                              }
+                          }
+                      }
+                      idx++;
+                  });
+              });
 
             var unspentMatchingAssets = new List<Asset>();
 
-			foreach (Asset matchingAsset in matchingAssets)
-			{
-				bool canSpend = false;
-				switch (matchingAsset.TxState)
-				{
-					case TxStateEnum.Confirmed:
-						var isConfirmedUTXOExist = new GetIsConfirmedUTXOExistAction() { Outpoint = matchingAsset.Outpoint }.Publish().Result;
+            foreach (Asset matchingAsset in matchingAssets)
+            {
+                bool canSpend = false;
+                switch (matchingAsset.TxState)
+                {
+                    case TxStateEnum.Confirmed:
+                        var isConfirmedUTXOExist = new GetIsConfirmedUTXOExistAction() { Outpoint = matchingAsset.Outpoint }.Publish().Result;
 
-						canSpend = isConfirmedUTXOExist &&
-							!_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint);
+                        canSpend = isConfirmedUTXOExist &&
+                            !_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint);
+
+#if TRACE
+                        if (!isConfirmedUTXOExist)
+                            WalletTrace.Information($"confirmed output ({matchingAsset.Output.spend.amount}) spent (confirmed)");
+                        else if (_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint))
+                            WalletTrace.Information($"confirmed output ({matchingAsset.Output.spend.amount}) spent (unconfirmed)");
+#endif
+
 						break;
 					case TxStateEnum.Unconfirmed:
 						canSpend = !_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint) &&
 							_BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash);
+
+#if TRACE
+						if (!_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint))
+                            WalletTrace.Information($"unconfirmed output ({matchingAsset.Output.spend.amount}) spent (unconfirmed)");
+						else if (_BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash))
+							WalletTrace.Information($"unconfi" +
+                                                    "rmed output ({matchingAsset.Output.spend.amount}) is orphan");
+#endif
+
 						break;
 				}
 
-				WalletTrace.Information($"require: output with amount {matchingAsset.Output.spend.amount} spendable: {canSpend}");
 
 				if (canSpend)
 				{
@@ -361,6 +377,8 @@ namespace Wallet.core
 
 			ulong total = 0;
             unspentMatchingAssets.Sort();
+
+            WalletTrace.Information($"trying to spend an amount {amount} of asset {Convert.ToBase64String(asset)}");
 
 			foreach (var unspentMatchingAsset in unspentMatchingAssets)
 			{
@@ -372,10 +390,14 @@ namespace Wallet.core
 				assets.Add(unspentMatchingAsset);
 				total += unspentMatchingAsset.Output.spend.amount;
 
-				WalletTrace.Information($"require: output with amount {unspentMatchingAsset.Output.spend.amount} will be spent");
+                WalletTrace.Information($"output with amount {unspentMatchingAsset.Output.spend.amount} will be spent, left {amount - total} of asset  of asset {Convert.ToBase64String(asset)}");
 			}
 
 			change = total - amount;
+
+            if (total < amount)
+                WalletTrace.Information($"not enougn asset in wallet to spend amount {amount}");
+
 			return total >= amount;
 		}
 
@@ -393,13 +415,13 @@ namespace Wallet.core
             }
         }
 
-        public bool Sign(Address address, byte[] asset, ulong amount, out Types.Transaction signedTx)
+        public Types.Transaction Sign(Address address, byte[] asset, ulong amount)
         {
             var output = new Types.Output(address.GetLock(), new Types.Spend(asset, amount));
-            return Sign(output, asset, amount, out signedTx);
+            return Sign(output, asset, amount);
         }
 
-        bool Sign(Types.Output output, byte[] asset, ulong amount, out Types.Transaction signedTx)
+        Types.Transaction Sign(Types.Output output, byte[] asset, ulong amount)
         {
             ulong change;
             var assets = new List<Asset>();
@@ -408,10 +430,9 @@ namespace Wallet.core
 
             using (TransactionContext dbTx = _DBContext.GetTransactionContext())
             {
-                if (!Require(dbTx, asset, amount, out change, assets))
+                if (!GetAssets(dbTx, asset, amount, out change, assets))
                 {
-                    signedTx = null;
-                    return false;
+                    return null;
                 }
                 else if (change > 0)
                 {
@@ -429,17 +450,15 @@ namespace Wallet.core
 
             outputs.Add(output);
 
-            signedTx = TransactionValidation.signTx(new Types.Transaction(
+            return TransactionValidation.signTx(new Types.Transaction(
                 0,
                 ListModule.OfSeq(assets.Select(t => t.Outpoint)),
                 ListModule.OfSeq(new List<byte[]>()),
                 ListModule.OfSeq(outputs),
                 null), ListModule.OfSeq(assets.Select(i => i.Key.Private)));
-
-            return true;
         }
 
-        public bool SacrificeToContract(byte[] code, ulong zenAmount, out Types.Transaction signedTx, byte[] secureTokenHash = null)
+        public bool GetContractActivationTx(byte[] code, ulong zenAmount, out Types.Transaction signedTx, byte[] secureTokenHash = null)
         {
             ulong change;
             var assets = new List<Asset>();
@@ -448,7 +467,7 @@ namespace Wallet.core
 
             using (TransactionContext dbTx = _DBContext.GetTransactionContext())
             {
-                if (!Require(dbTx, Tests.zhash, zenAmount, out change, assets))
+                if (!GetAssets(dbTx, Tests.zhash, zenAmount, out change, assets))
                 {
                     signedTx = null;
                     return false;
@@ -471,7 +490,7 @@ namespace Wallet.core
 					ulong secureTokenChange;
                    // var secureTokenAssets = new Assets();
 
-                    if (!Require(dbTx, secureTokenHash, 1, out secureTokenChange, assets))
+                    if (!GetAssets(dbTx, secureTokenHash, 1, out secureTokenChange, assets))
 					{
 						signedTx = null;
 						return false;
@@ -516,15 +535,6 @@ namespace Wallet.core
               ), ListModule.OfSeq(assets.Select(i => i.Key.Private)));
 
             return true;
-        }
-
-		public bool SendContract(byte[] contractHash, byte[] data, out Types.Transaction autoTx)
-		{
-			var result = new ExecuteContractAction() { ContractHash = contractHash, Message = data }.Publish().Result;
-
-			autoTx = result.Item2;
-
-			return result.Item1 && autoTx != null;
         }
 
         public Key GetUnusedKey()
