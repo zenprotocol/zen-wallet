@@ -222,3 +222,41 @@ let ``Compilation of raw contract succeeds``()=
     } |> Option.defaultValue BadTx"""
     let comp = Execution.compile contract
     Assert.That(comp, Is.Not.EqualTo None)
+
+open MBrace.FsPickler.Combinators
+
+[<Test>]
+let ``Compiled raw contract deserialized correctly``() =
+    let contract = """fun (message,contracthash,utxos)  ->
+    let ownerPubKey = Array.zeroCreate<byte> 32
+    maybe {
+        if message.Length <> 129 then return! None
+        let m, s = message.[0..64], message.[65..128]
+        if not <| verify s m ownerPubKey then return! None
+        let opoint = {txHash=m.[1..32]; index = (uint32)m.[0]}
+        let! oput = utxos opoint
+        let dataOutput = {
+            spend={asset=contracthash; amount=1UL};
+            lock=ContractLock (contracthash, m.[33..64])
+        }
+        return ([opoint;], [oput; dataOutput], [||])
+    } |> Option.defaultValue BadTx"""
+    let comp = Execution.compile contract
+    match comp with
+    | None -> failwith "no contract"
+    | Some c ->
+        let f:ContractFunction = Execution.deserialize c
+        let x = f ([||],[||],fun _ -> None)
+        Assert.That((x=BadTx), Is.True)
+
+[<Test>]
+let ``Quoted contract metadata extracts``()=
+    let callStr = Execution.quotedToString quotedCall
+    let m = Execution.metadata callStr
+    Assert.That(m, Is.Not.EqualTo(None))
+
+[<Test>]
+let ``Quoted secure token metadata extracts``()=
+    let secureStr = Execution.quotedToString quotedSecure
+    let m = Execution.metadata secureStr
+    Assert.That(m, Is.Not.EqualTo(None))

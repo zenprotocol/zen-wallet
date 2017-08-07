@@ -12,12 +12,10 @@ using Microsoft.FSharp.Core;
 using System.Linq;
 using Miner.Data;
 using Wallet.core.Data;
-using System.Reflection;
 
 namespace Miner
 {
 	//TODO: refactor duplication
-	using TransactionSkeleton = Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
 	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
 	using UtxoLookup = FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>;
 
@@ -26,7 +24,7 @@ namespace Miner
         readonly TransactionQueue _TransactionQueue = new TransactionQueue();
         readonly List<TransactionValidation.PointedTransaction> _ValidatedTxs = new List<TransactionValidation.PointedTransaction>();
 
-        readonly HashDictionary<MethodInfo> _ActiveContracts = new HashDictionary<MethodInfo>();
+		readonly HashDictionary<ContractFunction> _ActiveContracts = new HashDictionary<ContractFunction>();
 		List<Tuple<Types.Outpoint, Types.Output>> _UtxoSet;
 
 		BlockChain.BlockChain _BlockChain;
@@ -90,9 +88,9 @@ namespace Miner
                     {
 						var compiledCodeOpt = ContractExamples.Execution.compile(t.Code);
 
-						if (FSharpOption<MethodInfo>.get_IsSome(compiledCodeOpt))
+						if (FSharpOption<byte[]>.get_IsSome(compiledCodeOpt))
 						{
-							_ActiveContracts[t.Hash] = compiledCodeOpt.Value;
+							_ActiveContracts[t.Hash] = ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
 						}
                     }
                     catch (Exception e)
@@ -159,15 +157,9 @@ namespace Miner
 
             var contractLookup = FSharpFunc<byte[], FSharpOption<ContractFunction>>.FromConverter(contractHash =>
             {
-                if (!_ActiveContracts.ContainsKey(contractHash))
-                {
-                    return FSharpOption<ContractFunction>.None;
-                }
-
-                return ContractFunction.FromConverter(t =>
-				{
-                    return (TransactionSkeleton)_ActiveContracts[contractHash].Invoke(null, new object[] { t.Item1, t.Item2, t.Item3 });
-				});
+                return !_ActiveContracts.ContainsKey(contractHash) ?
+                       FSharpOption<ContractFunction>.None :
+                       new FSharpOption<ContractFunction>(_ActiveContracts[contractHash]);
             });
 
             if (!TransactionValidation.validateNonCoinbaseTx(
@@ -276,11 +268,11 @@ namespace Miner
                     {
 						try
 						{
-							var compiledMethodOpt = ContractExamples.Execution.compile(contractCode);
+							var compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
 
-                            if (FSharpOption<MethodInfo>.get_IsSome(compiledMethodOpt))
+                            if (FSharpOption<byte[]>.get_IsSome(compiledCodeOpt))
                             {
-                                _ActiveContracts[contractHash] = compiledMethodOpt.Value;
+                                _ActiveContracts[contractHash] = ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
                             }
 						}
 						catch (Exception e)
