@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using Store;
 using System.Linq;
@@ -7,16 +7,15 @@ using System.Text;
 using Consensus;
 using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Collections;
-using System.Reflection;
 
 namespace BlockChain
 {
-	using TransactionSkeleton = Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
 	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
 
 	public class ACSItem
 	{
 		public byte[] Hash { get; set; }
+		public byte[] CompiledContract { get; set; }
         public string Code { get; set; }
 		public byte[] CostFn { get; set; }
 		public ulong KalapasPerBlock { get; set; }
@@ -76,26 +75,27 @@ namespace BlockChain
                 return false;
             }
 
-            //  string fsharpCode;
-            //  ContractHelper.Extract(contractCode, out fsharpCode);
+          //  string fsharpCode;
+          //  ContractHelper.Extract(contractCode, out fsharpCode);
             //	var fsharpCode = new StrongBox<byte[]>();
             //	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
 
+            FSharpOption<byte[]> compiledCodeOpt;
+
             try
             {
-                var compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
-
-                if (FSharpOption<MethodInfo>.get_IsNone(compiledCodeOpt))
-                {
-                    return false;
-                }
+                compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
             }
             catch (Exception e)
             {
-                //TODO: print the exception on Info rather than Error, or don't print the exception at all
-                BlockChainTrace.Error("Error compiling contract", e);
+                BlockChainTrace.Information("Error compiling contract");
                 return false;
             }
+
+            if (FSharpOption<byte[]>.get_IsNone(compiledCodeOpt))
+                return false;
+            
+            var compiledCode = compiledCodeOpt.Value;
 
             var kalapasPerBlock = KalapasPerBlock(contractCode);
 
@@ -111,7 +111,8 @@ namespace BlockChain
                 Hash = contractHash,
                 KalapasPerBlock = kalapasPerBlock,
                 LastBlock = blockNumber + blocks,
-                Code = contractCode
+                Code = contractCode,
+                CompiledContract = compiledCode
             });
 
             BlockChainTrace.Information($"Contract activated for {blocks} blocks", contractHash);
@@ -155,24 +156,43 @@ namespace BlockChain
                 return null;
             }
 
+            try
+            {
+                return ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+            }
+            catch (Exception e)
+            {
+                BlockChainTrace.Information("Could not deserialize contract, trying to recompile");
+            }
+
+			FSharpOption<byte[]> compilationResult;
+
 			try
 			{
-                var methodOpt = ContractExamples.Execution.compile(acsItem.Value.Code);
-
-                if (FSharpOption<MethodInfo>.get_IsNone(methodOpt))
-				{
-					return null;
-				}
-
-                return ContractFunction.FromConverter(t =>
-				{
-					return (TransactionSkeleton)methodOpt.Value.Invoke(null, new object[] { t.Item1, t.Item2, t.Item3 });
-				});
+                compilationResult = ContractExamples.Execution.compile(acsItem.Value.Code);
 			}
 			catch (Exception e)
 			{
-				//TODO: print the exception on Info rather than Error, or don't print the exception at all
-				BlockChainTrace.Error("Error compiling contract", e);
+				BlockChainTrace.Error("Could not recompile contract " + Convert.ToBase64String(contractHash), e);
+				return null;
+			}
+
+			if (FSharpOption<byte[]>.get_IsNone(compilationResult))
+			{
+                BlockChainTrace.Error("Could not recompile contract " + Convert.ToBase64String(contractHash), new Exception());
+				return null;
+			}
+
+            acsItem.Value.CompiledContract = compilationResult.Value;
+            Put(dbTx, contractHash, acsItem.Value);
+
+			try
+			{
+				return ContractExamples.Execution.deserialize(compilationResult.Value);
+			}
+			catch (Exception e)
+			{
+				BlockChainTrace.Error("Could not deserialize contract " + Convert.ToBase64String(contractHash), e);
 				return null;
 			}
 		}

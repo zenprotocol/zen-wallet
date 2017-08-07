@@ -84,7 +84,6 @@ namespace BlockChain
 			//OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(listener));
 			var buffer = new BufferBlock<QueueAction>();
 			QueueAction.Target = buffer;
-			var consumer = ConsumeAsync(buffer);
 
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{
@@ -105,6 +104,8 @@ namespace BlockChain
 
 				InitBlockTimestamps(dbTx);
 			}
+
+			var consumer = ConsumeAsync(buffer);
 		}
 
 		//void HandleQueueAction(QueueAction action)
@@ -183,13 +184,11 @@ namespace BlockChain
 				}
 				catch (Exception e)
 				{
-					BlockChainTrace.Error("BlockChain handler", e);
-
 #if DEBUG
-                    if (action.StackTrace != null)
-    					BlockChainTrace.Information("Original invocation scope: " + action.StackTrace);
+					BlockChainTrace.Error("Blockchain request handle got an exception.\n\nOriginal caller's stack:\n\n" + action.StackTrace + "\n\nException:\n\n", e);
+#else
+                    BlockChainTrace.Error("Blockchain request exception", e);
 #endif
-
 				}
             }
         }
@@ -382,6 +381,10 @@ namespace BlockChain
 				}
 			}
 
+            //TODO: memory management issues. trying to explicitly collect DynamicMethods
+			GC.Collect();
+            GC.WaitForPendingFinalizers();
+
 			action.QueueActions.ForEach(t =>
 			{
 				if (t is MessageAction)
@@ -403,13 +406,13 @@ namespace BlockChain
 
                 foreach (var item in ActiveContractSet.All(dbTx))
                 {
-                    activeContracts.Add(item.Item1);
-                }
+					activeContracts.Add(item.Item1);
+				}
 
                 foreach (var item in memPool.ContractPool)
                 {
 					activeContracts.Add(item.Key);
-                }
+				}
 
                 RemoveConfirmedTxsFromMempool(confirmedTxs);
 
@@ -908,12 +911,10 @@ namespace BlockChain
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
                 var utxoLookup = UtxoLookupFactory(dbTx, false);
-                var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
+			    var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
                 if (contractFunction != null)
-                {
                     return ExecuteContract(contractHash, contractFunction, message, out transaction, utxoLookup, isWitness);
-                }
 
                 transaction = null;
                 return false;

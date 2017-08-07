@@ -33,7 +33,7 @@ namespace Wallet
 			labelStatus.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text.Gdk);
 
 			eventboxCreateOrExtend.ButtonPressEvent += delegate {
-				_ContractController.CreateOrExtend();
+				new ContractActivation().ShowDialog(Hash, Code, _ContractController);
 			};
 
 			bool isGenerateBusy = false;
@@ -107,15 +107,19 @@ namespace Wallet
 			}
 		}
 
-		string _Hash;
+		byte[] _Hash;
 		public byte[] Hash
 		{
 			set
 			{
-				_Hash = Convert.ToBase64String(value);
-				txtContractHash.Text = _Hash;
+				_Hash = value;
+                txtContractHash.Text = Convert.ToBase64String(_Hash);
 				UpdateStatus();
 			}
+            get
+            {
+                return _Hash;   
+            }
 		}
 
 		public string Assertion
@@ -151,10 +155,10 @@ namespace Wallet
 			txtStatus.Buffer.Text = stringBuilder.ToString();
 		}
 
-        public void Init()
-        {
-            txtContractCode.Buffer.Text = string.Empty;
-        }
+		public void Init()
+		{
+			txtContractCode.Buffer.Text = string.Empty;
+		}
     }
 }
 

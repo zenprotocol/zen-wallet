@@ -5,6 +5,7 @@ using Consensus;
 using Gtk;
 using System.Linq;
 using Wallet.core;
+using System.Text;
 
 namespace Wallet
 {
@@ -16,7 +17,7 @@ namespace Wallet
 		byte[] _Code;
 		ulong _KalapasPerBlock;
 		ulong _TotalKalapas;
-        Func<ulong, byte[], byte[], ContractActivationResult> _ActivateFunc;
+        ContractController _ContractController;
 		byte[] SecureToken = null;
 
         UpdatingStore<byte[]> _SecureTokenComboboxStore = new UpdatingStore<byte[]>(
@@ -48,23 +49,25 @@ namespace Wallet
 				label.ModifyFont(Constants.Fonts.DialogContent);
             }, label1, label5, label3, labelKalapas, labelSelectSecureToken, labelStatus);
 
-			buttonActivate.Clicked += delegate {
-                var result = _ActivateFunc(_TotalKalapas, _Code, SecureToken);
+			buttonActivate.Clicked += async delegate {
+                var result = await _ContractController.ActivateContract(_TotalKalapas, _Code, SecureToken);
 
-                switch (result.Result)
-                {
-					case ContractActivationResult.ResultEnum.Error:
-						hboxStatus.Visible = true;
-						labelStatus.Text = "Error transmiting tx: " + result.TxResult;
-						break;
-					case ContractActivationResult.ResultEnum.NotEnoughZen:
-						hboxStatus.Visible = true;
-						labelStatus.Text = "Not enougn Zen";
-						break;
-					case ContractActivationResult.ResultEnum.Success:
-                        CloseDialog();
-						break;
-                }
+                Gtk.Application.Invoke(delegate {
+	                switch (result.Result)
+	                {
+						case ContractActivationResult.ResultEnum.Error:
+							hboxStatus.Visible = true;
+							labelStatus.Text = "Error transmiting tx: " + result.TxResult;
+							break;
+						case ContractActivationResult.ResultEnum.NotEnoughZen:
+							hboxStatus.Visible = true;
+							labelStatus.Text = "Not enougn Zen";
+							break;
+						case ContractActivationResult.ResultEnum.Success:
+	                        CloseDialog();
+							break;
+	                }
+                });
 			};
 
             spinBlocks.ValueChanged += (sender, e) => {
@@ -117,13 +120,13 @@ namespace Wallet
 			}
 		}
 
-        public void ShowDialog(byte[] hash, byte[] code, Func<ulong, byte[], byte[], ContractActivationResult> activateFunc)
+        public void ShowDialog(byte[] hash, string code, ContractController contractController)
 		{
 			//UInt32 nextBlocks;
 			_IsActive = App.Instance.Wallet.IsContractActive(hash/*, out nextBlocks*/);
-            _KalapasPerBlock = code == null || code.Length == 0 ? 0 : ActiveContractSet.KalapasPerBlock(System.Text.Encoding.ASCII.GetString(code));
-			_Code = code;
-            _ActivateFunc = activateFunc;
+            _KalapasPerBlock = code == null || code.Length == 0 ? 0 : ActiveContractSet.KalapasPerBlock(code);
+			_Code = Encoding.ASCII.GetBytes(code);
+            _ContractController = contractController;
 
 			if (_IsActive)
 			{

@@ -40,17 +40,17 @@ namespace Network
 #if DEBUG
 			if (networkInfo.IsLANHost)
 			{
-				ipAddress = natManager.InternalIPAddress;
+                ipAddress = natManager.InternalIPAddress ?? IPAddress.Loopback;
 				networkInfo.PeersToFind = 0;
 			}
 			else if (networkInfo.IsLANClient)
 			{
-				ipAddress = null;
+                var ipAddressStr = (natManager.InternalIPAddress ?? IPAddress.Loopback).ToString();
 				networkInfo.PeersToFind = 1;
 
-				if (networkInfo.Seeds.Count == 0 && natManager.InternalIPAddress != null && !networkInfo.Seeds.Contains(natManager.InternalIPAddress.ToString()))
+                if (networkInfo.Seeds.Count == 0 && !networkInfo.Seeds.Contains(ipAddressStr))
 				{
-					networkInfo.Seeds.Add(natManager.InternalIPAddress.ToString());
+					networkInfo.Seeds.Add(ipAddressStr);
 				}
 			}
 			else
@@ -144,15 +144,16 @@ namespace Network
 		/// <summary>
 		/// Transmits a tx on the network.
 		/// </summary>
-		public BlockChain.BlockChain.TxResultEnum Transmit(Types.Transaction tx)
+		public Task<BlockChain.BlockChain.TxResultEnum> Transmit(Types.Transaction tx)
 		{
+            //TODO: refactor
             //TODO: if tx is known (and validated), just send it.
-			var result = new HandleTransactionAction { Tx = tx }.Publish().Result;
+            return new HandleTransactionAction { Tx = tx }.Publish().ContinueWith(t => {
+                if (t.Result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
+					_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
 
-			if (result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
-				_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
-
-			return result;
+                return t.Result;
+			});
 		}
 
 		/// <summary>
