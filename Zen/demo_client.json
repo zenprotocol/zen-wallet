@@ -4,6 +4,6 @@
   "Seeds": [
     "54.218.12.185"
   ],
-  "DefaultPort": 9997,
+  "DefaultPort": 9999,
   "Magic": 0
 }
