@@ -253,8 +253,8 @@ namespace BlockChain
                     foreach (var pInput in ptx.pInputs)
 					{
 						_BlockChain.UTXOStore.Remove(_DbTx, pInput.Item1);
-						BlockChainTrace.Information($"utxo spent, amount {pInput.Item2.spend.amount}", ptx);
-						BlockChainTrace.Information($" of", pInput.Item1.txHash);
+						//BlockChainTrace.Information($"utxo spent, amount {pInput.Item2.spend.amount}", ptx);
+						//BlockChainTrace.Information($" of", pInput.Item1.txHash);
 						blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(pInput.Item1, pInput.Item2));
 					}
                 } 
@@ -302,7 +302,7 @@ namespace BlockChain
                     //todo: fix  to exclude CSLocks&FLocks, instead of including by locktype
 					if (output.@lock.IsPKLock || output.@lock.IsContractLock)
 					{
-                        BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", tx);
+                        //BlockChainTrace.Information($"new utxo, amount {output.spend.amount}", tx);
                         var outpoint = new Types.Outpoint(txHash, (uint)outputIdx);
                         _BlockChain.UTXOStore.Put(_DbTx, outpoint, output);
 						blockUndoData.AddedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(outpoint, output));

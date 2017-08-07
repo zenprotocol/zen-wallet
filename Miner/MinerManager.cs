@@ -126,7 +126,7 @@ namespace Miner
 		{
 			if (m is TxMessage)
 			{
-				MinerTrace.Information("Got tx");
+                MinerTrace.Information($"Got tx ({((TxMessage)m).State})");
 
                 if (((TxMessage)m).State == TxStateEnum.Unconfirmed)
                     _TransactionQueue.Push(((TxMessage)m).Ptx);
@@ -305,6 +305,7 @@ namespace Miner
                 }
 				else
 				{
+                    MinerTrace.Information("Tx invalid");
 					_TransactionQueue.Next();
 				}
 			}

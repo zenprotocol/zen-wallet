@@ -162,7 +162,7 @@ namespace BlockChain
             }
             catch (Exception e)
             {
-                BlockChainTrace.Error("Could not deserialize contract, trying to recompile. exception: " + Convert.ToBase64String(contractHash), e);
+                BlockChainTrace.Information("Could not deserialize contract, trying to recompile");
             }
 
 			FSharpOption<byte[]> compilationResult;
@@ -179,7 +179,7 @@ namespace BlockChain
 
 			if (FSharpOption<byte[]>.get_IsNone(compilationResult))
 			{
-				BlockChainTrace.Information("Could not recompile contract " + Convert.ToBase64String(contractHash));
+                BlockChainTrace.Error("Could not recompile contract " + Convert.ToBase64String(contractHash), new Exception());
 				return null;
 			}
 
