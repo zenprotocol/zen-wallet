@@ -101,7 +101,6 @@
   <ItemGroup>
     <EmbeddedResource Include="ContractTemplates\SecureToken.txt" />
     <EmbeddedResource Include="ContractTemplates\CallOption.txt" />
-    <EmbeddedResource Include="ContractTemplates\SimpleTest.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

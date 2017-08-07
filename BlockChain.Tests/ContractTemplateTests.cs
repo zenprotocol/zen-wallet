@@ -4,15 +4,9 @@ using System.IO;
 using System.Reflection;
 using Microsoft.FSharp.Core;
 using Newtonsoft.Json;
-using Consensus;
-using Microsoft.FSharp.Collections;
-using System.Linq.Expressions;
 
 namespace BlockChain
 {
-	using TransactionSkeleton = Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
-	using FSharpContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
-
 	public class ContractTemplateTests
 	{
 		string GetTemplate(string name)
@@ -24,27 +18,6 @@ namespace BlockChain
 			{
 				return reader.ReadToEnd();
 			}
-		}
-
-
-		[Test]
-		public void CanCompileAndExecuteContract()
-		{
-			var code = GetTemplate("SimpleTest");
-			var compiled = ContractExamples.Execution.compile(code);
-
-			Assert.That(compiled, Is.Not.Null, "should compile code");
-            Assert.That(FSharpOption<MethodInfo>.get_IsNone(compiled), Is.False, "should compile code");
-
-            var contractFunction = FSharpContractFunction.FromConverter(t => {
-                return (TransactionSkeleton) compiled.Value.Invoke(null, new object[] { t.Item1, t.Item2, t.Item3 });
-            });
-
-            var result = contractFunction.Invoke(new Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>(null, null, null));
-
-			Assert.That(result.Item1, Is.Empty);
-			Assert.That(result.Item2, Is.Empty);
-			Assert.That(result.Item3, Is.Empty);
 		}
 
 		[Test]
@@ -60,13 +33,25 @@ namespace BlockChain
             var compiled = ContractExamples.Execution.compile(code);
 
 			Assert.That(compiled, Is.Not.Null, "should compile code");
-            Assert.That(FSharpOption<MethodInfo>.get_IsNone(compiled), Is.False, "should compile code");
+			Assert.That(FSharpOption<byte[]>.get_IsNone(compiled), Is.False, "should compile code");
 
 			var metadataParsed = ContractExamples.Execution.metadata(code);
 
             Assert.That(FSharpOption<ContractExamples.Execution.ContractMetadata>.get_IsNone(metadataParsed), Is.False, "should parse metadata");
             Assert.That(metadataParsed.Value, Is.TypeOf(typeof(ContractExamples.Execution.ContractMetadata.SecureToken)));
             Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.SecureToken).Item.destination, Is.EquivalentTo(destinationAddress));
+
+            object deserialized = null;
+
+            try
+            {
+                deserialized = ContractExamples.Execution.deserialize(compiled.Value);
+            }
+            catch 
+            {
+                
+            }
+            Assert.That(deserialized, Is.Not.Null);
         }
 
 		[Test]
@@ -125,7 +110,7 @@ namespace BlockChain
 			var compiled = ContractExamples.Execution.compile(code);
 
 			Assert.That(compiled, Is.Not.Null, "should compile code");
-            Assert.That(FSharpOption<MethodInfo>.get_IsNone(compiled), Is.False, "should compile code");
+			Assert.That(FSharpOption<byte[]>.get_IsNone(compiled), Is.False, "should compile code");
 
 			var metadataParsed = ContractExamples.Execution.metadata(code);
 
@@ -141,6 +126,18 @@ namespace BlockChain
 			Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.CallOption).Item.strike, Is.EqualTo(strike));
 			Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.CallOption).Item.minimumCollateralRatio, Is.EqualTo(minimumCollateralRatio));
 			Assert.That((metadataParsed.Value as ContractExamples.Execution.ContractMetadata.CallOption).Item.ownerPubKey, Is.EqualTo(ownerPubKey));
+
+			object deserialized = null;
+
+			try
+			{
+				deserialized = ContractExamples.Execution.deserialize(compiled.Value);
+			}
+			catch
+			{
+
+			}
+			Assert.That(deserialized, Is.Not.Null);
 		}
 	}
 }
