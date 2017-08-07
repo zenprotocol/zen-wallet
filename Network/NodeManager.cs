@@ -144,15 +144,16 @@ namespace Network
 		/// <summary>
 		/// Transmits a tx on the network.
 		/// </summary>
-		public BlockChain.BlockChain.TxResultEnum Transmit(Types.Transaction tx)
+		public Task<BlockChain.BlockChain.TxResultEnum> Transmit(Types.Transaction tx)
 		{
+            //TODO: refactor
             //TODO: if tx is known (and validated), just send it.
-			var result = new HandleTransactionAction { Tx = tx }.Publish().Result;
+            return new HandleTransactionAction { Tx = tx }.Publish().ContinueWith(t => {
+                if (t.Result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
+					_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
 
-			if (result == BlockChain.BlockChain.TxResultEnum.Accepted && _BroadcastHubBehavior != null)
-				_BroadcastHubBehavior.BroadcastHub.BroadcastTransactionAsync(tx);
-
-			return result;
+                return t.Result;
+			});
 		}
 
 		/// <summary>

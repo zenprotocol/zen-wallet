@@ -1,12 +1,18 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Gtk;
 using QRCoder;
+using Wallet.core.Data;
 
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class WalletReceiveLayout : WidgetBase
+	public partial class WalletReceiveLayout : WidgetBase, IControlInit
 	{
+        string Address;
+		byte[] _QrCodeImage;
+		Gdk.Rectangle _ImageAllocation;
+
 		public WalletReceiveLayout()
 		{
 			this.Build();
@@ -14,15 +20,11 @@ namespace Wallet
 			entryAddress.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
 			entryAddress.ModifyFont(Constants.Fonts.ActionBarBig);
 
-			var key = App.Instance.Wallet.GetUnusedKey().Address.ToString();
-
 			Gtk.Clipboard clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 			buttonCopy.Clicked += delegate
 			{
-				clipboard.Text = key;
+                clipboard.Text = Address;
 			};
-
-			entryAddress.Text = key;
 
 			entryAddress.SelectRegion(0, -1);
 
@@ -40,29 +42,49 @@ namespace Wallet
 				}).Start();
 			};
 
-			buttonBack.Clicked += delegate {
-                FindParent<WalletLayout>().SetPage(0);
+			buttonBack.Clicked += delegate
+			{
+				FindParent<WalletLayout>().SetPage(0);
 			};
+
+			_ImageAllocation = image1.Allocation;
+			image1.ExposeEvent += Image1_ExposeEvent;
+		}
+
+		public void Init()
+		{
+            Address = FindParent<WalletLayout>().Address;
+            entryAddress.Text = Address;
 
 			var qrGenerator = new QRCodeGenerator();
-			var qrCodeData = qrGenerator.CreateQrCode(key, QRCodeGenerator.ECCLevel.Q);
+            var qrCodeData = qrGenerator.CreateQrCode(Address, QRCodeGenerator.ECCLevel.Q);
 			var qrCode = new BitmapByteQRCode(qrCodeData);
-			var qrCodeImage = qrCode.GetGraphic(20);
 
-			var lastAllocation = image1.Allocation;
+			_QrCodeImage = qrCode.GetGraphic(20);
+		}
 
-			image1.ExposeEvent += (sender, args) => {
-				var image = sender as Image;
+		void Image1_ExposeEvent(object o, ExposeEventArgs args)
+		{
+			var image = (Image)o;
 
-				if (lastAllocation != image.Allocation)
-				{
-					var dim = Math.Min(image.Allocation.Width, image.Allocation.Height);
-					image.Pixbuf = new Gdk.Pixbuf(qrCodeImage).ScaleSimple(dim, dim, Gdk.InterpType.Hyper);
+			if (_ImageAllocation != image.Allocation)
+			{
+				SetImage((Image)o);
+			}
+		}
 
-					lastAllocation = image.Allocation;
-				}
-				Console.WriteLine();
-			};
+		async void SetImage(Image image)
+		{
+			var dim = Math.Min(image.Allocation.Width, image.Allocation.Height);
+            Gdk.Pixbuf pixbuf = null;
+
+			await Task.Run(() =>
+			{
+				pixbuf = new Gdk.Pixbuf(_QrCodeImage).ScaleSimple(dim, dim, Gdk.InterpType.Hyper);
+			});
+
+			Application.Invoke(delegate { image.Pixbuf = pixbuf; });
+			_ImageAllocation = image.Allocation;
 		}
 	}
 }
