@@ -1,2 +1,0 @@
-﻿fun (message, contracthash, utxos) ->
-    BadTx

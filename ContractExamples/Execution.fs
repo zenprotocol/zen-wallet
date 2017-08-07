@@ -23,6 +23,7 @@
 open Microsoft.FSharp.Quotations
 open Microsoft.FSharp.Quotations.Patterns;;
 open Swensen.Unquote.Operators
+open MBrace.FsPickler.Combinators
 
 // Repeated code
 open Consensus.Types
@@ -88,6 +89,13 @@ let BadTx : TransactionSkeleton = [], [], [||]
 
 //End of repeated code
 
+let quotePickler = Pickler.auto<Expr<Contracts.ContractFunction>>
+let pickler = Pickler.auto<Contracts.ContractFunction>
+
+let quotedToString qc = qc |> Json.pickle quotePickler |> (fun s -> "QQQ\n" + s)
+
+let compileQuotedContract (code:string) = code |> Json.unpickle quotePickler |> eval
+
 let (|Prefix|_|) (p:string) (s:string) =
     if s.StartsWith(p) then
         Some(s.Substring(p.Length))
@@ -97,12 +105,14 @@ let (|Prefix|_|) (p:string) (s:string) =
 let compilationTemplate = """
 module Zen.Main
 open Microsoft.FSharp.Quotations
+open MBrace.FsPickler.Combinators
 open System.Collections.Generic
 open Newtonsoft.Json.Linq
 
 // Repeated code
 open Consensus.Types
 open Consensus.Authentication
+let pickler = Pickler.auto<ContractExamples.Contracts.ContractFunction>
 
 
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
@@ -156,11 +166,12 @@ let uint64ToBytes : uint64 -> byte[] = fun v ->
     else
         sysbytes
 
-
+   
 let BadTx : TransactionSkeleton = [], [], [||]
 
 
 let contract:ContractFunction = %%%SRC%%%
+let pickledContract = Binary.pickle pickler contract
 """
 
 open Microsoft.FSharp.Compiler.SourceCodeServices
@@ -171,27 +182,34 @@ let checker = FSharpChecker.Create ()
 let assemblies = System.Reflection.Assembly.GetExecutingAssembly().GetReferencedAssemblies()
 let assemblyNames = assemblies |>
                         Array.filter (fun a -> a.Name <> "mscorlib" && a.Name <> "FSharp.Core") |>
-                        Array.map (fun a -> Assembly.ReflectionOnlyLoad(a.FullName).Location) |>
+                        Array.map (fun a -> Assembly.ReflectionOnlyLoad(a.FullName).Location) |> 
                         Array.toList
                         |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
 
 let compile (code:string) = maybe {
-    let source = compilationTemplate.Replace (@"%%%SRC%%%", code)
-    let fn = Path.GetTempFileName()
-    let fni = Path.ChangeExtension(fn, ".fs")
-    let fno = Path.ChangeExtension(fn, ".dll")
-    File.WriteAllText(fni, source)
-    let assemblyParameters = List.foldBack (fun x xs -> "-r" :: x :: xs) assemblyNames []
-    let compilationParameters = ["-o"; fno; "-a"; fni; "--lib:" + System.AppDomain.CurrentDomain.BaseDirectory] @ assemblyParameters |> List.toArray
-    let compilationResult =
-        checker.CompileToDynamicAssembly(compilationParameters, Some(stdout, stderr))
-    let errors, exitCode, dynamicAssembly = Async.RunSynchronously compilationResult
-    if exitCode <> 0 then return! None // ignore compiler warning messages
-    match dynamicAssembly with
-    | None -> return! None
-    | Some asm ->
-        return asm.GetModules().[0].GetTypes().[0].GetMethod("contract")
-}
+    match code with
+    | Prefix "QQQ\n" rest -> return rest |> compileQuotedContract |> Binary.pickle pickler
+    | _ ->
+        let source = compilationTemplate.Replace (@"%%%SRC%%%", code)
+        let fn = Path.GetTempFileName()
+        let fni = Path.ChangeExtension(fn, ".fs")
+        let fno = Path.ChangeExtension(fn, ".dll")
+        File.WriteAllText(fni, source)
+        let assemblyParameters = List.foldBack (fun x xs -> "-r" :: x :: xs) assemblyNames []
+        let compilationParameters = ["-o"; fno; "-a"; fni; "--lib:" + System.AppDomain.CurrentDomain.BaseDirectory] @ assemblyParameters |> List.toArray
+        let compilationResult =
+            checker.CompileToDynamicAssembly(compilationParameters, Some(stdout, stderr))
+        let errors, exitCode, dynamicAssembly = Async.RunSynchronously compilationResult
+        if exitCode <> 0 then return! None // ignore compiler warning messages
+        match dynamicAssembly with
+        | None -> return! None
+        | Some asm ->
+            let m = Array.head <| asm.GetModules()
+            let pickled = m.GetTypes().[0].GetProperty("pickledContract").GetValue(m) :?> byte[]
+            return pickled
+    }
+
+let deserialize (bs:byte[]) = bs |> Binary.unpickle pickler
 
 type ContractMetadata =
     public
@@ -209,7 +227,7 @@ let (|ContractMetadata|_|) (name:string) (parameters:obj) =
         Some <| SecureToken (sparams)
     | _ -> None
 
-let metadata (s:string) =
+let tryParseContractMetadata (s:string) =
     let json = s.Split '\n' |> fun s -> s |> Array.item (s.Length - 1) |> fun s -> s.Substring 2 |> JObject.Parse
     match json.Item("contractType").Value<string>() with
     | "oracle" ->
@@ -229,3 +247,16 @@ let metadata (s:string) =
     | "securetoken" ->
         Some <| SecureToken {destination = System.Convert.FromBase64String <| json.Item("destination").Value<string>()}
     | _ -> None
+
+let metadata (s:string) =
+    match s with
+    | Prefix "QQQ\n" rest ->
+        let qc = Json.unpickle quotePickler rest
+        match qc with
+        | Let (v1,Value(:? string as cType,_), Let(v2, ValueWithName(m,_,_), _)) when v1.Name = "contractType" && v2.Name= "meta" ->
+            match m with
+            | ContractMetadata cType md -> Some md
+            | _ -> None
+        | _ -> None
+    | _ ->
+        tryParseContractMetadata s

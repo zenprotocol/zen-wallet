@@ -1,7 +1,7 @@
 {
   "PeersToFind": 0,
   "MaximumNodeConnection": 0,
-  "DefaultPort": 9999,
+  "DefaultPort": 9997,
   "Magic": 0,
   "ExternalIPAddress": "54.218.12.185"
 }
