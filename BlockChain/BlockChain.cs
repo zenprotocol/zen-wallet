@@ -383,6 +383,7 @@ namespace BlockChain
 
             //TODO: memory management issues. trying to explicitly collect DynamicMethods
 			GC.Collect();
+            GC.WaitForPendingFinalizers();
 
 			action.QueueActions.ForEach(t =>
 			{
@@ -910,14 +911,10 @@ namespace BlockChain
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
                 var utxoLookup = UtxoLookupFactory(dbTx, false);
-				var acsItem = ActiveContractSet.Get(dbTx, contractHash);
+			    var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
-                if (acsItem != null)
-                {
-                    var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
-
+                if (contractFunction != null)
                     return ExecuteContract(contractHash, contractFunction, message, out transaction, utxoLookup, isWitness);
-                }
 
                 transaction = null;
                 return false;
