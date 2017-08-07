@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Consensus;
 using Wallet.core.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Wallet
 {
@@ -39,7 +40,7 @@ namespace Wallet
                 }
 			};
 
-			eventboxSend.ButtonReleaseEvent += (object o, Gtk.ButtonReleaseEventArgs args) =>
+			eventboxSend.ButtonReleaseEvent += async (object o, Gtk.ButtonReleaseEventArgs args) =>
 			{
 				ulong amount;
 				Address address;
@@ -69,14 +70,13 @@ namespace Wallet
 					return;
 				}
 
-				Types.Transaction tx;
-
-				if (App.Instance.Wallet.Sign(
+				var tx = await Task.Run(() => App.Instance.Wallet.Sign(
 					address,
 					asset,
-					amount,
-					out tx
-				))
+					amount
+				));
+
+				if (tx != null)
 				{
 					FindParent<SendDialog>().Next(tx);
 				}
