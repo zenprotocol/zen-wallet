@@ -24,7 +24,7 @@ namespace Miner
         readonly TransactionQueue _TransactionQueue = new TransactionQueue();
         readonly List<TransactionValidation.PointedTransaction> _ValidatedTxs = new List<TransactionValidation.PointedTransaction>();
 
-		readonly HashDictionary<ContractFunction> _ActiveContracts = new HashDictionary<ContractFunction>();
+        readonly HashSet _ActiveContracts = new HashSet();
 		List<Tuple<Types.Outpoint, Types.Output>> _UtxoSet;
 
 		BlockChain.BlockChain _BlockChain;
@@ -78,27 +78,8 @@ namespace Miner
             var acsList = await new GetActiveContactsAction().Publish();
             _UtxoSet = await new GetUTXOSetAction2().Publish();
 
-			_ActiveContracts.Clear();
-
-            if (acsList != null && acsList.Any())
-            {
-                acsList.ForEach(t =>
-                {
-                    try
-                    {
-						var compiledCodeOpt = ContractExamples.Execution.compile(t.Code);
-
-						if (FSharpOption<byte[]>.get_IsSome(compiledCodeOpt))
-						{
-							_ActiveContracts[t.Hash] = ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
-						}
-                    }
-                    catch (Exception e)
-                    {
-                        MinerTrace.Error("Could not compile contract " + Convert.ToBase64String(t.Hash), e);
-                    }
-                });
-            }
+            _ActiveContracts.Clear();
+            acsList.ForEach(t => _ActiveContracts.Add(t.Hash));
 
 			Populate();
 		}
@@ -157,9 +138,20 @@ namespace Miner
 
             var contractLookup = FSharpFunc<byte[], FSharpOption<ContractFunction>>.FromConverter(contractHash =>
             {
-                return !_ActiveContracts.ContainsKey(contractHash) ?
-                       FSharpOption<ContractFunction>.None :
-                       new FSharpOption<ContractFunction>(_ActiveContracts[contractHash]);
+                if (!_ActiveContracts.Contains(contractHash))
+                    return FSharpOption<ContractFunction>.None;
+
+				try
+				{
+                    var code = new GetContractCodeAction(contractHash).Publish().Result;
+                    var compiledCodeOpt = ContractExamples.Execution.compile(System.Text.Encoding.ASCII.GetString(code));
+                    return ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
+				}
+				catch (Exception e)
+				{
+					MinerTrace.Error("Could not compile contract " + Convert.ToBase64String(contractHash), e);
+                    return null;
+				}
             });
 
             if (!TransactionValidation.validateNonCoinbaseTx(
@@ -173,6 +165,11 @@ namespace Miner
             }
 
 			MinerTrace.Information("validated tx");
+
+			//TODO: memory management issues. trying to explicitly collect DynamicMethods
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
 			return true;
         }
 
@@ -262,7 +259,7 @@ namespace Miner
 				var contractHash = Merkle.innerHash(codeBytes);
 				var contractCode = System.Text.Encoding.ASCII.GetString(codeBytes);
 
-                if (!_ActiveContracts.ContainsKey(contractHash))
+                if (!_ActiveContracts.Contains(contractHash))
                 {
                     if (activationSacrifice > ActiveContractSet.KalapasPerBlock(contractCode))
                     {
@@ -272,7 +269,7 @@ namespace Miner
 
                             if (FSharpOption<byte[]>.get_IsSome(compiledCodeOpt))
                             {
-                                _ActiveContracts[contractHash] = ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
+                                _ActiveContracts.Add(contractHash);
                             }
 						}
 						catch (Exception e)
@@ -290,6 +287,9 @@ namespace Miner
 			{
 				return;
 			}
+
+            if (_TransactionQueue.IsStuck)
+    			MinerTrace.Information("Queue is stuck");
 
 			while (!_TransactionQueue.IsStuck && _ValidatedTxs.Count < TxsPerBlockLimit)
 			{
@@ -368,12 +368,11 @@ namespace Miner
 
         void DispatchBlock()
         {
-            MinerTrace.Information("Dispatching block");
+			_Hasher.Pause("dispatching block");
+			MinerTrace.Information($"dispatching block with {_ValidatedTxs.Count()} txs");
 
 			var txs = FSharpList<Types.Transaction>.Cons(_Coinbase, ListModule.OfSeq(_ValidatedTxs.Select(TransactionValidation.unpoint)));
 			var block = new Types.Block(_Header, txs);
-
-			_Hasher.Pause("validating block");
 
 			var result = new HandleBlockAction(block).Publish().Result.BkResultEnum;
 
