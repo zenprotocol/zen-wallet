@@ -4,38 +4,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>
     </StartProgram>
-    <StartArguments>-t -n=staging_client</StartArguments>
+    <StartArguments></StartArguments>
     <ExternalConsole>true</ExternalConsole>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'lan-client' ">
-    <StartAction>Project</StartAction>
-    <StartArguments>-t -n=lan_client -db=lan_client</StartArguments>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'lan-host' ">
-    <StartAction>Project</StartAction>
-    <StartArguments>-t -n=lan_host -db=lan_host</StartArguments>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'no-network' ">
-    <StartAction>Project</StartAction>
-    <StartArguments>-d -t</StartArguments>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'testnet' ">
-    <StartAction>Project</StartAction>
-    <StartArguments>-t -n=testnet_client</StartArguments>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'lan_sender' ">
-    <StartAction>Project</StartAction>
-    <StartArguments>-s=lan_sender -t</StartArguments>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'lan_receiver' ">
-    <StartAction>Project</StartAction>
-    <StartArguments>-s=lan_receiver -headless</StartArguments>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
