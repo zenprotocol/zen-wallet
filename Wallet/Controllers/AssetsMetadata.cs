@@ -140,6 +140,8 @@ namespace Wallet
             }
         }
 
+        object _lock = new object();
+
         async Task GetAssetMatadataAsync(AssetMetadata assetMetadata)
         {
             var uri = new Uri(string.Format($"http://{Utils.Config("assetsDiscovery")}/AssetMetadata/Index/" + HttpServerUtility.UrlTokenEncode(assetMetadata.Asset)));
@@ -172,9 +174,12 @@ namespace Wallet
                         }
                         else
                         {
-                            assetMetadata.Display = remoteJson.name;
-                            _CacheJsonStore.Value[Convert.ToBase64String(assetMetadata.Asset)] = remoteJson;
-                            _CacheJsonStore.Save();
+                            lock (_lock)
+                            {
+                                assetMetadata.Display = remoteJson.name;
+                                _CacheJsonStore.Value[Convert.ToBase64String(assetMetadata.Asset)] = remoteJson;
+                                _CacheJsonStore.Save();
+                            }
 						}
 					}
 					catch (Exception e)
