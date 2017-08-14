@@ -114,10 +114,10 @@
     <None Include="contracts-demo-seed.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="testnet2_host.json">
+    <None Include="test1_host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="testnet2_client.json">
+    <None Include="test1_client.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="demo_host.json">
