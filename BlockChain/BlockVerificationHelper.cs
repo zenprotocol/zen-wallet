@@ -248,8 +248,6 @@ namespace BlockChain
 
 					confirmedTxs[txHash] = ptx;
 
-					BlockChainTrace.Information("saved tx", ptx);
-
                     foreach (var pInput in ptx.pInputs)
 					{
 						_BlockChain.UTXOStore.Remove(_DbTx, pInput.Item1);

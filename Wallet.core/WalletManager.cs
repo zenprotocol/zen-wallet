@@ -361,8 +361,7 @@ namespace Wallet.core
 						if (!_BlockChain.memPool.TxPool.ContainsOutpoint(matchingAsset.Outpoint))
                             WalletTrace.Information($"unconfirmed output ({matchingAsset.Output.spend.amount}) spent (unconfirmed)");
 						else if (_BlockChain.memPool.TxPool.Contains(matchingAsset.Outpoint.txHash))
-							WalletTrace.Information($"unconfi" +
-                                                    "rmed output ({matchingAsset.Output.spend.amount}) is orphan");
+							WalletTrace.Information($"unconfirmed output ({matchingAsset.Output.spend.amount}) is orphan");
 #endif
 
 						break;
