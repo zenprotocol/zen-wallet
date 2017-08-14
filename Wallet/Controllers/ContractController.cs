@@ -2,12 +2,14 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using BlockChain;
 using BlockChain.Data;
 using Consensus;
 using ContractGenerator;
 using Gtk;
 using Infrastructure;
 using Wallet.core.Data;
+using Wallet.Widgets.Contract;
 
 namespace Wallet
 {
@@ -29,11 +31,12 @@ namespace Wallet
 		byte[] _Code;
 		byte[] _Hash;
 
-		ContractView _ContractView;
+		IContractView _ContractView;
 
-		public ContractController(ContractView contractView)
+		public ContractController(IContractView contractView)
 		{
 			_ContractView = contractView;
+            contractView.HasEnoughZen = false;
 		}
 
         public Task<ContractActivationResult> ActivateContract(ulong kalapas, byte[] code, byte[] secureToken)
@@ -58,13 +61,20 @@ namespace Wallet
 	        });
         }
                                   
-		public void UpdateContractInfo(string contractText)
+		public void UpdateContractInfo()
 		{
-			_Code = Encoding.ASCII.GetBytes(contractText);
-			_Hash = Consensus.Merkle.innerHash(Encoding.ASCII.GetBytes(contractText));
+            var contractCode = _ContractView.Code;
+
+            _Code = Encoding.ASCII.GetBytes(contractCode);
+
+			_Hash = Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode));
 
 			_ContractView.Hash = _Hash;
-			_ContractView.IsActive = new GetIsContractActiveAction(_Hash).Publish().Result;
+            _ContractView.CostPerBlock = ActiveContractSet.KalapasPerBlock(contractCode);
+
+			//new GetIsContractActiveAction(_Hash).Publish().Result
+            // var isActive = new GetIsContractActiveAction(_Hash).Publish();
+            //_ContractView.IsActive = ;
 		}
 
 		public void Save()

@@ -18,7 +18,7 @@ namespace Wallet
 				((MenuButton)widget).ImageName = widget.Name;
 			}
 
-			HeightRequest = 100;
+			HeightRequest = 86;
 		}
 
 		public override MenuButton Selection { 

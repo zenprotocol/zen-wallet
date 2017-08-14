@@ -117,6 +117,18 @@
     <EmbeddedResource Include="Assets\misc\send_dialog.png" />
     <EmbeddedResource Include="Assets\History_off.png" />
     <EmbeddedResource Include="Assets\History_on.png" />
+    <EmbeddedResource Include="Assets\misc\Copy.png" />
+    <EmbeddedResource Include="Assets\misc\Copy_public_key.png" />
+    <EmbeddedResource Include="Assets\misc\QRcode.png" />
+    <EmbeddedResource Include="Assets\misc\Back.png" />
+    <EmbeddedResource Include="Assets\misc\Paste.png" />
+    <EmbeddedResource Include="Assets\misc\Copied.png" />
+    <EmbeddedResource Include="Assets\misc\Sign_and_Review.png" />
+    <EmbeddedResource Include="Assets\misc\Sign_and_Review_disabled.png" />
+    <EmbeddedResource Include="Assets\misc\Activate.png" />
+    <EmbeddedResource Include="Assets\misc\Activate_disabled.png" />
+    <EmbeddedResource Include="Assets\misc\Received.png" />
+    <EmbeddedResource Include="Assets\misc\Sent.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gtk-gui\generated.cs" />
@@ -217,6 +229,18 @@
     <Compile Include="Widgets\Status.cs" />
     <Compile Include="gtk-gui\Wallet.Widgets.Status.cs" />
     <Compile Include="Controllers\AssetsMetadata.cs" />
+    <Compile Include="Widgets\Contract\ContractLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Contract.ContractLayout.cs" />
+    <Compile Include="Widgets\Log\LogTotals.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Log.LogTotals.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Portfolio.PortfolioLayout.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioTable.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Portfolio.PortfolioTable.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioTotals.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Portfolio.PortfolioTotals.cs" />
+    <Compile Include="Widgets\Portfolio\RowRendererHeaders.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioRenderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

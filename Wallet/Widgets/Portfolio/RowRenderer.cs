@@ -38,7 +38,7 @@ namespace Wallet
 			int TEXT_PADDING_LEFT = 60;
 
 			textRenderer.RenderLayoutText (context, Asset, TEXT_PADDING_LEFT + 60, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Left, Pango.EllipsizeMode.End);
-			textRenderer.RenderLayoutText(context, string.Format(Constants.Formats.Money, Value), 0, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.Text, Pango.Alignment.Right, Pango.EllipsizeMode.End, -TEXT_PADDING_LEFT);
+            textRenderer.RenderLayoutText(context, string.Format(Constants.Formats.Money, Value), 0, TEXT_PADDING + exposeArea.Y, exposeArea.Width, 20, Constants.Colors.TextBlue, Pango.Alignment.Right, Pango.EllipsizeMode.End, -TEXT_PADDING_LEFT);
 
 			context.Dispose ();
 		}
