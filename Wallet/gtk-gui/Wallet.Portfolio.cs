@@ -6,13 +6,15 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 
-		private global::Gtk.VBox vboxOthers;
+		private global::Gtk.HBox hbox3;
 
-		private global::Gtk.Label label2;
+		private global::Gtk.Label labelHeader;
+
+		private global::Gtk.VBox vbox3;
+
+		private global::Gtk.Label label9;
 
 		private global::Gtk.Label labelZen;
-
-		private global::Gtk.Label label3;
 
 		private global::Gtk.ScrolledWindow GtkScrolledWindow;
 
@@ -30,42 +32,56 @@ namespace Wallet
 			this.vbox1.Spacing = 6;
 			this.vbox1.BorderWidth = ((uint)(10));
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.vboxOthers = new global::Gtk.VBox();
-			this.vboxOthers.Name = "vboxOthers";
-			this.vboxOthers.Spacing = 6;
-			// Container child vboxOthers.Gtk.Box+BoxChild
-			this.label2 = new global::Gtk.Label();
-			this.label2.Name = "label2";
-			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString("Your Zen balance:");
-			this.vboxOthers.Add(this.label2);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vboxOthers[this.label2]));
+			this.hbox3 = new global::Gtk.HBox();
+			this.hbox3.Name = "hbox3";
+			this.hbox3.BorderWidth = ((uint)(40));
+			// Container child hbox3.Gtk.Box+BoxChild
+			this.labelHeader = new global::Gtk.Label();
+			this.labelHeader.Name = "labelHeader";
+			this.labelHeader.Xalign = 0F;
+			this.labelHeader.LabelProp = global::Mono.Unix.Catalog.GetString("Your Portfolio:");
+			this.hbox3.Add(this.labelHeader);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.labelHeader]));
 			w1.Position = 0;
-			w1.Expand = false;
-			w1.Fill = false;
-			// Container child vboxOthers.Gtk.Box+BoxChild
-			this.labelZen = new global::Gtk.Label();
-			this.labelZen.Name = "labelZen";
-			this.vboxOthers.Add(this.labelZen);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vboxOthers[this.labelZen]));
-			w2.Position = 1;
+			w1.Padding = ((uint)(10));
+			// Container child hbox3.Gtk.Box+BoxChild
+			this.vbox3 = new global::Gtk.VBox();
+			this.vbox3.Name = "vbox3";
+			this.vbox3.Homogeneous = true;
+			this.vbox3.Spacing = 6;
+			this.vbox3.BorderWidth = ((uint)(10));
+			// Container child vbox3.Gtk.Box+BoxChild
+			this.label9 = new global::Gtk.Label();
+			this.label9.Name = "label9";
+			this.label9.Xpad = 8;
+			this.label9.Xalign = 0F;
+			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString("TOTAL ZEN BALANCE:");
+			this.vbox3.Add(this.label9);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.label9]));
+			w2.Position = 0;
 			w2.Expand = false;
 			w2.Fill = false;
-			w2.Padding = ((uint)(10));
-			// Container child vboxOthers.Gtk.Box+BoxChild
-			this.label3 = new global::Gtk.Label();
-			this.label3.Name = "label3";
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString("Your other assets:");
-			this.vboxOthers.Add(this.label3);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vboxOthers[this.label3]));
-			w3.Position = 2;
+			// Container child vbox3.Gtk.Box+BoxChild
+			this.labelZen = new global::Gtk.Label();
+			this.labelZen.Name = "labelZen";
+			this.labelZen.Xpad = 8;
+			this.labelZen.Xalign = 0F;
+			this.labelZen.LabelProp = global::Mono.Unix.Catalog.GetString("Balance");
+			this.vbox3.Add(this.labelZen);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.labelZen]));
+			w3.Position = 1;
 			w3.Expand = false;
 			w3.Fill = false;
-			w3.Padding = ((uint)(10));
-			this.vbox1.Add(this.vboxOthers);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.vboxOthers]));
-			w4.Position = 0;
+			this.hbox3.Add(this.vbox3);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.vbox3]));
+			w4.Position = 1;
 			w4.Expand = false;
 			w4.Fill = false;
+			this.vbox1.Add(this.hbox3);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox3]));
+			w5.Position = 0;
+			w5.Expand = false;
+			w5.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.GtkScrolledWindow = new global::Gtk.ScrolledWindow();
 			this.GtkScrolledWindow.Name = "GtkScrolledWindow";
@@ -75,8 +91,8 @@ namespace Wallet
 			this.treeview1.Name = "treeview1";
 			this.GtkScrolledWindow.Add(this.treeview1);
 			this.vbox1.Add(this.GtkScrolledWindow);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow]));
-			w6.Position = 1;
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.GtkScrolledWindow]));
+			w7.Position = 1;
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{

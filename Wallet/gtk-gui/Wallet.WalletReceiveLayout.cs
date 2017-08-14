@@ -6,19 +6,17 @@ namespace Wallet
 	{
 		private global::Gtk.VBox vbox1;
 
-		private global::Gtk.HBox hboxTop;
-
-		private global::Gtk.Label label5;
-
-		private global::Gtk.Button buttonBack;
+		private global::Gtk.HBox hbox2;
 
 		private global::Gtk.Image image1;
 
-		private global::Gtk.HBox hbox5;
+		private global::Gtk.Label labelAddress;
 
-		private global::Gtk.Entry entryAddress;
+		private global::Gtk.HBox hbox1;
 
-		private global::Gtk.Button buttonCopy;
+		private global::Gtk.EventBox eventboxBack;
+
+		private global::Gtk.Image image2;
 
 		protected virtual void Build()
 		{
@@ -29,71 +27,57 @@ namespace Wallet
 			// Container child Wallet.WalletReceiveLayout.Gtk.Container+ContainerChild
 			this.vbox1 = new global::Gtk.VBox();
 			this.vbox1.Name = "vbox1";
+			this.vbox1.Spacing = 15;
+			this.vbox1.BorderWidth = ((uint)(15));
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.hboxTop = new global::Gtk.HBox();
-			this.hboxTop.Name = "hboxTop";
-			this.hboxTop.Spacing = 6;
-			this.hboxTop.BorderWidth = ((uint)(10));
-			// Container child hboxTop.Gtk.Box+BoxChild
-			this.label5 = new global::Gtk.Label();
-			this.label5.Name = "label5";
-			this.hboxTop.Add(this.label5);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hboxTop[this.label5]));
-			w1.Position = 0;
-			w1.Fill = false;
-			// Container child hboxTop.Gtk.Box+BoxChild
-			this.buttonBack = new global::Gtk.Button();
-			this.buttonBack.CanFocus = true;
-			this.buttonBack.Name = "buttonBack";
-			this.buttonBack.UseUnderline = true;
-			this.buttonBack.Label = global::Mono.Unix.Catalog.GetString("Back");
-			this.hboxTop.Add(this.buttonBack);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hboxTop[this.buttonBack]));
-			w2.Position = 1;
-			w2.Expand = false;
-			w2.Fill = false;
-			this.vbox1.Add(this.hboxTop);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hboxTop]));
-			w3.Position = 0;
+			this.hbox2 = new global::Gtk.HBox();
+			this.hbox2.Name = "hbox2";
+			this.hbox2.Homogeneous = true;
+			this.hbox2.Spacing = 6;
+			this.hbox2.BorderWidth = ((uint)(60));
+			// Container child hbox2.Gtk.Box+BoxChild
+			this.image1 = new global::Gtk.Image();
+			this.image1.Name = "image1";
+			this.hbox2.Add(this.image1);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.image1]));
+			w1.Position = 1;
+			w1.Padding = ((uint)(60));
+			this.vbox1.Add(this.hbox2);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox2]));
+			w2.Position = 0;
+			// Container child vbox1.Gtk.Box+BoxChild
+			this.labelAddress = new global::Gtk.Label();
+			this.labelAddress.Name = "labelAddress";
+			this.labelAddress.LabelProp = global::Mono.Unix.Catalog.GetString("label1");
+			this.vbox1.Add(this.labelAddress);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.labelAddress]));
+			w3.Position = 1;
 			w3.Expand = false;
 			w3.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.image1 = new global::Gtk.Image();
-			this.image1.Name = "image1";
-			this.vbox1.Add(this.image1);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.image1]));
-			w4.Position = 1;
-			// Container child vbox1.Gtk.Box+BoxChild
-			this.hbox5 = new global::Gtk.HBox();
-			this.hbox5.Name = "hbox5";
-			this.hbox5.Spacing = 10;
-			this.hbox5.BorderWidth = ((uint)(20));
-			// Container child hbox5.Gtk.Box+BoxChild
-			this.entryAddress = new global::Gtk.Entry();
-			this.entryAddress.CanFocus = true;
-			this.entryAddress.Name = "entryAddress";
-			this.entryAddress.IsEditable = false;
-			this.entryAddress.InvisibleChar = '●';
-			this.hbox5.Add(this.entryAddress);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.entryAddress]));
+			this.hbox1 = new global::Gtk.HBox();
+			this.hbox1.Name = "hbox1";
+			this.hbox1.Homogeneous = true;
+			this.hbox1.Spacing = 6;
+			// Container child hbox1.Gtk.Box+BoxChild
+			this.eventboxBack = new global::Gtk.EventBox();
+			this.eventboxBack.Name = "eventboxBack";
+			// Container child eventboxBack.Gtk.Container+ContainerChild
+			this.image2 = new global::Gtk.Image();
+			this.image2.Name = "image2";
+			this.image2.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.misc.Back.png");
+			this.eventboxBack.Add(this.image2);
+			this.hbox1.Add(this.eventboxBack);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.eventboxBack]));
 			w5.Position = 1;
-			// Container child hbox5.Gtk.Box+BoxChild
-			this.buttonCopy = new global::Gtk.Button();
-			this.buttonCopy.CanFocus = true;
-			this.buttonCopy.Name = "buttonCopy";
-			this.buttonCopy.UseUnderline = true;
-			this.buttonCopy.Label = global::Mono.Unix.Catalog.GetString("Copy");
-			this.hbox5.Add(this.buttonCopy);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.buttonCopy]));
+			w5.Expand = false;
+			w5.Fill = false;
+			this.vbox1.Add(this.hbox1);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox1]));
 			w6.Position = 2;
 			w6.Expand = false;
 			w6.Fill = false;
-			this.vbox1.Add(this.hbox5);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox5]));
-			w7.Position = 2;
-			w7.Expand = false;
-			w7.Fill = false;
-			w7.Padding = ((uint)(10));
+			w6.Padding = ((uint)(20));
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{

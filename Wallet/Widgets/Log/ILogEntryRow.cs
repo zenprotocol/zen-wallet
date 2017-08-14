@@ -6,7 +6,6 @@ namespace Wallet
 	{
         byte[] Key { get; }
 		Object[] Values { get; } 
-		int Offset { get; } 
 	}
 }
 

@@ -6,13 +6,9 @@ namespace Wallet.Widgets
 	{
 		private global::Gtk.EventBox eventbox1;
 
-		private global::Gtk.HBox hbox2;
+		private global::Gtk.HBox hbox3;
 
 		private global::Gtk.Label label1;
-
-		private global::Gtk.Label label2;
-
-		private global::Gtk.Label label3;
 
 		protected virtual void Build()
 		{
@@ -24,36 +20,19 @@ namespace Wallet.Widgets
 			this.eventbox1 = new global::Gtk.EventBox();
 			this.eventbox1.Name = "eventbox1";
 			// Container child eventbox1.Gtk.Container+ContainerChild
-			this.hbox2 = new global::Gtk.HBox();
-			this.hbox2.Name = "hbox2";
-			this.hbox2.Homogeneous = true;
-			this.hbox2.Spacing = 1;
-			this.hbox2.BorderWidth = ((uint)(11));
-			// Container child hbox2.Gtk.Box+BoxChild
+			this.hbox3 = new global::Gtk.HBox();
+			this.hbox3.Name = "hbox3";
+			this.hbox3.Spacing = 6;
+			this.hbox3.BorderWidth = ((uint)(15));
+			// Container child hbox3.Gtk.Box+BoxChild
 			this.label1 = new global::Gtk.Label();
 			this.label1.Name = "label1";
-			this.hbox2.Add(this.label1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.label1]));
+			this.hbox3.Add(this.label1);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.label1]));
 			w1.Position = 0;
 			w1.Expand = false;
 			w1.Fill = false;
-			// Container child hbox2.Gtk.Box+BoxChild
-			this.label2 = new global::Gtk.Label();
-			this.label2.Name = "label2";
-			this.hbox2.Add(this.label2);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.label2]));
-			w2.Position = 1;
-			w2.Expand = false;
-			w2.Fill = false;
-			// Container child hbox2.Gtk.Box+BoxChild
-			this.label3 = new global::Gtk.Label();
-			this.label3.Name = "label3";
-			this.hbox2.Add(this.label3);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.label3]));
-			w3.Position = 2;
-			w3.Expand = false;
-			w3.Fill = false;
-			this.eventbox1.Add(this.hbox2);
+			this.eventbox1.Add(this.hbox3);
 			this.Add(this.eventbox1);
 			if ((this.Child != null))
 			{

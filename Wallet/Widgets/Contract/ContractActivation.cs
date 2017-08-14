@@ -9,6 +9,7 @@ using System.Text;
 
 namespace Wallet
 {
+    //delete
 	[System.ComponentModel.ToolboxItem(true)]
     public partial class ContractActivation : DialogBase, IAssetsView, IPortfolioVIew
 	{
@@ -20,7 +21,9 @@ namespace Wallet
         ContractController _ContractController;
 		byte[] SecureToken = null;
 
-        UpdatingStore<byte[]> _SecureTokenComboboxStore = new UpdatingStore<byte[]>(
+        DeltasController _DeltasController;
+
+		UpdatingStore<byte[]> _SecureTokenComboboxStore = new UpdatingStore<byte[]>(
 			0,
 			typeof(byte[]),
 			typeof(string)
@@ -32,7 +35,7 @@ namespace Wallet
 		{
 			Build();
 
-            new DeltasController(this);
+            _DeltasController = new DeltasController(this);
             _AssetsController = new AssetsController(this);
 
 			hboxStatus.Visible = false; // just hide the f@cking thing already
