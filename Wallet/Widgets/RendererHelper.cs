@@ -30,7 +30,7 @@ namespace Wallet
 				layout.Width = Pango.Units.FromPixels (width);
 			}
 
-			layout.Alignment = layoutHelper.Alignment;
+		//	layout.Alignment = layoutHelper.Alignment;
 			layout.FontDescription = font;
 
 			drawable.DrawLayout(gc, exposeArea.X  + x, exposeArea.Y + y, layout);

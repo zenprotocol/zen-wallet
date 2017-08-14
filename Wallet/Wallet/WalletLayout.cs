@@ -20,23 +20,50 @@ namespace Wallet
 		{
 			this.Build();
 
-			eventbox1.ModifyBg(StateType.Normal, Constants.Colors.DialogBackground.Gdk);
+            hbox4.Remove(labelPublicKeyCopied);
+
+            eventbox1.ModifyBg(StateType.Normal, Constants.Colors.DialogBackground.Gdk);
+            eventboxSeperator.ModifyBg(StateType.Normal, Constants.Colors.Seperator.Gdk);
 
 			Apply((Label label) =>
 			{
-				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
+				label.ModifyFg(StateType.Normal, Constants.Colors.TextHeader.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarBig);
-			}, label1);
+			}, labelYourAddress);
 
-			entryAddress.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
-			entryAddress.ModifyFont(Constants.Fonts.ActionBarSmall);
+			Apply((Label label) =>
+			{
+				label.ModifyFg(StateType.Normal, Constants.Colors.Text.Gdk);
+			//	label.ModifyFont(Constants.Fonts.ActionBarBig);
+            }, labelPublicKeyCopied);
+
+			Apply((Entry entry) =>
+            {
+				entry.ModifyBg(StateType.Normal, Constants.Colors.Seperator.Gdk);
+				entry.ModifyText(StateType.Normal, Constants.Colors.Text.Gdk);
+				entry.ModifyFont(Constants.Fonts.ActionBarSmall);
+				entry.ModifyBase(StateType.Normal, Constants.Colors.ButtonUnselected.Gdk);
+			}, entryAddress);
 
 			Clipboard clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
 
-			buttonCopy.Clicked += delegate
-			{
+            hboxCopy.Remove(imageCopied);
+            ButtonPressEvent(eventboxCopy, delegate
+            {
                 clipboard.Text = Address;
-			};
+
+				new System.Threading.Thread(() =>
+				{
+					hboxCopy.Remove(imageCopy);
+					hboxCopy.Add(imageCopied);
+					System.Threading.Thread.Sleep(2000);
+					Application.Invoke(delegate
+					{
+                        hboxCopy.Remove(imageCopied);
+                        hboxCopy.Add(imageCopy);
+					});
+				}).Start();
+            });
 
 			entryAddress.SelectRegion(0, -1);
 
@@ -54,20 +81,29 @@ namespace Wallet
 				}).Start();
 			};
 
-			buttonSend.Clicked += delegate
+            eventboxSend.ButtonPressEvent += delegate
 			{
 				SetPage(SEND_PAGE);
 			};
 
-			buttonQR.Clicked += delegate
+            eventboxQRCode.ButtonPressEvent += delegate
 			{
 				SetPage(RECEIVE_PAGE);
 			};
 
-			buttonKeys.Clicked += delegate
+            eventboxCopyPublicKey.ButtonPressEvent += delegate
 			{
 				Clipboard _clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
                 _clipboard.Text = Convert.ToBase64String(_Key.Public);
+
+                hbox4.Add(labelPublicKeyCopied);
+
+                Task.Run(()=>Task.Delay(2000).ContinueWith(delegate
+                {
+                    Application.Invoke(delegate {
+                        hbox4.Remove(labelPublicKeyCopied);
+                    });
+                }));
 			};
 
 			notebook1.ShowTabs = false;

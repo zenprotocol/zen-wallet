@@ -32,9 +32,10 @@ namespace Wallet
             CurrentAsset = Consensus.Tests.zhash;
             AssetsController = new AssetsController(this);
 
-			label1.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text.Gdk);
+			labelHeader.ModifyFg(StateType.Normal, Constants.Colors.TextHeader.Gdk);
+			labelHeader.ModifyFont(Constants.Fonts.ActionBarBig);
 
-            comboboxAsset.Model = _AssetsStore;
+			comboboxAsset.Model = _AssetsStore;
 			var textRenderer = new CellRendererText();
             comboboxAsset.PackStart(textRenderer, false);
 			comboboxAsset.AddAttribute(textRenderer, "text", 1);
@@ -76,5 +77,13 @@ namespace Wallet
 				});
 			}
 		}
+
+        public Tuple<decimal, decimal, decimal> Totals 
+        {
+            set 
+            {
+                logtotals1.Totals = value;
+            }
+        }
 	}
 }

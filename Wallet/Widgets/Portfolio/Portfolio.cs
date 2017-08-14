@@ -15,8 +15,8 @@ namespace Wallet
     [System.ComponentModel.ToolboxItem (true)]
     public partial class Portfolio : WidgetBase, IPortfolioVIew, IAssetsView
     {
-		readonly DeltasController _DeltasController;
-        readonly AssetsController _AssetsController;
+		readonly AssetsController _AssetsController;
+        readonly DeltasController _DeltasController;
 
 		UpdatingStore<byte[]> listStore = new UpdatingStore<byte[]>(
             0,
@@ -32,17 +32,20 @@ namespace Wallet
 			_DeltasController = new DeltasController(this);
             _AssetsController = new AssetsController(this);
 
-			Apply((Label label) =>
-            {
-                label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.SubText.Gdk);
-                label.ModifyFont(Constants.Fonts.ActionBarSmall);
-            }, label3, label2);
+			labelHeader.ModifyFg(StateType.Normal, Constants.Colors.TextHeader.Gdk);
+			labelHeader.ModifyFont(Constants.Fonts.ActionBarBig);
 
-            Apply((Label label) =>
-            {
-                label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-                label.ModifyFont(Constants.Fonts.ActionBarBig);
-            }, labelZen);
+			Apply(t =>
+			{
+				t.ModifyFg(StateType.Normal, Constants.Colors.LogHeader.Gdk);
+				t.ModifyFont(Constants.Fonts.ActionBarIntermediate);
+			}, label9);
+
+			Apply(t =>
+			{
+				t.ModifyFg(StateType.Normal, Constants.Colors.TextBlue.Gdk);
+				t.ModifyFont(Constants.Fonts.LogBig);
+			}, labelZen);
 
             ConfigureList();
         }
@@ -58,7 +61,7 @@ namespace Wallet
             treeview1.HeadersVisible = false;
             treeview1.ModifyBase(Gtk.StateType.Active, Constants.Colors.Base.Gdk);
             treeview1.ModifyBase(Gtk.StateType.Selected, Constants.Colors.Base.Gdk);
-            treeview1.ModifyBase(Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
+            treeview1.ModifyBase(Gtk.StateType.Normal, Constants.Colors.ButtonSelected.Gdk);
 
             var col = new Gtk.TreeViewColumn();
             var rowRenderer = new RowRenderer();
@@ -87,7 +90,7 @@ namespace Wallet
 				{
 					if (item.Key.SequenceEqual(Consensus.Tests.zhash))
 					{
-						labelZen.Text = $"{new Zen(item.Value)} {AssetsMetadata.ZEN}";
+                        labelZen.Text = new Zen(item.Value).ToString();
 					}
 					else
 					{

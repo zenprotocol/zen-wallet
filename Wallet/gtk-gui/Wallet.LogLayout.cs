@@ -8,11 +8,13 @@ namespace Wallet
 
 		private global::Gtk.HBox hbox3;
 
-		private global::Gtk.Label label1;
+		private global::Gtk.Label labelHeader;
 
 		private global::Gtk.ComboBox comboboxAsset;
 
 		private global::Wallet.Log log1;
+
+		private global::Wallet.Widgets.Log.LogTotals logtotals1;
 
 		protected virtual void Build()
 		{
@@ -27,16 +29,15 @@ namespace Wallet
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.hbox3 = new global::Gtk.HBox();
 			this.hbox3.Name = "hbox3";
-			this.hbox3.Spacing = 6;
+			this.hbox3.BorderWidth = ((uint)(40));
 			// Container child hbox3.Gtk.Box+BoxChild
-			this.label1 = new global::Gtk.Label();
-			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString("Asset:");
-			this.hbox3.Add(this.label1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.label1]));
+			this.labelHeader = new global::Gtk.Label();
+			this.labelHeader.Name = "labelHeader";
+			this.labelHeader.Xalign = 0F;
+			this.labelHeader.LabelProp = global::Mono.Unix.Catalog.GetString("Your Transactions");
+			this.hbox3.Add(this.labelHeader);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.labelHeader]));
 			w1.Position = 0;
-			w1.Expand = false;
-			w1.Fill = false;
 			w1.Padding = ((uint)(10));
 			// Container child hbox3.Gtk.Box+BoxChild
 			this.comboboxAsset = global::Gtk.ComboBox.NewText();
@@ -51,7 +52,6 @@ namespace Wallet
 			w3.Position = 0;
 			w3.Expand = false;
 			w3.Fill = false;
-			w3.Padding = ((uint)(5));
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.log1 = new global::Wallet.Log();
 			this.log1.Events = ((global::Gdk.EventMask)(256));
@@ -59,6 +59,15 @@ namespace Wallet
 			this.vbox1.Add(this.log1);
 			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.log1]));
 			w4.Position = 1;
+			// Container child vbox1.Gtk.Box+BoxChild
+			this.logtotals1 = new global::Wallet.Widgets.Log.LogTotals();
+			this.logtotals1.Events = ((global::Gdk.EventMask)(256));
+			this.logtotals1.Name = "logtotals1";
+			this.vbox1.Add(this.logtotals1);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.logtotals1]));
+			w5.Position = 2;
+			w5.Expand = false;
+			w5.Fill = false;
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{

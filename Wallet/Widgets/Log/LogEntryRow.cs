@@ -7,17 +7,19 @@ namespace Wallet
 	{
         public byte[] Key { get; private set; }
 		public Object[] Values { get; private set; } 
-		public int Offset { get { return 0; }}
+        public LogEntryItem LogEntryItem { get; set; }
+
 
         public LogEntryRow (byte[] key, LogEntryItem logEntryItem) {
             Key = key;
-			Values = new System.Object[] {
-				logEntryItem.Date.TimeAgo(), 
-				logEntryItem.Id, 
-				logEntryItem.Direction == DirectionEnum.Sent ? logEntryItem.Amount : 0,
-				logEntryItem.Direction == DirectionEnum.Recieved ? logEntryItem.Amount : 0,
-				logEntryItem.Balance
-			};
+            LogEntryItem = logEntryItem;
+			//Values = new System.Object[] {
+			//	logEntryItem.Date.TimeAgo(), 
+			//	logEntryItem.Id, 
+			//	logEntryItem.Direction == DirectionEnum.Sent ? logEntryItem.Amount : 0,
+			//	logEntryItem.Direction == DirectionEnum.Recieved ? logEntryItem.Amount : 0,
+			//	logEntryItem.Balance
+			//};
 		}
 	}
 }

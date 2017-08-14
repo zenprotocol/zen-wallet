@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Network;
+using Wallet.Widgets.Contract;
+using Wallet.Widgets.Portfolio;
 
 namespace Wallet
 {
@@ -9,8 +11,8 @@ namespace Wallet
 		Dictionary<string, Type> _Tabs = new Dictionary<string, Type>
 		{
 			{ "Wallet", typeof(WalletLayout) },
-			{ "Portfolio", typeof(Portfolio) },
-			{ "Contract", typeof(Contract) },
+			{ "Contract", typeof(ContractLayout) },
+            { "Portfolio", typeof(PortfolioLayout) },
 			{ "Balance", typeof(LogLayout) }
 		};
 
@@ -98,7 +100,7 @@ namespace Wallet
 					}
                     else if (accepted > 0)
 					{
-                        text = $"Blocks accepted: {accepted}/{maxRequested}, Blocks downloaded: {maxRequested - requested}";
+                        text = $"Blocks accepted: {accepted}/{maxRequested}";
 					}
                     else
                     {

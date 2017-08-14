@@ -18,7 +18,7 @@ namespace Wallet
 
 		public Type Control { 
 			set {
-                int page = 0;
+                int page = -1;
 
 				for (int i = 0; i < FindChild<Notebook>().Children.Length; i++) {
 					var ctl = FindChild<Notebook>().GetNthPage(i);
@@ -33,7 +33,8 @@ namespace Wallet
                     }
 				}
 
-				FindChild<Notebook>().CurrentPage = page;
+                if (page > -1)
+    				FindChild<Notebook>().CurrentPage = page;
 			}
 		}
 	}
