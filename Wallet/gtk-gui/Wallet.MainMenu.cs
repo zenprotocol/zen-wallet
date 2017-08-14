@@ -8,9 +8,9 @@ namespace Wallet
 
 		private global::Wallet.MenuButton Wallet;
 
-		private global::Wallet.MenuButton Portfolio;
-
 		private global::Wallet.MenuButton Contract;
+
+		private global::Wallet.MenuButton Portfolio;
 
 		private global::Wallet.MenuButton Balance;
 
@@ -33,20 +33,20 @@ namespace Wallet
 			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Wallet]));
 			w1.Position = 0;
 			// Container child hboxContainer.Gtk.Box+BoxChild
-			this.Portfolio = new global::Wallet.MenuButton();
-			this.Portfolio.HeightRequest = 10;
-			this.Portfolio.Events = ((global::Gdk.EventMask)(256));
-			this.Portfolio.Name = "Portfolio";
-			this.hboxContainer.Add(this.Portfolio);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Portfolio]));
-			w2.Position = 1;
-			// Container child hboxContainer.Gtk.Box+BoxChild
 			this.Contract = new global::Wallet.MenuButton();
 			this.Contract.HeightRequest = 10;
 			this.Contract.Events = ((global::Gdk.EventMask)(256));
 			this.Contract.Name = "Contract";
 			this.hboxContainer.Add(this.Contract);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Contract]));
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Contract]));
+			w2.Position = 1;
+			// Container child hboxContainer.Gtk.Box+BoxChild
+			this.Portfolio = new global::Wallet.MenuButton();
+			this.Portfolio.HeightRequest = 10;
+			this.Portfolio.Events = ((global::Gdk.EventMask)(256));
+			this.Portfolio.Name = "Portfolio";
+			this.hboxContainer.Add(this.Portfolio);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hboxContainer[this.Portfolio]));
 			w3.Position = 3;
 			// Container child hboxContainer.Gtk.Box+BoxChild
 			this.Balance = new global::Wallet.MenuButton();

@@ -4,6 +4,8 @@ namespace Wallet
 {
 	public partial class Log
 	{
+		private global::Gtk.HBox hbox4;
+
 		private global::Gtk.VBox vbox1;
 
 		private global::Gtk.HBox hbox1;
@@ -24,21 +26,7 @@ namespace Wallet
 
 		private global::Gtk.VScrollbar vscrollbar2;
 
-		private global::Gtk.HBox hbox4;
-
-		private global::Gtk.EventBox eventbox5;
-
-		private global::Gtk.TreeView listSummaryHeader;
-
-		private global::Gtk.EventBox eventbox2;
-
-		private global::Gtk.HBox hbox5;
-
-		private global::Gtk.EventBox eventbox6;
-
-		private global::Gtk.TreeView listSummary;
-
-		private global::Gtk.EventBox eventbox3;
+		private global::Gtk.Label label13;
 
 		protected virtual void Build()
 		{
@@ -47,6 +35,9 @@ namespace Wallet
 			global::Stetic.BinContainer.Attach(this);
 			this.Name = "Wallet.Log";
 			// Container child Wallet.Log.Gtk.Container+ContainerChild
+			this.hbox4 = new global::Gtk.HBox();
+			this.hbox4.Name = "hbox4";
+			// Container child hbox4.Gtk.Box+BoxChild
 			this.vbox1 = new global::Gtk.VBox();
 			this.vbox1.Name = "vbox1";
 			// Container child vbox1.Gtk.Box+BoxChild
@@ -120,68 +111,19 @@ namespace Wallet
 			this.vbox1.Add(this.hbox2);
 			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox2]));
 			w9.Position = 1;
-			// Container child vbox1.Gtk.Box+BoxChild
-			this.hbox4 = new global::Gtk.HBox();
-			this.hbox4.Name = "hbox4";
-			// Container child hbox4.Gtk.Box+BoxChild
-			this.eventbox5 = new global::Gtk.EventBox();
-			this.eventbox5.WidthRequest = 10;
-			this.eventbox5.Name = "eventbox5";
-			this.hbox4.Add(this.eventbox5);
-			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventbox5]));
+			this.hbox4.Add(this.vbox1);
+			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.vbox1]));
 			w10.Position = 0;
-			w10.Expand = false;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.listSummaryHeader = new global::Gtk.TreeView();
-			this.listSummaryHeader.Name = "listSummaryHeader";
-			this.listSummaryHeader.HeadersVisible = false;
-			this.hbox4.Add(this.listSummaryHeader);
-			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.listSummaryHeader]));
+			this.label13 = new global::Gtk.Label();
+			this.label13.WidthRequest = 20;
+			this.label13.Name = "label13";
+			this.hbox4.Add(this.label13);
+			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.label13]));
 			w11.Position = 1;
-			// Container child hbox4.Gtk.Box+BoxChild
-			this.eventbox2 = new global::Gtk.EventBox();
-			this.eventbox2.WidthRequest = 30;
-			this.eventbox2.Name = "eventbox2";
-			this.hbox4.Add(this.eventbox2);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventbox2]));
-			w12.Position = 2;
-			w12.Expand = false;
-			this.vbox1.Add(this.hbox4);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox4]));
-			w13.Position = 2;
-			w13.Expand = false;
-			// Container child vbox1.Gtk.Box+BoxChild
-			this.hbox5 = new global::Gtk.HBox();
-			this.hbox5.Name = "hbox5";
-			// Container child hbox5.Gtk.Box+BoxChild
-			this.eventbox6 = new global::Gtk.EventBox();
-			this.eventbox6.WidthRequest = 10;
-			this.eventbox6.Name = "eventbox6";
-			this.hbox5.Add(this.eventbox6);
-			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.eventbox6]));
-			w14.Position = 0;
-			w14.Expand = false;
-			// Container child hbox5.Gtk.Box+BoxChild
-			this.listSummary = new global::Gtk.TreeView();
-			this.listSummary.Name = "listSummary";
-			this.listSummary.HeadersVisible = false;
-			this.hbox5.Add(this.listSummary);
-			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.listSummary]));
-			w15.Position = 1;
-			// Container child hbox5.Gtk.Box+BoxChild
-			this.eventbox3 = new global::Gtk.EventBox();
-			this.eventbox3.WidthRequest = 30;
-			this.eventbox3.Name = "eventbox3";
-			this.hbox5.Add(this.eventbox3);
-			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.eventbox3]));
-			w16.Position = 2;
-			w16.Expand = false;
-			this.vbox1.Add(this.hbox5);
-			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox5]));
-			w17.PackType = ((global::Gtk.PackType)(1));
-			w17.Position = 3;
-			w17.Expand = false;
-			this.Add(this.vbox1);
+			w11.Expand = false;
+			w11.Fill = false;
+			this.Add(this.hbox4);
 			if ((this.Child != null))
 			{
 				this.Child.ShowAll();

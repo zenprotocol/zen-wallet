@@ -17,32 +17,11 @@ namespace Wallet
 		{
 			this.Build();
 
-			entryAddress.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-			entryAddress.ModifyFont(Constants.Fonts.ActionBarBig);
+            labelAddress.ModifyFg(Gtk.StateType.Normal, Constants.Colors.TextBlue.Gdk);
+            labelAddress.ModifyFont(Constants.Fonts.ActionBarSmall);
 
 			Gtk.Clipboard clipboard = Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
-			buttonCopy.Clicked += delegate
-			{
-                clipboard.Text = Address;
-			};
-
-			entryAddress.SelectRegion(0, -1);
-
-			entryAddress.FocusGrabbed += (sender, e) =>
-			{
-				new System.Threading.Thread(() =>
-				{
-					Gtk.Application.Invoke(delegate
-					{
-						System.Threading.Thread.Sleep(150);
-						entryAddress.SelectRegion(0, -1);
-						System.Threading.Thread.Sleep(100);
-						entryAddress.SelectRegion(0, -1);
-					});
-				}).Start();
-			};
-
-			buttonBack.Clicked += delegate
+            eventboxBack.ButtonPressEvent += delegate
 			{
 				FindParent<WalletLayout>().SetPage(0);
 			};
@@ -54,7 +33,7 @@ namespace Wallet
 		public void Init()
 		{
             Address = FindParent<WalletLayout>().Address;
-            entryAddress.Text = Address;
+            labelAddress.Text = Address;
 
 			var qrGenerator = new QRCodeGenerator();
             var qrCodeData = qrGenerator.CreateQrCode(Address, QRCodeGenerator.ECCLevel.Q);
@@ -73,7 +52,7 @@ namespace Wallet
 			}
 		}
 
-		async void SetImage(Image image)
+		async Task SetImage(Image image)
 		{
 			var dim = Math.Min(image.Allocation.Width, image.Allocation.Height);
             Gdk.Pixbuf pixbuf = null;

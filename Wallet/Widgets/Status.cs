@@ -11,19 +11,25 @@ namespace Wallet.Widgets
     [System.ComponentModel.ToolboxItem(true)]
 	public partial class Status : WidgetBase, IStatusView
     {
-		public string Text1
+		string _Text1;
+		string _Text2;
+		string _Text3;
+		
+        public string Text1
 		{
 			set
 			{
-				label1.Text = value;
-			}
+                _Text1 = value;
+                Update();
+            }
 		}
 
 		public string Text2
 		{
 			set
 			{
-				label2.Text = value;
+				_Text2 = value;
+				Update();
 			}
 		}
 
@@ -31,8 +37,22 @@ namespace Wallet.Widgets
 		{
 			set
 			{
-				label3.Text = value;
+				_Text3 = value;
+				Update();
 			}
+		}
+
+        void Update()
+        {
+            label1.Text = _Text1;
+			Append(_Text2);
+			Append(_Text3);
+		}
+
+        void Append(string text)
+        {
+			if (!string.IsNullOrEmpty(text))
+				label1.Text += "   |   " + text;
 		}
 
 		public Status()
@@ -46,9 +66,9 @@ namespace Wallet.Widgets
             //Text3 = "Blockchain initializing...";
 
 			Apply(t => { 
-				t.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
+				t.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text.Gdk);
 				t.ModifyFont (Constants.Fonts.ActionBarSmall);
-			}, label1, label2, label3);
+			}, label1);
         }
     }
 }

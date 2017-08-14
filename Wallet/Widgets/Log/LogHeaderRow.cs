@@ -7,11 +7,9 @@ namespace Wallet
 	{
 		public byte[] Key { get { return null; } }
 		public Object[] Values { get; private set; } 
-		public int Offset { get; private set; } 
 
-		public LogHeaderRow(int offset, params String[] values)
+		public LogHeaderRow(params String[] values)
 		{
-			Offset = offset;
 			Values = Array.ConvertAll(values, item => (Object)item);
 		}
 	}
