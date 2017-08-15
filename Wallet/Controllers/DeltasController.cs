@@ -5,6 +5,7 @@ using System.Linq;
 using Infrastructure;
 using System.Collections.Generic;
 using BlockChain.Data;
+using Gtk;
 
 namespace Wallet
 {
@@ -31,7 +32,10 @@ namespace Wallet
         void AddTxDeltas(List<TxDelta> txDeltas)
         {
             txDeltas.ForEach(AddTxDelta);
-            UpdateView();
+
+            Application.Invoke(delegate {
+				UpdateView();
+            });
         }
 
 		void AddTxDelta(TxDelta txDelta)
