@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Threading.Tasks;
 using Gtk;
 using Wallet.core.Data;
@@ -113,12 +113,13 @@ namespace Wallet
 
 		public async void Init()
 		{
+			_CurrentPage = notebook1.Page;
+			SetPage(0);
+			
             _Key = await Task.Run(() => App.Instance.Wallet.GetUnusedKey());
 			
             Application.Invoke(delegate {
 				entryAddress.Text = Address;
-				_CurrentPage = notebook1.Page;
-				SetPage(0); 
             });
 		}
 
