@@ -121,8 +121,8 @@ namespace BlockChain
 
 					if (action is HandleBlockAction)
 						((HandleBlockAction)action).SetResult(HandleBlock(action as HandleBlockAction));
-					else if (action is GetActiveContactsAction)
-						((GetActiveContactsAction)action).SetResult(GetActiveContacts());
+					else if (action is GetActiveContractsAction)
+                        ((GetActiveContractsAction)action).SetResult(GetActiveContracts());
 					else if (action is GetContractPointedOutputsAction)
 						((GetContractPointedOutputsAction)action).SetResult(GetContractPointedOutputs(
 							((GetContractPointedOutputsAction)action).ContractHash));
@@ -963,7 +963,7 @@ namespace BlockChain
             return true;
 		}
 
-		List<ACSItem> GetActiveContacts()
+		List<ACSItem> GetActiveContracts()
 		{
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{

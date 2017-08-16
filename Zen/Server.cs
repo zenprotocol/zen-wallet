@@ -157,7 +157,7 @@ namespace Zen
 				return new GetACSResultPayload()
 				{
 					Success = true,
-					Contracts = new GetActiveContactsAction().Publish().Result.Select(t => new ContractData()
+					Contracts = new GetActiveContractsAction().Publish().Result.Select(t => new ContractData()
 					{
 						Hash = t.Hash,
 						LastBlock = t.LastBlock,

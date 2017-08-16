@@ -249,7 +249,7 @@ namespace Zen
 					case "Active Contract Set":
 						options["acs"] = new List<string>();
 
-						foreach (var contractData in new GetActiveContactsAction().Publish().Result)
+						foreach (var contractData in new GetActiveContractsAction().Publish().Result)
 						{
 							var info = new Address(contractData.Hash, AddressType.Contract) + " " + contractData.LastBlock;
 

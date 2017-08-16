@@ -99,7 +99,7 @@ namespace BlockChain.Data
 		public bool CheckInDb { get; set; }
 	}
 
-    public class GetActiveContactsAction : AsyncQueueAction<List<ACSItem>>
+    public class GetActiveContractsAction : AsyncQueueAction<List<ACSItem>>
     {
     }
 

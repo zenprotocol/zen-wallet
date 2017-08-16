@@ -44,7 +44,7 @@ namespace Zen.RPC
                     //}
                     //else if (basePayload.Type == typeof(GetACSPayload))
                     //{
-                    //    server.SendFrame(JsonConvert.SerializeObject(new GetACSResultPayload() { Contracts = _App.GetActiveContacts().ToArray() }));
+                    //    server.SendFrame(JsonConvert.SerializeObject(new GetACSResultPayload() { Contracts = _App.GetActiveContracts().ToArray() }));
                     //}
                     //else if (basePayload.Type == typeof(HelloPayload))
                     //{
