@@ -2,6 +2,7 @@
 using Gtk;
 using Wallet.core;
 using System.Linq;
+using Wallet.Constants;
 
 namespace Wallet.Widgets.Portfolio
 {
@@ -16,14 +17,8 @@ namespace Wallet.Widgets.Portfolio
 
 			labelHeader.ModifyFg(StateType.Normal, Constants.Colors.TextHeader.Gdk);
 			labelHeader.ModifyFont(Constants.Fonts.ActionBarBig);
-        }
 
-        public decimal Total
-        {
-            set
-            {
-                portfoliototals.Total = value;
-            }
+			portfoliototals.Total = 0;
         }
 
 		public AssetDeltas PortfolioDeltas
@@ -34,7 +29,7 @@ namespace Wallet.Widgets.Portfolio
 				{
 					if (item.Key.SequenceEqual(Consensus.Tests.zhash))
 					{
-                        portfoliototals.Total = item.Value;
+						portfoliototals.Total = item.Value;
 					}
 				}
 			}

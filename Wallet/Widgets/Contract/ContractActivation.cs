@@ -152,15 +152,15 @@ namespace Wallet
             set
             {
                 foreach (var item in value)
-                    _SecureTokenComboboxStore.Update(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
-			} 
+                    AssetUpdated = item;
+            } 
         }
 
 		public AssetMetadata AssetUpdated
 		{
 			set
 			{
-				_SecureTokenComboboxStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
+				_SecureTokenComboboxStore.Upsert(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
 			}
 		}
 

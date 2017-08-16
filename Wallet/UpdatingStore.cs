@@ -12,38 +12,32 @@ namespace Wallet
 			_KeyColumn = keyColumn;
 		}
 
-		public void Update(Predicate<TKey> keyMatchPredicate, params object[] values)
+		public void Upsert(Predicate<TKey> keyMatchPredicate, params object[] values)
 		{
-            Gtk.Application.Invoke(delegate
+			TreeIter iter;
+			var found = Find(keyMatchPredicate, out iter);
+			
+            if (found)
             {
-				TreeIter iter;
-				var found = Find(keyMatchPredicate, out iter);
-				
-                if (found)
-                {
-                    SetValues(iter, values);
-                }
-                else
-                {
-                    AppendValues(values);
-                }
-            });
+                SetValues(iter, values);
+            }
+            else
+            {
+                AppendValues(values);
+            }
 		}
 
         public void UpdateColumn(Predicate<TKey> keyMatchPredicate, int column, object value)
 		{
-			Gtk.Application.Invoke(delegate
+			TreeIter iter;
+			var found = Find(keyMatchPredicate, out iter);
+
+			if (!found)
 			{
-				TreeIter iter;
-				var found = Find(keyMatchPredicate, out iter);
+                iter = Append();
+			}
 
-				if (!found)
-				{
-                    iter = Append();
-				}
-
-				SetValue(iter, column, value);
-			});
+			SetValue(iter, column, value);
 		}
 
 		public bool Find(Predicate<TKey> keyMatchPredicate, out TreeIter iter)

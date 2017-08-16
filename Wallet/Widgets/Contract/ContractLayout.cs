@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Gtk;
 using Wallet.core;
@@ -11,10 +11,7 @@ namespace Wallet.Widgets.Contract
 	{
 		//Boolean IsActive { set; }
 		byte[] Hash { set; }
-		//ulong Tokens { set; }
 		String Code { get; set; }
-		//String Assertion { set; }
-		bool HasEnoughZen { set; }
         decimal CostPerBlock { set; }
         ulong CostTotal { get; set; }
 	}
@@ -23,6 +20,7 @@ namespace Wallet.Widgets.Contract
     public partial class ContractLayout : WidgetBase, IContractView, IAssetsView, IPortfolioVIew, IControlInit
     {
 		ContractController _ContractController;
+		readonly string NONE = "None";
 
 		UpdatingStore<byte[]> _SecureTokenComboboxStore = new UpdatingStore<byte[]>(
 			0,
@@ -33,9 +31,6 @@ namespace Wallet.Widgets.Contract
 		// public bool IsActive { get; set; }
 		public byte[] Hash { set { txtHash.Text = Convert.ToBase64String(value); } }
         public string Code { get { return txtCode.Buffer.Text; } set { txtCode.Buffer.Text = value; } }
-        public bool HasEnoughZen { get; set; }
-
-        byte[] SecureToken;
 
         decimal _costPerBlock;
         public decimal CostPerBlock
@@ -103,14 +98,14 @@ namespace Wallet.Widgets.Contract
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarSmall);
-			}, labelAmountError);
+			}, labelAmountError, labelSecureTokenError);
 
 			//labels
 			Apply((Label label) =>
 			{
 				label.ModifyFg(StateType.Normal, Constants.Colors.LabelText.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarIntermediate);
-            }, labelDestination, labelData, labelBlocks, labelSelectSecureToken, labelBalanceHeader, labelCostPerBlock, label8, label9);
+			}, labelDestination, labelData, labelBlocks, labelSelectSecureToken, labelCostTotal, labelCostPerBlock, label8, label9);
 
 			//entries
 			Apply((Entry entry) =>
@@ -134,24 +129,7 @@ namespace Wallet.Widgets.Contract
 			comboboxAsset.PackStart(textRendererSecukreToken, false);
 			comboboxAsset.AddAttribute(textRendererSecukreToken, "text", 1);
 
-			_SecureTokenComboboxStore.AppendValues(new byte[] { }, "None");
-
-			comboboxAsset.Changed += (sender, e) =>
-			{
-				var comboBox = sender as Gtk.ComboBox;
-				TreeIter iter;
-				if (comboBox.GetActiveIter(out iter))
-				{
-					var value = new GLib.Value();
-					comboBox.Model.GetValue(iter, 0, ref value);
-					byte[] asset = value.Val as byte[];
-					SecureToken = asset != null && asset.Length == 0 ? null : asset;
-				}
-				else
-				{
-					SecureToken = null;
-				}
-			};
+			_SecureTokenComboboxStore.AppendValues(new byte[] { }, NONE);
 		}
 
         void InitHandlers()
@@ -176,11 +154,25 @@ namespace Wallet.Widgets.Contract
                 UpdateUI();
 			};
 
+			comboboxAsset.Changed += (sender, e) =>
+			{
+				UpdateUI();
+			};
+
             eventboxActivate.ButtonReleaseEvent += async delegate {
                 HideButtons();
                 labelStatus.Text = "";
 
-                var result = await _ContractController.ActivateContract(CostTotal, System.Text.Encoding.ASCII.GetBytes(Code), SecureToken);
+                byte[] secureToken = null;
+				TreeIter iter;
+				if (comboboxAsset.GetActiveIter(out iter))
+				{
+					secureToken = (byte[])_SecureTokenComboboxStore.GetValue(iter, 0);
+                    if ((string)_SecureTokenComboboxStore.GetValue(iter, 1) == NONE)
+                        secureToken = null;
+				}
+
+                var result = await _ContractController.ActivateContract(CostTotal, System.Text.Encoding.ASCII.GetBytes(Code), secureToken);
 
 				Gtk.Application.Invoke(delegate
 				{
@@ -210,21 +202,22 @@ namespace Wallet.Widgets.Contract
         void UpdateUI()
 		{
             CostTotal = (ulong)spinbuttonAmount.Value * (ulong)CostPerBlock;
+			bool hasZen;
 
 			if (PortfolioDeltas == null || !PortfolioDeltas.ContainsKey(Tests.zhash))
 			{
-                HasEnoughZen = false;
+                hasZen = false;
 			}
 			else if (PortfolioDeltas[Tests.zhash] >= (long)CostTotal)
 			{
-				HasEnoughZen = true;
+				hasZen = true;
 			}
 			else
 			{
-				HasEnoughZen = true;
+				hasZen = true;
 			}
 
-            if (HasEnoughZen)
+            if (hasZen)
 			{
 				labelAmountError.Text = "";
 			}
@@ -233,7 +226,33 @@ namespace Wallet.Widgets.Contract
 				labelAmountError.Text = "Not enough Zen";
 			}
 
-            if (HasEnoughZen && CostTotal > 0)
+			bool hasToken = true;
+			TreeIter iter;
+			if (comboboxAsset.GetActiveIter(out iter))
+			{
+				var secureToken = (byte[])comboboxAsset.Model.GetValue(iter, 0);
+				var secureTokenCaption = (string)comboboxAsset.Model.GetValue(iter, 1);
+
+				if (secureTokenCaption == NONE)
+				{
+					hasToken = true;
+				}
+				else if (PortfolioDeltas == null || !PortfolioDeltas.ContainsKey(secureToken) || PortfolioDeltas[secureToken] < 1)
+				{
+					hasToken = false;
+				}
+			}
+
+            if (hasToken)
+            {
+				labelSecureTokenError.Text = "";
+			}
+			else
+			{
+				labelSecureTokenError.Text = "No Asset";
+			}
+
+			if (hasZen && hasToken && CostTotal > 0)
 			{
                 if (hboxSignAndReview.Children.Contains(imageActivateDisabled))
 				    hboxSignAndReview.Remove(imageActivateDisabled);
@@ -265,17 +284,32 @@ namespace Wallet.Widgets.Contract
             txtHash.Text = "";
             spinbuttonAmount.Value = 0;
 
-			TreeIter iter;
-			comboboxAsset.Model.GetIterFirst(out iter);
-			comboboxAsset.SetActiveIter(iter);
+			labelSecureTokenError.Text = "";
+			labelAmountError.Text = "";
+
+			TreeIter storeIter;
+			var canIter = comboboxAsset.Model.GetIterFirst(out storeIter);
+
+            while (canIter)
+            {
+				var secureToken = (string)comboboxAsset.Model.GetValue(storeIter, 1);
+
+				if (secureToken == NONE)
+				{
+					comboboxAsset.SetActiveIter(storeIter);
+					break;
+				}
+
+                canIter = comboboxAsset.Model.IterNext(ref storeIter);
+            }
 		}
 
         public ICollection<AssetMetadata> Assets
 		{
 			set
 			{
-				foreach (var item in value)
-					_SecureTokenComboboxStore.Update(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
+                foreach (var item in value)
+                    AssetUpdated = item;
 			}
 		}
 
@@ -283,10 +317,21 @@ namespace Wallet.Widgets.Contract
 		{
 			set
 			{
-				_SecureTokenComboboxStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
+				_SecureTokenComboboxStore.Upsert(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
 			}
 		}
 
-		public AssetDeltas PortfolioDeltas { get; set; }
+		AssetDeltas _PortfolioDeltas;
+		public AssetDeltas PortfolioDeltas { 
+			get 
+			{
+				return _PortfolioDeltas;
+			} 
+			set 
+			{
+				_PortfolioDeltas = value;
+				UpdateUI();
+			}
+		}
     }
 }
