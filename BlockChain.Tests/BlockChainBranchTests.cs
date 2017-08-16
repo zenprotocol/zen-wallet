@@ -9,8 +9,8 @@ namespace BlockChain
 		[Test()]
 		public void ShouldDetectBranch()
 		{
-            var block1 = _GenesisBlock.Child().AddTx(Utils.GetTx());
-            var block2 = _GenesisBlock.Child().AddTx(Utils.GetTx());
+            var block1 = _GenesisBlock.Child().AddTx(Utils.GetTx().AddInput(_GenesisBlock.transactions[0], 0));
+            var block2 = _GenesisBlock.Child().AddTx(Utils.GetTx().AddInput(_GenesisBlock.transactions[0], 1));
 
 			Assert.That(HandleBlock(_GenesisBlock), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
 			Assert.That(HandleBlock(block1), Is.EqualTo(BlockVerificationHelper.BkResultEnum.Accepted));
