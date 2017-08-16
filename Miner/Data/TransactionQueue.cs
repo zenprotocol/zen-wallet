@@ -22,6 +22,15 @@ namespace Miner.Data
             }
         }
 
+        //for debugging/tracing
+        public int Count
+        {
+            get
+            {
+                return _List.Count;
+            }
+        }
+
         public T Take()
         {
             return IsStuck || _List.Count == 0 ? null : _List[_Index];
@@ -52,11 +61,11 @@ namespace Miner.Data
             if (_List.Count == 0)
             {
                 _List.Insert(0,t);
-                _Index = 0;
+                //_Index = 0;
             } else {
-                if (IsStuck) return;
+                //if (IsStuck) return;
                 _List.Insert(_Index > 0 ? _Index - 1 : _List.Count - 1, t);
-                if (_Index > 0) _Index++;
+                //if (_Index > 0) _Index++;
             }
             _Counter = 0;
         }

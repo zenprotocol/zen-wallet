@@ -55,9 +55,9 @@ namespace Miner
         public MinerManager(BlockChain.BlockChain blockChain, Address address)
         {
             TxsPerBlockLimit = 100; //TODO
-            Difficulty = 10;
+            Difficulty = 12; //TODO: when set to 10, becomes apparent a issue of 'tx race condition' (i.e. when using a secure contract to send token, two subsequent txs are dispatched) in which the miner is reset after mining a block with 1st tx and 2nd is never gets mined
 
-            _Address = address;
+			_Address = address;
 			_BlockChain = blockChain;
             _Hasher.OnMined += DispatchBlock;
 			OwnResource(_Hasher);
@@ -70,12 +70,10 @@ namespace Miner
 
         async void Reset()
         {
-            MinerTrace.Information("Miner reset");
-
             _TransactionQueue.Clear();
             _ValidatedTxs.Clear();
 
-            var acsList = await new GetActiveContactsAction().Publish();
+            var acsList = await new GetActiveContractsAction().Publish();
             _UtxoSet = await new GetUTXOSetAction2().Publish();
 
             _ActiveContracts.Clear();
@@ -98,13 +96,17 @@ namespace Miner
                 }
             }
 
-            RecalculateHeader();
+            MinerTrace.Information($"Populated, having {_TransactionQueue.Count} txs");
+
+			RecalculateHeader();
 
             _BlockChainListener.Continue();
 		}
 
 		void OnBlockChainMessage(BlockChainMessage m)
 		{
+			_Hasher.Pause("BlockChain message");
+
 			if (m is TxMessage)
 			{
                 MinerTrace.Information($"Got tx ({((TxMessage)m).State})");
@@ -289,7 +291,7 @@ namespace Miner
 			}
 
             if (_TransactionQueue.IsStuck)
-    			MinerTrace.Information("Queue is stuck");
+                MinerTrace.Information("Queue is stuck. count = " + _TransactionQueue.Count);
 
 			while (!_TransactionQueue.IsStuck && _ValidatedTxs.Count < TxsPerBlockLimit)
 			{
@@ -368,27 +370,33 @@ namespace Miner
 
         void DispatchBlock()
         {
-			_Hasher.Pause("dispatching block");
-			MinerTrace.Information($"dispatching block with {_ValidatedTxs.Count()} txs");
-
-			var txs = FSharpList<Types.Transaction>.Cons(_Coinbase, ListModule.OfSeq(_ValidatedTxs.Select(TransactionValidation.unpoint)));
-			var block = new Types.Block(_Header, txs);
-
-			var result = new HandleBlockAction(block).Publish().Result.BkResultEnum;
-
-			if (result == BlockVerificationHelper.BkResultEnum.Accepted)
-			{
-				if (OnMined != null)
-                	OnMined(block);
-            }
-            else
+            try
             {
-                Reset();
+                _Hasher.Pause("dispatching block");
+
+                MinerTrace.Information($"dispatching block with {_ValidatedTxs.Count()} txs");
+
+                var txs = FSharpList<Types.Transaction>.Cons(_Coinbase, ListModule.OfSeq(_ValidatedTxs.Select(TransactionValidation.unpoint)));
+                var block = new Types.Block(_Header, txs);
+
+
+                var result = new HandleBlockAction(block).Publish().Result.BkResultEnum;
+
+                if (result == BlockVerificationHelper.BkResultEnum.Accepted)
+                {
+                    if (OnMined != null)
+                        OnMined(block);
+                }
+                else
+                {
+                    Reset();
+                }
+
+                MinerTrace.Information($"  block {block.header.blockNumber} is " + result);
+            } catch (Exception e)
+            {
+                MinerTrace.Error("Dispatch block exception", e);
             }
-
-            MinerTrace.Information($"  block {block.header.blockNumber} is " + result);
-
-			//_Hasher.Continue();
 		}
 	}
 }
