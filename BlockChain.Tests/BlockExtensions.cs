@@ -34,7 +34,7 @@ namespace BlockChain
 			);
 
 			var txs = new List<Types.Transaction>();
-			//txs.Add(Utils.GetTx());
+            txs.Add(Utils.GetCoinbaseTx(bk.header.blockNumber + 1));
 
 			return new Types.Block(header, ListModule.OfSeq(txs));
 		}
