@@ -13,21 +13,27 @@ namespace Wallet
 	}
 	
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class LogLayout : WidgetBase, IAssetsView
+    public partial class LogLayout : WidgetBase, IAssetsView, IStatementsVIew, IControlInit
 	{
         public AssetsController AssetsController { get; set; }
         UpdatingStore<byte[]> _AssetsStore = new UpdatingStore<byte[]>(0, typeof(byte[]), typeof(string));
 
         static byte[] _CurrentAsset = Consensus.Tests.zhash;
-        public static byte[] CurrentAsset
+        public byte[] CurrentAsset
         {
             get { return _CurrentAsset; }
-            set { _CurrentAsset = value; }
+            set { 
+                _CurrentAsset = value;
+                FindChild<Log>().SelectedAsset = _CurrentAsset;
+                UpdateTotals();
+            }
         }
 
 		public LogLayout()
 		{
 			this.Build();
+
+			new DeltasController(this);
 
             CurrentAsset = Consensus.Tests.zhash;
             AssetsController = new AssetsController(this);
@@ -44,8 +50,8 @@ namespace Wallet
 			{
 				var ctl = sender as ComboBox;
 				TreeIter iter;
-				if (ctl.GetActiveIter(out iter))
-					FindChild<Log>().SelectedAsset = (byte[])ctl.Model.GetValue(iter, 0);
+                if (ctl.GetActiveIter(out iter))
+                    CurrentAsset = (byte[])ctl.Model.GetValue(iter, 0);
 			};
 		}
 
@@ -53,10 +59,7 @@ namespace Wallet
         {
             set
             {
-                Gtk.Application.Invoke(delegate
-                {
-                    _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
-                });
+                _AssetsStore.Upsert(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
             }
         }
 
@@ -64,26 +67,76 @@ namespace Wallet
 		{
 			set
 			{
-                Gtk.Application.Invoke(delegate
+                foreach (var _asset in value)
                 {
-                    foreach (var _asset in value)
-                    {
-                        _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
-                    }
+                    _AssetsStore.AppendValues(_asset.Asset, _asset.Display);
+                }
 
-					TreeIter iterDefault;
-					if (_AssetsStore.Find(t => t.SequenceEqual(Consensus.Tests.zhash), out iterDefault))
-						comboboxAsset.SetActiveIter(iterDefault);
-				});
+				TreeIter iterDefault;
+				if (_AssetsStore.Find(t => t.SequenceEqual(Consensus.Tests.zhash), out iterDefault))
+					comboboxAsset.SetActiveIter(iterDefault);
 			}
 		}
 
-        public Tuple<decimal, decimal, decimal> Totals 
-        {
-            set 
+        List<TxDelta> _StatementsDeltas;
+        public List<TxDelta> StatementsDeltas { 
+            get {
+                return _StatementsDeltas;
+            }
+            set
             {
-                logtotals1.Totals = value;
+                _StatementsDeltas = value;
+                UpdateTotals();
             }
         }
-	}
+
+        public void Init()
+        {
+			TreeIter storeIter;
+			var canIter = comboboxAsset.Model.GetIterFirst(out storeIter);
+
+			while (canIter)
+			{
+				var asset = (byte[])comboboxAsset.Model.GetValue(storeIter, 0);
+
+                if (asset == Consensus.Tests.zhash)
+				{
+					comboboxAsset.SetActiveIter(storeIter);
+                    CurrentAsset = asset;
+					break;
+				}
+
+				canIter = comboboxAsset.Model.IterNext(ref storeIter);
+			}
+		}
+
+        void UpdateTotals()
+        {
+			ulong sent = 0;
+			ulong received = 0;
+			long total = 0;
+
+            if (StatementsDeltas != null)
+                StatementsDeltas.ForEach(
+    				txDelta => txDelta.AssetDeltas.Where(
+                        assetDelta => assetDelta.Key.SequenceEqual(CurrentAsset)).ToList().ForEach(
+    						assetDelta =>
+    						{
+    							total += assetDelta.Value;
+
+    							var absValue = (ulong)Math.Abs(assetDelta.Value);
+
+    							if (assetDelta.Value < 0)
+    							{
+    								sent += absValue;
+    							}
+    							else
+    							{
+    								received += absValue;
+    							}
+    						}));
+
+			logtotals1.Totals = new Tuple<decimal, decimal, decimal>(received, sent, total);
+        }
+    }
 }

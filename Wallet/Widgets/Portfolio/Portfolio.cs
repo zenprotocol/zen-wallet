@@ -94,7 +94,7 @@ namespace Wallet
 					}
 					else
 					{
-                        listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.AssetsMetadata.TryGetValue(item.Key), item.Value);
+                        listStore.Upsert(t => t.SequenceEqual(item.Key), item.Key, App.Instance.AssetsMetadata.TryGetValue(item.Key), item.Value);
 					}
 				}
 			} 
@@ -106,7 +106,7 @@ namespace Wallet
             {
                 foreach (var item in value)
                     if (!item.Asset.SequenceEqual(Consensus.Tests.zhash))
-						listStore.Update(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
+						listStore.Upsert(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
 			}
         }
 
