@@ -99,10 +99,10 @@ namespace Wallet
 			this.vscrollbar2 = new global::Gtk.VScrollbar(null);
 			this.vscrollbar2.WidthRequest = 30;
 			this.vscrollbar2.Name = "vscrollbar2";
-			this.vscrollbar2.Adjustment.Upper = 100;
-			this.vscrollbar2.Adjustment.PageIncrement = 10;
-			this.vscrollbar2.Adjustment.PageSize = 10;
-			this.vscrollbar2.Adjustment.StepIncrement = 1;
+			this.vscrollbar2.Adjustment.Upper = 100D;
+			this.vscrollbar2.Adjustment.PageIncrement = 10D;
+			this.vscrollbar2.Adjustment.PageSize = 10D;
+			this.vscrollbar2.Adjustment.StepIncrement = 1D;
 			this.hbox2.Add(this.vscrollbar2);
 			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.vscrollbar2]));
 			w8.Position = 2;

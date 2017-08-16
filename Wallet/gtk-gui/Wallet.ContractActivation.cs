@@ -81,13 +81,13 @@ namespace Wallet
 			w4.Expand = false;
 			w4.Fill = false;
 			// Container child hbox1.Gtk.Box+BoxChild
-			this.spinBlocks = new global::Gtk.SpinButton(0, 100, 1);
+			this.spinBlocks = new global::Gtk.SpinButton(0D, 100D, 1D);
 			this.spinBlocks.CanFocus = true;
 			this.spinBlocks.Name = "spinBlocks";
-			this.spinBlocks.Adjustment.PageIncrement = 10;
-			this.spinBlocks.ClimbRate = 1;
+			this.spinBlocks.Adjustment.PageIncrement = 10D;
+			this.spinBlocks.ClimbRate = 1D;
 			this.spinBlocks.Numeric = true;
-			this.spinBlocks.Value = 1;
+			this.spinBlocks.Value = 1D;
 			this.hbox1.Add(this.spinBlocks);
 			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.spinBlocks]));
 			w5.Position = 2;
