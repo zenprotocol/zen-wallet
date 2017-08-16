@@ -35,11 +35,6 @@ namespace Wallet
             get; set;
         }
 
-        public byte[] SecureToken
-        {
-            get; set;
-        }
-
         public ulong Amount
         {
             get; set;
@@ -124,15 +119,11 @@ namespace Wallet
         {
             set
             {
-                _AssetsStore.Update(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
+                _AssetsStore.Upsert(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
 
                 if (_CurrentAsset != null && _CurrentAsset.SequenceEqual(value.Asset))
                 {
-                    Gtk.Application.Invoke(delegate
-                    {
-        //                labelSelectedAsset.Text = value.Display;
-         //               labelBalanceAsset.Text = value.Display;
-                    });
+
                 }
             }
         }

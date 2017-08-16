@@ -4,6 +4,7 @@ using Wallet.Domain;
 using System.Linq;
 using Infrastructure;
 using System.Collections.Generic;
+using Gtk;
 
 namespace Wallet
 {
@@ -22,7 +23,9 @@ namespace Wallet
 
         void AssetsMetadata_AssetMatadataChanged(AssetMetadata assetMetadata)
 		{
-            _AssetsView.AssetUpdated = assetMetadata;
+            Application.Invoke(delegate {
+				_AssetsView.AssetUpdated = assetMetadata;
+			});
 		}
 	}
 }

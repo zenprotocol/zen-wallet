@@ -16,7 +16,6 @@ namespace Wallet
     [System.ComponentModel.ToolboxItem(true)]
     public partial class Log : WidgetBase, IStatementsVIew
     {
-        readonly DeltasController _DeltasController;
         ListStore logEntryStore = new ListStore(typeof(LogEntryItem));
         List<TxDelta> _TxDeltas;
         byte[] _SelectedAsset;
@@ -47,7 +46,7 @@ namespace Wallet
         {
             this.Build();
 
-            _DeltasController = new DeltasController(this);
+            new DeltasController(this);
 
             InitList(listHeaders, FactorStore(new LogHeaderRow(Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)), new LogHeaderRenderer());
             InitList(listTransactions, logEntryStore, new LogEntryRenderer());
@@ -94,47 +93,29 @@ namespace Wallet
 
         void UpdateView()
         {
-            Gtk.Application.Invoke(delegate
-            {
-                logEntryStore.Clear();
+            logEntryStore.Clear();
 
-                ulong sent = 0;
-                ulong received = 0;
-                long total = 0;
-                long runningBalance = 0;
+            long runningBalance = 0;
 
-                if (_TxDeltas != null && _SelectedAsset != null)
-                    _TxDeltas.ForEach(
-                        txDelta => txDelta.AssetDeltas.Where(
-                            assetDelta => assetDelta.Key.SequenceEqual(_SelectedAsset)).ToList().ForEach(
-                                assetDelta =>
-                                {
-                                    runningBalance += assetDelta.Value;
-							        total += assetDelta.Value;
-                                    
-                                    var absValue = (ulong)Math.Abs(assetDelta.Value);
- 
-                                    if (assetDelta.Value < 0)
-                                    {
-                                        sent += absValue;
-                                    }
-                                    else
-                                    {
-                                        received += absValue;
-                                    }
-        
-                                    logEntryStore.AppendValues(new LogEntryItem(
-                                        absValue,
-                                        assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-                                        assetDelta.Key,
-                                        txDelta.Time,
-                                        Convert.ToBase64String(txDelta.TxHash),
-                                        txDelta.TxState.ToString(),
-                                        runningBalance));
-                                }));
+            if (_TxDeltas != null && _SelectedAsset != null)
+                _TxDeltas.ForEach(
+                    txDelta => txDelta.AssetDeltas.Where(
+                        assetDelta => assetDelta.Key.SequenceEqual(_SelectedAsset)).ToList().ForEach(
+                            assetDelta =>
+                            {
+                                runningBalance += assetDelta.Value;
+                                
+                                var absValue = (ulong)Math.Abs(assetDelta.Value);
 
-                FindParent<LogLayout>().Totals = new Tuple<decimal, decimal, decimal>(received, sent, total);
-            });
+                                logEntryStore.AppendValues(new LogEntryItem(
+                                    absValue,
+                                    assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+                                    assetDelta.Key,
+                                    txDelta.Time,
+                                    Convert.ToBase64String(txDelta.TxHash),
+                                    txDelta.TxState.ToString(),
+                                    runningBalance));
+                            }));
         }
     }
 }

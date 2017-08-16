@@ -81,9 +81,9 @@ namespace Wallet.Widgets.Portfolio
 		{
 			set
 			{
-				foreach (var item in value)
-					if (!item.Asset.SequenceEqual(Consensus.Tests.zhash))
-						listStore.Update(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
+                foreach (var item in value)
+                    if (!item.Asset.SequenceEqual(Consensus.Tests.zhash))
+                        AssetUpdated = item;
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace Wallet.Widgets.Portfolio
 			set
 			{
 				if (!value.Asset.SequenceEqual(Consensus.Tests.zhash))
-					listStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
+                    listStore.Upsert(t => t.SequenceEqual(value.Asset), value.Asset, value.Display);
 			}
 		}
 
@@ -106,7 +106,7 @@ namespace Wallet.Widgets.Portfolio
 				{
 					if (!item.Key.SequenceEqual(Consensus.Tests.zhash))
 					{
-						listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.AssetsMetadata.TryGetValue(item.Key), item.Value);
+						listStore.Upsert(t => t.SequenceEqual(item.Key), item.Key, App.Instance.AssetsMetadata.TryGetValue(item.Key), item.Value);
 					}
 				}
 			}

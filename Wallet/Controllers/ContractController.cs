@@ -36,7 +36,6 @@ namespace Wallet
 		public ContractController(IContractView contractView)
 		{
 			_ContractView = contractView;
-            contractView.HasEnoughZen = false;
 		}
 
         public Task<ContractActivationResult> ActivateContract(ulong kalapas, byte[] code, byte[] secureToken)
@@ -44,6 +43,7 @@ namespace Wallet
             return Task.Run(() =>
 	        {
 	            Types.Transaction tx;
+
 
 	            if (!App.Instance.Wallet.GetContractActivationTx(code, kalapas, out tx, secureToken))
 	            {
