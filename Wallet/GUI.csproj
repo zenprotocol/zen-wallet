@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -151,6 +150,7 @@
     <Compile Include="Widgets\Contract\Contract.cs" />
     <Compile Include="gtk-gui\Wallet.Contract.cs" />
     <Compile Include="Controllers\ContractController.cs" />
+    <Compile Include="Controllers\DeltasController.cs" />
     <Compile Include="Controllers\MainWindowController.cs" />
     <Compile Include="gtk-gui\Wallet.MainWindow.cs" />
     <Compile Include="gtk-gui\Wallet.MainMenu.cs" />
@@ -209,7 +209,6 @@
     <Compile Include="Widgets\Log\LogLayout.cs" />
     <Compile Include="gtk-gui\Wallet.LogLayout.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Controllers\DeltasController.cs" />
     <Compile Include="Widgets\Wallet\ExpandingCellRenderer.cs" />
     <Compile Include="Widgets\Portfolio\RowRenderer.cs" />
     <Compile Include="Wallet\WalletLayout.cs" />

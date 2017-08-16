@@ -62,7 +62,6 @@ namespace Wallet
 			this.contractlayout1 = new global::Wallet.Widgets.Contract.ContractLayout();
 			this.contractlayout1.Events = ((global::Gdk.EventMask)(256));
 			this.contractlayout1.Name = "contractlayout1";
-			this.contractlayout1.HasEnoughZen = false;
 			this.contractlayout1.CostPerBlock = 0m;
 			this.contractlayout1.CostTotal = ulong.Parse("0");
 			this.notebook1.Add(this.contractlayout1);
