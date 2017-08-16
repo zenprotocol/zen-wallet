@@ -432,7 +432,6 @@
           <widget class="Wallet.Widgets.Contract.ContractLayout" id="contractlayout1">
             <property name="MemberName" />
             <property name="Events">ButtonPressMask</property>
-            <property name="HasEnoughZen">False</property>
             <property name="CostPerBlock">0</property>
             <property name="CostTotal">0</property>
           </widget>
@@ -3911,6 +3910,7 @@
                             <property name="AutoSize">True</property>
                             <property name="Expand">False</property>
                             <property name="Fill">False</property>
+                            <property name="Padding">7</property>
                           </packing>
                         </child>
                         <child>
@@ -3960,10 +3960,35 @@
                     <property name="MemberName" />
                     <property name="Spacing">6</property>
                     <child>
-                      <widget class="Gtk.Label" id="labelSelectSecureToken">
+                      <widget class="Gtk.HBox" id="hboxAmount1">
                         <property name="MemberName" />
-                        <property name="Xalign">0</property>
-                        <property name="LabelProp" translatable="yes">Secure Token:</property>
+                        <property name="Spacing">6</property>
+                        <child>
+                          <widget class="Gtk.Label" id="labelSelectSecureToken">
+                            <property name="MemberName" />
+                            <property name="Xalign">0</property>
+                            <property name="LabelProp" translatable="yes">Secure Token:</property>
+                          </widget>
+                          <packing>
+                            <property name="Position">0</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                            <property name="Padding">7</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Label" id="labelSecureTokenError">
+                            <property name="MemberName" />
+                            <property name="LabelProp" translatable="yes">Invalid</property>
+                          </widget>
+                          <packing>
+                            <property name="Position">1</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
                         <property name="Position">0</property>
@@ -3997,10 +4022,23 @@
                     <property name="MemberName" />
                     <property name="Spacing">6</property>
                     <child>
-                      <widget class="Gtk.Label" id="labelBalanceHeader">
+                      <widget class="Gtk.HBox" id="hboxAmount2">
                         <property name="MemberName" />
-                        <property name="Xalign">0</property>
-                        <property name="LabelProp" translatable="yes">Cost to activate:</property>
+                        <property name="Spacing">6</property>
+                        <child>
+                          <widget class="Gtk.Label" id="labelCostTotal">
+                            <property name="MemberName" />
+                            <property name="Xalign">0</property>
+                            <property name="LabelProp" translatable="yes">Total Cost:</property>
+                          </widget>
+                          <packing>
+                            <property name="Position">0</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                            <property name="Padding">7</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
                         <property name="Position">0</property>

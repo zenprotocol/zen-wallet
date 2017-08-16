@@ -38,6 +38,7 @@ namespace Wallet.Widgets.Portfolio
 			this.vbox1.Name = "vbox1";
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.hbox1 = new global::Gtk.HBox();
+			this.hbox1.Name = "hbox1";
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.eventbox4 = new global::Gtk.EventBox();
 			this.eventbox4.WidthRequest = 10;
