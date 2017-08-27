@@ -1,0 +1,612 @@
+[
+  "^∂ÎÓêß &'&®yj†\u000f·",
+  [
+    [ "TokenSale.uu___is_Initialize", 1, 2, 1, [ "@query" ], 0 ],
+    [ "TokenSale.uu___is_Buy", 1, 2, 1, [ "@query" ], 0 ],
+    [ "TokenSale.uu___is_Fail", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "TokenSale.price",
+      1,
+      2,
+      1,
+      [
+        "@query", "assumption_FStar.UInt64.t__haseq",
+        "equation_FStar.UInt64.t"
+      ],
+      0
+    ],
+    [
+      "TokenSale.parse_commands",
+      1,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.parse_commands",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt8.Mk", "equality_tok_TokenSale.Buy@tok",
+        "equality_tok_TokenSale.Fail@tok",
+        "equality_tok_TokenSale.Initialize@tok",
+        "equation_Consensus.Types.opcode", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt8.n",
+        "equation_FStar.UInt8.t", "fuel_guarded_inversion_FStar.UInt8.t_",
+        "function_token_typing_FStar.UInt32.n", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87"
+      ],
+      0
+    ],
+    [
+      "TokenSale.parse_commands",
+      3,
+      2,
+      1,
+      [
+        "@query", "assumption_FStar.UInt8.t__haseq", "equation_FStar.UInt8.t"
+      ],
+      0
+    ],
+    [
+      "TokenSale.parse_commands",
+      4,
+      2,
+      1,
+      [
+        "@query", "assumption_FStar.UInt8.t__haseq", "equation_FStar.UInt8.t"
+      ],
+      0
+    ],
+    [
+      "TokenSale.parse_outpoint",
+      1,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.parse_outpoint",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.parse_outputLock",
+      1,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.parse_outputLock",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.totalInputZen",
+      1,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.totalInputZen",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Consensus.Types_interpretation_Tm_arrow_de39cc2d2861f78c3d8d568c1b2fff14",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "bool_inversion", "bool_typing", "data_elim_FStar.UInt64.Mk",
+        "disc_equation_FStar.Pervasives.Native.None",
+        "disc_equation_FStar.Pervasives.Native.Some",
+        "equation_Consensus.Types.utxo", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "equation_Zen.OptionT.incNone",
+        "equation_Zen.OptionT.incSome",
+        "fuel_guarded_inversion_Consensus.Types.outpoint",
+        "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price",
+        "kinding_Consensus.Types.output@tok",
+        "lemma_FStar.Pervasives.invertOption", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.totalInputZen",
+      3,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Consensus.Types.hash",
+        "equation_Prims.eqtype", "equation_Zen.Crypto.hash",
+        "function_token_typing_Consensus.Types.hash",
+        "refinement_interpretation_Prims_Tm_refine_414d0a9f578ab0048252f8c8f552b99f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.issueTokens",
+      1,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.issueTokens",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "equation_FStar.UInt64.uint_to_t",
+        "equation_FStar.UInt64.v", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "proj_equation_FStar.UInt64.Mk_v",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.mkTx",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.mkTx",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      1,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Consensus.Types_interpretation_Tm_arrow_de39cc2d2861f78c3d8d568c1b2fff14",
+        "FStar.List.Tot.Base_interpretation_Tm_arrow_1309b2ba2b486dd3a0f833087ae704ad",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "bool_inversion", "data_elim_Consensus.Types.MkinputMsg",
+        "data_elim_FStar.UInt64.Mk",
+        "disc_equation_FStar.Pervasives.Native.None",
+        "disc_equation_FStar.Pervasives.Native.Some",
+        "equation_Consensus.Types.utxo", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "equation_Zen.Option.bind",
+        "fuel_guarded_inversion_Consensus.Types.inputMsg",
+        "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price",
+        "kinding_Consensus.Types.outpoint@tok",
+        "kinding_Consensus.Types.output@tok",
+        "lemma_FStar.Pervasives.invertOption", "primitive_Prims.op_AmpAmp",
+        "proj_equation_Consensus.Types.MkinputMsg_utxo",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f",
+        "typing_Consensus.Types.__proj__MkinputMsg__item__lastTx",
+        "typing_FStar.Pervasives.Native.uu___is_None",
+        "typing_FStar.Pervasives.Native.uu___is_Some",
+        "typing_Zen.Option.bind"
+      ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      3,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      4,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      5,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      6,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      7,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      8,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      9,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      10,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      11,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      12,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      13,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      14,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      15,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      16,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      17,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      18,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      19,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      20,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      21,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      22,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      23,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      24,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      25,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      26,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      27,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      28,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      29,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      30,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      31,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      32,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      33,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "data_elim_FStar.UInt64.Mk", "equation_FStar.UInt.fits",
+        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
+        "equation_FStar.UInt32.n", "equation_FStar.UInt64.n",
+        "equation_FStar.UInt64.t", "fuel_guarded_inversion_FStar.UInt64.t_",
+        "function_token_typing_FStar.UInt32.n",
+        "function_token_typing_TokenSale.price", "primitive_Prims.op_AmpAmp",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_FStar.UInt_Tm_refine_a347709bfeba48709474ad26f4f6be87",
+        "refinement_interpretation_TokenSale_Tm_refine_1500d42b7d5585264568a86843c69b6f"
+      ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      34,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      35,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      36,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      37,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "TokenSale.main",
+      38,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ]
+  ]
+]
