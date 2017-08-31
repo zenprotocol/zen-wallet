@@ -1,5 +1,5 @@
 #light "off"
-module Zen.Array.Realized
+module Zen.ArrayRealized
 open Prims
 open FStar.Pervasives
 

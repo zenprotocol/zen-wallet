@@ -1,5 +1,5 @@
 module Zen.Array
-include Zen.Array.Realized
+include Zen.ArrayRealized
 
 open Zen.Cost
 module OptT = Zen.OptionT

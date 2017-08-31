@@ -1,5 +1,5 @@
 [
-  "`\u001eJÑH‘ÍÆ]\u001bì\u00191š\\",
+  "OŒ€ hó.<‰5›.˜pïA",
   [
     [
       "Consensus.Types.hash",
@@ -1456,7 +1456,20 @@
     ],
     [ "Consensus.Types.uu___is_HighVLock", 1, 2, 1, [ "@query" ], 0 ],
     [
-      "Consensus.Types.__proj__HighVLock__item___0",
+      "Consensus.Types.__proj__HighVLock__item__lockcore",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Consensus.Types.HighVLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Consensus.Types_Tm_refine_834f3d7df67ae9d4dbeaa2a15d205371"
+      ],
+      0
+    ],
+    [
+      "Consensus.Types.__proj__HighVLock__item__typeCode",
       1,
       2,
       1,
