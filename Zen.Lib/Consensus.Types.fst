@@ -5,23 +5,21 @@ module      V = Zen.Vector
 module     U8 = FStar.UInt8
 module    U32 = FStar.UInt32
 module    U64 = FStar.UInt64
+module Realized = Consensus.Realized
 module Crypto = Zen.Crypto
 
-type Test2 = { xxx: U32.t }
-//TODO: represent in fst. need to recompile?
-type LockCore = {
-    version: U32.t;
-    lockData: byte[] list
-    lockData: l1:nat -> l2:nat -> v: V.t data l1 l2
-}
-
-//assume type lockCore
+(*assume type lockCore
 assume LC_hasEq: hasEq lockCore
 assume type contract
 assume Contract_hasEq: hasEq contract
 assume type extendedContract
 assume ExtendedContract_hasEq: hasEq extendedContract
-assume new type extraData:eqtype
+assume type extraData:eqtype*)
+
+type lockCore = Realized.lockCore
+type contract = Realized.contract
+type extendedContract = Realized.extendedContract
+type extraData = Realized.extraData
 
 type byte = U8.byte
 type opcode = U8.t
@@ -100,7 +98,7 @@ and outputLock =
   | ContractSacrificeLock of lockCore
   | PKLock of pkHash: hash
   | ContractLock: contractHash:hash -> n:nat -> data n -> outputLock
-  | HighVLock of (lockcore : lockCore) * (typeCode : int)
+  | HighVLock: lockcore:lockCore -> typeCode:nat -> outputLock
 and output = {lock: outputLock; spend: spend}
 
 type inputData (n:nat) = data n

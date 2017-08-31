@@ -1,4 +1,4 @@
-module Zen.Array.Realized
+module Zen.ArrayRealized
 
 open Zen.Cost
 module M = FStar.Mul

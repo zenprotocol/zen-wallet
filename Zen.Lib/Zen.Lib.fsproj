@@ -4,7 +4,6 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{46BF6E86-E7DD-41BE-B7E2-DF18327A66E2}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Zen.Lib</RootNamespace>
     <AssemblyName>Zen.Lib</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
   </PropertyGroup>
@@ -15,7 +14,8 @@
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <PlatformTarget></PlatformTarget>
+    <PlatformTarget>anycpu</PlatformTarget>
+    <OtherFlags>--mlcompatibility --nowarn:0025 --nowarn:0086</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -36,24 +36,24 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.1.0.2\lib\net45\FSharp.Core.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Compatibility.OCaml">
       <HintPath>..\packages\FSharp.Compatibility.OCaml.0.1.12\lib\net40\FSharp.Compatibility.OCaml.dll</HintPath>
+    </Reference>
+    <Reference Include="Sodium">
+      <HintPath>..\packages\libsodium-net.0.10.0\lib\Net40\Sodium.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Component1.fs" />
-    <Compile Include="Script.fsx" />
     <None Include="packages.config" />
     <Compile Include="fs\prims.fs" />
     <Compile Include="fs\FStar.Pervasives.fs" />
-    <Compile Include="fs\FStar.Pervasives.Native.fs" />
     <Compile Include="fs\Zen.Base.fs" />
     <Compile Include="fs\FStar.Int.fs" />
     <Compile Include="fs\FStar.UInt.fs" />
@@ -64,7 +64,7 @@
     <Compile Include="fs\Zen.Tuple.fs" />
     <Compile Include="fs\Zen.TupleT.fs" />
     <Compile Include="fs\Zen.Vector.fs" />
-    <Compile Include="fs\Zen.Array.Realized.fs" />
+    <Compile Include="fs\Zen.ArrayRealized.fs" />
     <Compile Include="fs\Zen.Array.fs" />
     <Compile Include="fs\Zen.Crypto.fs" />
     <Compile Include="fs\option.fs" />
@@ -72,8 +72,33 @@
     <Compile Include="fs\FStar.UInt32.fs" />
     <Compile Include="fs\FStar.Mul.fs" />
     <Compile Include="fs\FStar.Int64.fs" />
+    <Compile Include="fs\Consensus.Realized.fs" />
     <Compile Include="fs\Consensus.Types.fs" />
-    <None Include="InstallationDummyFile.txt" />
+    <None Include="Zen.Vector.fst" />
+    <None Include="Zen.TupleT.fst" />
+    <None Include="Zen.Tuple.fst" />
+    <None Include="Zen.OptionT.fst" />
+    <None Include="Zen.Option.fst" />
+    <None Include="Zen.Crypto.fsti" />
+    <None Include="Zen.Cost.fst" />
+    <None Include="Zen.Base.fst" />
+    <None Include="Zen.ArrayRealized.fst" />
+    <None Include="Zen.Array.fst" />
+    <None Include="prims.fst" />
+    <None Include="FStar.UInt64.fst" />
+    <None Include="FStar.UInt32.fst" />
+    <None Include="FStar.UInt8.fst" />
+    <None Include="FStar.UInt.fst" />
+    <None Include="FStar.Pervasives.Native.fst" />
+    <None Include="FStar.Pervasives.fst" />
+    <None Include="FStar.Option.fsti" />
+    <None Include="FStar.Mul.fst" />
+    <None Include="FStar.Int64.fst" />
+    <None Include="FStar.Int.fst" />
+    <None Include="Consensus.Types.fst" />
+    <None Include="Consensus.Realized.fst" />
+    <None Include="extract.sh" />
   </ItemGroup>
   <Import Project="$(FSharpTargetsPath)" />
+  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
 </Project>
