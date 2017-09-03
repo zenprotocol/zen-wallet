@@ -72,8 +72,8 @@
     <Compile Include="fs\FStar.UInt32.fs" />
     <Compile Include="fs\FStar.Mul.fs" />
     <Compile Include="fs\FStar.Int64.fs" />
-    <Compile Include="fs\Consensus.Realized.fs" />
-    <Compile Include="fs\Consensus.Types.fs" />
+    <Compile Include="fs\Zen.Realized.fs" />
+    <Compile Include="fs\Zen.Types.fs" />
     <None Include="Zen.Vector.fst" />
     <None Include="Zen.TupleT.fst" />
     <None Include="Zen.Tuple.fst" />
@@ -95,8 +95,8 @@
     <None Include="FStar.Mul.fst" />
     <None Include="FStar.Int64.fst" />
     <None Include="FStar.Int.fst" />
-    <None Include="Consensus.Types.fst" />
-    <None Include="Consensus.Realized.fst" />
+    <None Include="Zen.Types.fst" />
+    <None Include="Zen.Realized.fst" />
     <None Include="extract.sh" />
   </ItemGroup>
   <Import Project="$(FSharpTargetsPath)" />
