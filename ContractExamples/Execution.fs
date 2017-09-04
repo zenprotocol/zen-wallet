@@ -31,10 +31,11 @@ open Consensus.Authentication
 
 let auth = sign
 
-
+type Utxo = Outpoint -> Output option
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
 type TransactionSkeleton = Outpoint list * Output list * byte[]
 type ContractFunction = ContractFunctionInput -> TransactionSkeleton
+
 
 let maybe = MaybeWorkflow.maybe
 type InvokeMessage = byte * Outpoint list
