@@ -10,3 +10,6 @@ packaging/OSX/Zen.dmg
 packaging/linux/zen.tar.gz
 .DS_Store
 .idea
+Zulib/fsharp/Extracted
+.fake
+paket-files/
