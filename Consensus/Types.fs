@@ -35,15 +35,24 @@ type OutputLockP =
     static member Serializer (m, zcb) =
         match m with
         | OtherLockP rawFieldList ->
+            if List.exists (fun (raw:RawField) ->
+                Set.contains (raw.FieldNum) <| set [1;3;5;7;] ) rawFieldList
+            then failwith "can't serialize known lock as unknown lock"
             Encode.fromRawFields rawFieldList
         | FeeLockP ->
-            Encode.fromBool 1 false
+            Encode.fromBool 1 true
         | PKLockP hash ->
+            if hash.Length <> 32 then failwith "bad pubkey"
             hash |> System.ArraySegment |> Encode.fromBytes 3
         | ContractSacrificeLockP optHash ->
-            optHash|> Option.defaultValue [||]
+            optHash
+            |> Option.map (fun h ->
+                if Array.length h <> 32 then failwith "bad contract hash"
+                else h)
+            |> Option.defaultValue [||]
             |> System.ArraySegment |> Encode.fromBytes 5
         | ContractLockP (hash, data) ->
+            if Array.length hash <> 32 then failwith "bad contract hash"
             let bs = Array.append hash data
             bs |> System.ArraySegment |> Encode.fromBytes 7
         <| zcb
@@ -58,7 +67,7 @@ type OutputLockP =
                 | _ -> failwith "Unknown fields not allowed on known output locks"
             1, fun m rawField ->
                 match m, Decode.toBool rawField with
-                | OtherLockP [], false ->
+                | OtherLockP [], true ->
                     FeeLockP
                 | _ -> standardFailure()
             3, fun m rawField ->
@@ -91,7 +100,9 @@ type OutputLockP =
         match m with
         | OtherLockP rawFieldList -> rawFieldList
         | _ -> List.empty
-    static member FoundFields m =
+    static member FoundFields _ = Set.empty
+    
+(*    static member FoundFields m =
         match m with
         | FeeLockP -> set [1]
         | PKLockP _-> set [3]
@@ -99,6 +110,7 @@ type OutputLockP =
         | ContractLockP _ -> set [7]
         | OtherLockP rawFieldList ->
             List.map (fun (f:RawField) -> f.FieldNum) rawFieldList |> Set.ofList
+*)
 
 let lockVersion : (OutputLock -> uint32) = function
     | CoinbaseLock lCore
@@ -148,7 +160,8 @@ type Spend =
     static member DecodeFixup m = m
     static member RequiredFields = Set.empty
     static member UnknownFields (m:Spend) = []:RawField list
-    static member FoundFields (m:Spend) : Set<FieldNum> = set [1;2;]
+    static member FoundFields _ = Set.empty
+    //static member FoundFields (m:Spend) : Set<FieldNum> = set [1;2;]
 
 
 type Output = {lock: OutputLock; spend: Spend}
@@ -175,7 +188,8 @@ type OutputP =
     static member DecodeFixup m = m
     static member RequiredFields = Set.empty
     static member UnknownFields (m:OutputP) = []:RawField list
-    static member FoundFields (m:OutputP) : Set<FieldNum> = set[1;2;]
+    static member FoundFields _ = Set.empty
+    //static member FoundFields (m:OutputP) : Set<FieldNum> = set[1;2;]
 
 type Outpoint =
     {txHash: Hash; index: uint32}
@@ -199,7 +213,8 @@ type Outpoint =
     static member DecodeFixup m = m
     static member RequiredFields = Set.empty
     static member UnknownFields (m:Outpoint) = []:RawField list
-    static member FoundFields (m:Outpoint) : Set<FieldNum> = set [1;2;]
+    static member FoundFields _ = Set.empty
+    //static member FoundFields (m:Outpoint) : Set<FieldNum> = set [1;2;]
 
 // Length: variable
 type Witness = byte[]
@@ -250,7 +265,7 @@ type ContractP =
         {m with _unknownFields = List.rev m._unknownFields}
     static member RequiredFields = Set.empty
     static member UnknownFields m = m._unknownFields
-    static member FoundFields m : Set<FieldNum> = Set.empty     // Don't care for now
+    static member FoundFields _ = Set.empty
 
 //type Transaction = {version: uint32; inputs: Outpoint list; witnesses: Witness list; outputs: Output list; contract: Contract option}
 type Transaction = {                                            //erasable
@@ -325,7 +340,7 @@ type TransactionP =
         }
     static member RequiredFields = Set.empty
     static member UnknownFields m = m._unknownFields
-    static member FoundFields m : Set<FieldNum> = Set.empty     // Don't care for now
+    static member FoundFields _ = Set.empty
 
 //Length: 64
 type Nonce = byte[]
@@ -359,17 +374,20 @@ type Commitments = {
         static member RememberFound (m, found:FieldNum) : Commitments = m
 
         static member DecodeFixup m =
-            let t::w::c::extra = List.rev m.extraCommitments
-            {
-                txMerkleRoot = t;
-                witnessMerkleRoot = w;
-                contractMerkleRoot = c;
-                extraCommitments = extra;
-            }
+            match List.rev m.extraCommitments with
+            | t::w::c::extra ->
+                {
+                    txMerkleRoot = t;
+                    witnessMerkleRoot = w;
+                    contractMerkleRoot = c;
+                    extraCommitments = extra;
+                }
+            | _ -> failwith "too few commitments!"  // should never happen
 
         static member RequiredFields = Set.empty
         static member UnknownFields (m:Commitments) = []:RawField list
-        static member FoundFields (m:Commitments) : Set<FieldNum> = set [1]
+        static member FoundFields _ = Set.empty
+        //static member FoundFields (m:Commitments) : Set<FieldNum> = set [1]
 
 type BlockHeader = {
     version: uint32;
@@ -447,7 +465,8 @@ type BlockHeader = {
 
         static member RequiredFields = Set.empty
         static member UnknownFields m = []:RawField list
-        static member FoundFields m :Set<FieldNum> = set [1;2;3;4;5;6;7;]
+        static member FoundFields _ = Set.empty
+        //static member FoundFields m :Set<FieldNum> = set [1;2;3;4;5;6;7;]
 
 type ContractContext = {contractId: byte[]; utxo: Map<Outpoint, Output>; tip: BlockHeader; }
 
@@ -485,4 +504,5 @@ type BlockP = {
     static member DecodeFixup m:BlockP = { m with transactionsP = List.rev m.transactionsP }
     static member RequiredFields = Set.empty
     static member UnknownFields (m:Outpoint) = []:RawField list
-    static member FoundFields (m:Outpoint) : Set<FieldNum> = set [1;2;]
+    static member FoundFields _ = Set.empty
+    //static member FoundFields (m:Outpoint) : Set<FieldNum> = set [1;2;]

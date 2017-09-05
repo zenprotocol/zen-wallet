@@ -36,10 +36,10 @@ namespace Consensus
       with
         member Version : uint32
         static member DecodeFixup : m:OutputLockP -> OutputLockP
-        static member FoundFields : m:OutputLockP -> Set<int>
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
         static member
-          RememberFound : m:'a * found:Froto.Serialization.Encoding.FieldNum ->
-                            'a
+          RememberFound : m:'c * found:Froto.Serialization.Encoding.FieldNum ->
+                            'c
         static member
           Serializer : m:OutputLockP * zcb:Froto.Serialization.ZeroCopyBuffer ->
                          Froto.Serialization.ZeroCopyBuffer
@@ -62,9 +62,8 @@ namespace Consensus
       {asset: Hash;
        amount: uint64;}
       with
-        static member DecodeFixup : m:'a -> 'a
-        static member
-          FoundFields : m:Spend -> Set<Froto.Serialization.Encoding.FieldNum>
+        static member DecodeFixup : m:'c -> 'c
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
         static member
           RememberFound : m:Spend * found:Froto.Serialization.Encoding.FieldNum ->
                             Spend
@@ -88,9 +87,8 @@ namespace Consensus
       {lockP: OutputLockP;
        spendP: Spend;}
       with
-        static member DecodeFixup : m:'a -> 'a
-        static member
-          FoundFields : m:OutputP -> Set<Froto.Serialization.Encoding.FieldNum>
+        static member DecodeFixup : m:'c -> 'c
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
         static member
           RememberFound : m:OutputP *
                           found:Froto.Serialization.Encoding.FieldNum -> OutputP
@@ -112,9 +110,8 @@ namespace Consensus
       {txHash: Hash;
        index: uint32;}
       with
-        static member DecodeFixup : m:'a -> 'a
-        static member
-          FoundFields : m:Outpoint -> Set<Froto.Serialization.Encoding.FieldNum>
+        static member DecodeFixup : m:'c -> 'c
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
         static member
           RememberFound : m:Outpoint *
                           found:Froto.Serialization.Encoding.FieldNum ->
@@ -152,8 +149,7 @@ namespace Consensus
        _unknownFields: Froto.Serialization.Encoding.RawField list;}
       with
         static member DecodeFixup : m:ContractP -> ContractP
-        static member
-          FoundFields : m:'a -> Set<Froto.Serialization.Encoding.FieldNum>
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
         static member
           RememberFound : m:ContractP *
                           found:Froto.Serialization.Encoding.FieldNum ->
@@ -188,9 +184,8 @@ namespace Consensus
        _unknownFields: Froto.Serialization.Encoding.RawField list;}
       with
         static member DecodeFixup : m:TransactionP -> TransactionP
-        static member
-          FoundFields : m:'a -> Set<Froto.Serialization.Encoding.FieldNum>
-        static member RememberFound : m:'b * 'c -> 'b
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
+        static member RememberFound : m:'c * 'd -> 'c
         static member
           Serializer : m:TransactionP * zcb:Froto.Serialization.ZeroCopyBuffer ->
                          Froto.Serialization.ZeroCopyBuffer
@@ -215,9 +210,7 @@ namespace Consensus
       with
         member ToList : Hash list
         static member DecodeFixup : m:Commitments -> Commitments
-        static member
-          FoundFields : m:Commitments ->
-                          Set<Froto.Serialization.Encoding.FieldNum>
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
         static member
           RememberFound : m:Commitments *
                           found:Froto.Serialization.Encoding.FieldNum ->
@@ -250,9 +243,8 @@ namespace Consensus
        nonce: Nonce;}
       with
         member Commitments : Commitments
-        static member DecodeFixup : m:'c -> 'c
-        static member
-          FoundFields : m:'a -> Set<Froto.Serialization.Encoding.FieldNum>
+        static member DecodeFixup : m:'d -> 'd
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
         static member
           RememberFound : m:BlockHeader *
                           found:Froto.Serialization.Encoding.FieldNum ->
@@ -261,7 +253,7 @@ namespace Consensus
           Serializer : m:BlockHeader * zcb:Froto.Serialization.ZeroCopyBuffer ->
                          Froto.Serialization.ZeroCopyBuffer
         static member
-          UnknownFields : m:'b -> Froto.Serialization.Encoding.RawField list
+          UnknownFields : m:'c -> Froto.Serialization.Encoding.RawField list
         static member
           DecoderRing : Map<int,
                             (BlockHeader ->
@@ -284,9 +276,8 @@ namespace Consensus
        transactionsP: TransactionP list;}
       with
         static member DecodeFixup : m:BlockP -> BlockP
-        static member
-          FoundFields : m:Outpoint -> Set<Froto.Serialization.Encoding.FieldNum>
-        static member RememberFound : m:'a * 'b -> 'a
+        static member FoundFields : 'a -> Set<'b> when 'b : comparison
+        static member RememberFound : m:'c * 'd -> 'c
         static member
           Serializer : m:BlockP * zcb:Froto.Serialization.ZeroCopyBuffer ->
                          Froto.Serialization.ZeroCopyBuffer
@@ -878,6 +869,36 @@ namespace Consensus
     type blockHeader = Types.BlockHeader
     type contractContext = Types.ContractContext
     type block = Types.Block
+  end
+
+namespace Consensus
+  [<NUnit.Framework.TestFixture ()>]
+  type SerializationTests =
+    class
+      new : unit -> SerializationTests
+      [<NUnit.Framework.Test ()>]
+      member NormalTest : unit -> unit
+      [<FsCheck.NUnit.PropertyAttribute ()>]
+      member ( Outpoint round-trips cleanly ) : x:Types.Outpoint -> bool
+      [<FsCheck.NUnit.PropertyAttribute ()>]
+      member ( Should fail ) : xs:int [] -> bool
+    end
+
+namespace Consensus
+  module TemporarySerializationTests = begin
+    type ArbitraryModifiers =
+      class
+        static member
+          ArrSeg : unit -> FsCheck.Arbitrary<System.ArraySegment<byte>>
+      end
+    [<NUnit.Framework.Test ()>]
+    val ( Outpoint round-trips ) : unit -> unit
+    [<NUnit.Framework.Test ()>]
+    val ( Spend round-trips ) : unit -> unit
+    [<NUnit.Framework.Test ()>]
+    val ( Output lock round-trips ) : unit -> unit
+    [<NUnit.Framework.Test ()>]
+    val ( Output round-trips ) : unit -> unit
   end
 
 
