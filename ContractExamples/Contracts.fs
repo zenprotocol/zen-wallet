@@ -3,7 +3,6 @@
 open Consensus.Types
 open Consensus.Authentication
 
-
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
 type TransactionSkeleton = Outpoint list * Output list * byte[]
 type ContractFunction = ContractFunctionInput -> TransactionSkeleton
