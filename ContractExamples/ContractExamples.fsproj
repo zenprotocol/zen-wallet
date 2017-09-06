@@ -112,7 +112,7 @@
     <Compile Include="MerkleTests.fs" />
     <None Include="packages.config" />
     <Compile Include="FStarCompatibility.fs" />
-    <Compile Include="Tests\FStarCompatilibity.fs" />
+    <Compile Include="FStarExecution.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Consensus\Consensus.fsproj">
@@ -123,9 +123,6 @@
       <Project>{46BF6E86-E7DD-41BE-B7E2-DF18327A66E2}</Project>
       <Name>Zen.Lib</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tests\" />
   </ItemGroup>
   <Import Project="$(FSharpTargetsPath)" />
   <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />

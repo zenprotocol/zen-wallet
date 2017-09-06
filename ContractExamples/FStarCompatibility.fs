@@ -84,4 +84,14 @@ let ``Should convert outpoint``() =
     Assert.AreEqual (fsOutpoint.txHash, randomHash)
     Assert.AreEqual (fsOutpoint.index, index)
 
+
+let len : Zen.Array.t<'A, _> -> bigint =
+    function Zen.ArrayRealized.A a -> bigint (Array.length a)
+
+let fstarMockFunction (input:inputMsg) : transactionSkeleton =  
+  let data = input.contractHash
+  let outpoints = [{ txHash = data; index = 0u }]
+  let outputs = [{ lock = PKLock data; spend = {asset = data; amount = 0UL } }]
+  Tx (bigint (List.length outpoints), listToVector outpoints, bigint (List.length outputs), (listToVector outputs), len data, ByteArray ((len data), data))
+
 //TODO: cover tests
