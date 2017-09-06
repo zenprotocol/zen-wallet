@@ -1,0 +1,1522 @@
+[
+  "5ÂΩŒ™„Ê¯Åaîı)˘oˆ",
+  [
+    [
+      "Zen.Types.Extracted.hash",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565",
+        "assumption_FStar.UInt8.t__haseq",
+        "assumption_Zen.Array.Realized.Array_hasEq",
+        "equation_FStar.Int64.n", "equation_FStar.UInt32.n",
+        "equation_FStar.UInt8.byte", "equation_FStar.UInt8.t",
+        "equation_Prims.nat", "equation_Zen.Array.Extracted.t",
+        "equation_Zen.Crypto.hash", "function_token_typing_FStar.Int64.n",
+        "function_token_typing_FStar.UInt32.n", "kinding_FStar.UInt8.t_@tok",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.spend",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "assumption_FStar.UInt64.t__haseq",
+        "equation_FStar.UInt64.t", "equation_Prims.eqtype",
+        "equation_Zen.Crypto.hash", "equation_Zen.Types.Extracted.hash",
+        "function_token_typing_Zen.Types.Extracted.hash",
+        "refinement_interpretation_Prims_Tm_refine_414d0a9f578ab0048252f8c8f552b99f"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Mkspend__item__asset",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Mkspend__item__amount",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.outpoint",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "assumption_FStar.UInt32.t__haseq",
+        "equation_FStar.UInt32.t", "equation_Prims.eqtype",
+        "equation_Zen.Crypto.hash", "equation_Zen.Types.Extracted.hash",
+        "function_token_typing_Zen.Types.Extracted.hash",
+        "refinement_interpretation_Prims_Tm_refine_414d0a9f578ab0048252f8c8f552b99f"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Mkoutpoint__item__txHash",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Mkoutpoint__item__index",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.nonce",
+      1,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__version",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__parent",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__blockNumber",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__txMerkleRoot",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__witnessMerkleRoot",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__contractMerkleRoot",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__extraData",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__timestamp",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__pdiff",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkblockHeader__item__nonce",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.nat",
+        "primitive_Prims.op_Addition", "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.nat",
+        "primitive_Prims.op_Addition", "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      3,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.nat",
+        "primitive_Prims.op_Addition", "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      4,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      5,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      6,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      7,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      8,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      9,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      10,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      11,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      12,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      13,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      14,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.data",
+      15,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Bool", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Bool__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Bool",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_0cb98915e4f5d3c03ea3d6cf1ec72199"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Byte", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Byte__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Byte",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_424a3ea79fc8cde1f2d9e70565fcdc3f"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Empty", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Types.Extracted.uu___is_Hash", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Hash__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Hash",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_02f156b6439c917c991cf4b76d035f7f"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Key", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Key__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Key",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a712a80175f7755b94f0f5ca151427e2"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Outpoint", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Outpoint__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Outpoint",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_89022d94502bd584f55cd9d04a1f78d7"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Output", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Output__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Output",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b088f532dec14733b751615ecf1fecd"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_OutputLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__OutputLock__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_4a233acfad2f5dee15cddbfd1451e8c4"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Sig", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Sig__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Sig",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e17f02cf5f2c1398a97ae4044ead328e"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt8", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt8__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt8",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_667305f50e392a54bcea86ec1a00ef6c"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt32", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt32__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt32",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_84f1af73b5a9925aa2c1a7b88ba7d3ef"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt64", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt64__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt64",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d0163a93dfa6a8e071ad7ee46d9bacec"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_BoolVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__BoolVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.BoolVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d9b17a4475a58753c0856ab8df12bee8"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__BoolVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.BoolVector",
+        "proj_equation_Zen.Types.Extracted.BoolVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.BoolVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d9b17a4475a58753c0856ab8df12bee8"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_BoolArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__BoolArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.BoolArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_be207484e59225040ae85859dbe8e56c"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__BoolArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.BoolArray",
+        "proj_equation_Zen.Types.Extracted.BoolArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.BoolArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_be207484e59225040ae85859dbe8e56c"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_ByteVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__ByteVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ByteVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5988ba52f29b07c8a816f2f3414ffaba"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__ByteVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ByteVector",
+        "proj_equation_Zen.Types.Extracted.ByteVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.ByteVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5988ba52f29b07c8a816f2f3414ffaba"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_ByteArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__ByteArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ByteArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_9501c9bb423f60a48ffceb169d9cae73"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__ByteArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ByteArray",
+        "proj_equation_Zen.Types.Extracted.ByteArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.ByteArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_9501c9bb423f60a48ffceb169d9cae73"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_HashVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__HashVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.HashVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8a3cd30dce988ba2d9226620f68c5843"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__HashVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.HashVector",
+        "proj_equation_Zen.Types.Extracted.HashVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.HashVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8a3cd30dce988ba2d9226620f68c5843"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_HashArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__HashArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.HashArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_79c96c00c0151e6fedcfb09b266b3fe1"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__HashArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.HashArray",
+        "proj_equation_Zen.Types.Extracted.HashArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.HashArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_79c96c00c0151e6fedcfb09b266b3fe1"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_KeyVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__KeyVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.KeyVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_36a65d81d178f127e26a511c65bdc012"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__KeyVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.KeyVector",
+        "proj_equation_Zen.Types.Extracted.KeyVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.KeyVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_36a65d81d178f127e26a511c65bdc012"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_KeyArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__KeyArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.KeyArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_4ce5b9f1ec671a0642411e675a9485ae"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__KeyArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.KeyArray",
+        "proj_equation_Zen.Types.Extracted.KeyArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.KeyArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_4ce5b9f1ec671a0642411e675a9485ae"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_SigVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__SigVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.SigVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_49cee7e8caf3cbff7466cb12092f5ea6"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__SigVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.SigVector",
+        "proj_equation_Zen.Types.Extracted.SigVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.SigVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_49cee7e8caf3cbff7466cb12092f5ea6"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_SigArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__SigArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.SigArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_c74a23e8a6d86588a3064df822db9637"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__SigArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.SigArray",
+        "proj_equation_Zen.Types.Extracted.SigArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.SigArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_c74a23e8a6d86588a3064df822db9637"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.uu___is_OutpointVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutpointVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutpointVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b73f5a49a251384de6960e9c01de7287"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutpointVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutpointVector",
+        "proj_equation_Zen.Types.Extracted.OutpointVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.OutpointVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b73f5a49a251384de6960e9c01de7287"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_OutpointArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__OutpointArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutpointArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_6c62b6e217a2ee7cca07c78cbe824b5b"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutpointArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutpointArray",
+        "proj_equation_Zen.Types.Extracted.OutpointArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.OutpointArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_6c62b6e217a2ee7cca07c78cbe824b5b"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_OutputVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__OutputVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_66bdf83e39827b1a74c03350753863fe"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutputVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputVector",
+        "proj_equation_Zen.Types.Extracted.OutputVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.OutputVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_66bdf83e39827b1a74c03350753863fe"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_OutputArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__OutputArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_454880379438b61c56371e77ea4d3fa3"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutputArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputArray",
+        "proj_equation_Zen.Types.Extracted.OutputArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.OutputArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_454880379438b61c56371e77ea4d3fa3"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.uu___is_OutputLockVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutputLockVector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputLockVector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa42df2c9ae0cbfee7f09619215238b0"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutputLockVector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputLockVector",
+        "proj_equation_Zen.Types.Extracted.OutputLockVector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.OutputLockVector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa42df2c9ae0cbfee7f09619215238b0"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.uu___is_OutputLockArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutputLockArray__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputLockArray",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d699eb1021b9463a4fe868913e3f5d63"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__OutputLockArray__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.OutputLockArray",
+        "proj_equation_Zen.Types.Extracted.OutputLockArray_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.OutputLockArray_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d699eb1021b9463a4fe868913e3f5d63"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt8Vector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt8Vector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt8Vector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d6679e477db768cf6cd949b4db0637ea"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__UInt8Vector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt8Vector",
+        "proj_equation_Zen.Types.Extracted.UInt8Vector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.UInt8Vector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d6679e477db768cf6cd949b4db0637ea"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt8Array", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt8Array__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt8Array",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_097ee8ecad0d645679ab8f02527a19d7"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__UInt8Array__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt8Array",
+        "proj_equation_Zen.Types.Extracted.UInt8Array_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.UInt8Array_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_097ee8ecad0d645679ab8f02527a19d7"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt32Vector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt32Vector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt32Vector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_0ce8fc3f213642d12645d1e61a754dd6"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__UInt32Vector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt32Vector",
+        "proj_equation_Zen.Types.Extracted.UInt32Vector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.UInt32Vector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_0ce8fc3f213642d12645d1e61a754dd6"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt32Array", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt32Array__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt32Array",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_2145644cf0366be33f96544249ed23d7"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__UInt32Array__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt32Array",
+        "proj_equation_Zen.Types.Extracted.UInt32Array_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.UInt32Array_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_2145644cf0366be33f96544249ed23d7"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt64Vector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt64Vector__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt64Vector",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_28f7963ae0b601b9e58b89d3ce46b902"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__UInt64Vector__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt64Vector",
+        "proj_equation_Zen.Types.Extracted.UInt64Vector_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.UInt64Vector_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_28f7963ae0b601b9e58b89d3ce46b902"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_UInt64Array", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__UInt64Array__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt64Array",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5addceb147e1d40dbcb13e90fcc77dfd"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__UInt64Array__item__a",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.UInt64Array",
+        "proj_equation_Zen.Types.Extracted.UInt64Array_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.UInt64Array_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5addceb147e1d40dbcb13e90fcc77dfd"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Data2", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Data2__item__n1",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data2",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data2__item__n2",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data2",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data2__item___1",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data2",
+        "proj_equation_Zen.Types.Extracted.Data2_n1",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data2_n1",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data2__item___2",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data2",
+        "proj_equation_Zen.Types.Extracted.Data2_n2",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data2_n2",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Data3", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Data3__item__n1",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data3",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data3__item__n2",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data3",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data3__item__n3",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data3",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data3__item___1",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data3",
+        "proj_equation_Zen.Types.Extracted.Data3_n1",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data3_n1",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data3__item___2",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data3",
+        "proj_equation_Zen.Types.Extracted.Data3_n2",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data3_n2",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data3__item___3",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data3",
+        "proj_equation_Zen.Types.Extracted.Data3_n3",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data3_n3",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_Data4", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item__n1",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item__n2",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item__n3",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item__n4",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item___1",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "proj_equation_Zen.Types.Extracted.Data4_n1",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data4_n1",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item___2",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "proj_equation_Zen.Types.Extracted.Data4_n2",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data4_n2",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item___3",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "proj_equation_Zen.Types.Extracted.Data4_n3",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data4_n3",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Data4__item___4",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Data4",
+        "proj_equation_Zen.Types.Extracted.Data4_n4",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Data4_n4",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_CoinbaseLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__CoinbaseLock__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.CoinbaseLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1f59054d4943c359345a290781cac994"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_FeeLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__FeeLock__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.FeeLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b67c86d359ff8de6d2ac2d0815ecf20f"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.uu___is_ContractSacrificeLock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__ContractSacrificeLock__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ContractSacrificeLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_2c7b39632ea83b43b65bd0da7d8bbdf1"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_PKLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__PKLock__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.PKLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b545c0d5e402947f074363ca9117ba95"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_ContractLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__ContractLock__item__contractHash",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ContractLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a1526b8eccce7ecf76c27c15386d6e01"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__ContractLock__item__n",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ContractLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a1526b8eccce7ecf76c27c15386d6e01"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__ContractLock__item___2",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.ContractLock",
+        "proj_equation_Zen.Types.Extracted.ContractLock_n",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.ContractLock_n",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a1526b8eccce7ecf76c27c15386d6e01"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.uu___is_HighVLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__HighVLock__item__lockcore",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.HighVLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8ac4cdf5d2b345726baed1c292acfb11"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__HighVLock__item__typeCode",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.HighVLock",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8ac4cdf5d2b345726baed1c292acfb11"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Mkoutput__item__lock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Mkoutput__item__spend",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ]
+  ]
+]
