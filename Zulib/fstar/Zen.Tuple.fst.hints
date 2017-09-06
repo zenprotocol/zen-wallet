@@ -1,0 +1,15 @@
+[
+  "g\fá§≥Pá¸∫˛\u007fy\u001d•êá",
+  [
+    [ "Zen.Tuple.uncurry", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.swap", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.uncurry3", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.uncurry4", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.map", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.map3", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.map4", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.op_Bar_Star_Greater", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.op_Bar_Star_Star_Greater", 1, 2, 1, [ "@query" ], 0 ],
+    [ "Zen.Tuple.op_Bar_Star_Star_Star_Greater", 1, 2, 1, [ "@query" ], 0 ]
+  ]
+]

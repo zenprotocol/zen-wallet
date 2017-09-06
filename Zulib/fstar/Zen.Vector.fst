@@ -88,30 +88,11 @@ let rec zip #_ #_ #_ v1 v2 =
                 | VCons hd1 tl1 ->
   match v2 with | VCons hd2 tl2 -> 3 +! (VCons (hd1,hd2) <$> (zip tl1 tl2))
 
-val sortedBy(#a:Type)(#l #n:nat): (a -> cost int n) -> vector a l -> GTot Type0
-let rec sortedBy #_ #_ #_ f = function
-  | VNil | VCons _ VNil -> true
-  | VCons hd tl -> force (f hd) <= force (f (VCons?.hd tl)) /\ sortedBy f tl
+val of2(#a:Type): a*a -> cost (vector a 2) 3
+let of2 #_ (x,y) = incRet 3 (VCons x (VCons y VNil))
 
-val uniqueBy(#a:Type)(#l #n:nat): (a -> cost int n) -> vector a l -> GTot Type0
-let rec uniqueBy #_ #_ #_ f = function
-  | VNil | VCons _ VNil -> true
-  | VCons hd tl -> force (f hd) < force (f (VCons?.hd tl))
-                /\ sortedBy f tl /\ uniqueBy f tl
-
-assume val mkUnique(#a:Type)(#l #n:nat):
-  f:(a->cost int n) -> v:vector a l{sortedBy f v}
-  -> cost (l':nat & v':vector a l'{uniqueBy f v'}) M.(l*n*12+6)
-
-
-val of_t(#a:Type): a -> cost (vector a 1) 2
-let of_t #_ x = incRet 2 (VCons x VNil)
-
-val of_t2(#a:Type): a*a -> cost (vector a 2) 3
-let of_t2 #_ (x,y) = incRet 3 (VCons x (VCons y VNil))
-
-val of_t3(#a:Type): a*a*a -> cost (vector a 3) 4
-let of_t3 #_ (x,y,z) = incRet 4 (VCons x (VCons y (VCons z VNil)))
+val of3(#a:Type): a*a*a -> cost (vector a 3) 4
+let of3 #_ (x,y,z) = incRet 4 (VCons x (VCons y (VCons z VNil)))
 (*)
 val vcons_length_pos(#a:Type)(#l:nat): v:(vector a l){VCons? v}
   -> Lemma (l >= 1 /\ l-1 >=0)
