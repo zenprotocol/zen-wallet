@@ -44,9 +44,9 @@ let (@@) = append
 (** [flatten v], where [v] is a vector of vectors of constant length,
     returns the vector of elements of vectors in [v], preserving their order. *)
 val flatten(#a:Type)(#l1 #l2:nat):
-  vector (vector a l1) l2 -> cost (vector a M.(l1*l2)) M.(4*(l1+1)*(l2+1))
+  vector (vector a l2) l1 -> cost (vector a M.(l1*l2)) M.(4*l1*(l2+1)+5)
 let rec flatten #_ #_ #_ = function
-  | VNil -> autoRet VNil
+  | VNil -> incRet 5 VNil
   | VCons hd tl -> append hd =<< (flatten tl)
 
 (** [init l f] returns a vector of length l, for which the [i]th element is [f i]. *)
