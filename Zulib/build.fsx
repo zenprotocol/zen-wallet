@@ -9,14 +9,20 @@ open Microsoft.FSharp.Compiler
 Target "Extract" (fun _ ->  
 
   let files =
+    
     FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
-    |> FileSystemHelper.filesInDirMatching "fstar/*.fst*"
+    |> FileSystemHelper.filesInDirMatching "fstar/*.fst?"
     |> Array.map (fun file -> file.FullName)
 
+  // we should check the OS have different path for each OS
+  let z3path = "../tools/z3/z3"
+
   let args = 
-    [| "../../FStar/bin/fstar.exe";       
+    [| "../tools/fstar/fstar.exe";             
+       "--smt";z3path; 
        "--codegen";"FSharp";
        "--prims";"fstar/prims.fst";
+       "--include";"fstar";
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
        "--extract_module";"Zen.Cost.Extracted";
