@@ -2,6 +2,43 @@
 open Froto.Serialization
 open Froto.Serialization.Encoding
 
+// Froto has a bug in arraySegtoArray: define our own helpers
+
+let arraySegtoArray (seg:System.ArraySegment<'a>) =
+    seg.Array.[seg.Offset .. seg.Offset + seg.Count - 1]
+
+let inline toArray m =
+    Array.zeroCreate (Serialize.serializedLength m |> int32 )
+    |> System.ArraySegment
+    |> Serialize.toArraySegment m
+    |> arraySegtoArray
+
+type InnerField =
+    | V of FieldNum * uint64
+    | F32 of FieldNum * uint32
+    | F64 of FieldNum * uint64
+    | LD of FieldNum * byte[]
+    with
+    member this.FieldNum = match this with
+                           | V (i,_)    -> i
+                           | F32 (i,_)  -> i
+                           | F64 (i,_)  -> i
+                           | LD (i,_)   -> i
+    member this.ToRawField =
+        match this with
+        | V (i,j) -> Varint (i,j)
+        | F32 (i,j) -> Fixed32 (i,j)
+        | F64 (i,j) -> Fixed64 (i,j)
+        | LD (i,arr) -> LengthDelimited (i, System.ArraySegment arr)
+
+let createInnerField = function
+| Varint (i,j) -> V (i,j)
+| Fixed32 (i,j) -> F32(i,j)
+| Fixed64 (i,j) -> F64(i,j)
+| LengthDelimited (i,aseg) -> LD (i,arraySegtoArray aseg)
+
+let createRawField (inner:InnerField) = inner.ToRawField
+        
 // Length: 32
 type Hash = byte[]
 
@@ -24,7 +61,7 @@ type OutputLockP =
     | PKLockP of Hash
     | ContractSacrificeLockP of Hash option
     | ContractLockP of Hash * byte[]
-    | OtherLockP of RawField list // Allow future locks w/ multiple fields
+    | OtherLockP of InnerField list // Allow future locks w/ multiple fields
     with
     member this.Version = match this with
                           | OtherLockP _ -> 1u  //TODO global "max defined version"+1
@@ -34,11 +71,11 @@ type OutputLockP =
 
     static member Serializer (m, zcb) =
         match m with
-        | OtherLockP rawFieldList ->
-            if List.exists (fun (raw:RawField) ->
-                Set.contains (raw.FieldNum) <| set [1;3;5;7;] ) rawFieldList
+        | OtherLockP innerFieldList ->
+            if List.exists (fun (inner:InnerField) ->
+                Set.contains (inner.FieldNum) <| set [1;3;5;7;] ) innerFieldList
             then failwith "can't serialize known lock as unknown lock"
-            Encode.fromRawFields rawFieldList
+            innerFieldList |> List.map createRawField |> Encode.fromRawFields
         | FeeLockP ->
             Encode.fromBool 1 true
         | PKLockP hash ->
@@ -62,8 +99,8 @@ type OutputLockP =
         [
             0, fun m rawField ->
                 match m with
-                | OtherLockP rawFieldList ->
-                    OtherLockP (rawField :: rawFieldList)
+                | OtherLockP innerFieldList ->
+                    OtherLockP (createInnerField rawField :: innerFieldList)
                 | _ -> failwith "Unknown fields not allowed on known output locks"
             1, fun m rawField ->
                 match m, Decode.toBool rawField with
@@ -93,12 +130,12 @@ type OutputLockP =
     static member RememberFound (m, found:FieldNum) = m
     static member DecodeFixup m =
         match m with
-        | OtherLockP rawFieldList -> OtherLockP (List.rev rawFieldList)
+        | OtherLockP innerFieldList -> OtherLockP (List.rev innerFieldList)
         | _ -> m
     static member RequiredFields = Set.empty
     static member UnknownFields m =
         match m with
-        | OtherLockP rawFieldList -> rawFieldList
+        | OtherLockP innerFieldList -> List.map createRawField innerFieldList
         | _ -> List.empty
     static member FoundFields _ = Set.empty
     
@@ -234,23 +271,26 @@ let PubKeyHashBytes = 32
 let TxHashBytes = 32
 
 type ContractP =
-    {version: uint32; code: byte[]; hint: byte[]; _unknownFields: RawField list}
+    {version: uint32; code: byte[]; hint: byte[]; _unknownFields: InnerField list}
     with
     static member Default = {version=0u; code=[||];hint=[||]; _unknownFields=[]}
 
     static member Serializer (m, zcb) =
         if m.version = 0u && not <| List.isEmpty m._unknownFields
         then failwith "Version 0 contract cannot have extra fields"
+        elif List.exists (fun (inner:InnerField) ->
+            Set.contains (inner.FieldNum) <| set [1;2;3;] ) m._unknownFields
+        then failwith "can't serialize known fields as unknown"
         else
         (m.version |> Encode.fromVarint 1) >>
         (m.code |> System.ArraySegment |> Encode.fromBytes 2) >>
         (m.hint |> System.ArraySegment |> Encode.fromBytes 3) >>
-        (m._unknownFields |> Encode.fromRawFields)
+        (m._unknownFields |> List.map createRawField |> Encode.fromRawFields)
         <| zcb
 
     static member DecoderRing =
         [
-            0, fun m rawField -> {m with _unknownFields = rawField :: m._unknownFields}
+            0, fun m rawField -> {m with _unknownFields = createInnerField rawField :: m._unknownFields}
             1, fun m rawField -> {m with version = rawField |> Decode.toUInt32}
             2, fun m rawField -> {m with code = rawField |> Decode.toBytes}
             3, fun m rawField -> {m with hint = rawField |> Decode.toBytes}
@@ -264,7 +304,7 @@ type ContractP =
         else
         {m with _unknownFields = List.rev m._unknownFields}
     static member RequiredFields = Set.empty
-    static member UnknownFields m = m._unknownFields
+    static member UnknownFields m = List.map createRawField m._unknownFields
     static member FoundFields _ = Set.empty
 
 //type Transaction = {version: uint32; inputs: Outpoint list; witnesses: Witness list; outputs: Output list; contract: Contract option}
@@ -283,7 +323,7 @@ type TransactionP =
         witnessesP: Witness list;
         outputsP: OutputP list;
         contractP: ContractP option;
-        _unknownFields: RawField list;
+        _unknownFields: InnerField list;
     }
     with
     static member Default =
@@ -292,18 +332,21 @@ type TransactionP =
     static member Serializer (m, zcb) =
         if m.version = 0u && not <| List.isEmpty m._unknownFields
         then failwith "Version 0 contract cannot have extra fields"
+        elif List.exists (fun (inner:InnerField) ->
+            Set.contains (inner.FieldNum) <| set [1;2;3;4;5] ) m._unknownFields
+        then failwith "can't serialize known fields as unknown"
         else
         (m.version |> Encode.fromVarint 1) >>
         (m.inputsP |> Encode.fromRepeated (Encode.fromMessage Serialize.toZcbLD) 2) >>
         (m.witnessesP |> List.map System.ArraySegment |> Encode.fromRepeated Encode.fromBytes 3) >>
         (m.outputsP |> Encode.fromRepeated (Encode.fromMessage Serialize.toZcbLD) 4) >>
         (m.contractP |> Encode.fromOptionalMessage Serialize.toZcbLD 5) >>
-        (m._unknownFields |> Encode.fromRawFields)
+        (m._unknownFields |> List.map createRawField |> Encode.fromRawFields)
         <| zcb
 
     static member DecoderRing =
         [
-            0, fun m rawField -> {m with _unknownFields = rawField :: m._unknownFields}:TransactionP
+            0, fun m rawField -> {m with _unknownFields = createInnerField rawField :: m._unknownFields}:TransactionP
             1, fun m rawField -> {m with version = rawField |> Decode.toUInt32}
             2, fun m rawField ->
                 { m with
@@ -339,7 +382,7 @@ type TransactionP =
             outputsP = List.rev m.outputsP
         }
     static member RequiredFields = Set.empty
-    static member UnknownFields m = m._unknownFields
+    static member UnknownFields m = List.map createRawField m._unknownFields
     static member FoundFields _ = Set.empty
 
 //Length: 64
