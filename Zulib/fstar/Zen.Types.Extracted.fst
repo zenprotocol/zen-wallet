@@ -93,7 +93,6 @@ and outputLock =
   | ContractLock: contractHash:hash -> n:nat -> data n -> outputLock
   | HighVLock: lockcore:lockCore -> typeCode:nat -> outputLock
 and output = {lock: outputLock; spend: spend}
-
 type inputData (n:nat) = data n
 
 unopteq type transactionSkeleton = | Tx: l1:nat -> outpoints:V.t outpoint l1
