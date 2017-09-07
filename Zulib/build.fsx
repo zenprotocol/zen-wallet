@@ -8,18 +8,23 @@ open Microsoft.FSharp.Compiler
   
 Target "Extract" (fun _ ->  
 
-  let files =
-    
+  let getFiles pattern = 
     FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
-    |> FileSystemHelper.filesInDirMatching "fstar/*.fst?"
+    |> FileSystemHelper.filesInDirMatching pattern
     |> Array.map (fun file -> file.FullName)
+
+  let files =
+    Array.append (getFiles "fstar/*.fst") (getFiles "fstar/*.fsti")
+
+  printfn "%A" files    
 
   // we should check the OS have different path for each OS
   let z3path = "../tools/z3/z3"
 
   let args = 
     [| "../tools/fstar/fstar.exe";             
-       "--smt";z3path; 
+       //"--smt";z3path; 
+       "--lax";
        "--codegen";"FSharp";
        "--prims";"fstar/prims.fst";
        "--include";"fstar";
