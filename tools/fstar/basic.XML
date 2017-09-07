@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>basic</name></assembly>
+<members>
+<member name="T:FStar.Ident.lid">
+<summary>
+[@ PpxDerivingShow ]
+</summary>
+</member>
+<member name="T:FStar.Ident.lident">
+<summary>
+[@ PpxDerivingShow ]
+</summary>
+</member>
+<member name="T:FStar.Ident.ident">
+<summary>
+[@ PpxDerivingShow ]
+</summary>
+</member>
+<member name="T:FStar.Const.sconst">
+<summary>
+[@ PpxDerivingShow ]
+</summary>
+</member>
+<member name="T:FStar.Const.width">
+<summary>
+[@ PpxDerivingShow ]
+</summary>
+</member>
+<member name="T:FStar.Const.signedness">
+<summary>
+[@ PpxDerivingShow ]
+</summary>
+</member>
+</members>
+</doc>
