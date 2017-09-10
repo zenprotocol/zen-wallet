@@ -34,8 +34,8 @@ open Newtonsoft.Json.Linq
 
 let auth = sign
 
-
-type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
+type Utxo = Outpoint -> Output option
+type ContractFunctionInput = byte[] * Hash * Utxo
 type TransactionSkeleton = Outpoint list * Output list * byte[]
 type ContractFunction = ContractFunctionInput -> TransactionSkeleton
 
