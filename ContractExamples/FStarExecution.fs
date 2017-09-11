@@ -51,7 +51,7 @@ type Settings = AppSettings<"app.config">
 
 let workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-let resolve (path:string) =
+let resolvePath (path:string) =
     match Path.IsPathRooted path with
         | true -> Settings.Fstar
         | false -> Path.GetFullPath (Path.Combine (workingDir, path))
@@ -69,14 +69,15 @@ let extract (source:string, moduleNameTemp:string) =
 
             let args =
                 [|
-                    Path.Combine (resolve (Settings.Fstar), "fstar.exe");
+                    Path.Combine (resolvePath Settings.Fstar, "fstar.exe");
                     //TODO: remove lax
                     "--lax";
                     "--codegen"; "FSharp";
-                    "--prims"; Path.Combine (resolve (Settings.Zulib), "prims.fst");
+                    "--prims"; Path.Combine (resolvePath Settings.Zulib, "prims.fst");
                     "--extract_module"; moduleNameTemp;
-                    "--include"; resolve (Settings.Zulib);
-                    "--no_default_includes"; fni
+                    "--include"; resolvePath Settings.Zulib;
+                    "--no_default_includes"; fni;
+                    "--odir"; tmp
                 |]
 
             let procStartInfo = 
@@ -105,7 +106,7 @@ let extract (source:string, moduleNameTemp:string) =
                 if p.ExitCode <> 0 then
                     None
                 else
-                    Some (File.ReadAllText fno)
+                    Some (File.ReadAllText (Path.Combine (tmp, fno)))
         with msg -> 
             //TODO: trace/log?
             printfn "%A" msg
@@ -116,6 +117,7 @@ let extract (source:string, moduleNameTemp:string) =
 
 open NUnit.Framework
 
+//TODO: simplify (don't use extracted code here)
 let fsSource = """
 #light "off"
 module SimpleContract
@@ -200,19 +202,21 @@ let main inputMsg =
   freeTx
 """
 
+let testExtract = fun () -> extract (fstSource, fstModule)
+let testCompile = testExtract >> Option.get >> compile
+let testDeserialize = testCompile >> Option.get >> deserialize
+
 [<Test>]
 let ``Should extract``() =
-    Assert.IsTrue (Option.isSome (extract (fstSource, fstModule)))
+    Assert.IsTrue (Option.isSome (testExtract()))
 
 [<Test>]
 let ``Should compile extracted``() =
-    let compilation = compile fstSource
-    Assert.IsTrue (Option.isSome compilation)
+    Assert.IsTrue (Option.isSome (testCompile()))
 
 [<Test>]
 let ``Should deserialize extracted``() =
-    let deserialized = fstSource |> compile |> Option.get |> deserialize
-    Assert.IsNotNull deserialized
+    Assert.IsNotNull testDeserialize
 
 open FStarCompatilibity
 
@@ -225,8 +229,7 @@ let ``Should execute extracted``() =
 
     let input = (randomhash, randomhash, utxo)
 
-    let func = fstSource |> compile |> Option.get |> deserialize |> convertContractFunction
-    let result = func input
+    let result = (convertContractFunction <| testDeserialize()) input
 
     match result with 
         (outpointList, outputList, data) -> 
