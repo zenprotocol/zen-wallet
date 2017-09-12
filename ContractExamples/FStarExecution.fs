@@ -124,11 +124,10 @@ module SimpleContract
 open Prims
 open FStar.Pervasives
 
-let makeTx : Prims.nat  ->  Prims.nat  ->  Prims.nat  ->  (Zen.Types.outpoint, Prims.unit) Zen.Vector.t  ->  (Zen.Types.output, Prims.unit) Zen.Vector.t  ->  Prims.unit Zen.Types.data  ->  Zen.Types.transactionSkeleton = (fun ( l1  :  Prims.nat ) ( l2  :  Prims.nat ) ( l3  :  Prims.nat ) ( outpoints  :  (Zen.Types.outpoint, Prims.unit) Zen.Vector.t ) ( outputs  :  (Zen.Types.output, Prims.unit) Zen.Vector.t ) ( data  :  Prims.unit Zen.Types.data ) -> Zen.Types.Tx (l1, outpoints, l2, outputs, l3, data))
+let makeTx : Prims.nat  ->  Prims.nat  ->  Prims.nat  ->  (Zen.Types.Extracted.outpoint, Prims.unit) Zen.Vector.t  ->  (Zen.Types.Extracted.output, Prims.unit) Zen.Vector.t  ->  Prims.unit Zen.Types.Extracted.data  ->  Zen.Types.Extracted.transactionSkeleton = (fun ( l1  :  Prims.nat ) ( l2  :  Prims.nat ) ( l3  :  Prims.nat ) ( outpoints  :  (Zen.Types.Extracted.outpoint, Prims.unit) Zen.Vector.t ) ( outputs  :  (Zen.Types.Extracted.output, Prims.unit) Zen.Vector.t ) ( data  :  Prims.unit Zen.Types.Extracted.data ) -> Zen.Types.Extracted.Tx (l1, outpoints, l2, outputs, l3, data))
 
 
-let main : Zen.Types.inputMsg  ->  Zen.Types.transactionSkeleton = (fun ( inputMsg  :  Zen.Types.inputMsg ) -> (makeTx (Prims.parse_int "1") (Prims.parse_int "1") (Prims.parse_int "32") (Zen.Vector.VCons ((Prims.parse_int "0"), {Zen.Types.txHash = inputMsg.contractHash; Zen.Types.index = (FStar.UInt32.uint_to_t (Prims.parse_int "1"))}, Zen.Vector.VNil)) (Zen.Vector.VCons ((Prims.parse_int "0"), {Zen.Types.lock = Zen.Types.PKLock (inputMsg.contractHash); Zen.Types.spend = {Zen.Types.asset = inputMsg.contractHash; Zen.Types.amount = (FStar.UInt64.uint_to_t (Prims.parse_int "1900"))}}, Zen.Vector.VNil)) (Zen.Types.ByteArray ((Prims.parse_int "32"), inputMsg.contractHash))))
-"""
+let main : Zen.Types.Extracted.inputMsg  ->  Zen.Types.Extracted.transactionSkeleton = (fun ( inputMsg  :  Zen.Types.Extracted.inputMsg ) -> (makeTx (Prims.parse_int "1") (Prims.parse_int "1") (Prims.parse_int "32") (Zen.Vector.VCons ((Prims.parse_int "0"), {Zen.Types.Extracted.txHash = inputMsg.contractHash; Zen.Types.Extracted.index = (FStar.UInt32.uint_to_t (Prims.parse_int "1"))}, Zen.Vector.VNil)) (Zen.Vector.VCons ((Prims.parse_int "0"), {Zen.Types.Extracted.lock = Zen.Types.Extracted.PKLock (inputMsg.contractHash); Zen.Types.Extracted.spend = {Zen.Types.Extracted.asset = inputMsg.contractHash; Zen.Types.Extracted.amount = (FStar.UInt64.uint_to_t (Prims.parse_int "1900"))}}, Zen.Vector.VNil)) (Zen.Types.Extracted.ByteArray ((Prims.parse_int "32"), inputMsg.contractHash))))"""
 
 let deserialize (bs:byte[]) = 
     let pickler = Pickler.auto<ContractExamples.FStarCompatilibity.FStarContractFunction>
