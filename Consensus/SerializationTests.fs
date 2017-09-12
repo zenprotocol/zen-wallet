@@ -102,6 +102,13 @@ type ArbitraryModifiers =
                  || tx._unknownFields.IsEmpty)
          Arb.fromGenShrink (transactionGen, transactionShrinker)
 
+let inline serializes< ^a when ^a: (static member Serializer: ^a * ZeroCopyBuffer -> ZeroCopyBuffer) > (ob:^a) =
+                try
+                    let obarr = toArray ob
+                    true
+                with
+                | _ -> false
+
 [<OneTimeSetUp>]
 let setup = fun () ->
     Arb.register<ArbitraryModifiers>() |> ignore
@@ -116,24 +123,12 @@ let ``Spend round-trips``(s:Spend) =
 
 [<Property>]
 let ``Output lock round-trips``(l:OutputLockP) =
-    let serializes (l:OutputLockP) =
-        try
-            let larr = toArray l
-            true
-        with
-        | _ -> false
     let rtrip (l:OutputLockP) =
         l = (l |> toArray |> Deserialize.fromArray OutputLockP.Default)
     serializes l ==> lazy(rtrip l)
 
 [<Property>]
 let ``Output round-trips``(l:OutputP) =
-    let serializes (l:OutputP) =
-        try
-            let larr = toArray l
-            true
-        with
-        | _ -> false
     let rtrip (l:OutputP) =
         l = (l |> toArray |> Deserialize.fromArray OutputP.Default)
     serializes l ==> lazy(rtrip l)
@@ -152,17 +147,14 @@ let ``Contract round-trips``(cn) =
 
 [<Property>]
 let ``Transaction round-trips``(t) =
-    let serializes (tx:TransactionP) =
-        try
-            let txarr = toArray tx
-            true
-        with
-        | _ -> false
     let rtrip (tx:TransactionP) =
-        tx
-        |> toArray
-        |> Deserialize.fromArray TransactionP.Default
-        |> fun x -> x = tx
+        tx = (tx |> toArray |> Deserialize.fromArray TransactionP.Default)
     serializes t ==> lazy(rtrip t)
 
-            
+[<Property>]
+let ``BlockHeader round-trips``(blk) =
+    let rtrip (bk:BlockHeader) =
+        bk = (bk |> toArray |> Deserialize.fromArray BlockHeader.Default)
+    serializes blk ==> lazy(rtrip blk)
+
+//[<Property>]
