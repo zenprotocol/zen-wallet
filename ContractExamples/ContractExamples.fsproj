@@ -102,11 +102,11 @@
     <Reference Include="FSharp.Compatibility.OCaml">
       <HintPath>..\packages\FSharp.Compatibility.OCaml.0.1.12\lib\net40\FSharp.Compatibility.OCaml.dll</HintPath>
     </Reference>
-    <Reference Include="Zen.Lib">
-      <HintPath>..\..\zen-wallet-test-2\Zen.Lib\bin\Debug\Zen.Lib.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Configuration">
       <HintPath>..\packages\FSharp.Configuration.1.3.0\lib\net45\FSharp.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Zulib">
+      <HintPath>..\Zulib\bin\Zulib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
