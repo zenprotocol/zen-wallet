@@ -545,7 +545,7 @@ type BlockP = {
     
     static member RememberFound (m, _)  = m
     static member DecodeFixup m:BlockP = { m with transactionsP = List.rev m.transactionsP }
-    static member RequiredFields = Set.empty
-    static member UnknownFields (m:Outpoint) = []:RawField list
-    static member FoundFields _ = Set.empty
+    static member RequiredFields : Set<FieldNum> = Set.empty
+    static member UnknownFields (m:BlockP) = []:RawField list
+    static member FoundFields _ : Set<FieldNum> = Set.empty
     //static member FoundFields (m:Outpoint) : Set<FieldNum> = set [1;2;]

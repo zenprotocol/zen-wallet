@@ -109,6 +109,18 @@ let inline serializes< ^a when ^a: (static member Serializer: ^a * ZeroCopyBuffe
                 with
                 | _ -> false
 
+let inline rtrip< ^a when ^a: (static member Serializer: ^a * ZeroCopyBuffer -> ZeroCopyBuffer)
+                      and ^a: (static member Default: ^a)
+                      and ^a: (static member DecodeFixup: ^a -> ^a)
+                      and ^a: (static member FoundFields: ^a -> Set<Encoding.FieldNum>)
+                      and ^a: (static member RequiredFields: Set<Encoding.FieldNum>)
+                      and ^a: (static member RememberFound: ^a * Encoding.FieldNum -> ^a)
+                      and ^a: (static member DecoderRing: Map<int, (^a -> Encoding.RawField -> ^a)>)
+                      and ^a: equality
+                   > (ob:^a) =
+                        ob = (ob |> toArray |> Deserialize.fromArray ((^a : (static member Default: ^a) () )))
+
+
 [<OneTimeSetUp>]
 let setup = fun () ->
     Arb.register<ArbitraryModifiers>() |> ignore
@@ -123,38 +135,25 @@ let ``Spend round-trips``(s:Spend) =
 
 [<Property>]
 let ``Output lock round-trips``(l:OutputLockP) =
-    let rtrip (l:OutputLockP) =
-        l = (l |> toArray |> Deserialize.fromArray OutputLockP.Default)
     serializes l ==> lazy(rtrip l)
 
 [<Property>]
 let ``Output round-trips``(l:OutputP) =
-    let rtrip (l:OutputP) =
-        l = (l |> toArray |> Deserialize.fromArray OutputP.Default)
     serializes l ==> lazy(rtrip l)
 
 [<Property(MaxTest = 250)>]
-let ``Contract round-trips``(cn) =
-    let serializes (c:ContractP) =
-        try
-            let carr = toArray c
-            true
-        with
-        | _ -> false
-    let rtrip (c:ContractP) =
-        c = (c |> toArray |> Deserialize.fromArray ContractP.Default)
+let ``Contract round-trips``(cn:ContractP) =
     serializes cn ==> lazy(rtrip cn)
 
 [<Property>]
-let ``Transaction round-trips``(t) =
-    let rtrip (tx:TransactionP) =
-        tx = (tx |> toArray |> Deserialize.fromArray TransactionP.Default)
+let ``Transaction round-trips``(t:TransactionP) =
     serializes t ==> lazy(rtrip t)
 
 [<Property>]
-let ``BlockHeader round-trips``(blk) =
-    let rtrip (bk:BlockHeader) =
-        bk = (bk |> toArray |> Deserialize.fromArray BlockHeader.Default)
+let ``BlockHeader round-trips``(blk:BlockHeader) =
     serializes blk ==> lazy(rtrip blk)
 
-//[<Property>]
+// Too slow for now, plus hits exhaustion
+//[<Property(MaxTest = 20)>]
+//let ``Block round-trips``(blk:BlockP) =
+    //serializes blk ==> lazy(rtrip blk)
