@@ -2,8 +2,10 @@
 module ContractExamples.FStarCompatilibity
 
 open ContractExamples.Execution
+open Zen.Types.Extracted
 open Zen
-open Types
+
+module Cost = Zen.Cost.Realized
 
 type FStarContractFunction = inputMsg -> transactionSkeleton
 
@@ -21,34 +23,29 @@ let private listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
 
     List.foldBack (fun (i,x) acc -> Vector.VCons (i, x, acc)) lsIndexed Vector.VNil
 
-let private fsToFstArr : byte[] -> Array.t<'Aa,_> =
-    ArrayRealized.A
-
-let private fstToFsArr : Array.t<'Aa,_> -> byte[] =
-    function ArrayRealized.A a -> a
 
 let private fstToFsOutpoint (a:outpoint) : Consensus.Types.Outpoint =
-    { txHash = fstToFsArr a.txHash; index = a.index }
+    { txHash = a.txHash; index = a.index }
 
 let private fsToFstLock (a:Consensus.Types.OutputLock) : outputLock =
     match a with 
     | Consensus.Types.PKLock (pkHash) ->
-        PKLock (fsToFstArr pkHash)
+        PKLock pkHash
 
 let private fstToFsLock (a:outputLock) : Consensus.Types.OutputLock =
     match a with 
     | PKLock (pkHash) ->
-        Consensus.Types.PKLock (fstToFsArr pkHash)
+        Consensus.Types.PKLock pkHash
 
 let private fsToFstOutput (a:Option<Consensus.Types.Output>) : FStar.Pervasives.Native.option<output> =
     match a with
     | None -> 
         FStar.Pervasives.Native.option.None
     | Some output -> 
-        FStar.Pervasives.Native.option.Some { lock = fsToFstLock output.lock; spend = { asset = fsToFstArr output.spend.asset; amount = output.spend.amount}}
+        FStar.Pervasives.Native.option.Some { lock = fsToFstLock output.lock; spend = { asset = output.spend.asset; amount = output.spend.amount}}
 
 let private fstToFsOutput (a:output) : Consensus.Types.Output =
-    { lock = fstToFsLock a.lock; spend = { asset = fstToFsArr a.spend.asset; amount = a.spend.amount}}
+    { lock = fstToFsLock a.lock; spend = { asset = a.spend.asset; amount = a.spend.amount}}
 
 let private convertUtxo (utxo: Utxo) : utxo = fstToFsOutpoint >> utxo >> fsToFstOutput
 
@@ -56,15 +53,15 @@ let convertInput (a:ContractFunctionInput) : inputMsg =
     match a with (msg, contractHash, utxo) -> 
     {
         cmd = 0uy;
-        data = Prims.Mkdtuple2 (0I, ByteArray (0I, fsToFstArr msg));
-        contractHash = ArrayRealized.A contractHash;
+        data = Prims.Mkdtuple2 (0I, ByteArray (0I, msg));
+        contractHash = contractHash;
         utxo = convertUtxo utxo
         lastTx = FStar.Pervasives.Native.option<outpoint>.None
     }
 
 let convertResult (a:transactionSkeleton) : TransactionSkeleton =
   match a with Tx (_,outpoints,_,outputs,_,ByteArray (_, data)) -> 
-      (List.map fstToFsOutpoint (vectorToList outpoints), List.map fstToFsOutput (vectorToList outputs), fstToFsArr data)
+      (List.map fstToFsOutpoint (vectorToList outpoints), List.map fstToFsOutput (vectorToList outputs), data)
 
 let convertContractFunction (fn:FStarContractFunction) = convertInput >> fn >> convertResult
 
@@ -80,14 +77,14 @@ let ``Vector convertions should get original value``() =
 let ``Should convert outpoint``() =
     let randomHash = Array.map (fun x -> x*x) [|10uy..41uy|]
     let index = 100u
-    let fstRandomHash = fsToFstArr randomHash
+    let fstRandomHash = randomHash
     let fsOutpoint = fstToFsOutpoint { txHash = fstRandomHash; index = index }
     Assert.AreEqual (fsOutpoint.txHash, randomHash)
     Assert.AreEqual (fsOutpoint.index, index)
 
 
-let len : Zen.Array.t<'A, _> -> bigint =
-    function Zen.ArrayRealized.A a -> bigint (Array.length a)
+let len : array<'A> -> bigint =
+    function a -> bigint (Array.length a)
 
 let fstarMockFunction (input:inputMsg) : transactionSkeleton =  
   let data = input.contractHash
