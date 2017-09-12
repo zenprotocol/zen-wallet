@@ -16,6 +16,26 @@ namespace Consensus
 
 namespace Consensus
   module Types = begin
+    val arraySegtoArray : seg:System.ArraySegment<'a> -> 'a []
+    val inline toArray :
+      m: ^a -> byte []
+        when  ^a : (static member Serializer :  ^a *
+                                               Froto.Serialization.ZeroCopyBuffer
+                                                 ->
+                                                 Froto.Serialization.ZeroCopyBuffer)
+    type InnerField =
+      | V of Froto.Serialization.Encoding.FieldNum * uint64
+      | F32 of Froto.Serialization.Encoding.FieldNum * uint32
+      | F64 of Froto.Serialization.Encoding.FieldNum * uint64
+      | LD of Froto.Serialization.Encoding.FieldNum * byte []
+      with
+        member FieldNum : Froto.Serialization.Encoding.FieldNum
+        member ToRawField : Froto.Serialization.Encoding.RawField
+      end
+    val createInnerField :
+      _arg1:Froto.Serialization.Encoding.RawField -> InnerField
+    val createRawField :
+      inner:InnerField -> Froto.Serialization.Encoding.RawField
     type Hash = byte []
     type LockCore =
       {version: uint32;
@@ -32,7 +52,7 @@ namespace Consensus
       | PKLockP of Hash
       | ContractSacrificeLockP of Hash option
       | ContractLockP of Hash * byte []
-      | OtherLockP of Froto.Serialization.Encoding.RawField list
+      | OtherLockP of InnerField list
       with
         member Version : uint32
         static member DecodeFixup : m:OutputLockP -> OutputLockP
@@ -146,7 +166,7 @@ namespace Consensus
       {version: uint32;
        code: byte [];
        hint: byte [];
-       _unknownFields: Froto.Serialization.Encoding.RawField list;}
+       _unknownFields: InnerField list;}
       with
         static member DecodeFixup : m:ContractP -> ContractP
         static member FoundFields : 'a -> Set<'b> when 'b : comparison
@@ -181,7 +201,7 @@ namespace Consensus
        witnessesP: Witness list;
        outputsP: OutputP list;
        contractP: ContractP option;
-       _unknownFields: Froto.Serialization.Encoding.RawField list;}
+       _unknownFields: InnerField list;}
       with
         static member DecodeFixup : m:TransactionP -> TransactionP
         static member FoundFields : 'a -> Set<'b> when 'b : comparison
@@ -872,24 +892,54 @@ namespace Consensus
   end
 
 namespace Consensus
-  [<NUnit.Framework.TestFixture ()>]
-  type SerializationTests =
-    class
-      new : unit -> SerializationTests
-      [<NUnit.Framework.Test ()>]
-      member NormalTest : unit -> unit
-      [<FsCheck.NUnit.PropertyAttribute ()>]
-      member ( Outpoint round-trips cleanly ) : x:Types.Outpoint -> bool
-      [<FsCheck.NUnit.PropertyAttribute ()>]
-      member ( Should fail ) : xs:int [] -> bool
-    end
-
-namespace Consensus
-  module TemporarySerializationTests = begin
+  module SerializationTests = begin
+    val filteredInnerGen : toFilter:Set<int32> -> FsCheck.Gen<Types.InnerField>
+    val filteredInnerShrink :
+      toFilter:Set<int32> -> (Types.InnerField -> seq<Types.InnerField>)
+    val filteredInnerListShrink :
+      toFilter:Set<int32> ->
+        l:Types.InnerField list -> seq<Types.InnerField list>
     type ArbitraryModifiers =
       class
         static member
           ArrSeg : unit -> FsCheck.Arbitrary<System.ArraySegment<byte>>
+        static member Contract : unit -> FsCheck.Arbitrary<Types.ContractP>
+        static member OutputLock : unit -> FsCheck.Arbitrary<Types.OutputLockP>
+        static member
+          Transaction : unit -> FsCheck.Arbitrary<Types.TransactionP>
+      end
+    [<NUnit.Framework.OneTimeSetUp ()>]
+    val setup : unit -> unit
+    [<FsCheck.NUnit.PropertyAttribute ()>]
+    val ( Outpoint round-trips ) : p:Types.Outpoint -> bool
+    [<FsCheck.NUnit.PropertyAttribute ()>]
+    val ( Spend round-trips ) : s:Types.Spend -> bool
+    [<FsCheck.NUnit.PropertyAttribute ()>]
+    val ( Output lock round-trips ) : l:Types.OutputLockP -> FsCheck.Property
+    [<FsCheck.NUnit.PropertyAttribute ()>]
+    val ( Output round-trips ) : l:Types.OutputP -> FsCheck.Property
+    [<FsCheck.NUnit.PropertyAttribute ()>]
+    val ( Contract round-trips ) : cn:Types.ContractP -> FsCheck.Property
+    [<FsCheck.NUnit.PropertyAttribute ()>]
+    val ( Transaction round-trips ) : t:Types.TransactionP -> FsCheck.Property
+  end
+
+namespace Consensus
+  module TemporarySerializationTests = begin
+    val filteredInnerGen : toFilter:Set<int32> -> FsCheck.Gen<Types.InnerField>
+    val filteredInnerShrink :
+      toFilter:Set<int32> -> (Types.InnerField -> seq<Types.InnerField>)
+    val filteredInnerListShrink :
+      toFilter:Set<int32> ->
+        l:Types.InnerField list -> seq<Types.InnerField list>
+    type ArbitraryModifiers =
+      class
+        static member
+          ArrSeg : unit -> FsCheck.Arbitrary<System.ArraySegment<byte>>
+        static member Contract : unit -> FsCheck.Arbitrary<Types.ContractP>
+        static member OutputLock : unit -> FsCheck.Arbitrary<Types.OutputLockP>
+        static member
+          Transaction : unit -> FsCheck.Arbitrary<Types.TransactionP>
       end
     [<NUnit.Framework.Test ()>]
     val ( Outpoint round-trips ) : unit -> unit
@@ -899,6 +949,10 @@ namespace Consensus
     val ( Output lock round-trips ) : unit -> unit
     [<NUnit.Framework.Test ()>]
     val ( Output round-trips ) : unit -> unit
+    [<NUnit.Framework.Test ()>]
+    val ( Contract round-trips ) : unit -> unit
+    [<NUnit.Framework.Test ()>]
+    val ( Transaction round-trips ) : unit -> unit
   end
 
 
