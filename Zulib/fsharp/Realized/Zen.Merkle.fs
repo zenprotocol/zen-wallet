@@ -3,6 +3,7 @@ module Zen.Merkle
 
 open Zen.Types.Extracted
 
+module ZArr = Zen.Array.Extracted
 module Cost = Zen.Cost.Realized
 
 let private innerHash : byte[] -> byte[] =
@@ -17,7 +18,7 @@ let rootFromAuditPath
     ( _: Prims.nat)
     ( item : hash )
     ( location: Prims.nat )
-    ( hashes : hash[] )
+    ( hashes : ZArr.t<hash, Prims.unit> )
     : Cost.t<hash, Prims.unit> =
         lazy (
             fst <|
