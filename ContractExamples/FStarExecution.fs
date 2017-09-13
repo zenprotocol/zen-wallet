@@ -79,6 +79,7 @@ let extract (source:string, moduleNameTemp:string) =
                     "--extract_module"; moduleNameTemp;
                     "--include"; resolvePath Settings.Zulib;
                     "--no_default_includes"; fni;
+                    "--verify_all"
                     "--odir"; tmp
                 |]
 
