@@ -5,15 +5,14 @@ open ContractExamples.Execution
 open Zen.Types.Extracted
 open Zen
 
-module Cost = Zen.Cost.Realized
+type CostedFStarContractFunction = inputMsg -> Zen.Cost.Realized.cost<transactionSkeleton, Prims.unit>
+type FStarContractFunction = inputMsg -> transactionSkeleton //to be removed
 
-type FStarContractFunction = inputMsg -> transactionSkeleton
-
-let private unCost (Cost.C inj:Cost.cost<'Aa, 'An>) : 'Aa = inj.Force()
+let private unCost (Zen.Cost.Realized.C inj:Zen.Cost.Realized.cost<'Aa, 'An>) : 'Aa = inj.Force()
 
 let private vectorToList (z:Vector.t<'Aa, _>) : List<'Aa> =
      // 0I's are eraseable
-     Vector.foldl 0I 0I (fun acc e -> Cost.ret (e::acc)) [] z 
+     Vector.foldl 0I 0I (fun acc e -> Zen.Cost.Realized.ret (e::acc)) [] z 
      |> unCost
      |> List.rev
 
@@ -63,7 +62,7 @@ let convertResult (a:transactionSkeleton) : TransactionSkeleton =
   match a with Tx (_,outpoints,_,outputs,_,ByteArray (_, data)) -> 
       (List.map fstToFsOutpoint (vectorToList outpoints), List.map fstToFsOutput (vectorToList outputs), data)
 
-let convertContractFunction (fn:FStarContractFunction) = convertInput >> fn >> convertResult
+let convertContractFunction (fn:CostedFStarContractFunction) = convertInput >> fn >> unCost >> convertResult
 
 open NUnit.Framework
 

@@ -6,7 +6,6 @@ open System.Reflection
 open MBrace.FsPickler.Combinators
 
 let checker = FSharpChecker.Create ()
-let pickler = Pickler.auto<ContractExamples.FStarCompatilibity.FStarContractFunction>
 
 let currentAssembly = System.Reflection.Assembly.GetExecutingAssembly()
 let assemblies = currentAssembly.GetReferencedAssemblies()
@@ -16,9 +15,11 @@ let assemblyNames = assemblies |>
                         Array.toList
                         |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
 
+//TODO: return an un-costed function instead? (to be persisted to disk)
 let suffix = """
 open MBrace.FsPickler.Combinators
-let pickler = Pickler.auto<ContractExamples.FStarCompatilibity.FStarContractFunction>
+open ContractExamples.FStarCompatilibity
+let pickler = Pickler.auto<CostedFStarContractFunction>
 let pickled = Binary.pickle pickler main
 """
 
@@ -29,6 +30,7 @@ let compile (source:string) =
         let fno = Path.ChangeExtension(fn, ".dll")
         File.WriteAllText(fni, source + System.Environment.NewLine + suffix)
         let assemblyParameters = List.foldBack (fun x xs -> "-r" :: x :: xs) assemblyNames []
+        //FIXME: --mlcompatibility
         let compilationParameters = ["--mlcompatibility"; "-o"; fno; "-a"; fni; "--lib:" + System.AppDomain.CurrentDomain.BaseDirectory] @ assemblyParameters |> List.toArray
         let compilationResult =
             checker.CompileToDynamicAssembly(compilationParameters, Some(stdout, stderr))
@@ -116,66 +118,16 @@ let extract (source:string, moduleNameTemp:string) =
 
 
 open NUnit.Framework
-
-//TODO: simplify (don't use extracted code here)
-let fsSource = """
-#light "off"
-module SimpleContract
-open Prims
-open FStar.Pervasives
-
-let makeTx : Prims.nat  ->  Prims.nat  ->  Prims.nat  ->  (Zen.Types.Extracted.outpoint, Prims.unit) Zen.Vector.t  ->  (Zen.Types.Extracted.output, Prims.unit) Zen.Vector.t  ->  Prims.unit Zen.Types.Extracted.data  ->  Zen.Types.Extracted.transactionSkeleton = (fun ( l1  :  Prims.nat ) ( l2  :  Prims.nat ) ( l3  :  Prims.nat ) ( outpoints  :  (Zen.Types.Extracted.outpoint, Prims.unit) Zen.Vector.t ) ( outputs  :  (Zen.Types.Extracted.output, Prims.unit) Zen.Vector.t ) ( data  :  Prims.unit Zen.Types.Extracted.data ) -> Zen.Types.Extracted.Tx (l1, outpoints, l2, outputs, l3, data))
-
-
-let main : Zen.Types.Extracted.inputMsg  ->  Zen.Types.Extracted.transactionSkeleton = (fun ( inputMsg  :  Zen.Types.Extracted.inputMsg ) -> (makeTx (Prims.parse_int "1") (Prims.parse_int "1") (Prims.parse_int "32") (Zen.Vector.VCons ((Prims.parse_int "0"), {Zen.Types.Extracted.txHash = inputMsg.contractHash; Zen.Types.Extracted.index = (FStar.UInt32.uint_to_t (Prims.parse_int "1"))}, Zen.Vector.VNil)) (Zen.Vector.VCons ((Prims.parse_int "0"), {Zen.Types.Extracted.lock = Zen.Types.Extracted.PKLock (inputMsg.contractHash); Zen.Types.Extracted.spend = {Zen.Types.Extracted.asset = inputMsg.contractHash; Zen.Types.Extracted.amount = (FStar.UInt64.uint_to_t (Prims.parse_int "1900"))}}, Zen.Vector.VNil)) (Zen.Types.Extracted.ByteArray ((Prims.parse_int "32"), inputMsg.contractHash))))"""
-
-let deserialize (bs:byte[]) = 
-    let pickler = Pickler.auto<ContractExamples.FStarCompatilibity.FStarContractFunction>
-    bs |> Binary.unpickle pickler
-
-[<Test>]
-let ``Should compile``() =
-    let compilation = compile fsSource
-    Assert.IsTrue (Option.isSome compilation)
-
-[<Test>]
-let ``Should deserialize``() =
-    let deserialized = fsSource |> compile |> Option.get |> deserialize
-    Assert.IsNotNull deserialized
-
 open FStarCompatilibity
 
-[<Test>]
-let ``Should execute``() =
-    let utxo : ContractExamples.Execution.Utxo =
-        fun outpoint -> Some { lock = Consensus.Types.PKLock outpoint.txHash; spend = {asset = outpoint.txHash; amount = 1100UL } }
-
-    let randomhash = Array.map (fun x -> x*x) [|10uy..41uy|]
-
-    let input = (randomhash, randomhash, utxo)
-
-    let func = fsSource |> compile |> Option.get |> deserialize |> convertContractFunction
-    let result = func input
-
-    match result with 
-        (outpointList, outputList, data) -> 
-            Assert.AreEqual (randomhash, data)
-            let outpoint = List.head outpointList
-            Assert.AreEqual (1, outpoint.index)
-            Assert.AreEqual (randomhash, outpoint.txHash)
-            let output = List.head outputList
-            Assert.AreEqual (1900UL, output.spend.amount)
-            Assert.AreEqual (randomhash, output.spend.asset)
-            let pkHash = match output.lock with Consensus.Types.PKLock (pkHash) -> pkHash
-            Assert.AreEqual (randomhash, pkHash)
-
-let fstModule = "SimpleContract"
+let fstModule = "CostedSimpleContract"
 let fstSource = """
-module SimpleContract
+module CostedSimpleContract
 module V = Zen.Vector
-open Zen.Types
+open Zen.Types.Extracted
 open Zen.Base
 open Zen.Cost
+open Zen
 
 
 val makeTx:
@@ -190,7 +142,7 @@ let makeTx l1 l2 l3 outpoints outputs data =
   Tx l1 outpoints l2 outputs l3 data
 
 
-val main: i:inputMsg -> transactionSkeleton
+val main: i:inputMsg -> cost transactionSkeleton 0
 let main inputMsg =
   let data = inputMsg.contractHash in
 
@@ -198,29 +150,25 @@ let main inputMsg =
   let outputs' = V.VCons ({ lock = PKLock data; spend = {asset = data; amount = 1900UL } }) V.VNil in
   let freeTx = makeTx 1 1 32 outpoints' outputs' (ByteArray 32 data) in
 
-  freeTx
+  ret freeTx
 """
 
-let testExtract = fun () -> extract (fstSource, fstModule)
-let testCompile = testExtract >> Option.get >> compile
-let testDeserialize = testCompile >> Option.get >> deserialize
-
-[<Test>]
-let ``Should extract``() =
-    Assert.IsTrue (Option.isSome (testExtract()))
-
-[<Test>]
-let ``Should compile extracted``() =
-    Assert.IsTrue (Option.isSome (testCompile()))
-
-[<Test>]
-let ``Should deserialize extracted``() =
-    Assert.IsNotNull testDeserialize
+let deserialize (bs:byte[]) = 
+    let pickler = Pickler.auto<CostedFStarContractFunction>
+    bs |> Binary.unpickle pickler
 
 open FStarCompatilibity
 
 [<Test>]
-let ``Should execute extracted``() =
+let ``Extraction``() =
+    let extracted = extract (fstSource, fstModule)
+    Assert.IsTrue ((Option.isSome extracted), "Should extract")
+
+    let compiled = extracted |> Option.get |> compile 
+    Assert.That ((Option.isSome compiled), "Should compile")
+
+    let func = compiled |> Option.get |> deserialize |> convertContractFunction
+
     let utxo : ContractExamples.Execution.Utxo =
         fun outpoint -> Some { lock = Consensus.Types.PKLock outpoint.txHash; spend = {asset = outpoint.txHash; amount = 1100UL } }
 
@@ -228,7 +176,7 @@ let ``Should execute extracted``() =
 
     let input = (randomhash, randomhash, utxo)
 
-    let result = (convertContractFunction <| testDeserialize()) input
+    let result = func input
 
     match result with 
         (outpointList, outputList, data) -> 
