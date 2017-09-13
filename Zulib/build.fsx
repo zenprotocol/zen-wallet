@@ -25,16 +25,18 @@ Target "Extract" (fun _ ->
 
   let files = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
 
+  let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
 
   // we should check the OS have different path for each OS
   let z3path = "../tools/z3/z3"
 
-  let args =
+  let args = 
     [| "../tools/fstar/fstar.exe";
-       //"--verify_all";
-       "--smt";z3path;
+       //"--verify_all";      
+       "--smt";z3path;        
        "--codegen";"FSharp";
-       "--prims";"fstar/prims.fst"; // Set the prims file to use
+       "--no_default_includes";
+       "--prims";primsFile; // Set the prims file to use
        "--include";"fstar/";         // Set the environment to Zulib
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
@@ -55,11 +57,12 @@ Target "Extract" (fun _ ->
        "--extract_module";"Zen.Types.Extracted";
        "--codegen-lib";"Zen.Types";
        //"--extract_module";"Zen.Types";
-       "--odir";extractedDir; |] ++ files
-       |> Array.reduce (fun a b -> a + " " + b)
+       "--odir";extractedDir; |]
+
+  let join = Array.reduce (fun a b -> a + " " + b)
 
   let exitCode =
-    ProcessHelper.Shell.Exec ("mono", args)
+    ProcessHelper.Shell.Exec ("mono", join (args ++ files))
 
   if exitCode <> 0 then
     failwith "extracting Zulib failed"
