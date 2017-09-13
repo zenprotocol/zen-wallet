@@ -5,6 +5,16 @@ open Fake
 open System.IO
 open Microsoft.FSharp.Compiler.SourceCodeServices
 open Microsoft.FSharp.Compiler
+  
+let extractedDir = "fsharp/Extracted"
+let binDir = "bin"
+
+Target "Clean" (fun _ -> 
+  CleanDir extractedDir
+  CleanDir binDir
+)
+
+let (++) = Array.append
 
 Target "Extract" (fun _ ->
 
@@ -13,21 +23,19 @@ Target "Extract" (fun _ ->
     |> FileSystemHelper.filesInDirMatching pattern
     |> Array.map (fun file -> file.FullName)
 
-  let files =
-    Array.append (getFiles "fstar/*.fst") (getFiles "fstar/*.fsti")
+  let files = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
 
-  printfn "%A" files
 
   // we should check the OS have different path for each OS
   let z3path = "../tools/z3/z3"
 
-  let args =
-    [| "../tools/fstar/fstar.exe";
-       //"--smt";z3path;
-       "--lax";
+  let args = 
+    [| "../tools/fstar/fstar.exe";       
+       //"--verify_all";      
+       "--smt";z3path;        
        "--codegen";"FSharp";
        "--prims";"fstar/prims.fst"; // Set the prims file to use
-       "--include";"fstar";         // Set the environment to Zulib
+       "--include";"fstar/";         // Set the environment to Zulib
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
        "--extract_module";"Zen.Cost.Extracted";
@@ -44,11 +52,10 @@ Target "Extract" (fun _ ->
        "--extract_module";"Zen.Array.Extracted";
        "--codegen-lib";"Zen.Array";
        //"--extract_module";"Zen.Array";
-       "--extract_module";"Zen.Types.Extracted";
+       "--extract_module";"Zen.Types.Extracted";       
        "--codegen-lib";"Zen.Types";
        //"--extract_module";"Zen.Types";
-       "--odir";"fsharp/Extracted"; |]
-       |> Array.append <| files
+       "--odir";extractedDir; |] ++ files
        |> Array.reduce (fun a b -> a + " " + b)
 
   let exitCode =
@@ -109,9 +116,10 @@ Target "Build" (fun _ ->
     failwith "building Zulib failed"
     )
 
-Target "Default" (fun _ -> ())
+Target "Default" ignore
 
-"Extract"
+"Clean"
+  ==> "Extract"
   ==> "Build"
   ==> "Default"
 
