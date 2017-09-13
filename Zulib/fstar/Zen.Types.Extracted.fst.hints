@@ -1,5 +1,5 @@
 [
-  "5ÂΩŒ™„Ê¯Åaîı)˘oˆ",
+  "¬\u001cù?¡\u000b m\u0017û‘Óµ–ﬂ\u0018",
   [
     [
       "Zen.Types.Extracted.hash",
@@ -1512,6 +1512,82 @@
     ],
     [
       "Zen.Types.Extracted.__proj__Mkoutput__item__spend",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [ "Zen.Types.Extracted.__proj__Tx__item__l1", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Tx__item__outpoints",
+      1,
+      2,
+      1,
+      [
+        "@query", "proj_equation_Zen.Types.Extracted.Tx_l1",
+        "projection_inverse_Zen.Types.Extracted.Tx_l1"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.__proj__Tx__item__l2", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Tx__item__outputs",
+      1,
+      2,
+      1,
+      [
+        "@query", "proj_equation_Zen.Types.Extracted.Tx_l2",
+        "projection_inverse_Zen.Types.Extracted.Tx_l2"
+      ],
+      0
+    ],
+    [ "Zen.Types.Extracted.__proj__Tx__item__l3", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Tx__item__data",
+      1,
+      2,
+      1,
+      [
+        "@query", "proj_equation_Zen.Types.Extracted.Tx_l3",
+        "projection_inverse_Zen.Types.Extracted.Tx_l3"
+      ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkinputMsg__item__cmd",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkinputMsg__item__data",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkinputMsg__item__contractHash",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkinputMsg__item__utxo",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0
+    ],
+    [
+      "Zen.Types.Extracted.__proj__MkinputMsg__item__lastTx",
       1,
       2,
       1,
