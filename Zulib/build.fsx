@@ -5,11 +5,11 @@ open Fake
 open System.IO
 open Microsoft.FSharp.Compiler.SourceCodeServices
 open Microsoft.FSharp.Compiler
-  
+
 let extractedDir = "fsharp/Extracted"
 let binDir = "bin"
 
-Target "Clean" (fun _ -> 
+Target "Clean" (fun _ ->
   CleanDir extractedDir
   CleanDir binDir
 )
@@ -29,10 +29,10 @@ Target "Extract" (fun _ ->
   // we should check the OS have different path for each OS
   let z3path = "../tools/z3/z3"
 
-  let args = 
-    [| "../tools/fstar/fstar.exe";       
-       //"--verify_all";      
-       "--smt";z3path;        
+  let args =
+    [| "../tools/fstar/fstar.exe";
+       //"--verify_all";
+       "--smt";z3path;
        "--codegen";"FSharp";
        "--prims";"fstar/prims.fst"; // Set the prims file to use
        "--include";"fstar/";         // Set the environment to Zulib
@@ -52,7 +52,7 @@ Target "Extract" (fun _ ->
        "--extract_module";"Zen.Array.Extracted";
        "--codegen-lib";"Zen.Array";
        //"--extract_module";"Zen.Array";
-       "--extract_module";"Zen.Types.Extracted";       
+       "--extract_module";"Zen.Types.Extracted";
        "--codegen-lib";"Zen.Types";
        //"--extract_module";"Zen.Types";
        "--odir";extractedDir; |] ++ files
@@ -95,6 +95,7 @@ Target "Build" (fun _ ->
       "fsharp/Realized/Zen.Crypto.fs";
       "fsharp/Realized/Zen.Types.Realized.fs";
       "fsharp/Extracted/Zen.Types.Extracted.fs";
+      "fsharp/Realized/Zen.Merkle.fs";
       //"fsharp/Extracted/Zen.Types.fs"
     |]
 
@@ -105,6 +106,7 @@ Target "Build" (fun _ ->
       "fsc.exe" ; "-o"; "bin/Zulib.dll"; "-a";
       "-r"; "packages/FSharp.Compatibility.OCaml/lib/net40/FSharp.Compatibility.OCaml.dll"
       "-r"; "packages/libsodium-net/lib/Net40/Sodium.dll"
+      "-r"; "packages/BouncyCastle.1.8.1/lib/BouncyCastle.Crypto.dll"
     |]
 
   let messages, exitCode =
