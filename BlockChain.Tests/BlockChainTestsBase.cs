@@ -14,53 +14,53 @@ using System.Threading;
 
 namespace BlockChain
 {
-	public class BlockChainTestsBase
-	{
-		const string DB = "temp";
-		byte[] _GenesisBlockHash;
-		IDisposable _TxMessagesListenerScope;
-		HashDictionary<TxStateEnum> _TxStates = new HashDictionary<TxStateEnum>();
+    public class BlockChainTestsBase
+    {
+        const string DB = "temp";
+        byte[] _GenesisBlockHash;
+        IDisposable _TxMessagesListenerScope;
+        HashDictionary<TxStateEnum> _TxStates = new HashDictionary<TxStateEnum>();
         HashDictionary<Tuple<ManualResetEvent, TxStateEnum>> _TxStateEvents = new HashDictionary<Tuple<ManualResetEvent, TxStateEnum>>();
-		protected BlockChain _BlockChain;
-		protected Types.Block _GenesisBlock;
+        protected BlockChain _BlockChain;
+        protected Types.Block _GenesisBlock;
 
-		[OneTimeSetUp]
-		public void OneTimeSetUp()
-		{
-			Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			Dispose();
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Dispose();
 
-			_TxMessagesListenerScope = MessageProducer<BlockChainMessage>.Instance.AddMessageListener(
-				new MessageListener<BlockChainMessage>(OnBlockChainMessage));
+            _TxMessagesListenerScope = MessageProducer<BlockChainMessage>.Instance.AddMessageListener(
+                new MessageListener<BlockChainMessage>(OnBlockChainMessage));
 
-			_GenesisBlock = Utils.GetGenesisBlock();
-			_GenesisBlockHash = Merkle.blockHeaderHasher.Invoke(_GenesisBlock.header);
-			_BlockChain = new BlockChain(DB, _GenesisBlockHash);
-		}
+            _GenesisBlock = new GenesisBlock().Block;
+            _GenesisBlockHash = Merkle.blockHeaderHasher.Invoke(_GenesisBlock.header);
+            _BlockChain = new BlockChain(DB, _GenesisBlockHash);
+        }
 
-		[OneTimeTearDown]
-		public void Dispose()
-		{
-			if (_TxMessagesListenerScope != null)
-			{
-				_TxMessagesListenerScope.Dispose();
-			}
-			if (_BlockChain != null)
-			{
-				_BlockChain.Dispose();
-			}
-			if (Directory.Exists(DB))
-			{
-				Directory.Delete(DB, true);
-			}
-		}
+        [OneTimeTearDown]
+        public void Dispose()
+        {
+            if (_TxMessagesListenerScope != null)
+            {
+                _TxMessagesListenerScope.Dispose();
+            }
+            if (_BlockChain != null)
+            {
+                _BlockChain.Dispose();
+            }
+            if (Directory.Exists(DB))
+            {
+                Directory.Delete(DB, true);
+            }
+        }
 
-		void OnBlockChainMessage(BlockChainMessage m)
-		{
-			if (m is TxMessage)
-			{
-				var txMessage = (TxMessage)m;
-				_TxStates[txMessage.TxHash] = ((TxMessage)m).State;
+        void OnBlockChainMessage(BlockChainMessage m)
+        {
+            if (m is TxMessage)
+            {
+                var txMessage = (TxMessage)m;
+                _TxStates[txMessage.TxHash] = ((TxMessage)m).State;
 
                 if (_TxStateEvents.ContainsKey(txMessage.TxHash))
                 {
@@ -71,22 +71,26 @@ namespace BlockChain
                         _TxStateEvents[txMessage.TxHash].Item1.Set();
                     }
                 }
-			}
-			else if (m is BlockMessage)
-			{
-				foreach (var item in ((BlockMessage)m).PointedTransactions)
-				{
-					_TxStates[item.Key] = TxStateEnum.Confirmed;
-				}
-			}
-		}
+            }
+            else if (m is BlockMessage)
+            {
+                foreach (var item in ((BlockMessage)m).PointedTransactions)
+                {
+                    _TxStates[item.Key] = TxStateEnum.Confirmed;
+                }
+            }
+        }
 
-		protected LocationEnum Location(Types.Block block)
-		{
+        protected LocationEnum Location(Types.Block block)
+        {
+#if DEBUG
             return new GetBlockLocationAction { Block = Merkle.blockHeaderHasher.Invoke(block.header) }.Publish().Result;
-		}
+#else
+            return LocationEnum.Main;
+#endif
+        }
 
-		protected TxStateEnum? TxState(Types.Transaction tx)
+			protected TxStateEnum? TxState(Types.Transaction tx)
 		{
 			var key = Merkle.transactionHasher.Invoke(tx);
 			if (_TxStates.ContainsKey(key)) return _TxStates[key];

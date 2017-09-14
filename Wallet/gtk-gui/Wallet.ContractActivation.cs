@@ -30,7 +30,7 @@ namespace Wallet
 
 		private global::Gtk.HBox hbox2;
 
-		private global::Gtk.Button buttonApply;
+		private global::Gtk.Button buttonActivate;
 
 		private global::Gtk.HBox hboxStatus;
 
@@ -67,7 +67,6 @@ namespace Wallet
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.label3 = new global::Gtk.Label();
 			this.label3.Name = "label3";
-			this.label3.LabelProp = "";
 			this.hbox1.Add(this.label3);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.label3]));
 			w3.Position = 0;
@@ -82,13 +81,13 @@ namespace Wallet
 			w4.Expand = false;
 			w4.Fill = false;
 			// Container child hbox1.Gtk.Box+BoxChild
-			this.spinBlocks = new global::Gtk.SpinButton(0, 100, 1);
+			this.spinBlocks = new global::Gtk.SpinButton(0D, 100D, 1D);
 			this.spinBlocks.CanFocus = true;
 			this.spinBlocks.Name = "spinBlocks";
-			this.spinBlocks.Adjustment.PageIncrement = 10;
-			this.spinBlocks.ClimbRate = 1;
+			this.spinBlocks.Adjustment.PageIncrement = 10D;
+			this.spinBlocks.ClimbRate = 1D;
 			this.spinBlocks.Numeric = true;
-			this.spinBlocks.Value = 1;
+			this.spinBlocks.Value = 1D;
 			this.hbox1.Add(this.spinBlocks);
 			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.spinBlocks]));
 			w5.Position = 2;
@@ -97,7 +96,6 @@ namespace Wallet
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.labelKalapas = new global::Gtk.Label();
 			this.labelKalapas.Name = "labelKalapas";
-			this.labelKalapas.LabelProp = "";
 			this.hbox1.Add(this.labelKalapas);
 			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.labelKalapas]));
 			w6.Position = 3;
@@ -106,7 +104,6 @@ namespace Wallet
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.label5 = new global::Gtk.Label();
 			this.label5.Name = "label5";
-			this.label5.LabelProp = "";
 			this.hbox1.Add(this.label5);
 			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox1[this.label5]));
 			w7.Position = 4;
@@ -150,13 +147,13 @@ namespace Wallet
 			this.hbox2.Homogeneous = true;
 			this.hbox2.Spacing = 6;
 			// Container child hbox2.Gtk.Box+BoxChild
-			this.buttonApply = new global::Gtk.Button();
-			this.buttonApply.CanFocus = true;
-			this.buttonApply.Name = "buttonApply";
-			this.buttonApply.UseUnderline = true;
-			this.buttonApply.Label = global::Mono.Unix.Catalog.GetString("Apply");
-			this.hbox2.Add(this.buttonApply);
-			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonApply]));
+			this.buttonActivate = new global::Gtk.Button();
+			this.buttonActivate.CanFocus = true;
+			this.buttonActivate.Name = "buttonActivate";
+			this.buttonActivate.UseUnderline = true;
+			this.buttonActivate.Label = global::Mono.Unix.Catalog.GetString("Activate");
+			this.hbox2.Add(this.buttonActivate);
+			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.buttonActivate]));
 			w12.Position = 1;
 			w12.Expand = false;
 			w12.Fill = false;
@@ -173,7 +170,6 @@ namespace Wallet
 			// Container child hboxStatus.Gtk.Box+BoxChild
 			this.labelStatus = new global::Gtk.Label();
 			this.labelStatus.Name = "labelStatus";
-			this.labelStatus.LabelProp = "";
 			this.hboxStatus.Add(this.labelStatus);
 			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hboxStatus[this.labelStatus]));
 			w14.Position = 1;

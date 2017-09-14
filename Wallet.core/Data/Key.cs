@@ -73,20 +73,6 @@ namespace Wallet.core.Data
 		public bool Used { get; set; }
 		public bool Change { get; set; }
 
-		//public override string ToString()
-		//{
-		//	//var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-		//	return System.Convert.ToBase64String(Private);
-		//}
-
-		public string PrivateAsString
-		{
-			get 
-			{
-				return System.Convert.ToBase64String(Private);
-			}
-		}
-
 		/// <summary>
 		/// Public parameterless ctor is needed by MsgPack
 		/// </summary>
@@ -114,17 +100,11 @@ namespace Wallet.core.Data
 			}
 			else
 			{
-				privateKey = FromBase64String(base64EncodedPrivateKey);
+				privateKey = Convert.FromBase64String(base64EncodedPrivateKey);
 				publicKey = PublicKeyAuth.ExtractEd25519PublicKeyFromEd25519SecretKey(privateKey);
-				//return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 			}
 
 			return new Key(privateKey, publicKey);
-		}
-
-		public static byte[] FromBase64String(string base64Encoded)
-		{
-			return Convert.FromBase64String(base64Encoded);
 		}
 
 		public Address Address

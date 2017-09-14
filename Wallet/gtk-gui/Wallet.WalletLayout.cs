@@ -14,41 +14,59 @@ namespace Wallet
 
 		private global::Gtk.VBox vbox1;
 
-		private global::Gtk.Label label1;
+		private global::Gtk.VBox vbox8;
+
+		private global::Gtk.HBox hbox22;
+
+		private global::Gtk.Label labelYourAddress;
 
 		private global::Gtk.HBox hbox5;
 
 		private global::Gtk.Entry entryAddress;
 
-		private global::Gtk.Button buttonCopy;
+		private global::Gtk.EventBox eventboxCopy;
+
+		private global::Gtk.HBox hboxCopy;
+
+		private global::Gtk.Image imageCopy;
+
+		private global::Gtk.Image imageCopied;
 
 		private global::Gtk.HBox hbox3;
 
 		private global::Gtk.HBox hbox4;
 
-		private global::Gtk.Button buttonQR;
+		private global::Gtk.EventBox eventboxQRCode;
 
-		private global::Gtk.Button buttonKeys;
+		private global::Gtk.Image image3;
+
+		private global::Gtk.EventBox eventboxCopyPublicKey;
+
+		private global::Gtk.Image image4;
+
+		private global::Gtk.Label labelPublicKeyCopied;
+
+		private global::Gtk.EventBox eventboxSeperator;
 
 		private global::Gtk.HBox hbox2;
 
-		private global::Gtk.VBox vbox2;
+		private global::Gtk.EventBox eventboxSend;
 
-		private global::Gtk.Button buttonSend;
+		private global::Gtk.Image image5;
 
 		private global::Gtk.Label label4;
 
 		private global::Wallet.WalletReceiveLayout walletreceivelayout1;
 
-		private global::Gtk.Label label5;
+		private global::Gtk.Label label6;
 
 		private global::Wallet.WalletSendLayout walletsendlayout1;
 
-		private global::Gtk.Label label7;
+		private global::Gtk.Label label8;
 
 		private global::Wallet.WalletSendConfirmationLayout walletsendconfirmationlayout1;
 
-		private global::Gtk.Label label9;
+		private global::Gtk.Label label10;
 
 		protected virtual void Build()
 		{
@@ -82,127 +100,177 @@ namespace Wallet
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Homogeneous = true;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.label1 = new global::Gtk.Label();
-			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString("Your address:");
-			this.vbox1.Add(this.label1);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.label1]));
+			this.vbox8 = new global::Gtk.VBox();
+			this.vbox8.Name = "vbox8";
+			this.vbox8.Spacing = 6;
+			this.vbox8.BorderWidth = ((uint)(30));
+			// Container child vbox8.Gtk.Box+BoxChild
+			this.hbox22 = new global::Gtk.HBox();
+			this.hbox22.Name = "hbox22";
+			this.hbox22.Spacing = 6;
+			// Container child hbox22.Gtk.Box+BoxChild
+			this.labelYourAddress = new global::Gtk.Label();
+			this.labelYourAddress.Name = "labelYourAddress";
+			this.labelYourAddress.LabelProp = global::Mono.Unix.Catalog.GetString("Your Address");
+			this.hbox22.Add(this.labelYourAddress);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox22[this.labelYourAddress]));
 			w2.Position = 0;
 			w2.Expand = false;
 			w2.Fill = false;
-			// Container child vbox1.Gtk.Box+BoxChild
+			w2.Padding = ((uint)(10));
+			this.vbox8.Add(this.hbox22);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox8[this.hbox22]));
+			w3.Position = 0;
+			w3.Expand = false;
+			w3.Fill = false;
+			// Container child vbox8.Gtk.Box+BoxChild
 			this.hbox5 = new global::Gtk.HBox();
 			this.hbox5.Name = "hbox5";
-			this.hbox5.Spacing = 10;
-			this.hbox5.BorderWidth = ((uint)(37));
+			this.hbox5.BorderWidth = ((uint)(10));
 			// Container child hbox5.Gtk.Box+BoxChild
 			this.entryAddress = new global::Gtk.Entry();
+			this.entryAddress.HeightRequest = 35;
 			this.entryAddress.CanFocus = true;
 			this.entryAddress.Name = "entryAddress";
 			this.entryAddress.IsEditable = false;
 			this.entryAddress.InvisibleChar = '●';
 			this.hbox5.Add(this.entryAddress);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.entryAddress]));
-			w3.Position = 1;
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.entryAddress]));
+			w4.Position = 0;
 			// Container child hbox5.Gtk.Box+BoxChild
-			this.buttonCopy = new global::Gtk.Button();
-			this.buttonCopy.WidthRequest = 65;
-			this.buttonCopy.CanFocus = true;
-			this.buttonCopy.Name = "buttonCopy";
-			this.buttonCopy.UseUnderline = true;
-			this.buttonCopy.Label = global::Mono.Unix.Catalog.GetString("Copy");
-			this.hbox5.Add(this.buttonCopy);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.buttonCopy]));
-			w4.Position = 2;
-			w4.Expand = false;
-			w4.Fill = false;
-			this.vbox1.Add(this.hbox5);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox5]));
-			w5.Position = 1;
+			this.eventboxCopy = new global::Gtk.EventBox();
+			this.eventboxCopy.Name = "eventboxCopy";
+			// Container child eventboxCopy.Gtk.Container+ContainerChild
+			this.hboxCopy = new global::Gtk.HBox();
+			this.hboxCopy.Name = "hboxCopy";
+			this.hboxCopy.Spacing = 6;
+			// Container child hboxCopy.Gtk.Box+BoxChild
+			this.imageCopy = new global::Gtk.Image();
+			this.imageCopy.Name = "imageCopy";
+			this.imageCopy.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.misc.Copy.png");
+			this.hboxCopy.Add(this.imageCopy);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hboxCopy[this.imageCopy]));
+			w5.Position = 0;
 			w5.Expand = false;
 			w5.Fill = false;
-			// Container child vbox1.Gtk.Box+BoxChild
+			// Container child hboxCopy.Gtk.Box+BoxChild
+			this.imageCopied = new global::Gtk.Image();
+			this.imageCopied.Name = "imageCopied";
+			this.imageCopied.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.misc.Copied.png");
+			this.hboxCopy.Add(this.imageCopied);
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hboxCopy[this.imageCopied]));
+			w6.Position = 1;
+			w6.Expand = false;
+			w6.Fill = false;
+			this.eventboxCopy.Add(this.hboxCopy);
+			this.hbox5.Add(this.eventboxCopy);
+			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.hbox5[this.eventboxCopy]));
+			w8.Position = 1;
+			w8.Expand = false;
+			w8.Fill = false;
+			w8.Padding = ((uint)(10));
+			this.vbox8.Add(this.hbox5);
+			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.vbox8[this.hbox5]));
+			w9.Position = 1;
+			w9.Expand = false;
+			w9.Fill = false;
+			// Container child vbox8.Gtk.Box+BoxChild
 			this.hbox3 = new global::Gtk.HBox();
 			this.hbox3.Name = "hbox3";
-			this.hbox3.Homogeneous = true;
-			this.hbox3.Spacing = 6;
+			this.hbox3.BorderWidth = ((uint)(10));
 			// Container child hbox3.Gtk.Box+BoxChild
 			this.hbox4 = new global::Gtk.HBox();
 			this.hbox4.Name = "hbox4";
 			this.hbox4.Spacing = 6;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.buttonQR = new global::Gtk.Button();
-			this.buttonQR.WidthRequest = 120;
-			this.buttonQR.HeightRequest = 50;
-			this.buttonQR.CanFocus = true;
-			this.buttonQR.Name = "buttonQR";
-			this.buttonQR.UseUnderline = true;
-			this.buttonQR.Label = global::Mono.Unix.Catalog.GetString("QRCode");
-			this.hbox4.Add(this.buttonQR);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.buttonQR]));
-			w6.Position = 0;
-			w6.Expand = false;
-			w6.Fill = false;
+			this.eventboxQRCode = new global::Gtk.EventBox();
+			this.eventboxQRCode.Name = "eventboxQRCode";
+			// Container child eventboxQRCode.Gtk.Container+ContainerChild
+			this.image3 = new global::Gtk.Image();
+			this.image3.Name = "image3";
+			this.image3.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.misc.QRcode.png");
+			this.eventboxQRCode.Add(this.image3);
+			this.hbox4.Add(this.eventboxQRCode);
+			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventboxQRCode]));
+			w11.Position = 0;
+			w11.Expand = false;
+			w11.Fill = false;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.buttonKeys = new global::Gtk.Button();
-			this.buttonKeys.WidthRequest = 120;
-			this.buttonKeys.HeightRequest = 50;
-			this.buttonKeys.CanFocus = true;
-			this.buttonKeys.Name = "buttonKeys";
-			this.buttonKeys.UseUnderline = true;
-			this.buttonKeys.Label = global::Mono.Unix.Catalog.GetString("keys");
-			this.hbox4.Add(this.buttonKeys);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.buttonKeys]));
-			w7.Position = 1;
-			w7.Expand = false;
-			w7.Fill = false;
+			this.eventboxCopyPublicKey = new global::Gtk.EventBox();
+			this.eventboxCopyPublicKey.Name = "eventboxCopyPublicKey";
+			// Container child eventboxCopyPublicKey.Gtk.Container+ContainerChild
+			this.image4 = new global::Gtk.Image();
+			this.image4.Name = "image4";
+			this.image4.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.misc.Copy_public_key.png");
+			this.eventboxCopyPublicKey.Add(this.image4);
+			this.hbox4.Add(this.eventboxCopyPublicKey);
+			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.eventboxCopyPublicKey]));
+			w13.Position = 1;
+			w13.Expand = false;
+			w13.Fill = false;
+			w13.Padding = ((uint)(6));
+			// Container child hbox4.Gtk.Box+BoxChild
+			this.labelPublicKeyCopied = new global::Gtk.Label();
+			this.labelPublicKeyCopied.Name = "labelPublicKeyCopied";
+			this.labelPublicKeyCopied.Xalign = 0F;
+			this.labelPublicKeyCopied.LabelProp = global::Mono.Unix.Catalog.GetString("Public key copied to clipboard");
+			this.hbox4.Add(this.labelPublicKeyCopied);
+			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.hbox4[this.labelPublicKeyCopied]));
+			w14.Position = 2;
+			w14.Expand = false;
+			w14.Fill = false;
 			this.hbox3.Add(this.hbox4);
-			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.hbox4]));
-			w8.Position = 1;
-			w8.Expand = false;
-			w8.Fill = false;
-			this.vbox1.Add(this.hbox3);
-			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox3]));
-			w9.Position = 2;
-			w9.Expand = false;
-			w9.Fill = false;
+			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.hbox4]));
+			w15.Position = 0;
+			w15.Expand = false;
+			this.vbox8.Add(this.hbox3);
+			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vbox8[this.hbox3]));
+			w16.Position = 2;
+			w16.Fill = false;
+			// Container child vbox8.Gtk.Box+BoxChild
+			this.eventboxSeperator = new global::Gtk.EventBox();
+			this.eventboxSeperator.HeightRequest = 1;
+			this.eventboxSeperator.Name = "eventboxSeperator";
+			this.eventboxSeperator.BorderWidth = ((uint)(10));
+			this.vbox8.Add(this.eventboxSeperator);
+			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.vbox8[this.eventboxSeperator]));
+			w17.PackType = ((global::Gtk.PackType)(1));
+			w17.Position = 3;
+			w17.Expand = false;
+			w17.Fill = false;
+			this.vbox1.Add(this.vbox8);
+			global::Gtk.Box.BoxChild w18 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.vbox8]));
+			w18.Position = 0;
+			w18.Expand = false;
+			w18.Fill = false;
 			this.eventbox1.Add(this.vbox1);
 			w1.Add(this.eventbox1);
 			this.scrolledwindow3.Add(w1);
 			this.vbox3.Add(this.scrolledwindow3);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.scrolledwindow3]));
-			w13.Position = 0;
+			global::Gtk.Box.BoxChild w22 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.scrolledwindow3]));
+			w22.Position = 0;
 			// Container child vbox3.Gtk.Box+BoxChild
 			this.hbox2 = new global::Gtk.HBox();
 			this.hbox2.Name = "hbox2";
 			this.hbox2.Homogeneous = true;
-			this.hbox2.Spacing = 6;
 			// Container child hbox2.Gtk.Box+BoxChild
-			this.vbox2 = new global::Gtk.VBox();
-			this.vbox2.Name = "vbox2";
-			this.vbox2.Homogeneous = true;
-			this.vbox2.Spacing = 6;
-			// Container child vbox2.Gtk.Box+BoxChild
-			this.buttonSend = new global::Gtk.Button();
-			this.buttonSend.WidthRequest = 120;
-			this.buttonSend.HeightRequest = 50;
-			this.buttonSend.CanFocus = true;
-			this.buttonSend.Name = "buttonSend";
-			this.buttonSend.UseUnderline = true;
-			this.buttonSend.Label = global::Mono.Unix.Catalog.GetString("Send");
-			this.vbox2.Add(this.buttonSend);
-			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.buttonSend]));
-			w14.Position = 1;
-			w14.Expand = false;
-			w14.Fill = false;
-			this.hbox2.Add(this.vbox2);
-			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.vbox2]));
-			w15.Position = 1;
-			w15.Expand = false;
-			w15.Fill = false;
+			this.eventboxSend = new global::Gtk.EventBox();
+			this.eventboxSend.Name = "eventboxSend";
+			// Container child eventboxSend.Gtk.Container+ContainerChild
+			this.image5 = new global::Gtk.Image();
+			this.image5.Name = "image5";
+			this.image5.Pixbuf = global::Gdk.Pixbuf.LoadFromResource("Wallet.Assets.misc.send.png");
+			this.eventboxSend.Add(this.image5);
+			this.hbox2.Add(this.eventboxSend);
+			global::Gtk.Box.BoxChild w24 = ((global::Gtk.Box.BoxChild)(this.hbox2[this.eventboxSend]));
+			w24.Position = 1;
+			w24.Expand = false;
+			w24.Fill = false;
 			this.vbox3.Add(this.hbox2);
-			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.hbox2]));
-			w16.Position = 1;
+			global::Gtk.Box.BoxChild w25 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.hbox2]));
+			w25.Position = 1;
+			w25.Expand = false;
+			w25.Fill = false;
 			this.notebook1.Add(this.vbox3);
 			// Notebook tab
 			this.label4 = new global::Gtk.Label();
@@ -215,40 +283,40 @@ namespace Wallet
 			this.walletreceivelayout1.Events = ((global::Gdk.EventMask)(256));
 			this.walletreceivelayout1.Name = "walletreceivelayout1";
 			this.notebook1.Add(this.walletreceivelayout1);
-			global::Gtk.Notebook.NotebookChild w18 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletreceivelayout1]));
-			w18.Position = 1;
+			global::Gtk.Notebook.NotebookChild w27 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletreceivelayout1]));
+			w27.Position = 1;
 			// Notebook tab
-			this.label5 = new global::Gtk.Label();
-			this.label5.Name = "label5";
-			this.label5.LabelProp = global::Mono.Unix.Catalog.GetString("page2");
-			this.notebook1.SetTabLabel(this.walletreceivelayout1, this.label5);
-			this.label5.ShowAll();
+			this.label6 = new global::Gtk.Label();
+			this.label6.Name = "label6";
+			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString("page2");
+			this.notebook1.SetTabLabel(this.walletreceivelayout1, this.label6);
+			this.label6.ShowAll();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.walletsendlayout1 = new global::Wallet.WalletSendLayout();
 			this.walletsendlayout1.Events = ((global::Gdk.EventMask)(256));
 			this.walletsendlayout1.Name = "walletsendlayout1";
 			this.notebook1.Add(this.walletsendlayout1);
-			global::Gtk.Notebook.NotebookChild w19 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletsendlayout1]));
-			w19.Position = 2;
+			global::Gtk.Notebook.NotebookChild w28 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletsendlayout1]));
+			w28.Position = 2;
 			// Notebook tab
-			this.label7 = new global::Gtk.Label();
-			this.label7.Name = "label7";
-			this.label7.LabelProp = global::Mono.Unix.Catalog.GetString("page3");
-			this.notebook1.SetTabLabel(this.walletsendlayout1, this.label7);
-			this.label7.ShowAll();
+			this.label8 = new global::Gtk.Label();
+			this.label8.Name = "label8";
+			this.label8.LabelProp = global::Mono.Unix.Catalog.GetString("page3");
+			this.notebook1.SetTabLabel(this.walletsendlayout1, this.label8);
+			this.label8.ShowAll();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.walletsendconfirmationlayout1 = new global::Wallet.WalletSendConfirmationLayout();
 			this.walletsendconfirmationlayout1.Events = ((global::Gdk.EventMask)(256));
 			this.walletsendconfirmationlayout1.Name = "walletsendconfirmationlayout1";
 			this.notebook1.Add(this.walletsendconfirmationlayout1);
-			global::Gtk.Notebook.NotebookChild w20 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletsendconfirmationlayout1]));
-			w20.Position = 3;
+			global::Gtk.Notebook.NotebookChild w29 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1[this.walletsendconfirmationlayout1]));
+			w29.Position = 3;
 			// Notebook tab
-			this.label9 = new global::Gtk.Label();
-			this.label9.Name = "label9";
-			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString("page4");
-			this.notebook1.SetTabLabel(this.walletsendconfirmationlayout1, this.label9);
-			this.label9.ShowAll();
+			this.label10 = new global::Gtk.Label();
+			this.label10.Name = "label10";
+			this.label10.LabelProp = global::Mono.Unix.Catalog.GetString("page4");
+			this.notebook1.SetTabLabel(this.walletsendconfirmationlayout1, this.label10);
+			this.label10.ShowAll();
 			this.Add(this.notebook1);
 			if ((this.Child != null))
 			{

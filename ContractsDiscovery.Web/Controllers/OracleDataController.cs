@@ -81,7 +81,7 @@ namespace ContractsDiscovery.Web.Controllers
 			var file = Path.Combine("db", $"{id}.data.json");
 			var datetime = DateTime.FromFileTime(long.Parse(id));
 
-			var commitmentDataMap = (FSharpMap<string, ContractExamples.Merkle.AuditPath>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(file));
+			var commitmentDataMap = (FSharpMap<string, Tuple<byte[], uint, byte[][]>>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(file));
 			var values = ContractExamples.Oracle.priceTable(commitmentDataMap);
 			var model = values.Select(t => new Ticker()
 			{
@@ -140,7 +140,7 @@ namespace ContractsDiscovery.Web.Controllers
 
 					var file = Path.Combine("db", $"{item}.data.json");
 
-					var commitmentDataMap = (FSharpMap<string, ContractExamples.Merkle.AuditPath>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(file));
+					var commitmentDataMap = (FSharpMap<string, Tuple<byte[], uint, byte[][]>>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(file));
 					var values = ContractExamples.Oracle.priceTable(commitmentDataMap);
 
 					foreach (var _value in values)

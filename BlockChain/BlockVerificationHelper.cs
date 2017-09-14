@@ -80,14 +80,18 @@ namespace BlockChain
 			if (IsInStore())
 			{
 				var reject = false;
+                byte[] missingParent = null;
+				var location = blockChain.BlockStore.GetLocation(dbTx, bkHash);
 
-				switch (blockChain.BlockStore.GetLocation(dbTx, bkHash))
+				switch (location)
 				{
 					case LocationEnum.Branch:
 						reject = !handleBranch;
 						break;
 					case LocationEnum.Orphans:
-                        reject = !handleOrphan && !handleBranch;
+						missingParent = GetMissingParent();
+						
+						reject = !handleOrphan && !handleBranch;
 						break;
 					default:
 						reject = true;
@@ -96,7 +100,8 @@ namespace BlockChain
 
 				if (reject)
 				{
-					Result = new BkResult(BkResultEnum.Rejected);
+					BlockChainTrace.Information($"Block {_Bk.header.blockNumber} already in store ({location})", bk);
+                    Result = new BkResult(BkResultEnum.Rejected, missingParent);
 					return;
 				}
 			}
@@ -235,7 +240,12 @@ namespace BlockChain
                 {
                     if ((txIdx == 0 && !IsCoinbaseTxValid(tx)) || (txIdx > 0 && IsCoinbaseTxValid(tx)))
                     {
-                        return false;
+                        if (txIdx == 0)
+                            BlockChainTrace.Information("Invalid coinbase tx");
+                        else
+                            BlockChainTrace.Information($"Invalid tx ({txIdx})");
+
+						return false;
                     }
 
                     if (!IsTransactionValid(tx, txHash, out ptx))
@@ -245,13 +255,11 @@ namespace BlockChain
 
 					confirmedTxs[txHash] = ptx;
 
-					BlockChainTrace.Information("saved tx", ptx);
-
                     foreach (var pInput in ptx.pInputs)
 					{
 						_BlockChain.UTXOStore.Remove(_DbTx, pInput.Item1);
 						BlockChainTrace.Information($"utxo spent, amount {pInput.Item2.spend.amount}", ptx);
-						BlockChainTrace.Information($" of", pInput.Item1.txHash);
+						//BlockChainTrace.Information($" of", pInput.Item1.txHash);
 						blockUndoData.RemovedUTXO.Add(new Tuple<Types.Outpoint, Types.Output>(pInput.Item1, pInput.Item2));
 					}
                 } 
@@ -352,9 +360,10 @@ namespace BlockChain
 			ValidateACS();
 
 			_BlockChain.ChainTip.Context(_DbTx).Value = _BkHash;
+			//TODO: only update after commit
 			_BlockChain.Tip = new Keyed<Types.Block>(_BkHash, _Bk);
 
-			queuedActions.Add(new MessageAction(new BlockMessage(confirmedTxs, true)));
+            queuedActions.Add(new MessageAction(new BlockMessage(confirmedTxs, _Bk.header.blockNumber)));
 
             foreach (var item in confirmedTxs)
             {
@@ -496,11 +505,10 @@ namespace BlockChain
 					{
 						BlockChainTrace.Information("tx invalid - contract not active", tx);
 						return false;
-					}				
-                    var acsItem = _BlockChain.ActiveContractSet.Get(_DbTx, contractHash);
-					var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+					}
+                    var contractFunction = _BlockChain.ActiveContractSet.GetContractFunction(_DbTx, contractHash);
 
-                    if (!BlockChain.IsValidAutoTx(ptx, UtxoLookup, contractHash, contractFunction))
+					if (!BlockChain.IsValidAutoTx(ptx, UtxoLookup, contractHash, contractFunction))
 					{
 						BlockChainTrace.Information("auto-tx invalid", ptx);
 						return false;
@@ -572,6 +580,8 @@ namespace BlockChain
 
             return tx.witnesses.Count()> 0 && tx.witnesses[0].Length > 0 &&
                  BitConverter.ToUInt32(tx.witnesses[0], 0) == _Bk.header.blockNumber;
+
+            return true;
         }
 
 		bool IsValidBlockNumber()

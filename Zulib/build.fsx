@@ -15,7 +15,7 @@ let runFStar args =
   
   let getFiles pattern =
     FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
-    |> FileSystemHelper.filesInDirMatching pattern
+    |> FileSystemHelper.filesInDirMatching "fstar/*.fst*"
     |> Array.map (fun file -> file.FullName)
   
   let zulibFiles = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
@@ -63,13 +63,6 @@ Target "Extract" (fun _ ->
        "--codegen";"FSharp";              
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
-       "--extract_module";"Zen.Cost.Extracted";
-       (** --codegen-lib allows user code to do `open Zen.Cost`,
-           although in extracted code, references to `Zen.Cost` are resolved
-           to `Zen.Cost.Extracted` or `Zen.Cost.Realized`.
-           Do not attempt to extract `Zen.Cost`. **)
-       "--codegen-lib";"Zen.Cost";
-       //"--extract_module";"Zen.Cost";
        "--extract_module";"Zen.OptionT";
        "--extract_module";"Zen.Tuple";
        "--extract_module";"Zen.TupleT";
@@ -84,19 +77,19 @@ Target "Extract" (fun _ ->
 
   let exitCode = runFStar args
 
-  if exitCode <> 0 then
+  if exitCode <> 0 then    
     failwith "extracting Zulib failed"
 )
 
 Target "Build" (fun _ ->
 
-  let files =
-    [| "fsharp/Realized/prims.fs";
+  let files = 
+    [| "fsharp/Realized/prims.fs";     
       "fsharp/Realized/FStar.Pervasives.fs";
-      "fsharp/Realized/FStar.Mul.fs";
+      "fsharp/Realized/FStar.Mul.fs";     
       "fsharp/Realized/FStar.UInt.fs";
       "fsharp/Realized/FStar.UInt8.fs";
-      "fsharp/Realized/FStar.UInt32.fs";
+      "fsharp/Realized/FStar.UInt32.fs"; 
       "fsharp/Realized/FStar.UInt64.fs";
       "fsharp/Realized/FStar.Int.fs";
       "fsharp/Realized/FStar.Int64.fs";
@@ -118,7 +111,7 @@ Target "Build" (fun _ ->
 
   let checker = FSharpChecker.Create()
 
-  let compileParams =
+  let compileParams = 
     [|
       "fsc.exe" ; "-o"; "bin/Zulib.dll"; "-a";
       "-r"; "packages/FSharp.Compatibility.OCaml/lib/net40/FSharp.Compatibility.OCaml.dll"
@@ -126,13 +119,13 @@ Target "Build" (fun _ ->
       "-r"; "packages/BouncyCastle/lib/BouncyCastle.Crypto.dll"
     |]
 
-  let messages, exitCode =
+  let messages, exitCode = 
     Async.RunSynchronously (checker.Compile (Array.append compileParams files))
 
   if exitCode <> 0 then
-    let errors = Array.filter (fun (msg:FSharpErrorInfo) -> msg.Severity = FSharpErrorSeverity.Error) messages
+    let errors = Array.filter (fun (msg:FSharpErrorInfo) -> msg.Severity = FSharpErrorSeverity.Error) messages    
     printfn "%A" errors
-    failwith "building Zulib failed"
+    failwith "building Zulib failed"    
     )
 
 Target "Default" ignore
@@ -142,4 +135,8 @@ Target "Default" ignore
   ==> "Build"
   ==> "Default"  
 
+"Extract"
+  ==> "Build"    
+  ==> "Default"  
+  
 RunTargetOrDefault "Default"

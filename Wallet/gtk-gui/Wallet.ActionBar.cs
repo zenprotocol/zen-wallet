@@ -123,7 +123,6 @@ namespace Wallet
 			this.labelCurrencyConverted = new global::Gtk.Label();
 			this.labelCurrencyConverted.Name = "labelCurrencyConverted";
 			this.labelCurrencyConverted.Yalign = 0.57F;
-			this.labelCurrencyConverted.LabelProp = global::Mono.Unix.Catalog.GetString("label4");
 			this.hbox3.Add(this.labelCurrencyConverted);
 			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox3[this.labelCurrencyConverted]));
 			w7.Position = 1;

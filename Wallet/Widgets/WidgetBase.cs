@@ -65,16 +65,14 @@ namespace Wallet
 			}
 		}
 		 
-		public delegate void Func0();
-
-		public void ButtonReleaseEvent(EventBox eventBox, Func0 func)
+		public new void ButtonReleaseEvent(EventBox eventBox, System.Action func)
 		{
 			eventBox.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) => {
 				func();
 			};
 		}
 
-		public void ButtonPressEvent(EventBox eventBox, Func0 func)
+		public new void ButtonPressEvent(EventBox eventBox, System.Action func)
 		{
 			eventBox.ButtonPressEvent += (object o, ButtonPressEventArgs args) => {
 				func();

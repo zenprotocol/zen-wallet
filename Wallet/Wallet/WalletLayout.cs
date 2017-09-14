@@ -1,42 +1,74 @@
-﻿using System;
+﻿﻿using System;
+using System.Threading.Tasks;
 using Gtk;
+using Wallet.core.Data;
 
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem(true)]
 	public partial class WalletLayout : WidgetBase, IControlInit
 	{
+        private core.Data.Key _Key { get; set; }
+		int _CurrentPage;
 		const int RECEIVE_PAGE = 1;
 		const int SEND_PAGE = 2;
+		//const int SEND_CONFIRM_PAGE = 2;
+
+        public string Address { get { return _Key.Address.ToString(); }}
 
 		public WalletLayout()
 		{
 			this.Build();
 
-			eventbox1.ModifyBg(StateType.Normal, Constants.Colors.DialogBackground.Gdk);
+            hbox4.Remove(labelPublicKeyCopied);
+
+            eventbox1.ModifyBg(StateType.Normal, Constants.Colors.DialogBackground.Gdk);
+            eventboxSeperator.ModifyBg(StateType.Normal, Constants.Colors.Seperator.Gdk);
 
 			Apply((Label label) =>
 			{
-				label.ModifyFg(StateType.Normal, Constants.Colors.SubText.Gdk);
+				label.ModifyFg(StateType.Normal, Constants.Colors.TextHeader.Gdk);
 				label.ModifyFont(Constants.Fonts.ActionBarBig);
-			}, label1);
+			}, labelYourAddress);
 
-			entryAddress.ModifyFg(StateType.Normal, Constants.Colors.Text2.Gdk);
-			entryAddress.ModifyFont(Constants.Fonts.ActionBarSmall);
+			Apply((Label label) =>
+			{
+				label.ModifyFg(StateType.Normal, Constants.Colors.Text.Gdk);
+			//	label.ModifyFont(Constants.Fonts.ActionBarBig);
+            }, labelPublicKeyCopied);
 
-			var key = App.Instance.Wallet.GetUnusedKey().Address.ToString();
+			Apply((Entry entry) =>
+            {
+				entry.ModifyBg(StateType.Normal, Constants.Colors.Seperator.Gdk);
+				entry.ModifyText(StateType.Normal, Constants.Colors.Text.Gdk);
+				entry.ModifyFont(Constants.Fonts.ActionBarSmall);
+				entry.ModifyBase(StateType.Normal, Constants.Colors.ButtonUnselected.Gdk);
+			}, entryAddress);
 
 			Clipboard clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
-			buttonCopy.Clicked += delegate
-			{
-				clipboard.Text = key;
-			};
 
-			entryAddress.Text = key;
+            hboxCopy.Remove(imageCopied);
+            ButtonPressEvent(eventboxCopy, delegate
+            {
+                clipboard.Text = Address;
+
+				new System.Threading.Thread(() =>
+				{
+					hboxCopy.Remove(imageCopy);
+					hboxCopy.Add(imageCopied);
+					System.Threading.Thread.Sleep(2000);
+					Application.Invoke(delegate
+					{
+                        hboxCopy.Remove(imageCopied);
+                        hboxCopy.Add(imageCopy);
+					});
+				}).Start();
+            });
 
 			entryAddress.SelectRegion(0, -1);
 
-			entryAddress.FocusGrabbed += (sender, e) => {
+			entryAddress.FocusGrabbed += (sender, e) =>
+			{
 				new System.Threading.Thread(() =>
 				{
 					Application.Invoke(delegate
@@ -49,23 +81,29 @@ namespace Wallet
 				}).Start();
 			};
 
-			//entryAddress.FocusInEvent += (o, args) => { 
-			//};
-
-			buttonSend.Clicked += delegate
+            eventboxSend.ButtonPressEvent += delegate
 			{
-				notebook1.Page = SEND_PAGE;
+				SetPage(SEND_PAGE);
 			};
 
-			buttonQR.Clicked += delegate
+            eventboxQRCode.ButtonPressEvent += delegate
 			{
-				notebook1.Page = RECEIVE_PAGE;
+				SetPage(RECEIVE_PAGE);
 			};
 
-			buttonKeys.Clicked += delegate {
-				//new KeysDialog().ShowDialog();
+            eventboxCopyPublicKey.ButtonPressEvent += delegate
+			{
 				Clipboard _clipboard = Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false));
-				_clipboard.Text = System.Convert.ToBase64String(App.Instance.Wallet.GetUnusedKey().Public);
+                _clipboard.Text = Convert.ToBase64String(_Key.Public);
+
+                hbox4.Add(labelPublicKeyCopied);
+
+                Task.Run(()=>Task.Delay(2000).ContinueWith(delegate
+                {
+                    Application.Invoke(delegate {
+                        hbox4.Remove(labelPublicKeyCopied);
+                    });
+                }));
 			};
 
 			notebook1.ShowTabs = false;
@@ -73,9 +111,45 @@ namespace Wallet
 			Init();
 		}
 
-		public void Init()
+		public async void Init()
 		{
-			notebook1.Page = 0;
+			_CurrentPage = notebook1.Page;
+			SetPage(0);
+			
+            _Key = await Task.Run(() => App.Instance.Wallet.GetUnusedKey());
+			
+            Application.Invoke(delegate {
+				entryAddress.Text = Address;
+            });
+		}
+
+		public void SetPage(int page)
+		{
+			_CurrentPage = page;
+			InitCurrentPage();
+		}
+
+		void InitCurrentPage(bool init = true)
+		{
+			notebook1.Page = _CurrentPage;
+			var ctl = notebook1.GetNthPage(_CurrentPage);
+
+			if (init && ctl is IControlInit)
+			{
+				((IControlInit)ctl).Init();
+			}
+		}
+
+		public void PrevPage(bool init = true)
+		{
+			_CurrentPage--;
+			InitCurrentPage(init);
+		}
+
+		public void NextPage(bool init = true)
+		{
+			_CurrentPage++;
+			InitCurrentPage(init);
 		}
 	}
 }

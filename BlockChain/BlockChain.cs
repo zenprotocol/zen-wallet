@@ -80,28 +80,31 @@ namespace BlockChain
 			_DBContext = new DBContext(dbName);
 			OwnResource(_DBContext);
 
-			using (var context = _DBContext.GetTransactionContext())
-			{
-				var chainTip = ChainTip.Context(context).Value;
-
-				//TODO: check if makred as main?
-				Tip = chainTip == null ? null : BlockStore.GetBlock(context, chainTip);
-
-				if (Tip != null)
-					BlockChainTrace.Information("Tip's block number is " + Tip.Value.header.blockNumber);
-				else
-					BlockChainTrace.Information("No tip.");
-
-				InitBlockTimestamps(context);
-			}
-
-
 			//var listener = new EventLoopMessageListener<QueueAction>(HandleQueueAction, "BlockChain listener");
 			//OwnResource(MessageProducer<QueueAction>.Instance.AddMessageListener(listener));
-
-
-	        var buffer = new BufferBlock<QueueAction>();
+			var buffer = new BufferBlock<QueueAction>();
 			QueueAction.Target = buffer;
+
+			using (var dbTx = _DBContext.GetTransactionContext())
+			{
+                var chainTip = ChainTip.Context(dbTx).Value;
+
+				//TODO: check if makred as main?
+				Tip = chainTip == null ? null : BlockStore.GetBlock(dbTx, chainTip);
+
+				if (Tip != null)
+                {
+					BlockChainTrace.Information("Tip's block number is " + Tip.Value.header.blockNumber);
+
+					//Try to validate orphans of tip, if any. this would be the case when a sync action was interrupted
+					BlockStore.Orphans(dbTx, Tip.Key).ToList().ForEach(t => new HandleBlockAction(t.Key, t.Value, true).Publish());
+				}
+                else
+					BlockChainTrace.Information("No tip.");
+
+				InitBlockTimestamps(dbTx);
+			}
+
 			var consumer = ConsumeAsync(buffer);
 		}
 
@@ -118,8 +121,8 @@ namespace BlockChain
 
 					if (action is HandleBlockAction)
 						((HandleBlockAction)action).SetResult(HandleBlock(action as HandleBlockAction));
-					else if (action is GetActiveContactsAction)
-						((GetActiveContactsAction)action).SetResult(GetActiveContacts());
+					else if (action is GetActiveContractsAction)
+                        ((GetActiveContractsAction)action).SetResult(GetActiveContracts());
 					else if (action is GetContractPointedOutputsAction)
 						((GetContractPointedOutputsAction)action).SetResult(GetContractPointedOutputs(
 							((GetContractPointedOutputsAction)action).ContractHash));
@@ -181,13 +184,11 @@ namespace BlockChain
 				}
 				catch (Exception e)
 				{
-					BlockChainTrace.Error("BlockChain handler", e);
-
 #if DEBUG
-                    if (action.StackTrace != null)
-    					BlockChainTrace.Information("Original invocation scope: " + action.StackTrace);
+					BlockChainTrace.Error("Blockchain request handle got an exception.\n\nOriginal caller's stack:\n\n" + action.StackTrace + "\n\nException:\n\n", e);
+#else
+                    BlockChainTrace.Error("Blockchain request exception", e);
 #endif
-
 				}
             }
         }
@@ -289,8 +290,7 @@ namespace BlockChain
 							}
 
             				var utxoLookup = UtxoLookupFactory(dbTx, false, ptx);
-                            var acsItem = ActiveContractSet.Get(dbTx, contractHash);
-							var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+							var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
                             if (!IsValidAutoTx(ptx, utxoLookup, contractHash, contractFunction))
 							{
@@ -381,6 +381,10 @@ namespace BlockChain
 				}
 			}
 
+            //TODO: memory management issues. trying to explicitly collect DynamicMethods
+			GC.Collect();
+            GC.WaitForPendingFinalizers();
+
 			action.QueueActions.ForEach(t =>
 			{
 				if (t is MessageAction)
@@ -398,17 +402,17 @@ namespace BlockChain
             {
                 dbTx.Commit();
 
-                var activeContracts = new HashDictionary<byte[]>();
+                var activeContracts = new HashSet();
 
                 foreach (var item in ActiveContractSet.All(dbTx))
                 {
-                    activeContracts[item.Item1] = item.Item2.CompiledContract;
-                }
+					activeContracts.Add(item.Item1);
+				}
 
                 foreach (var item in memPool.ContractPool)
                 {
-                    activeContracts[item.Key] = item.Value.CompiledContract;
-                }
+					activeContracts.Add(item.Key);
+				}
 
                 RemoveConfirmedTxsFromMempool(confirmedTxs);
 
@@ -428,7 +432,7 @@ namespace BlockChain
                     byte[] contractHash;
                     IsContractGeneratedTx(t.Value, out contractHash);
 
-                    return activeContracts.ContainsKey(contractHash);
+                    return activeContracts.Contains(contractHash);
                 })
                .ToList().ForEach(t =>
                {
@@ -461,10 +465,9 @@ namespace BlockChain
                 if (IsContractGeneratedTx(ptx, out contractHash) == IsContractGeneratedTxResult.ContractGenerated)
                 {
 					var utxoLookup = UtxoLookupFactory(dbTx, false, ptx);
-					var acsItem = ActiveContractSet.Get(dbTx, contractHash);
-					var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
+					var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
-                    if (!IsValidAutoTx(ptx, utxoLookup, contractHash, contractFunction))
+					if (!IsValidAutoTx(ptx, utxoLookup, contractHash, contractFunction))
 					{
 						BlockChainTrace.Information("invalid auto-tx removed from mempool", item.Value);
 						memPool.TxPool.RemoveWithDependencies(item.Key);
@@ -908,14 +911,10 @@ namespace BlockChain
 			using (TransactionContext dbTx = _DBContext.GetTransactionContext())
 			{
                 var utxoLookup = UtxoLookupFactory(dbTx, false);
-				var acsItem = ActiveContractSet.Get(dbTx, contractHash);
+			    var contractFunction = ActiveContractSet.GetContractFunction(dbTx, contractHash);
 
-                if (acsItem != null)
-                {
-                    var contractFunction = ContractExamples.Execution.deserialize(acsItem.Value.CompiledContract);
-
+                if (contractFunction != null)
                     return ExecuteContract(contractHash, contractFunction, message, out transaction, utxoLookup, isWitness);
-                }
 
                 transaction = null;
                 return false;
@@ -964,7 +963,7 @@ namespace BlockChain
             return true;
 		}
 
-		List<ACSItem> GetActiveContacts()
+		List<ACSItem> GetActiveContracts()
 		{
 			using (var dbTx = _DBContext.GetTransactionContext())
 			{

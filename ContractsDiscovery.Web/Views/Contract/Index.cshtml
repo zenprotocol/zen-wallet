@@ -15,17 +15,17 @@
   <div class="col-md-8">
     <table class="table zen-table">
         <tbody>
-    		@if (!string.IsNullOrEmpty(@Model.ActiveContract.Description))
-    		{
+            @if (!string.IsNullOrEmpty(@Model.ActiveContract.Description))
+            {
             <tr>
                 <td><p class="text-left">Type:</p></td>
                 <td><p class="text-left">@Model.ActiveContract.Description</p></td>
             </tr>
-    		}
-    	    <tr>
-    	        <td><p class="text-left">Address:</p></td>
-    	        <td><p class="text-left">@Model.ActiveContract.Address</p></td>
-    	    </tr>
+            }
+            <tr>
+                <td><p class="text-left">Address:</p></td>
+                <td><p class="text-left">@Model.ActiveContract.Address</p></td>
+            </tr>
             <!--tr>
                 <td><p class="text-left">Asset metadata version:</p></td>
                 <td><p class="text-left">@Model.ActiveContract.AssetMetadataVersion</p></td>
@@ -60,7 +60,7 @@
                 <td><p class="text-left">Oracle:</p></td>
                 <td><p class="text-left"><a href="@Model.ActiveContract.OracleTickerUrl" target="_blank">@Model.ActiveContract.Oracle</a></p></td>
             </tr>
-    		}
+            }
             <tr>
                 <td><p class="text-left">UTXOs:</p></td>
                 <td><p class="text-left">@Model.ActiveContract.TotalAssets</p></td>
@@ -69,33 +69,33 @@
     </table>
   </div>
   <div class="col-md-4">
-	@switch (@Model.ActiveContract.Type)
+    @switch (@Model.ActiveContract.Type)
     {
         case "call-option":
-		    using (@Html.BeginForm("PrepareAction", "ContractInteraction", FormMethod.Post))
-		    {
-		        @Html.HiddenFor(m => m.ActiveContract.Address)
+            using (@Html.BeginForm("PrepareAction", "ContractInteraction", FormMethod.Post))
+            {
+                @Html.HiddenFor(m => m.ActiveContract.Address)
                 <div>
-					<button type="submit" value="Buy" name="action" class="zen-button zen-dark-blue-button">Buy</button>
+                    <button type="submit" value="Buy" name="action" class="zen-button zen-dark-blue-button">Buy</button>
                     <button type="submit" value="Exercise" name="action" class="zen-button zen-dark-blue-button">Exercise</button>
-	            </div>
+                </div>
                 <hr class='button-devider' />
-		        <div>
-			        <button type="submit" value="Collateralize" name="action" class="zen-button zen-grey-button">Collateralize</button>
-			        <button type="submit" value="Close" name="action" class="zen-button zen-grey-button">Close</button>
-		        </div>
-		    }
+                <div>
+                    <button type="submit" value="Collateralize" name="action" class="zen-button zen-grey-button">Collateralize</button>
+                    <button type="submit" value="Close" name="action" class="zen-button zen-grey-button">Close</button>
+                </div>
+            }
             break;
         case "secure-token-generator":
-			using (@Html.BeginForm("Action", "ContractInteraction", FormMethod.Post))
-			{
-        		<input id="Action" name="Action" type="hidden" value="GetTokens">
+            using (@Html.BeginForm("Action", "ContractInteraction", FormMethod.Post))
+            {
+                <input id="Action" name="Action" type="hidden" value="GetTokens">
                 <input id="Address" name="Address" type="hidden" value="@Model.ActiveContract.Address">
 
                 <div>
-    			    <button type="submit" class="btn btn-primary" name="doAction">Get Tokens</button>
+                    <button type="submit" class="btn btn-primary" name="doAction">Get Tokens</button>
                 </div>
-			}
+            }
             break;
     }
   </div>

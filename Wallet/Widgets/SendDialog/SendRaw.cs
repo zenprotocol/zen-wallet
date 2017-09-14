@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Consensus;
 using Gtk;
 
 namespace Wallet
 {
+    //TODO: delete
 	[System.ComponentModel.ToolboxItem(true)]
 	public partial class SendRaw : DialogBase
 	{
@@ -17,22 +19,24 @@ namespace Wallet
 
 			textviewRawTx.Buffer.Changed += textviewRawTx_Changed;
 
-			eventboxSend.ButtonReleaseEvent += (object o, ButtonReleaseEventArgs args) =>
+            eventboxSend.ButtonReleaseEvent += async delegate
 			{
 				if (_Tx == null)
 					return;
 
-				var txResultEnum = App.Instance.Node.Transmit(_Tx);
-
-				switch (txResultEnum)
-				{
-					case BlockChain.BlockChain.TxResultEnum.Accepted:
-						CloseDialog();
-						break;
-					default:
-						labelStatus.Text = txResultEnum.ToString();
-						break;
-				}
+				var txResultEnum = await Task.Run(() => App.Instance.Node.Transmit(_Tx));
+				
+                Gtk.Application.Invoke(delegate {
+					switch (txResultEnum)
+					{
+						case BlockChain.BlockChain.TxResultEnum.Accepted:
+							CloseDialog();
+							break;
+						default:
+							labelStatus.Text = txResultEnum.ToString();
+							break;
+					}
+				});
 			};
 		}
 

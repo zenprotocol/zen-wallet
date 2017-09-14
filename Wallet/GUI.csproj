@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -76,6 +75,8 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -115,6 +116,18 @@
     <EmbeddedResource Include="Assets\misc\send_dialog.png" />
     <EmbeddedResource Include="Assets\History_off.png" />
     <EmbeddedResource Include="Assets\History_on.png" />
+    <EmbeddedResource Include="Assets\misc\Copy.png" />
+    <EmbeddedResource Include="Assets\misc\Copy_public_key.png" />
+    <EmbeddedResource Include="Assets\misc\QRcode.png" />
+    <EmbeddedResource Include="Assets\misc\Back.png" />
+    <EmbeddedResource Include="Assets\misc\Paste.png" />
+    <EmbeddedResource Include="Assets\misc\Copied.png" />
+    <EmbeddedResource Include="Assets\misc\Sign_and_Review.png" />
+    <EmbeddedResource Include="Assets\misc\Sign_and_Review_disabled.png" />
+    <EmbeddedResource Include="Assets\misc\Activate.png" />
+    <EmbeddedResource Include="Assets\misc\Activate_disabled.png" />
+    <EmbeddedResource Include="Assets\misc\Received.png" />
+    <EmbeddedResource Include="Assets\misc\Sent.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gtk-gui\generated.cs" />
@@ -137,7 +150,8 @@
     <Compile Include="Widgets\Contract\Contract.cs" />
     <Compile Include="gtk-gui\Wallet.Contract.cs" />
     <Compile Include="Controllers\ContractController.cs" />
-    <Compile Include="Controllers\MainAreaController.cs" />
+    <Compile Include="Controllers\DeltasController.cs" />
+    <Compile Include="Controllers\MainWindowController.cs" />
     <Compile Include="gtk-gui\Wallet.MainWindow.cs" />
     <Compile Include="gtk-gui\Wallet.MainMenu.cs" />
     <Compile Include="gtk-gui\Wallet.MenuButton.cs" />
@@ -195,7 +209,6 @@
     <Compile Include="Widgets\Log\LogLayout.cs" />
     <Compile Include="gtk-gui\Wallet.LogLayout.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Controllers\DeltasController.cs" />
     <Compile Include="Widgets\Wallet\ExpandingCellRenderer.cs" />
     <Compile Include="Widgets\Portfolio\RowRenderer.cs" />
     <Compile Include="Wallet\WalletLayout.cs" />
@@ -212,6 +225,21 @@
     <Compile Include="Widgets\SignMessageDialog.cs" />
     <Compile Include="gtk-gui\Wallet.SignMessageDialog.cs" />
     <Compile Include="UpdatingStore.cs" />
+    <Compile Include="Widgets\Status.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Status.cs" />
+    <Compile Include="Controllers\AssetsMetadata.cs" />
+    <Compile Include="Widgets\Contract\ContractLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Contract.ContractLayout.cs" />
+    <Compile Include="Widgets\Log\LogTotals.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Log.LogTotals.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioLayout.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Portfolio.PortfolioLayout.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioTable.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Portfolio.PortfolioTable.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioTotals.cs" />
+    <Compile Include="gtk-gui\Wallet.Widgets.Portfolio.PortfolioTotals.cs" />
+    <Compile Include="Widgets\Portfolio\RowRendererHeaders.cs" />
+    <Compile Include="Widgets\Portfolio\PortfolioRenderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -219,20 +247,11 @@
     <None Include="todo.txt" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Widgets\Log\" />
-    <Folder Include="Widgets\Portfolio\" />
-    <Folder Include="Widgets\SendDialog\" />
-    <Folder Include="Wallet\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{D2BB0027-CC55-47A2-8EFA-1AFEFB937433}</Project>
       <Name>Infrastructure</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Infrastructure.TestingGtk\Infrastructure.TestingGtk.csproj">
-      <Project>{47C1CEF5-5440-46C8-A8D0-9AE4D0FA1822}</Project>
-      <Name>Infrastructure.TestingGtk</Name>
     </ProjectReference>
     <ProjectReference Include="..\Store\Store.csproj">
       <Project>{1D6CF29D-253C-44BB-813A-701676A1349F}</Project>
