@@ -59,7 +59,7 @@ Target "Extract" (fun _ ->
     [| 
        //"--use_hints";
        //"--z3refresh";   
-       "--verify_all";             
+       //"--verify_all";             
        "--codegen";"FSharp";              
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
@@ -123,7 +123,7 @@ Target "Build" (fun _ ->
       "fsc.exe" ; "-o"; "bin/Zulib.dll"; "-a";
       "-r"; "packages/FSharp.Compatibility.OCaml/lib/net40/FSharp.Compatibility.OCaml.dll"
       "-r"; "packages/libsodium-net/lib/Net40/Sodium.dll"
-      "-r"; "packages/BouncyCastle.1.8.1/lib/BouncyCastle.Crypto.dll"
+      "-r"; "packages/BouncyCastle/lib/BouncyCastle.Crypto.dll"
     |]
 
   let messages, exitCode =
