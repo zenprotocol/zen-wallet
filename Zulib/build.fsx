@@ -9,35 +9,56 @@ open Microsoft.FSharp.Compiler
 let extractedDir = "fsharp/Extracted"
 let binDir = "bin"
 
-Target "Clean" (fun _ ->
-  CleanDir extractedDir
-  CleanDir binDir
-)
-
-let (++) = Array.append
-
-Target "Extract" (fun _ ->
-
+let runFStar args = 
+  let (++) = Array.append
+  
   let getFiles pattern =
     FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
     |> FileSystemHelper.filesInDirMatching pattern
     |> Array.map (fun file -> file.FullName)
-
-  let files = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
-
-  let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
-
+  
+  let zulibFiles = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
+  
+  let join = Array.reduce (fun a b -> a + " " + b)
+  
   // we should check the OS have different path for each OS
   let z3path = "../tools/z3/z3"
 
+  let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
+  
+  let fstar = [|
+    "../tools/fstar/fstar.exe"; 
+    "--smt";z3path;
+    "--prims";primsFile;
+    "--no_default_includes";
+    "--include";"fstar/"; |]
+
+  ProcessHelper.Shell.Exec ("mono", join (fstar ++ args ++ zulibFiles))
+
+Target "Clean" (fun _ -> 
+  CleanDir extractedDir
+  CleanDir binDir
+)
+
+Target "RecordHints" (fun _ -> 
   let args = 
-    [| "../tools/fstar/fstar.exe";
-       //"--verify_all";      
-       "--smt";z3path;        
-       "--codegen";"FSharp";
-       "--no_default_includes";
-       "--prims";primsFile; // Set the prims file to use
-       "--include";"fstar/";         // Set the environment to Zulib
+    [| "--z3refresh";   
+       "--verify_all";             
+       "--record_hints" |]
+
+  let exitCode = runFStar args
+
+  if exitCode <> 0 then
+    failwith "recording Zulib hints failed"
+)
+
+Target "Extract" (fun _ ->   
+  let args = 
+    [| 
+       //"--use_hints";
+       //"--z3refresh";   
+       "--verify_all";             
+       "--codegen";"FSharp";              
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
        "--extract_module";"Zen.Cost.Extracted";
@@ -59,10 +80,7 @@ Target "Extract" (fun _ ->
        //"--extract_module";"Zen.Types";
        "--odir";extractedDir; |]
 
-  let join = Array.reduce (fun a b -> a + " " + b)
-
-  let exitCode =
-    ProcessHelper.Shell.Exec ("mono", join (args ++ files))
+  let exitCode = runFStar args
 
   if exitCode <> 0 then
     failwith "extracting Zulib failed"
@@ -84,22 +102,16 @@ Target "Build" (fun _ ->
       "fsharp/Extracted/Zen.Option.fs";
       "fsharp/Extracted/Zen.Tuple.fs";
       "fsharp/Realized/Zen.Cost.Realized.fs";
-      "fsharp/Extracted/Zen.Cost.Extracted.fs";
-      (** `Zen.Cost.fs` should not exist.
-          It should be extracted with `--codegen-lib`, which generates no code.
-          Do not use `--extract_module Zen.Cost`. **)
-      //"fsharp/Extracted/Zen.Cost.fs";
+      "fsharp/Extracted/Zen.Cost.Extracted.fs";    
       "fsharp/Extracted/Zen.OptionT.fs";
       "fsharp/Extracted/Zen.TupleT.fs";
       "fsharp/Extracted/Zen.Vector.fs";
       "fsharp/Realized/Zen.Array.Realized.fs";
-      "fsharp/Extracted/Zen.Array.Extracted.fs";
-      //"fsharp/Extracted/Zen.Array.fs";
+      "fsharp/Extracted/Zen.Array.Extracted.fs";      
       "fsharp/Realized/Zen.Crypto.fs";
       "fsharp/Realized/Zen.Types.Realized.fs";
       "fsharp/Extracted/Zen.Types.Extracted.fs";
-      "fsharp/Realized/Zen.Merkle.fs";
-      //"fsharp/Extracted/Zen.Types.fs"
+      "fsharp/Realized/Zen.Merkle.fs";      
     |]
 
   let checker = FSharpChecker.Create()
@@ -126,6 +138,6 @@ Target "Default" ignore
 "Clean"
   ==> "Extract"
   ==> "Build"
-  ==> "Default"
+  ==> "Default"  
 
 RunTargetOrDefault "Default"
