@@ -2,37 +2,80 @@
 #r @"packages/Zen.FSharp.Compiler.Service/lib/net45/Zen.FSharp.Compiler.Service.dll"
 #r @"packages/System.Reflection.Metadata/lib/portable-net45+win8/System.Reflection.Metadata.dll"
 
-
 open Fake
 open System.IO
 open Microsoft.FSharp.Compiler.SourceCodeServices
 open Microsoft.FSharp.Compiler
-  
-Target "Extract" (fun _ ->  
 
-  let files =
+let extractedDir = "fsharp/Extracted"
+let binDir = "bin"
+
+let runFStar args = 
+  let (++) = Array.append
+  
+  let getFiles pattern =
     FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
     |> FileSystemHelper.filesInDirMatching "fstar/*.fst*"
     |> Array.map (fun file -> file.FullName)
+  
+  let zulibFiles = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
+  
+  let join = Array.reduce (fun a b -> a + " " + b)
+  
+  // TODO: we should compile z3 for windows and OSX as well
+  let z3path = 
+    if EnvironmentHelper.isLinux then "../tools/z3/linux/z3" else "z3"        
 
+  let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
+  
+  let fstar = [|
+    "../tools/fstar/fstar.exe"; 
+    "--smt";z3path;
+    "--prims";primsFile;
+    "--no_default_includes";
+    "--include";"fstar/"; |]
+
+  ProcessHelper.Shell.Exec ("mono", join (fstar ++ args ++ zulibFiles))
+
+Target "Clean" (fun _ -> 
+  CleanDir extractedDir
+  CleanDir binDir
+)
+
+Target "RecordHints" (fun _ -> 
   let args = 
-    [| "../../FStar/bin/fstar.exe"
-       "--lax";"--codegen";"FSharp";
-       "--prims";"fstar/prims.fst";
-       "--extract_module";"Consensus.Types";
+    [| "--z3refresh";   
+       "--verify_all";             
+       "--record_hints" |]
+
+  let exitCode = runFStar args
+
+  if exitCode <> 0 then
+    failwith "recording Zulib hints failed"
+)
+
+Target "Extract" (fun _ ->   
+  let args = 
+    [| 
+       //"--use_hints";
+       //"--z3refresh";   
+       //"--verify_all";             
+       "--codegen";"FSharp";              
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
        "--extract_module";"Zen.OptionT";
        "--extract_module";"Zen.Tuple";
        "--extract_module";"Zen.TupleT";
        "--extract_module";"Zen.Vector";
-       "--extract_module";"Zen.Array";
-       "--odir";"fsharp/Extracted"; |] 
-       |> Array.append <| files
-       |> Array.reduce (fun a b -> a + " " + b)  
+       "--extract_module";"Zen.Array.Extracted";
+       "--codegen-lib";"Zen.Array";
+       //"--extract_module";"Zen.Array";
+       "--extract_module";"Zen.Types.Extracted";
+       "--codegen-lib";"Zen.Types";
+       //"--extract_module";"Zen.Types";
+       "--odir";extractedDir; |]
 
-  let exitCode = 
-    ProcessHelper.Shell.Exec ("mono", args)
+  let exitCode = runFStar args
 
   if exitCode <> 0 then    
     failwith "extracting Zulib failed"
@@ -52,16 +95,19 @@ Target "Build" (fun _ ->
       "fsharp/Realized/FStar.Int64.fs";
       "fsharp/Extracted/Zen.Base.fs";
       "fsharp/Extracted/Zen.Option.fs";
-      "fsharp/Extracted/Zen.Tuple.fs"; 
-      "fsharp/Realized/Zen.Cost.fs";
+      "fsharp/Extracted/Zen.Tuple.fs";
+      "fsharp/Realized/Zen.Cost.Realized.fs";
+      "fsharp/Extracted/Zen.Cost.Extracted.fs";    
       "fsharp/Extracted/Zen.OptionT.fs";
       "fsharp/Extracted/Zen.TupleT.fs";
       "fsharp/Extracted/Zen.Vector.fs";
-      "fsharp/Realized/Zen.ArrayRealized.fs";
-      "fsharp/Extracted/Zen.Array.fs";
-      "fsharp/Realized/Zen.Crypto.fs"; 
-      "fsharp/Realized/Consensus.Realized.fs";
-      "fsharp/Extracted/Consensus.Types.fs" |]    
+      "fsharp/Realized/Zen.Array.Realized.fs";
+      "fsharp/Extracted/Zen.Array.Extracted.fs";      
+      "fsharp/Realized/Zen.Crypto.fs";
+      "fsharp/Realized/Zen.Types.Realized.fs";
+      "fsharp/Extracted/Zen.Types.Extracted.fs";
+      "fsharp/Realized/Zen.Merkle.fs";      
+    |]
 
   let checker = FSharpChecker.Create()
 
@@ -70,6 +116,7 @@ Target "Build" (fun _ ->
       "fsc.exe" ; "-o"; "bin/Zulib.dll"; "-a";
       "-r"; "packages/FSharp.Compatibility.OCaml/lib/net40/FSharp.Compatibility.OCaml.dll"
       "-r"; "packages/libsodium-net/lib/Net40/Sodium.dll"
+      "-r"; "packages/BouncyCastle/lib/BouncyCastle.Crypto.dll"
     |]
 
   let messages, exitCode = 
@@ -81,7 +128,12 @@ Target "Build" (fun _ ->
     failwith "building Zulib failed"    
     )
 
-Target "Default" (fun _ -> ())
+Target "Default" ignore
+
+"Clean"
+  ==> "Extract"
+  ==> "Build"
+  ==> "Default"  
 
 "Extract"
   ==> "Build"    

@@ -7,4 +7,4 @@ exit_code=$?
     exit $exit_code
   fi
 
-mono packages/FAKE/tools/FAKE.exe Default --fsiairgs -d:MONO build.fsx
+mono packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx
