@@ -1,5 +1,6 @@
 #r @"packages/FAKE/tools/FakeLib.dll"
 #r @"packages/Zen.FSharp.Compiler.Service/lib/net45/Zen.FSharp.Compiler.Service.dll"
+#r @"packages/System.Reflection.Metadata/lib/portable-net45+win8/System.Reflection.Metadata.dll"
 
 open Fake
 open System.IO
