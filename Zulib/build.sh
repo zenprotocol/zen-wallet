@@ -7,11 +7,4 @@ exit_code=$?
     exit $exit_code
   fi
 
-TARGET="$@"
-
-if [[ "${TARGET}" = "" ]]
-then
-  TARGET="Default"
-fi  
-
-mono packages/FAKE/tools/FAKE.exe $TARGET --fsiairgs -d:MONO build.fsx
+mono packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx

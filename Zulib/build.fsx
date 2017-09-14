@@ -1,5 +1,6 @@
 #r @"packages/FAKE/tools/FakeLib.dll"
 #r @"packages/Zen.FSharp.Compiler.Service/lib/net45/Zen.FSharp.Compiler.Service.dll"
+#r @"packages/System.Reflection.Metadata/lib/portable-net45+win8/System.Reflection.Metadata.dll"
 
 open Fake
 open System.IO
@@ -21,8 +22,9 @@ let runFStar args =
   
   let join = Array.reduce (fun a b -> a + " " + b)
   
-  // we should check the OS have different path for each OS
-  let z3path = "../tools/z3/z3"
+  // TODO: we should compile z3 for windows and OSX as well
+  let z3path = 
+    if EnvironmentHelper.isLinux then "../tools/z3/linux/z3" else "z3"        
 
   let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
   
@@ -57,7 +59,7 @@ Target "Extract" (fun _ ->
     [| 
        //"--use_hints";
        //"--z3refresh";   
-       "--verify_all";             
+       //"--verify_all";             
        "--codegen";"FSharp";              
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
@@ -121,7 +123,7 @@ Target "Build" (fun _ ->
       "fsc.exe" ; "-o"; "bin/Zulib.dll"; "-a";
       "-r"; "packages/FSharp.Compatibility.OCaml/lib/net40/FSharp.Compatibility.OCaml.dll"
       "-r"; "packages/libsodium-net/lib/Net40/Sodium.dll"
-      "-r"; "packages/BouncyCastle.1.8.1/lib/BouncyCastle.Crypto.dll"
+      "-r"; "packages/BouncyCastle/lib/BouncyCastle.Crypto.dll"
     |]
 
   let messages, exitCode =
