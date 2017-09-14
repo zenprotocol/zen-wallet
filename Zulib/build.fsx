@@ -15,7 +15,7 @@ let runFStar args =
   
   let getFiles pattern =
     FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
-    |> FileSystemHelper.filesInDirMatching "fstar/*.fst*"
+    |> FileSystemHelper.filesInDirMatching pattern
     |> Array.map (fun file -> file.FullName)
   
   let zulibFiles = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
@@ -68,11 +68,11 @@ Target "Extract" (fun _ ->
        "--extract_module";"Zen.TupleT";
        "--extract_module";"Zen.Vector";
        "--extract_module";"Zen.Array.Extracted";
-       "--codegen-lib";"Zen.Array";
-       //"--extract_module";"Zen.Array";
+       "--extract_module";"Zen.Cost.Extracted";       
+       "--codegen-lib";"Zen.Cost";       
+       "--codegen-lib";"Zen.Array";       
        "--extract_module";"Zen.Types.Extracted";
-       "--codegen-lib";"Zen.Types";
-       //"--extract_module";"Zen.Types";
+       "--codegen-lib";"Zen.Types";       
        "--odir";extractedDir; |]
 
   let exitCode = runFStar args
@@ -102,10 +102,10 @@ Target "Build" (fun _ ->
       "fsharp/Extracted/Zen.TupleT.fs";
       "fsharp/Extracted/Zen.Vector.fs";
       "fsharp/Realized/Zen.Array.Realized.fs";
-      "fsharp/Extracted/Zen.Array.Extracted.fs";      
-      "fsharp/Realized/Zen.Crypto.fs";
+      "fsharp/Extracted/Zen.Array.Extracted.fs";            
       "fsharp/Realized/Zen.Types.Realized.fs";
       "fsharp/Extracted/Zen.Types.Extracted.fs";
+      "fsharp/Realized/Zen.Crypto.fs";
       "fsharp/Realized/Zen.Merkle.fs";      
     |]
 
@@ -135,8 +135,4 @@ Target "Default" ignore
   ==> "Build"
   ==> "Default"  
 
-"Extract"
-  ==> "Build"    
-  ==> "Default"  
-  
 RunTargetOrDefault "Default"
