@@ -1,8 +1,12 @@
 source https://nuget.org/api/v2
 
+nuget BouncyCastle
 nuget System.Reflection.Metadata
+nuget FSharp.Core
+nuget xunit
+nuget FsUnit.xUnit
+nuget FsCheck.Xunit
 nuget Zen.FSharp.Compiler.Service
 nuget FAKE
 nuget FSharp.Compatibility.OCaml
 nuget libsodium-net
-

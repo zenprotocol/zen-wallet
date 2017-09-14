@@ -6,7 +6,6 @@ module     U8 = FStar.UInt8
 module    U32 = FStar.UInt32
 module    U64 = FStar.UInt64
 module Realized = Zen.Types.Realized
-module Crypto = Zen.Crypto
 
 type lockCore = Realized.lockCore
 type contract = Realized.contract
@@ -15,7 +14,9 @@ type extraData = Realized.extraData
 
 type byte = U8.byte
 type opcode = U8.t
-type hash : eqtype = Zen.Crypto.hash
+type hash      = A.t U8.byte 32
+type signature = A.t U8.byte 64
+type key       = A.t U8.byte 64
 type spend = {asset: hash; amount: U64.t}
 type outpoint = {txHash: hash; index: U32.t}
 type witness (n:nat) = A.t byte n
@@ -39,11 +40,11 @@ noeq type data : nat -> Type =
   | Byte: v:U8.t -> data 1
   | Empty: data 0
   | Hash: v:hash -> data 1
-  | Key: v:Crypto.key -> data 1
+  | Key: v:key -> data 1
   | Outpoint: v:outpoint -> data 1
   | Output: v:output -> data 1
   | OutputLock: v:outputLock -> data 1
-  | Sig: v:Crypto.signature -> data 1
+  | Sig: v:signature -> data 1
   | UInt8 : v:U8.t -> data 1
   | UInt32: v:U32.t -> data 1
   | UInt64: v:U64.t -> data 1
@@ -53,10 +54,10 @@ noeq type data : nat -> Type =
   | ByteArray:  l:nat -> a: A.t U8.t l -> data l
   | HashVector: l:nat -> v: V.t hash l -> data l
   | HashArray:  l:nat -> a: A.t hash l -> data l
-  | KeyVector: l:nat -> v: V.t Crypto.key l -> data l
-  | KeyArray:  l:nat -> a: A.t Crypto.key l -> data l
-  | SigVector: l:nat -> v: V.t Crypto.signature l -> data l
-  | SigArray:  l:nat -> a: A.t Crypto.signature l -> data l
+  | KeyVector: l:nat -> v: V.t key l -> data l
+  | KeyArray:  l:nat -> a: A.t key l -> data l
+  | SigVector: l:nat -> v: V.t signature l -> data l
+  | SigArray:  l:nat -> a: A.t signature l -> data l
   | OutpointVector: l:nat -> v: V.t outpoint l -> data l
   | OutpointArray:  l:nat -> a: A.t outpoint l -> data l
   | OutputVector: l:nat -> v: V.t output l -> data l
