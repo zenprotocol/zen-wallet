@@ -21,8 +21,9 @@ let runFStar args =
   
   let join = Array.reduce (fun a b -> a + " " + b)
   
-  // we should check the OS have different path for each OS
-  let z3path = "../tools/z3/z3"
+  // TODO: we should compile z3 for windows and OSX as well
+  let z3path = 
+    if EnvironmentHelper.isLinux then "../tools/z3/linux/z3" else "z3"        
 
   let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
   
