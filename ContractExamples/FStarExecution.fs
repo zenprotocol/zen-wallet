@@ -125,10 +125,8 @@ let fstModule = "CostedSimpleContract"
 let fstSource = """
 module CostedSimpleContract
 module V = Zen.Vector
-open Zen.Types.Extracted
-open Zen.Base
+open Zen.Types
 open Zen.Cost
-open Zen
 
 
 val makeTx:
@@ -143,9 +141,9 @@ let makeTx l1 l2 l3 outpoints outputs data =
   Tx l1 outpoints l2 outputs l3 data
 
 
-val main: i:inputMsg -> cost transactionSkeleton 0
-let main inputMsg =
-  let data = inputMsg.contractHash in
+val main: inputMsg -> cost transactionSkeleton 0
+let main i =
+  let data = i.contractHash in
 
   let outpoints' = V.VCons ({ txHash = data; index = 1ul }) V.VNil in
   let outputs' = V.VCons ({ lock = PKLock data; spend = {asset = data; amount = 1900UL } }) V.VNil in
