@@ -215,7 +215,7 @@ namespace ContractsDiscovery.Web.Controllers
 					var file = Path.Combine("db", $"{item}");
 					var mapFile = Path.ChangeExtension(file, ".data.json");
 
-					var commitmentDataMap = (FSharpMap<string, ContractExamples.Merkle.AuditPath>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(mapFile));
+					var commitmentDataMap = (FSharpMap<string, Tuple<byte[],uint,byte[][]>>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(mapFile));
 
 					foreach (var _value in commitmentDataMap)
 					{
@@ -225,7 +225,7 @@ namespace ContractsDiscovery.Web.Controllers
 							var outpointData = Convert.FromBase64String(System.IO.File.ReadAllText(outpointFile));
 							var outpoint = Consensus.Serialization.context.GetSerializer<Types.Outpoint>().UnpackSingleObject(outpointData);
 
-							data = ContractExamples.Oracle.rawData.Invoke(new Tuple<ContractExamples.Merkle.AuditPath, Types.Outpoint>(_value.Value, outpoint));
+							data = ContractExamples.Oracle.rawData.Invoke(new Tuple<Tuple<byte[], uint, byte[][]>, Types.Outpoint>(_value.Value, outpoint));
 
 							return true;
 						}

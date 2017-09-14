@@ -25,13 +25,16 @@ namespace Zen
 
 	public class GraphNode
 	{
-		public string Title { get; set; }
+		public string Display { get; set; }
+        public byte[] Hash { get; set; 
+        }
 		public GraphNodeTypeEnum GraphNodeType { get; set; }
 
-		public GraphNode(GraphNodeTypeEnum graphNodeType, string title = null)
+        public GraphNode(GraphNodeTypeEnum graphNodeType, string title = null, byte[] hash = null)
 		{
 			GraphNodeType = graphNodeType;
-			Title = title;
+			Display = title;
+            Hash = hash;
 		}
 	}
 
@@ -128,7 +131,7 @@ namespace Zen
 
 				while (bk != null)
 				{
-					var graphNode = new GraphNode(bk.header.parent.Length == 0 ? GraphNodeTypeEnum.Genesis : GraphNodeTypeEnum.Block, "" + bk.header.blockNumber);
+                    var graphNode = new GraphNode(bk.header.parent.Length == 0 ? GraphNodeTypeEnum.Genesis : GraphNodeTypeEnum.Block, "" + bk.header.blockNumber, bkHash);
 					Add(bkHash, graphNode);
 
 					if (lastKey != null)
@@ -145,7 +148,8 @@ namespace Zen
 
 					lastKey = bkHash;
 					bkHash = bk.header.parent;
-					bk = new GetBlockAction() { BkHash = bkHash }.Publish().Result;
+
+                    bk = bkHash.Length > 0 ? new GetBlockAction() { BkHash = bkHash }.Publish().Result : null;
 				}
 			}
 
@@ -220,7 +224,7 @@ namespace Zen
 
 		void AddTx(byte[] txHash, Consensus.Types.Transaction tx, TxStateEnum txState)
 		{
-			Add(txHash, new GraphNode(GraphNodeTypeEnum.Tx, txState.ToString()));
+            Add(txHash, new GraphNode(GraphNodeTypeEnum.Tx, txState.ToString(), txHash));
 
 			uint i = 0;
 			foreach (var output in tx.outputs)
@@ -229,7 +233,7 @@ namespace Zen
 
 				string text = output.@lock.IsContractLock ? "C" : "P";
 
-                text += " " + _WalletManager.AssetsMetadata.GetMetadata(output.spend.asset).Result;
+                text += " " + Convert.ToBase64String(output.spend.asset);
                 text += " " + output.spend.amount;
 
 				if (output.spend.asset.SequenceEqual(Consensus.Tests.zhash))
@@ -273,7 +277,7 @@ namespace Zen
 			{
 				d3Graph.nodes.Add(new D3Node()
 				{
-					atom = graphNode.GraphNodeType.ToString() + (graphNode.Title == null ? "" : " (" + graphNode.Title + ")"),
+                    atom = GetText(graphNode),
 					color = GetColor(graphNode.GraphNodeType),
 					size = GetSize(graphNode.GraphNodeType)
 				});
@@ -371,6 +375,25 @@ namespace Zen
 				default:
 					return 5;
 			}
-		}					
+		}
+
+        string GetText(GraphNode graphNode)
+        {
+            switch (graphNode.GraphNodeType)
+            {
+                case GraphNodeTypeEnum.Genesis:
+                    return "Genesis";
+                case GraphNodeTypeEnum.Block:
+					return Convert.ToBase64String(graphNode.Hash) + $" (bk #{graphNode.Display})";
+                case GraphNodeTypeEnum.Input:
+                    return "";
+                case GraphNodeTypeEnum.Output:
+                    return graphNode.Display;
+                case GraphNodeTypeEnum.Tx:
+                    return Convert.ToBase64String(graphNode.Hash) + $" ({graphNode.Display})";
+                default:
+                    return graphNode.GraphNodeType.ToString() + (graphNode.Display == null ? "" : " (" + graphNode.Display + ")");
+            }
+        }
   	}
 }

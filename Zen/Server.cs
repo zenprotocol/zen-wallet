@@ -13,17 +13,17 @@ using System.Text;
 
 namespace Zen
 {
-    public class Server
-    {
-        readonly int PORT = 5555;
+	public class Server
+	{
+		readonly int PORT = 5555;
 
-        App _App;
-        NetMQPoller _poller = new NetMQPoller();
-        ResponseSocket _responseSocket = new ResponseSocket();
+		App _App;
+		NetMQPoller _poller = new NetMQPoller();
+		ResponseSocket _responseSocket = new ResponseSocket();
 
-        public Server(App app)
-        {
-            _App = app;
+		public Server(App app)
+		{
+			_App = app;
 
 			_poller = new NetMQPoller();
 			_responseSocket = new ResponseSocket();
@@ -31,57 +31,56 @@ namespace Zen
 			_poller.Add(_responseSocket);
 		}
 
-        public void Start()
-        {
-            Console.WriteLine("RPC Server starting...");
+		public void Start()
+		{
+			Console.WriteLine("RPC Server starting...");
 			_responseSocket.Bind($"tcp://*:{PORT}");
 
 			Task.Factory.StartNew(() => _poller.Run(),
-        	  TaskCreationOptions.LongRunning);
-        }
+			  TaskCreationOptions.LongRunning);
+		}
 
-        public void Stop()
-        {
-            _poller.Stop();
-        }
+		public void Stop()
+		{
+			_poller.Stop();
+		}
 
-        async void OnReceiveReady(object sender, NetMQSocketEventArgs e)
-        {
-            BasePayload request = null;
-            ResultPayload response = null;
+		async void OnReceiveReady(object sender, NetMQSocketEventArgs e)
+		{
+			BasePayload request = null;
+			ResultPayload response = null;
 
-            try
-            {
-                var message = _responseSocket.ReceiveFrameString();
-                var basePayload = JsonConvert.DeserializeObject<BasePayload>(message);
+			try
+			{
+				var message = _responseSocket.ReceiveFrameString();
+				var basePayload = JsonConvert.DeserializeObject<BasePayload>(message);
 
-                request = (BasePayload)JsonConvert.DeserializeObject(message, basePayload.Type);
+				request = (BasePayload)JsonConvert.DeserializeObject(message, basePayload.Type);
 
-                TUI.WriteColor($"{request}->", ConsoleColor.Blue);
-                response = GetResult(request);
-            }
-            catch (Exception ex)
-            {
-                response = new ResultPayload() { Success = false, Message = ex.Message };
-            }
+				TUI.WriteColor($"{request}->", ConsoleColor.Blue);
+				response = await GetResult(request);
+			}
+			catch (Exception ex)
+			{
+				response = new ResultPayload() { Success = false, Message = ex.Message };
+			}
 
-            if (response != null)
-            {
-                try
-                {
-                    TUI.WriteColor($"<-{response}", ConsoleColor.Blue);
-                    _responseSocket.SendFrame(JsonConvert.SerializeObject(response));
-                }
-                catch (Exception ex)
-                {
-                    TUI.WriteColor($"RPCServer could not reply to a {request} payload, got exception: {ex.Message}", ConsoleColor.Red);
-                }
-            }
+			if (response != null)
+			{
+				try
+				{
+					TUI.WriteColor($"<-{response}", ConsoleColor.Blue);
+					_responseSocket.SendFrame(JsonConvert.SerializeObject(response));
+				}
+				catch (Exception ex)
+				{
+					TUI.WriteColor($"RPCServer could not reply to a {request} payload, got exception: {ex.Message}", ConsoleColor.Red);
+				}
+			}
 
-        }
-    
+		}
 
-		ResultPayload GetResult(BasePayload payload)
+		async Task<ResultPayload> GetResult(BasePayload payload)
 		{
 			var type = payload.Type;
 
@@ -89,7 +88,7 @@ namespace Zen
 			{
 				var spendPayload = (SpendPayload)payload;
 
-				var _result = _App.Spend(new Address(spendPayload.Address), spendPayload.Amount);
+				var _result = await _App.Spend(new Address(spendPayload.Address), spendPayload.Amount);
 
 				return new ResultPayload { Success = _result };
 			}
@@ -98,20 +97,25 @@ namespace Zen
 			{
 				var sendContractPayload = (SendContractPayload)payload;
 
-                Consensus.Types.Transaction autoTx;
+				var result = await new ExecuteContractAction()
+				{
+					ContractHash = sendContractPayload.ContractHash,
+					Message = sendContractPayload.Data
+				}.Publish();
 
-                if (!_App.WalletManager.SendContract(sendContractPayload.ContractHash, sendContractPayload.Data, out autoTx))
-                {
-                    return new SendContractResultPayload { Success = false };
-                }
+				if (!result.Item1)
+				{
+					return new SendContractResultPayload { Success = false };
+				}
 
-				BlockChain.BlockChain.TxResultEnum transmitResult;
-				if (!_App.Transmit(autoTx, out transmitResult))
+                var transmitResult = await _App.NodeManager.Transmit(result.Item2);
+
+				if (transmitResult != BlockChain.BlockChain.TxResultEnum.Accepted)
 				{
 					return new SendContractResultPayload { Success = false, Message = transmitResult.ToString() };
 				}
 
-                return new SendContractResultPayload { Success = true, TxHash = Consensus.Merkle.transactionHasher.Invoke(autoTx) };
+				return new SendContractResultPayload { Success = true, TxHash = Consensus.Merkle.transactionHasher.Invoke(result.Item2) };
 			}
 
 			if (type == typeof(ActivateContractPayload))
@@ -120,28 +124,23 @@ namespace Zen
 
 				var amount = (ulong)BlockChain.ActiveContractSet.KalapasPerBlock(activateContractPayload.Code) * (ulong)activateContractPayload.Blocks;
 
-				Consensus.Types.Transaction tx;
-
-				var _result = _App.WalletManager.SacrificeToContract(
-					Encoding.ASCII.GetBytes(activateContractPayload.Code),
-					amount,
-					out tx
-				);
+                Consensus.Types.Transaction tx;
+                var success = _App.WalletManager.GetContractActivationTx(Encoding.ASCII.GetBytes(activateContractPayload.Code), amount, out tx);
 
 				var resultPayload = new ResultPayload();
 
-				if (!_result)
+				if (!success)
 				{
 					resultPayload.Message = "Could not get signed tx";
 					resultPayload.Success = false;
 				}
 				else
 				{
-					BlockChain.BlockChain.TxResultEnum txResult;
+                    var transmitResult = await _App.NodeManager.Transmit(tx);
 
-					if (!_App.Transmit(tx, out txResult))
+					if (transmitResult != BlockChain.BlockChain.TxResultEnum.Accepted)
 					{
-						resultPayload.Message = "Could not transmit. Result: ";
+						resultPayload.Message = "Could not transmit. Result: " + transmitResult;
 						resultPayload.Success = false;
 					}
 					else
@@ -155,15 +154,17 @@ namespace Zen
 
 			if (type == typeof(GetACSPayload))
 			{
-				return new GetACSResultPayload() { 
+				return new GetACSResultPayload()
+				{
 					Success = true,
-					Contracts = new GetActiveContactsAction().Publish().Result.Select(t => new ContractData() {
+					Contracts = new GetActiveContractsAction().Publish().Result.Select(t => new ContractData()
+					{
 						Hash = t.Hash,
 						LastBlock = t.LastBlock,
 						Code = new GetContractCodeAction(t.Hash).Publish().Result
-					}).ToArray() 
+					}).ToArray()
 				};
-			} 
+			}
 
 			if (type == typeof(HelloPayload))
 			{
@@ -172,36 +173,37 @@ namespace Zen
 
 			//if (type == typeof(GetContractCodePayload))
 			//{
-			//	var contractHash = ((GetContractCodePayload)payload).Hash;
-   //             return new GetContractCodeResultPayload() { Success = true, Code = _App.GetContractCode(contractHash) };
+			//  var contractHash = ((GetContractCodePayload)payload).Hash;
+			//             return new GetContractCodeResultPayload() { Success = true, Code = _App.GetContractCode(contractHash) };
 			//}
 
 			if (type == typeof(GetContractTotalAssetsPayload))
 			{
 				var contractHash = ((GetContractTotalAssetsPayload)payload).Hash;
-			//	var totals = _App.GetTotalAssets(contractHash);
-				return new GetContractTotalAssetsResultPayload { 
+				//  var totals = _App.GetTotalAssets(contractHash);
+				return new GetContractTotalAssetsResultPayload
+				{
 					Confirmed = 999, // totals.Item1, 
 					Unconfirmed = 999 // totals.Item2
 				};
 			}
 
-            if (type == typeof(GetContractPointedOutputsPayload))
+			if (type == typeof(GetContractPointedOutputsPayload))
 			{
 				var _payload = (GetContractPointedOutputsPayload)payload;
 				var result = new GetContractPointedOutputsAction(_payload.ContractHash).Publish().Result;
 
-                return new GetContractPointedOutputsResultPayload
+				return new GetContractPointedOutputsResultPayload
 				{
-                    Success = true,
-                    PointedOutputs = GetContractPointedOutputsResultPayload.Pack(result)
+					Success = true,
+					PointedOutputs = GetContractPointedOutputsResultPayload.Pack(result)
 				};
 			}
-		
+
 			if (type == typeof(MakeTransactionPayload))
 			{
 				var _payload = (MakeTransactionPayload)payload;
-				var result = _App.Spend(new Address(_payload.Address), _payload.Amount);
+				var result = await _App.Spend(new Address(_payload.Address), _payload.Amount);
 
 				return new ResultPayload
 				{
@@ -209,12 +211,14 @@ namespace Zen
 				};
 			}
 
-            if (type == typeof(EnsureTestKeyAcquiredPayload))
-            {
-                var privateKey = ((EnsureTestKeyAcquiredPayload)payload).PrivateKey;
+			if (type == typeof(EnsureTestKeyAcquiredPayload))
+			{
+				var privateKey = ((EnsureTestKeyAcquiredPayload)payload).PrivateKey;
 
-                if (!_App.TestKeyImported(privateKey))
-                    _App.ImportTestKey(privateKey);
+				if (!_App.TestKeyImported(privateKey))
+				{
+                    _App.WalletManager.Import(Key.Create(privateKey));
+				}
 
 				return new ResultPayload
 				{
@@ -224,15 +228,15 @@ namespace Zen
 
 			//if (type == typeof(GetBalancePayload))
 			//{
-			//	var _payload = (GetBalancePayload)payload;
+			//  var _payload = (GetBalancePayload)payload;
 
-			//	return new GetBalanceResultPayload
-			//	{
-			//		Success = true,
-   //                 Balance = _App.CalcBalance(_payload.Asset)
-			//	};
+			//  return new GetBalanceResultPayload
+			//  {
+			//      Success = true,
+			//                 Balance = _App.CalcBalance(_payload.Asset)
+			//  };
 			//}
-			  
+
 			return null;
 		}
 	}

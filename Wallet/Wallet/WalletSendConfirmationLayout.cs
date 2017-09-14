@@ -1,14 +1,16 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Gdk;
 using Gtk;
 using System.Linq;
 using Consensus;
+using System.Threading.Tasks;
+using BlockChain.Data;
 
 namespace Wallet
 {
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class WalletSendConfirmationLayout : WidgetBase
+    public partial class WalletSendConfirmationLayout : WidgetBase, IControlInit
 	{
 		public WalletSendConfirmationLayout()
 		{
@@ -45,33 +47,45 @@ namespace Wallet
 
 			buttonBack.Clicked += Back;
 
-			buttonTransmit.Clicked += delegate {
-				WalletSendLayout.SendInfo.TxResult = App.Instance.Node.Transmit(WalletSendLayout.Tx);
+			buttonTransmit.Clicked += async delegate {
+                buttonTransmit.Sensitive = false;
 
-                if (WalletSendLayout.SendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted && WalletSendLayout.SendInfo.NeedAutoTx)
-				{
-					var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
-					var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
-					var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
+                await Task.Run(() => {
+                    WalletSendLayout.SendInfo.TxResult = App.Instance.Node.Transmit(WalletSendLayout.Tx).Result;
 
-                    byte[] witnessData = WalletSendLayout.SendInfo.WitnessData.Initial.Concat(outpointBytes).ToArray();
-					witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Final).ToArray();
+	                if (WalletSendLayout.SendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted && WalletSendLayout.SendInfo.NeedAutoTx)
+					{
+						var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
+						var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
+						var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
 
-					Types.Transaction autoTx;
-					WalletSendLayout.SendInfo.AutoTxCreated = App.Instance.Wallet.SendContract(WalletSendLayout.SendInfo.Destination.Bytes, witnessData, out autoTx);
+	                    byte[] witnessData = WalletSendLayout.SendInfo.WitnessData.Initial.Concat(outpointBytes).ToArray();
+						witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Final).ToArray();
 
-                    if (WalletSendLayout.SendInfo.AutoTxCreated)
-                    {
-                        WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTx);
-                    }
-				}
-              	UpdateStatus();
+	                    var autoTxResult = new ExecuteContractAction() { 
+	                        ContractHash = WalletSendLayout.SendInfo.Destination.Bytes, 
+	                        Message = witnessData 
+	                    }.Publish().Result;
+
+	                    WalletSendLayout.SendInfo.AutoTxCreated = autoTxResult.Item1;
+
+	                    if (WalletSendLayout.SendInfo.AutoTxCreated)
+	                    {
+                            WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTxResult.Item2).Result;
+	                    }
+					}
+                });
+
+                Gtk.Application.Invoke(delegate {
+                    buttonTransmit.Sensitive = true;
+                    UpdateStatus();
+                });
 			};
 		}
 
-		public async void Init()
+		public void Init()
 		{
-            var assetName = await App.Instance.Wallet.AssetsMetadata.GetMetadata(WalletSendLayout.SendInfo.Asset);
+            var assetName = App.Instance.AssetsMetadata.TryGetValue(WalletSendLayout.SendInfo.Asset);
 
 		//	imageAsset.Pixbuf = ImagesCache.Instance.GetIcon(assetType.Image);
 			labelSelectedAsset.Text = labelSelectedAsset1.Text = assetName;
@@ -79,27 +93,27 @@ namespace Wallet
 			labelAmountValue.Text = WalletSendLayout.SendInfo.Amount.ToString();
 			entryDestination.Text = WalletSendLayout.SendInfo.Destination.ToString();
 
-			UpdateStatus();
+			UpdateStatusInner(false);
 		}
 
 		void Back(object sender, EventArgs e)
 		{
-			FindParent<Notebook>().Page -= 1;
+            FindParent<WalletLayout>().PrevPage(false);
 		}
 
 		void UpdateStatus()
 		{
             var error = false;
-            var messasge = string.Empty;
+            var message = string.Empty;
             var sendInfo = WalletSendLayout.SendInfo;
                 
 			if (sendInfo.Signed)
 			{
-				messasge += "Transaction signed successfully. ";
+				message += "Transaction signed successfully. ";
 			}
 			else
 			{
-				messasge += "Transaction signing error. ";
+				message += "Transaction signing error. ";
                 error = true;
             }
 
@@ -107,22 +121,22 @@ namespace Wallet
             {
                 if (sendInfo.AutoTxCreated)
                 {
-                    messasge += "AutoTX created successfully. ";
+                    message += "AutoTX created successfully. ";
                 }
                 else
                 {
-                    messasge += "Error creating AutoTX. ";
+                    message += "Error creating AutoTX. ";
                     error = true;
                 }
             }
 
             if (sendInfo.TxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
             {
-                messasge += "Transaction broadcasted successfully.";
+                message += "Transaction broadcasted successfully.";
             }
             else
             {
-                messasge += "Transaction broadcasted failed, reason: " + WalletSendLayout.SendInfo.TxResult;
+                message += "Transaction broadcasted failed, reason: " + WalletSendLayout.SendInfo.TxResult;
                 error = true;
             }
 
@@ -130,21 +144,26 @@ namespace Wallet
             {
                 if (sendInfo.AutoTxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
                 {
-                    messasge += "AutoTX broadcasted successfully.";
+                    message += "AutoTX broadcasted successfully.";
                 }
                 else
                 {
-                    messasge += "AutoTX broadcasted failed, reason: " + WalletSendLayout.SendInfo.AutoTxResult;
+                    message += "AutoTX broadcasted failed, reason: " + WalletSendLayout.SendInfo.AutoTxResult;
                     error = true;
                 }
             }
 
-            labelStatus.Text = messasge;
+            UpdateStatusInner(error, message);
+		}
+
+        void UpdateStatusInner(bool error, string message = null) 
+        {
+			labelStatus.Text = message;
 
 			if (error)
 				labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Error.Gdk);
 			else
-                labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Success.Gdk);
+				labelStatus.ModifyFg(StateType.Normal, Constants.Colors.Success.Gdk);
 		}
 	}
 }

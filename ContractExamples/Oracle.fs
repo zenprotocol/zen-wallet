@@ -1,60 +1,33 @@
 ﻿module ContractExamples.Oracle
 
-open FSharp.Data
+open Newtonsoft.Json.Linq
 let innerHash = Consensus.Merkle.innerHash
-type AuditPath = Merkle.AuditPath
 type Outpoint = Consensus.Types.Outpoint
 let deserializeOutpoint = Consensus.TransactionValidation.guardedDeserialise<Outpoint>
 
 type TickerItem = {underlying:string; price:decimal;timestamp:int64}
 
-[<Literal>]
-let tickerSample =
-    """{"underlying":"GOOG","price":123.12,"timestamp":12312312311}""" 
-type TickerJsonData = JsonProvider<tickerSample, SampleIsList=false>
-
-[<Literal>]
-let itemSample =
-    """{
-        "item":{"underlying":"GOOG","price":123.12,"timestamp":12312312311},
-        "nonce":"a32543452521452"
-        }""" 
-type ItemJsonData = JsonProvider<itemSample, SampleIsList=false>
-
-[<Literal>]
-let rawSample =
-    """{
-        "auditPath": {
-            "data": "5654aaoeuaoe52345234OUEA",
-            "location": 3242433330,
-            "path": ["5uejaeuao","axydd5454","aoeu43333","aoeuajk324","aekka444"]
-        },
-        "outpoint": "5ab534AAAOEUAAOEAA"
-    }"""
-type RawJsonData = JsonProvider<rawSample,SampleIsList=false>
-
-[<Literal>]
-let auditSample =
-    """{
-        "data": "5654aaoeuaoe52345234OUEA",
-        "location": 3242433330,
-        "path": ["5uejaeuao","axydd5454","aoeu43333","aoeuajk324","aekka444"]
-    }"""
-type AuditJsonData = JsonProvider<auditSample,SampleIsList=false>
-
 let commitments (items: TickerItem seq) (secret: byte[]) =
     let jsonOfTickerItem ({underlying=underlying;price=price;timestamp=timestamp} as item) =
-        ItemJsonData.Item(underlying,price,timestamp)
-    let serializedTickerItem item = jsonOfTickerItem(item).JsonValue.ToString() |> System.Text.Encoding.ASCII.GetBytes
+        //ItemJsonData.Item(underlying,price,timestamp)
+        new JObject([new JProperty("underlying", underlying); new JProperty("price", price); new JProperty("timestamp", timestamp)])
+    let serializedTickerItem item = 
+        jsonOfTickerItem(item).ToString() |> System.Text.Encoding.ASCII.GetBytes
     let nonceB (bs:byte[]) = innerHash (Array.append bs secret)
     let leaf (item:TickerItem) =
         let itemJson = jsonOfTickerItem item
         let nonceBytes = nonceB (serializedTickerItem item)
         let nonce = System.Convert.ToBase64String nonceBytes
-        ItemJsonData.Root(itemJson,nonce)
+        //ItemJsonData.Root(itemJson,nonce)
+        new JObject(
+            [
+                new JProperty("item", itemJson);
+                new JProperty("nonce", nonce)
+            ]
+        )
     let leafData = [|
         for item in items ->
-            (leaf item).JsonValue.ToString() |> System.Text.Encoding.ASCII.GetBytes
+            (leaf item).ToString() |> System.Text.Encoding.ASCII.GetBytes
             |]
     let tree = Merkle.merkleTree leafData
     let auditPaths = seq {
@@ -66,45 +39,60 @@ let commitments (items: TickerItem seq) (secret: byte[]) =
 
 let proofMapSerializer =
     System.Runtime.Serialization.Json.DataContractJsonSerializer(
-        typeof<Map<string,AuditPath>>)
+        typeof<Map<string,byte[] * uint32 * byte[][]>>)
 
-let pathToTypedJson (path:AuditPath) =
+let pathToTypedJson (path:byte[] * uint32 * byte[][]) =
     let (data, loc, pa) = 
-        (System.Convert.ToBase64String path.data, int64 path.location, Array.map (System.Convert.ToBase64String) path.path)
-    RawJsonData.AuditPath(data, loc, pa)
+        match path with
+        | (data, loc, pa) -> System.Convert.ToBase64String data, int64 loc, Array.map (System.Convert.ToBase64String) pa
+    new JObject(
+        [
+            new JProperty("data", data);
+            new JProperty("location", loc);
+            new JProperty("path", pa)
+        ]
+    )
 
-let pathData = pathToTypedJson >> (fun d -> d.JsonValue.ToString())
+let pathData = pathToTypedJson >> (fun d -> d.ToString())
 
-let rawDataTypedJson (path:AuditPath, outpoint:Outpoint) =
+let rawDataTypedJson (path:byte[] * uint32 * byte[][], outpoint:Outpoint) =
     let opnt = Consensus.Merkle.serialize outpoint |> System.Convert.ToBase64String
-    RawJsonData.Root(pathToTypedJson path, opnt)
+    new JObject(
+        [
+            new JProperty("auditPath", pathToTypedJson path);
+            new JProperty("outpoint", opnt)
+        ]
+    )
+let fromPath (s:string) : byte[] * uint32 * byte[][] =
+    let raw = JObject.Parse s
 
-let fromPath (s:string) : AuditPath =
-    let raw = AuditJsonData.Parse s
-    {
-        data = System.Convert.FromBase64String raw.Data;
-        location = uint32 raw.Location;
-        path = Array.map (System.Convert.FromBase64String) raw.Path
-    }
+    let jsonPaths = raw.Item("path").Children()
+    let paths = Seq.toArray <| Seq.map<JToken, string> (fun x -> x.Value<string>()) jsonPaths
 
-let rawData = rawDataTypedJson >> (fun d -> d.JsonValue.ToString())
+    (
+        System.Convert.FromBase64String <| raw.Item("data").Value<string>(),
+        uint32 <| raw.Item("location").Value<string>(),
+        Array.map (System.Convert.FromBase64String) <| paths
+    )
 
-let fromRawData (s:string) : (AuditPath * Outpoint) =
-    let raw = RawJsonData.Parse(s)
-    let rawAuditPath = raw.AuditPath
-    let rawOutpoint = raw.Outpoint
-    let auditPath:AuditPath = {
-        data = System.Convert.FromBase64String rawAuditPath.Data;
-        location = uint32 rawAuditPath.Location;
-        path = Array.map (System.Convert.FromBase64String) rawAuditPath.Path
-        }
+let rawData = rawDataTypedJson >> (fun d -> d.ToString())
+
+let fromRawData (s:string) : ((byte[] * uint32 * byte[][]) * Outpoint) =
+    let raw = JObject.Parse(s)
+    let rawAuditPath = raw.Item("auditPath")
+    let rawOutpoint = raw.Item("outpoint").Value<string>()
+    let auditPath:byte[] * uint32 * byte[][] = (
+        System.Convert.FromBase64String <| rawAuditPath.Item("data").Value<string>(),
+        uint32 <| rawAuditPath.Item("location").Value<string>(),
+        Array.map (System.Convert.FromBase64String) <| rawAuditPath.Item("path").Value<string[]>()
+    )
     let outpoint = rawOutpoint |> System.Convert.FromBase64String |> deserializeOutpoint
     (auditPath, outpoint)
 
-let priceTable (m:Map<string,Merkle.AuditPath>) =
+let priceTable (m:Map<string,byte[] * uint32 * byte[][]>) =
     let price (bs:byte[]) =
-        let item = ItemJsonData.Parse(System.Text.Encoding.ASCII.GetString bs)
-        item.Item.Price
+        let item = JObject.Parse(System.Text.Encoding.ASCII.GetString bs)
+        item.Item("item").Item("price").Value<decimal>()
     let s = Map.toList m
-    [ for (underlying, path) in s -> (underlying, price <| path.data)]
+    [ for (underlying, path) in s -> (underlying, price <| match path with | (data,_,_) -> data)]
 

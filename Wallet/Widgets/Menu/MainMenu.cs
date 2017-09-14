@@ -4,7 +4,7 @@ using Gtk;
 namespace Wallet
 {
 	public interface IMainMenuView {
-		int Default { set; }
+		string Default { set; }
 	}
 
 	[System.ComponentModel.ToolboxItem (true)]
@@ -18,14 +18,24 @@ namespace Wallet
 				((MenuButton)widget).ImageName = widget.Name;
 			}
 
-			MainAreaController.Instance.MainMenuView = this;
-
-			HeightRequest = 100;
+			HeightRequest = 86;
 		}
 
 		public override MenuButton Selection { 
 			set {
-				MainAreaController.Instance.MainAreaSelected = value.Name;
+				FindParent<MainWindow>().MainWindowController.MainAreaSelected = value.Name;
+			}
+		}
+
+		public string Default
+		{
+			set
+			{
+				foreach (Widget widget in hboxContainer)
+				{
+					if (((MenuButton)widget).ImageName == value)
+						((MenuButton)widget).Select();
+				}
 			}
 		}
 	}

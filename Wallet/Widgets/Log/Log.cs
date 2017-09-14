@@ -16,9 +16,7 @@ namespace Wallet
     [System.ComponentModel.ToolboxItem(true)]
     public partial class Log : WidgetBase, IStatementsVIew
     {
-        readonly DeltasController _DeltasController;
-        ListStore logEntryStore = FactorStore();
-        ListStore logSummaryStore = FactorStore(new LogSummaryRow(0, 0, 0));
+        ListStore logEntryStore = new ListStore(typeof(LogEntryItem));
         List<TxDelta> _TxDeltas;
         byte[] _SelectedAsset;
 
@@ -48,18 +46,14 @@ namespace Wallet
         {
             this.Build();
 
-            _DeltasController = new DeltasController(this);
+            new DeltasController(this);
 
-            InitList(listHeaders, FactorStore(new LogHeaderRow(0, Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)));
-            InitList(listSummary, logSummaryStore);
-            InitList(listSummaryHeader, FactorStore(new LogHeaderRow(2, Strings.TotalSent, Strings.TotalReceived, Strings.TotalBalance)));
-            InitList(listTransactions, logEntryStore);
+            InitList(listHeaders, FactorStore(new LogHeaderRow(Strings.Date, Strings.TransactionId, Strings.Sent, Strings.Received, Strings.Balance)), new LogHeaderRenderer());
+            InitList(listTransactions, logEntryStore, new LogEntryRenderer());
 
-            //ExposeEvent += (object o, ExposeEventArgs args) => {
-            //	listSummaryHeader.Hide ();
-            //};
+            listTransactions.RulesHint = true; //alternating colors
 
-            foreach (Widget w in new Widget[] { eventbox1, eventbox2, eventbox3, eventbox4, eventbox5, eventbox6, eventbox7 })
+			foreach (Widget w in new Widget[] { eventbox1, eventbox4, eventbox7 })
             {
                 w.ModifyBg(Gtk.StateType.Normal, Colors.Base.Gdk);
             }
@@ -69,56 +63,9 @@ namespace Wallet
             vscrollbar2.Adjustment = adj1;
             vscrollbar2.UpdatePolicy = UpdateType.Continuous;
             listTransactions.SetScrollAdjustments(null, adj1);
-
-            //			listTransactions.ScrollEvent += (object o, ScrollEventArgs args) => {
-            //				Console.WriteLine(args);
-            //			};
-            //			vscrollbar2.ChangeValue += (object o, ChangeValueArgs args) => {
-            //				Console.WriteLine (args);
-            //			};
-            //			vscrollbar2.MoveSlider += (object o, MoveSliderArgs args) => {
-            //				Console.WriteLine (args);
-            //			};
-            //			vscrollbar2.ScreenChanged += (object o, ScreenChangedArgs args) =>  {
-            //				Console.WriteLine(args);
-            //			};
-            //			vscrollbar2.AccelCanActivate += (object o, AccelCanActivateArgs args) => {
-            //				Console.WriteLine(args);
-            //			};
-            //			vscrollbar2.AccelClosuresChanged += (object sender, EventArgs e) => {
-            //				Console.WriteLine(e);
-            //			};
-            //			vscrollbar2.SizeRequested += (object o, SizeRequestedArgs args) => {
-            //				Console.WriteLine(args);
-            //			};
-            //			vscrollbar2.AdjustBounds += (object o, AdjustBoundsArgs args) => {
-            //				Console.WriteLine(args);
-            //			};
-            //
-            //
-            //			vscrollbar2.ConfigureEvent += (object o, ConfigureEventArgs args) => {
-            //				Console.WriteLine(args);
-            //			};
-            //			vscrollbar2.AccelCanActivate += (object o, AccelCanActivateArgs args) => {
-            //				Console.WriteLine(args);
-            //			};
-            //			vscrollbar2.AdjustBounds += (object o, AdjustBoundsArgs args) => {
-            //				Console.WriteLine(args);
-            //			};
-            //			vscrollbar2.ValueChanged += (object sender, EventArgs e) => {
-            //				Console.WriteLine(e);
-            //			};
-            //
-            //			adj1.Changed += (object sender, EventArgs e) => {
-            //				Console.WriteLine(":"+adj1.PageSize);
-            //			};
-            //			adj1.ValueChanged += (object sender, EventArgs e) => {
-            //				Console.WriteLine(e);
-            //			};
-
         }
 
-        private void InitList(TreeView list, ListStore store)
+        private void InitList(TreeView list, ListStore store, LogRendererBase renderer)
         {
             list.Model = store;
 
@@ -127,16 +74,18 @@ namespace Wallet
 
             Gtk.TreeViewColumn col = new Gtk.TreeViewColumn();
 
-            LogCellRenderer renderer = new LogCellRenderer();
-
             col.PackStart(renderer, true);
             col.SetCellDataFunc(renderer, new Gtk.TreeCellDataFunc(
                 (Gtk.TreeViewColumn column, Gtk.CellRenderer cellRenderer, Gtk.TreeModel model, Gtk.TreeIter iter) =>
                 {
-                    LogCellRenderer expandedCellRenderer = cellRenderer as LogCellRenderer;
-
-                    expandedCellRenderer.LogEntryRow = (ILogEntryRow)model.GetValue(iter, 0);
-                })
+                    if (cellRenderer is LogEntryRenderer)
+                    {
+                        var logEntryRenderer = (LogEntryRenderer)cellRenderer;
+                        
+                       logEntryRenderer.LogEntryItem = (LogEntryItem)model.GetValue(iter, 0);
+                    }
+				
+				})
             );
 
             list.AppendColumn(col);
@@ -144,59 +93,29 @@ namespace Wallet
 
         void UpdateView()
         {
-            Gtk.Application.Invoke(delegate
-            {
-                logEntryStore.Clear();
+            logEntryStore.Clear();
 
-                ulong sent = 0;
-                ulong received = 0;
-                ulong total = 0;
-                long runningBalance = 0;
+            long runningBalance = 0;
 
-                if (_TxDeltas != null && _SelectedAsset != null)
-                    _TxDeltas.ForEach(
-                        txDelta => txDelta.AssetDeltas.Where(
-                            assetDelta => assetDelta.Key.SequenceEqual(_SelectedAsset)).ToList().ForEach(
-                                assetDelta =>
-                                {
-                                    runningBalance += assetDelta.Value;
-                                    
-                                    var absValue = (ulong)Math.Abs(assetDelta.Value);
-        
-                                    total += absValue;
-        
-                                    if (assetDelta.Value < 0)
-                                    {
-                                        sent += absValue;
-                                    }
-                                    else
-                                    {
-                                        received += absValue;
-                                    }
-        
-                                    logEntryStore.AppendValues(new LogEntryRow(assetDelta.Key, new LogEntryItem(
-                                        absValue,
-                                        assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
-                                        assetDelta.Key,
-                                        txDelta.Time,
-                                        Convert.ToBase64String(txDelta.TxHash),
-                                        txDelta.TxState.ToString(),
-                                        runningBalance)));
-                                }));
+            if (_TxDeltas != null && _SelectedAsset != null)
+                _TxDeltas.ForEach(
+                    txDelta => txDelta.AssetDeltas.Where(
+                        assetDelta => assetDelta.Key.SequenceEqual(_SelectedAsset)).ToList().ForEach(
+                            assetDelta =>
+                            {
+                                runningBalance += assetDelta.Value;
+                                
+                                var absValue = (ulong)Math.Abs(assetDelta.Value);
 
-                TreeIter storeIter;
-
-                if (logSummaryStore.GetIterFirst(out storeIter))
-                {
-                    var logSummaryRow = (LogSummaryRow)logSummaryStore.GetValue(storeIter, 0);
-
-                    logSummaryRow[0] = sent;
-                    logSummaryRow[1] = received;
-                    logSummaryRow[2] = total;
-
-                    logSummaryStore.SetValue(storeIter, 0, logSummaryRow);
-                }
-            });
+                                logEntryStore.AppendValues(new LogEntryItem(
+                                    absValue,
+                                    assetDelta.Value < 0 ? DirectionEnum.Sent : DirectionEnum.Recieved,
+                                    assetDelta.Key,
+                                    txDelta.Time,
+                                    Convert.ToBase64String(txDelta.TxHash),
+                                    txDelta.TxState.ToString(),
+                                    runningBalance));
+                            }));
         }
     }
 }

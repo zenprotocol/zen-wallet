@@ -1,4 +1,5 @@
-﻿using System;
+﻿﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gtk;
@@ -12,9 +13,10 @@ namespace Wallet
 	}
 
     [System.ComponentModel.ToolboxItem (true)]
-    public partial class Portfolio : WidgetBase, IPortfolioVIew
+    public partial class Portfolio : WidgetBase, IPortfolioVIew, IAssetsView
     {
-		readonly DeltasController _DeltasController;
+		readonly AssetsController _AssetsController;
+        readonly DeltasController _DeltasController;
 
 		UpdatingStore<byte[]> listStore = new UpdatingStore<byte[]>(
             0,
@@ -28,51 +30,24 @@ namespace Wallet
             this.Build ();
 
 			_DeltasController = new DeltasController(this);
+            _AssetsController = new AssetsController(this);
 
-			Apply((Label label) =>
-            {
-                label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.SubText.Gdk);
-                label.ModifyFont(Constants.Fonts.ActionBarSmall);
-            }, label3, label2);
+			labelHeader.ModifyFg(StateType.Normal, Constants.Colors.TextHeader.Gdk);
+			labelHeader.ModifyFont(Constants.Fonts.ActionBarBig);
 
-            Apply((Label label) =>
-            {
-                label.ModifyFg(Gtk.StateType.Normal, Constants.Colors.Text2.Gdk);
-                label.ModifyFont(Constants.Fonts.ActionBarBig);
-            }, labelZen);
+			Apply(t =>
+			{
+				t.ModifyFg(StateType.Normal, Constants.Colors.LogHeader.Gdk);
+				t.ModifyFont(Constants.Fonts.ActionBarIntermediate);
+			}, label9);
+
+			Apply(t =>
+			{
+				t.ModifyFg(StateType.Normal, Constants.Colors.TextBlue.Gdk);
+				t.ModifyFont(Constants.Fonts.LogBig);
+			}, labelZen);
 
             ConfigureList();
-
-            App.Instance.Wallet.AssetsMetadata.AssetMatadataChanged += t =>
-            {
-                Gtk.Application.Invoke(delegate
-                {
-                    try
-                    {
-                        TreeIter iter;
-
-                        var canIter = listStore.GetIterFirst(out iter);
-
-                        while (canIter)
-                        {
-                            var key = new GLib.Value();
-                            listStore.GetValue(iter, 0, ref key);
-                            byte[] _asset = key.Val as byte[];
-
-                            if (_asset != null && _asset.SequenceEqual(t.Asset))
-                            {
-                                listStore.SetValue(iter, 0, t.Display);
-                                break;
-                            }
-
-                            canIter = listStore.IterNext(ref iter);
-                        }
-                    } catch 
-                    {
-                        Console.WriteLine("Exception in portfolio AssetMatadataChanged handler");
-                    }
-                });
-            };
         }
 
         private void ConfigureList()
@@ -86,7 +61,7 @@ namespace Wallet
             treeview1.HeadersVisible = false;
             treeview1.ModifyBase(Gtk.StateType.Active, Constants.Colors.Base.Gdk);
             treeview1.ModifyBase(Gtk.StateType.Selected, Constants.Colors.Base.Gdk);
-            treeview1.ModifyBase(Gtk.StateType.Normal, Constants.Colors.Base.Gdk);
+            treeview1.ModifyBase(Gtk.StateType.Normal, Constants.Colors.ButtonSelected.Gdk);
 
             var col = new Gtk.TreeViewColumn();
             var rowRenderer = new RowRenderer();
@@ -115,14 +90,33 @@ namespace Wallet
 				{
 					if (item.Key.SequenceEqual(Consensus.Tests.zhash))
 					{
-						labelZen.Text = $"{new Zen(item.Value)} {AssetsMetadata.ZEN}";
+                        labelZen.Text = new Zen(item.Value).ToString();
 					}
 					else
 					{
-						listStore.Update(t => t.SequenceEqual(item.Key), item.Key, App.Instance.Wallet.AssetsMetadata.GetMetadata(item.Key).Result, item.Value);
+                        listStore.Upsert(t => t.SequenceEqual(item.Key), item.Key, App.Instance.AssetsMetadata.TryGetValue(item.Key), item.Value);
 					}
 				}
 			} 
+        }
+
+        public ICollection<AssetMetadata> Assets
+        {
+            set
+            {
+                foreach (var item in value)
+                    if (!item.Asset.SequenceEqual(Consensus.Tests.zhash))
+						listStore.Upsert(t => t.SequenceEqual(item.Asset), item.Asset, item.Display);
+			}
+        }
+
+        public AssetMetadata AssetUpdated 
+        {
+            set
+            {
+				if (!value.Asset.SequenceEqual(Consensus.Tests.zhash))
+					listStore.UpdateColumn(t => t.SequenceEqual(value.Asset), 1, value.Display);
+            }
         }
     }
 }

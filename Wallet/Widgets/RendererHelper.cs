@@ -19,18 +19,18 @@ namespace Wallet
 			this.widget = widget;
 		}
 
-		public void Label(System.Object value, int x, int y, Pango.FontDescription font, int width = 0) {
+        public void Label(System.Object value, int x, int y, Pango.FontDescription font, int width, Constants.Color color) {
 			Pango.Layout layout = new Pango.Layout(widget.PangoContext);
 			LayoutHelper layoutHelper = LayoutHelper.Factor (value);
 
-			layout.SetText(layoutHelper.Text);
+            layout.SetMarkup("<span color=" + (char)34 + "#" + color.ToString() + (char)34 + ">" + layoutHelper.Text + "</span>");
 
 			if (width != 0) {
 				layout.Ellipsize = Pango.EllipsizeMode.End;
 				layout.Width = Pango.Units.FromPixels (width);
 			}
 
-			layout.Alignment = layoutHelper.Alignment;
+		//	layout.Alignment = layoutHelper.Alignment;
 			layout.FontDescription = font;
 
 			drawable.DrawLayout(gc, exposeArea.X  + x, exposeArea.Y + y, layout);

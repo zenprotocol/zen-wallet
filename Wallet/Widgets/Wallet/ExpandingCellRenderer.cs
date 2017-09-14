@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using Wallet.Domain;
 using Gdk;
 using Gtk;
@@ -20,7 +20,7 @@ namespace Wallet
 			return String.Format("{0} {1} {2} ({3} {4}) {5}",
 				TransactionItem.Direction == DirectionEnum.Recieved ? Constants.Strings.Received : Constants.Strings.Sent,
              	new Zen(TransactionItem.Amount).ToString(),
-                App.Instance.Wallet.AssetsMetadata.GetMetadata(TransactionItem.Asset).Result,
+                App.Instance.AssetsMetadata.TryGetValue(TransactionItem.Asset),
 				"0.34",
 				"USD",
 				 TransactionItem.TxState

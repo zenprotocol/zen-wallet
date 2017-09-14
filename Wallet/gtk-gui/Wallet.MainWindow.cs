@@ -12,6 +12,8 @@ namespace Wallet
 
 		private global::Wallet.MainArea mainarea1;
 
+		private global::Wallet.Widgets.Status status1;
+
 		protected virtual void Build()
 		{
 			global::Stetic.Gui.Initialize(this);
@@ -44,6 +46,14 @@ namespace Wallet
 			this.vbox1.Add(this.hbox6);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.hbox6]));
 			w3.Position = 1;
+			// Container child vbox1.Gtk.Box+BoxChild
+			this.status1 = new global::Wallet.Widgets.Status();
+			this.status1.Events = ((global::Gdk.EventMask)(256));
+			this.status1.Name = "status1";
+			this.vbox1.Add(this.status1);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.status1]));
+			w4.Position = 2;
+			w4.Expand = false;
 			this.Add(this.vbox1);
 			if ((this.Child != null))
 			{

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using CLRCLI.Widgets;
 using CLRCLI;
 using System.IO;
@@ -122,7 +122,7 @@ namespace Zen
 
                 if (string.IsNullOrEmpty(data.Text))
                 {
-                    if (!app.Spend(_address, _amount))
+                    if (!app.Spend(_address, _amount).Result)
                     {
                         status.Text = "Could not spend";
                         return;
@@ -249,7 +249,7 @@ namespace Zen
 					case "Active Contract Set":
 						options["acs"] = new List<string>();
 
-						foreach (var contractData in new GetActiveContactsAction().Publish().Result)
+						foreach (var contractData in new GetActiveContractsAction().Publish().Result)
 						{
 							var info = new Address(contractData.Hash, AddressType.Contract) + " " + contractData.LastBlock;
 
@@ -348,7 +348,7 @@ namespace Zen
 							if (key.Change)
 								info += ",change";
 									
-							listMenu.Items.Add(info + " " + key.PrivateAsString);
+                            listMenu.Items.Add(info + " " + System.Convert.ToBase64String(key.Private));
 						}
 						listMenu.Items.Add("Back");
 						break;
@@ -431,7 +431,7 @@ namespace Zen
                 {
                     var value = item.Key.SequenceEqual(Consensus.Tests.zhash) ? item.Value * Math.Pow(10, -8)  : item.Value;
                     assets += (assets == string.Empty ? "" : ", ") + value;
-                    assets += " " + app.WalletManager.AssetsMetadata.GetMetadata(item.Key).Result;
+                    //assets += " " + Wallet.AssetsMetadata.Instance.TryGetValue(item.Key);
                 }
 
 				return info + " " + assets;

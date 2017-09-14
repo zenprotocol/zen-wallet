@@ -97,6 +97,7 @@
     <Folder Include="Views\Oracle\" />
     <Folder Include="Views\OracleData\" />
     <Folder Include="assets\img\" />
+    <Folder Include="Templates\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\ContractCreationController.cs" />
@@ -188,6 +189,13 @@
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\CallOption.txt" />
+    <EmbeddedResource Include="Templates\SecureToken.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Oracle.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
