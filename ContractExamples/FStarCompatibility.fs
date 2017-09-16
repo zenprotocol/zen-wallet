@@ -1,5 +1,4 @@
-﻿
-module ContractExamples.FStarCompatilibity
+﻿module ContractExamples.FStarCompatilibity
 
 open ContractExamples.Execution
 open Zen.Types.Extracted
@@ -26,6 +25,9 @@ let private listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
 let private fstToFsOutpoint (a:outpoint) : Consensus.Types.Outpoint =
     { txHash = a.txHash; index = a.index }
 
+let private fsToFstOutpoint (a:Consensus.Types.Outpoint) : outpoint =
+    { txHash = a.txHash; index = a.index }
+
 let private fsToFstLock (a:Consensus.Types.OutputLock) : outputLock =
     match a with 
     | Consensus.Types.PKLock (pkHash) ->
@@ -48,19 +50,21 @@ let private fstToFsOutput (a:output) : Consensus.Types.Output =
 
 let private convertUtxo (utxo: Utxo) : utxo = fstToFsOutpoint >> utxo >> fsToFstOutput
 
-let convertInput (a:ContractFunctionInput) : inputMsg =
-    match a with (msg, contractHash, utxo) -> 
+let convertInput (contractHash: Consensus.Types.Hash, utxo:Utxo, outpoint:Consensus.Types.Outpoint) : inputMsg =
     {
         cmd = 0uy;
-        data = Prims.Mkdtuple2 (0I, ByteArray (0I, msg));
+        data = Prims.Mkdtuple2 (1I, Outpoint (fsToFstOutpoint outpoint));
         contractHash = contractHash;
         utxo = convertUtxo utxo
-        lastTx = FStar.Pervasives.Native.option<outpoint>.None
+        lastTx = FStar.Pervasives.Native.None
     }
 
 let convertResult (a:transactionSkeleton) : TransactionSkeleton =
-  match a with Tx (_,outpoints,_,outputs,_,ByteArray (_, data)) -> 
-      (List.map fstToFsOutpoint (vectorToList outpoints), List.map fstToFsOutput (vectorToList outputs), data)
+  match a with 
+      | Tx (_,outpoints,_,outputs,_,ByteArray (_, data)) -> 
+        (List.map fstToFsOutpoint (vectorToList outpoints), List.map fstToFsOutput (vectorToList outputs), data)
+      | Tx (_,outpoints,_,outputs,_,Empty) -> 
+        (List.map fstToFsOutpoint (vectorToList outpoints), List.map fstToFsOutput (vectorToList outputs), Array.empty)
 
 let convertContractFunction (fn:CostedFStarContractFunction) = convertInput >> fn >> unCost >> convertResult
 
