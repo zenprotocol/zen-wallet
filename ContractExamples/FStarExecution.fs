@@ -43,8 +43,12 @@ let compile (source:string) =
             match dynamicAssembly with
                 | None -> None
                 | Some asm -> 
-                    Some (asm.GetModules().[0].GetTypes().[0].GetProperty("pickled").GetValue(null) :?> byte[])
-    with _ -> None
+                    let compiledType = asm.GetModules().[0].GetTypes().[0]
+                    let propertyValue = compiledType.GetProperty("pickled").GetValue(null)
+                    Some (propertyValue :?> byte[])
+    with err -> 
+        printfn "%A" err
+        None
 
 open System.Diagnostics;
 open FSharp.Configuration;
@@ -125,31 +129,37 @@ let fstModule = "CostedSimpleContract"
 let fstSource = """
 module CostedSimpleContract
 module V = Zen.Vector
+module O = Zen.Option
+
 open Zen.Types
 open Zen.Cost
 
-
-val makeTx:
-    l1:nat
- -> l2:nat
- -> l3:nat
- -> outpoints: V.t outpoint l1
- -> outputs: V.t output l2
- -> data:data l3
- -> transactionSkeleton
-let makeTx l1 l2 l3 outpoints outputs data =
-  Tx l1 outpoints l2 outputs l3 data
-
+val parse_outpoint: n:nat & inputData n -> option outpoint
+let parse_outpoint = function
+  | (| _ , Outpoint o |) -> Some o
+  | _ -> None
 
 val main: inputMsg -> cost transactionSkeleton 0
 let main i =
-  let data = i.contractHash in
+  let open O in
+  let addr = i.contractHash in // TODO: to fixed address
 
-  let outpoints' = V.VCons ({ txHash = data; index = 1ul }) V.VNil in
-  let outputs' = V.VCons ({ lock = PKLock data; spend = {asset = data; amount = 1900UL } }) V.VNil in
-  let freeTx = makeTx 1 1 32 outpoints' outputs' (ByteArray 32 data) in
+  let badTx = Tx 0 V.VNil 0 V.VNil 0 Empty in
 
-  ret freeTx
+  let resTx = match parse_outpoint i.data with
+    | Some outpoint ->
+        let output = i.utxo outpoint in
+        match output with
+            | Some output ->
+                let outpoints = V.VCons outpoint V.VNil in
+                let outputs = V.VCons output V.VNil in
+                let tokenOutput = { lock = PKLock addr; spend = {asset = i.contractHash; amount = 1000UL } } in
+                let outputs = V.VCons tokenOutput outputs in
+                Tx 1 outpoints 2 outputs 0 Empty
+            | None -> badTx
+    | None -> badTx in
+
+  ret resTx
 """
 
 let deserialize (bs:byte[]) = 
@@ -157,6 +167,9 @@ let deserialize (bs:byte[]) =
     bs |> Binary.unpickle pickler
 
 open FStarCompatilibity
+open Consensus.Types
+open Zen.Types
+open Zen.Types.Extracted
 
 [<Test>]
 let ``Extraction``() =
@@ -168,23 +181,34 @@ let ``Extraction``() =
 
     let func = compiled |> Option.get |> deserialize |> convertContractFunction
 
-    let utxo : ContractExamples.Execution.Utxo =
-        fun outpoint -> Some { lock = Consensus.Types.PKLock outpoint.txHash; spend = {asset = outpoint.txHash; amount = 1100UL } }
-
     let randomhash = Array.map (fun x -> x*x) [|10uy..41uy|]
+    let randomhash2 = Array.map (fun x -> x*x) [|1uy..13uy|]
 
-    let input = (randomhash, randomhash, utxo)
+    let utxo : ContractExamples.Execution.Utxo =
+        fun outpoint -> Some { 
+                lock = Consensus.Types.PKLock outpoint.txHash; 
+                spend = 
+                    {
+                        asset = randomhash2
+                        amount = 1100UL 
+                    } 
+            }
 
-    let result = func input
+    let result = func (randomhash, utxo, { Consensus.Types.txHash = randomhash; index = 550ul})
 
     match result with 
         (outpointList, outputList, data) -> 
-            Assert.AreEqual (randomhash, data)
+            Assert.AreEqual ([], data)
             let outpoint = List.head outpointList
-            Assert.AreEqual (1, outpoint.index)
+            Assert.AreEqual (550, outpoint.index)
             Assert.AreEqual (randomhash, outpoint.txHash)
-            let output = List.head outputList
-            Assert.AreEqual (1900UL, output.spend.amount)
-            Assert.AreEqual (randomhash, output.spend.asset)
-            let pkHash = match output.lock with Consensus.Types.PKLock (pkHash) -> pkHash
+      
+            Assert.AreEqual (1000UL, outputList.[0].spend.amount)
+            Assert.AreEqual (randomhash, outputList.[0].spend.asset)
+            Assert.AreEqual (1100UL, outputList.[1].spend.amount)
+            Assert.AreEqual (randomhash2, outputList.[1].spend.asset)
+
+            let pkHash = match outputList.[0].lock with 
+                | Consensus.Types.PKLock (pkHash) -> pkHash
+            //    | _ -> fail here.
             Assert.AreEqual (randomhash, pkHash)
