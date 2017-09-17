@@ -108,6 +108,9 @@
     <Reference Include="Zulib">
       <HintPath>..\Zulib\bin\Zulib.dll</HintPath>
     </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.1\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />

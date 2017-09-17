@@ -32,11 +32,15 @@ let private fsToFstLock (a:Consensus.Types.OutputLock) : outputLock =
     match a with 
     | Consensus.Types.PKLock (pkHash) ->
         PKLock pkHash
+    | Consensus.Types.ContractLock (pkHash, data) ->
+        ContractLock (pkHash, bigint data.Length, ByteArray (bigint data.Length, data))
 
 let private fstToFsLock (a:outputLock) : Consensus.Types.OutputLock =
     match a with 
     | PKLock (pkHash) ->
         Consensus.Types.PKLock pkHash
+    | ContractLock (pkHash, _, ByteArray (_, arr)) ->
+        Consensus.Types.ContractLock (pkHash, arr)
 
 let private fsToFstOutput (a:Option<Consensus.Types.Output>) : FStar.Pervasives.Native.option<output> =
     match a with
@@ -50,16 +54,24 @@ let private fstToFsOutput (a:output) : Consensus.Types.Output =
 
 let private convertUtxo (utxo: Utxo) : utxo = fstToFsOutpoint >> utxo >> fsToFstOutput
 
-let convertInput (contractHash: Consensus.Types.Hash, utxo:Utxo, outpoint:Consensus.Types.Outpoint) : inputMsg =
+open Consensus.Serialization
+
+//TODO: message serialization to be made more inclusive
+let private convertInput (message:byte[], contractHash: Consensus.Types.Hash, utxo:Utxo) : inputMsg =
+    let cmd, rest = message.[0], message.[1..]
+
+    let serializer = MsgPack.Serialization.MessagePackSerializer.Get<Consensus.Types.Outpoint>(context)
+    let outpoint = serializer.UnpackSingleObject rest
+
     {
-        cmd = 0uy;
+        cmd = cmd;
         data = Prims.Mkdtuple2 (1I, Outpoint (fsToFstOutpoint outpoint));
         contractHash = contractHash;
         utxo = convertUtxo utxo
         lastTx = FStar.Pervasives.Native.None
     }
 
-let convertResult (a:transactionSkeleton) : TransactionSkeleton =
+let private convertResult (a:transactionSkeleton) : TransactionSkeleton =
   match a with 
       | Tx (_,outpoints,_,outputs,_,ByteArray (_, data)) -> 
         (List.map fstToFsOutpoint (vectorToList outpoints), List.map fstToFsOutput (vectorToList outputs), data)

@@ -121,12 +121,16 @@ let extract (source:string, moduleNameTemp:string) =
     finally
         Directory.Delete (tmp, true)
 
-
-open NUnit.Framework
 open FStarCompatilibity
 
-let fstModule = "CostedSimpleContract"
-let fstSource = """
+let deserialize (bs:byte[]) = 
+    let pickler = Pickler.auto<CostedFStarContractFunction>
+    bs |> Binary.unpickle pickler |> convertContractFunction
+
+open NUnit.Framework
+
+let private fstModule = "CostedSimpleContract"
+let private fstSourceTpl = """
 module CostedSimpleContract
 module V = Zen.Vector
 module O = Zen.Option
@@ -142,47 +146,51 @@ let parse_outpoint = function
 val main: inputMsg -> cost transactionSkeleton 0
 let main i =
   let open O in
-  let addr = i.contractHash in // TODO: to fixed address
 
   let badTx = Tx 0 V.VNil 0 V.VNil 0 Empty in
 
   let resTx = match parse_outpoint i.data with
     | Some outpoint ->
-        let output = i.utxo outpoint in
-        match output with
-            | Some output ->
-                let outpoints = V.VCons outpoint V.VNil in
-                let outputs = V.VCons output V.VNil in
-                let tokenOutput = { lock = PKLock addr; spend = {asset = i.contractHash; amount = 1000UL } } in
-                let outputs = V.VCons tokenOutput outputs in
-                Tx 1 outpoints 2 outputs 0 Empty
-            | None -> badTx
+        match i.utxo outpoint with
+          | Some output ->
+            let outpoints = V.VCons outpoint V.VNil in
+            let outputs = V.VCons output V.VNil in
+            let tokenOutput = {
+              lock = PKLock (Zen.Merkle.hashFromBase64 "__ADDRESS__");
+                spend = {
+                  asset = i.contractHash;
+                  amount = 1000UL
+                }
+            } in
+          let outputs = V.VCons tokenOutput outputs in
+          Tx 1 outpoints 2 outputs 0 Empty
+        | None -> badTx
     | None -> badTx in
 
   ret resTx
 """
 
-let deserialize (bs:byte[]) = 
-    let pickler = Pickler.auto<CostedFStarContractFunction>
-    bs |> Binary.unpickle pickler
-
 open FStarCompatilibity
 open Consensus.Types
 open Zen.Types
 open Zen.Types.Extracted
+open Consensus.Serialization
 
 [<Test>]
 let ``Extraction``() =
+    let randomAddr = Array.map (fun x -> x*x) [|0uy..31uy|]
+    let address = System.Convert.ToBase64String randomAddr
+    let fstSource = fstSourceTpl.Replace("__ADDRESS__", address)
     let extracted = extract (fstSource, fstModule)
     Assert.IsTrue ((Option.isSome extracted), "Should extract")
 
     let compiled = extracted |> Option.get |> compile 
     Assert.That ((Option.isSome compiled), "Should compile")
 
-    let func = compiled |> Option.get |> deserialize |> convertContractFunction
+    let func = compiled |> Option.get |> deserialize
 
     let randomhash = Array.map (fun x -> x*x) [|10uy..41uy|]
-    let randomhash2 = Array.map (fun x -> x*x) [|1uy..13uy|]
+    let randomhash2 = Array.map (fun x -> x*x) [|100uy..131uy|]
 
     let utxo : ContractExamples.Execution.Utxo =
         fun outpoint -> Some { 
@@ -194,7 +202,14 @@ let ``Extraction``() =
                     } 
             }
 
-    let result = func (randomhash, utxo, { Consensus.Types.txHash = randomhash; index = 550ul})
+    let outpoint = { Consensus.Types.txHash = randomhash; index = 550ul}
+   
+    let serializer = MsgPack.Serialization.MessagePackSerializer.Get<Consensus.Types.Outpoint>(context)
+    let serializedOutpoint = serializer.PackSingleObject outpoint
+
+    let message = Array.append [|0uy|] serializedOutpoint 
+
+    let result = func (message, randomhash, utxo)
 
     match result with 
         (outpointList, outputList, data) -> 
@@ -209,6 +224,11 @@ let ``Extraction``() =
             Assert.AreEqual (randomhash2, outputList.[1].spend.asset)
 
             let pkHash = match outputList.[0].lock with 
+                | Consensus.Types.PKLock (pkHash) -> pkHash
+            //    | _ -> fail here.
+            Assert.AreEqual (randomAddr, pkHash)
+
+            let pkHash = match outputList.[1].lock with 
                 | Consensus.Types.PKLock (pkHash) -> pkHash
             //    | _ -> fail here.
             Assert.AreEqual (randomhash, pkHash)
