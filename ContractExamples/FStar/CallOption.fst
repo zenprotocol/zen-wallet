@@ -20,11 +20,14 @@ type state = { tokensIssued : U64.t;
                counter      : U64.t;
                wallet       : wallet }
 
-assume val isAuthenticated: inputMsg -> bool
+//assume val isAuthenticated: inputMsg -> bool
 
-//val isAuthenticated : inputMsg -> bool
-//let isAuthenticated inputMsg =
-  //if inputMsg.cmd =
+val isAuthenticated : inputMsg -> bool
+let isAuthenticated inputMsg =
+  if inputMsg.cmd = 0uy || // collateralize
+     inputMsg.cmd = 3uy    // close
+  then Crypto.verifyInputMsg inputMsg ownerPubKey
+  else true
 
 val correctDataForm : inputMsg -> bool
 let correctDataForm inputMsg =
