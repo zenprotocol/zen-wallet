@@ -50,4 +50,4 @@ val verifyCommand: #n:nat
   -> key: A.t U8.byte 64
   -> bool
 *)
-val verifyInputMsg: Zen.Types.inputMsg -> signature -> key -> bool
+val verifyInputMsg: Zen.Types.inputMsg -> key -> bool
