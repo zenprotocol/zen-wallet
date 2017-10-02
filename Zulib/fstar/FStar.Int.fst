@@ -8,10 +8,10 @@ val pow2_values: x:nat -> Lemma
    | 1  -> p=2
    | 8  -> p=256
    | 16 -> p=65536
-   //| 31 -> p=2147483648
-   //| 32 -> p=4294967296
-   //| 63 -> p=9223372036854775808
-   //| 64 -> p=18446744073709551616
+   | 31 -> p=2147483648
+   | 32 -> p=4294967296
+   | 63 -> p=9223372036854775808
+   | 64 -> p=18446744073709551616
    | _  -> True))
   [SMTPat (pow2 x)]
 let pow2_values x =
@@ -20,10 +20,10 @@ let pow2_values x =
    | 1  -> assert_norm (pow2 1 == 2)
    | 8  -> assert_norm (pow2 8 == 256)
    | 16 -> assert_norm (pow2 16 == 65536)
-   //| 31 -> assert_norm (pow2 31 == 2147483648)
-   //| 32 -> assert_norm (pow2 32 == 4294967296)
-   //| 63 -> assert_norm (pow2 63 == 9223372036854775808)
-   //| 64 -> assert_norm (pow2 64 == 18446744073709551616)   
+   | 31 -> assert_norm (pow2 31 == 2147483648)
+   | 32 -> assert_norm (pow2 32 == 4294967296)
+   | 63 -> assert_norm (pow2 63 == 9223372036854775808)
+   | 64 -> assert_norm (pow2 64 == 18446744073709551616)   
    | _  -> ()
 
 (* NOTE: anything that you fix/update here should be reflected in [FStar.UInt.fst], which is mostly
@@ -92,8 +92,10 @@ val div(#n:pos): a:int_t n -> b:int_t n{b <> 0} -> Pure (int_t n)
 let div(#_) a b = a / b
 
 (* Modulo primitives *)
+#set-options "--max_ifuel 11"
 val mod(#n:pos): a:int_t n -> b:int_t n{b <> 0} -> int_t n
 let mod(#_) a b = a - ((a/b) * b)
+#reset-options
 (*
 (* Bitwise operators *)
 assume val logand: #n:pos -> int_t n -> int_t n -> Tot (int_t n)

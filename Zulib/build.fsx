@@ -27,14 +27,18 @@ let runFStar args =
 
   let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
   
+  let fstarExe = if EnvironmentHelper.isLinux 
+                 then "../tools/fstar-ocaml/fstar" 
+                 else "mono ../tools/fstar-dotnet/fstar.exe"
+
   let fstar = [|
-    "../tools/fstar/fstar.exe"; 
+    //"../tools/fstar/fstar.exe"; 
     "--smt";z3path;
     "--prims";primsFile;
     "--no_default_includes";
     "--include";"fstar/"; |]
-
-  ProcessHelper.Shell.Exec ("mono", join (fstar ++ args ++ zulibFiles))
+  //printfn "%s" (join (fstar ++ args ++ zulibFiles));
+  ProcessHelper.Shell.Exec (fstarExe, join (fstar ++ args ++ zulibFiles))
 
 Target "Clean" (fun _ -> 
   CleanDir extractedDir
@@ -43,7 +47,7 @@ Target "Clean" (fun _ ->
 
 Target "RecordHints" (fun _ -> 
   let args = 
-    [| "--z3refresh";   
+    [| //"--z3refresh";   
        "--verify_all";             
        "--record_hints" |]
 
@@ -56,9 +60,9 @@ Target "RecordHints" (fun _ ->
 Target "Extract" (fun _ ->   
   let args = 
     [| 
-       //"--use_hints";
+       "--use_hints";
        //"--z3refresh";   
-       //"--verify_all";             
+       "--verify_all";             
        "--codegen";"FSharp";              
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
