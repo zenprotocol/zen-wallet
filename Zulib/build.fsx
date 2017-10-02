@@ -27,16 +27,18 @@ let runFStar args =
 
   let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
   
-  let fstarBin = "../../FStar/bin/fstar"
+  let fstarExe = if EnvironmentHelper.isLinux 
+                 then "../tools/fstar-ocaml/fstar" 
+                 else "mono ../tools/fstar-dotnet/fstar.exe"
 
   let fstar = [|
-    //"../../FStar/bin/fstar.exe"; 
+    //"../tools/fstar/fstar.exe"; 
     "--smt";z3path;
     "--prims";primsFile;
     "--no_default_includes";
     "--include";"fstar/"; |]
   //printfn "%s" (join (fstar ++ args ++ zulibFiles));
-  ProcessHelper.Shell.Exec (fstarBin, join (fstar ++ args ++ zulibFiles))
+  ProcessHelper.Shell.Exec (fstarExe, join (fstar ++ args ++ zulibFiles))
 
 Target "Clean" (fun _ -> 
   CleanDir extractedDir
