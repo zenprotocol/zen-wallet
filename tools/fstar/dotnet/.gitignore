@@ -1,0 +1,9 @@
+Microsoft.Z3.dll
+libz3.dll
+z3.exe
+z3
+fstar-mono.exe
+tests-mono.exe
+fstar.exe
+FsLexYacc.Runtime.dll
+*.XML
