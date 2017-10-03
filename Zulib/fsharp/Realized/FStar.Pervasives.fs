@@ -160,6 +160,57 @@ let __proj__Err__item__msg = (fun ( projectee  :  'Aa result ) -> (match (projec
 msg
 end))
 
+type ex_pre =
+obj
+
+
+type 'Aa ex_post =
+'Aa result  ->  obj
+
+
+type 'Aa ex_wp =
+Prims.unit  ->  ex_pre
+
+
+type ('Aa, 'Ax, 'Ap) ex_return =
+'Ap
+
+
+type ('Ar1, 'Aa, 'Ab, 'Awp1, 'Awp2, 'Ap) ex_bind_wp =
+Prims.unit
+
+
+type ('Aa, 'Awp, 'Apost) ex_ite_wp =
+Prims.unit
+
+
+type ('Aa, 'Ap, 'Awp_then, 'Awp_else, 'Apost) ex_if_then_else =
+Prims.unit
+
+
+type ('Aa, 'Awp1, 'Awp2) ex_stronger =
+Prims.unit
+
+
+type ('Aa, 'Ab, 'Awp, 'Ap) ex_close_wp =
+Prims.unit
+
+
+type ('Aa, 'Aq, 'Awp, 'Ap) ex_assert_p =
+Prims.unit
+
+
+type ('Aa, 'Aq, 'Awp, 'Ap) ex_assume_p =
+Prims.unit
+
+
+type ('Aa, 'Ap) ex_null_wp =
+Prims.unit
+
+
+type ('Aa, 'Awp) ex_trivial =
+'Awp
+
 type 'Aa inversion = Prims.unit
 
 let allow_inversion = ()
