@@ -1,3 +1,4 @@
+#r @"packages/System.Reflection.Metadata/lib/netstandard1.1/System.Reflection.Metadata.dll"
 #r @"packages/FAKE/tools/FakeLib.dll"
 #r @"packages/Zen.FSharp.Compiler.Service/lib/net45/Zen.FSharp.Compiler.Service.dll"
 
@@ -19,26 +20,23 @@ let runFStar args =
   
   let zulibFiles = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
   
-  let join = Array.reduce (fun a b -> a + " " + b)
-  
-  // TODO: we should compile z3 for windows and OSX as well
-  let z3path = 
-    if EnvironmentHelper.isLinux then "../tools/z3/linux/z3" else "z3"        
+  let join = Array.reduce (fun a b -> a + " " + b)       
 
   let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
   
-  let fstarExe = if EnvironmentHelper.isLinux 
-                 then "../tools/fstar-ocaml/fstar" 
-                 else "mono ../tools/fstar-dotnet/fstar.exe"
+  let executable,fstarPath,z3Path = 
+    if EnvironmentHelper.isLinux then ("../tools/fstar/ocaml/fstar","", "../tools/z3/linux/z3")
+    elif EnvironmentHelper.isMacOS then ("mono","../tools/fstar/mono/fstar.exe", "z3")
+    else ("../tools/fstar/dotnet/fstar.exe","","../tools/z3/windows/z3.exe")
 
   let fstar = [|
-    //"../tools/fstar/fstar.exe"; 
-    "--smt";z3path;
+    fstarPath;
+    "--smt";z3Path;
     "--prims";primsFile;
     "--no_default_includes";
     "--include";"fstar/"; |]
   //printfn "%s" (join (fstar ++ args ++ zulibFiles));
-  ProcessHelper.Shell.Exec (fstarExe, join (fstar ++ args ++ zulibFiles))
+  ProcessHelper.Shell.Exec (executable, join (fstar ++ args ++ zulibFiles))
 
 Target "Clean" (fun _ -> 
   CleanDir extractedDir
@@ -48,7 +46,7 @@ Target "Clean" (fun _ ->
 Target "RecordHints" (fun _ -> 
   let args = 
     [| //"--z3refresh";   
-       "--verify_all";             
+       //"--verify_all";             
        "--record_hints" |]
 
   let exitCode = runFStar args
@@ -62,7 +60,7 @@ Target "Extract" (fun _ ->
     [| 
        "--use_hints";
        //"--z3refresh";   
-       "--verify_all";             
+       //"--verify_all";             
        "--codegen";"FSharp";              
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Option";
