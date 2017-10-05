@@ -96,7 +96,7 @@ namespace Zen
 		readonly HashDictionary<GraphNode> _Keys = new HashDictionary<GraphNode>();
 		readonly HashDictionary<int> _Indexes = new HashDictionary<int>();
 		readonly HashDictionary<byte[]> _Nodes = new HashDictionary<byte[]>();
-		readonly HashDictionary<Types.Transaction> _Txs = new HashDictionary<Types.Transaction>();
+        readonly HashDictionary<Consensus.Types.Transaction> _Txs = new HashDictionary<Consensus.Types.Transaction>();
 
 		byte[] memPool;
 		byte[] myWallet;
@@ -200,8 +200,8 @@ namespace Zen
 
 		void LinkUTXO()
 		{
-			HashDictionary<List<Types.Output>> txOutputs;
-			HashDictionary<Types.Transaction> txs;
+			HashDictionary<List<Consensus.Types.Output>> txOutputs;
+			HashDictionary<Consensus.Types.Transaction> txs;
 
 			var result = new GetUTXOSetAction() { Predicate = null }.Publish().Result;
 
@@ -241,9 +241,9 @@ namespace Zen
 					text += " Kalapas";
 				}
 
-				if (output.@lock is Types.OutputLock.ContractLock)
+				if (output.@lock is Consensus.Types.OutputLock.ContractLock)
 				{
-					var data = ((Types.OutputLock.ContractLock)output.@lock).data;
+					var data = ((Consensus.Types.OutputLock.ContractLock)output.@lock).data;
 
 					if (data != null)
 						text += " " + Convert.ToBase64String(data);

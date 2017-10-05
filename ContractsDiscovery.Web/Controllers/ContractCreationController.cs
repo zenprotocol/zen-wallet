@@ -51,7 +51,6 @@ namespace ContractsDiscovery.Web.Controllers
                         createCallOption.OracleErrorMessage = oracleContractManager.Message;
                     }
 
-                    createCallOption.ControlAssets = GetSecureTokens();
 					//createCallOption.OracleServiceUrl = WebConfigurationManager.AppSettings["oracleService"];
                     createCallOption.Tickers.AddRange(new List<String>(WebConfigurationManager.AppSettings["tickers"].Split(',')));
 
@@ -73,9 +72,7 @@ namespace ContractsDiscovery.Web.Controllers
 			var createCallOption = new CreateCallOption();
 
             createCallOption.Numeraire.SetValue(Request["numeraire"]);
-            createCallOption.ControlAsset.SetValue(Request["controlAsset"]);
 			createCallOption.Oracle.SetValue(Request["oracle"]);
-			createCallOption.ControlAssetReturn.SetValue(Request["controlAssetReturn"]);
 			createCallOption.Underlying.SetValue(Request["underlying"]);
 			createCallOption.Price.SetValue(Request["price"]);
             createCallOption.Strike.SetValue(Request["strike"]);
@@ -91,8 +88,8 @@ namespace ContractsDiscovery.Web.Controllers
                 try {
                     var callOptionParameters = new ContractExamples.QuotedContracts.CallOptionParameters(
                         createCallOption.Numeraire.Address.Bytes,
-                        createCallOption.ControlAsset.Address.Bytes,
-                        createCallOption.ControlAssetReturn.Address.Bytes,
+						new byte[] { },
+						new byte[] { },
                         createCallOption.Oracle.Address.Bytes,
                         createCallOption.Underlying.Value,
                         createCallOption.Price.Decimal,
@@ -108,8 +105,6 @@ namespace ContractsDiscovery.Web.Controllers
 					{
 						contractType = "calloption",
 						numeraire = Convert.ToBase64String(callOptionParameters.numeraire),
-						controlAsset = Convert.ToBase64String(callOptionParameters.controlAsset),
-						controlAssetReturn = Convert.ToBase64String(callOptionParameters.controlAssetReturn),
 						oracle = Convert.ToBase64String(callOptionParameters.oracle),
 						underlying = callOptionParameters.underlying,
 						price = "" + callOptionParameters.price,
@@ -120,8 +115,6 @@ namespace ContractsDiscovery.Web.Controllers
                     var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
 					var contractCode = tpl
 						 .Replace("__numeraire__", Convert.ToBase64String(callOptionParameters.numeraire))
-						 .Replace("__controlAsset__", Convert.ToBase64String(callOptionParameters.controlAsset))
-						 .Replace("__controlAssetReturn__", Convert.ToBase64String(callOptionParameters.controlAssetReturn))
 						 .Replace("__oracle__", Convert.ToBase64String(callOptionParameters.oracle))
 						 .Replace("__underlying__", callOptionParameters.underlying)
 						 .Replace("__price__", "" + callOptionParameters.price)
