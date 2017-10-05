@@ -1,30 +1,6 @@
 [
-  "õ=K/šä\u001ff’ƒËÃ\u001d\n",
+  "÷¹¾ê4gt\"aÎ?˜¿æ>(",
   [
-    [
-      "Zen.Crypto.hash",
-      1,
-      2,
-      1,
-      [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
-    ],
-    [
-      "Zen.Crypto.signature",
-      1,
-      2,
-      1,
-      [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
-    ],
-    [
-      "Zen.Crypto.key",
-      1,
-      2,
-      1,
-      [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
-    ],
     [
       "Zen.Crypto.sha2_256",
       1,
@@ -75,22 +51,6 @@
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
       ],
-      0
-    ],
-    [
-      "Zen.Crypto.sign",
-      1,
-      2,
-      1,
-      [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
-    ],
-    [
-      "Zen.Crypto.verify",
-      1,
-      2,
-      1,
-      [ "@query", "projection_inverse_BoxBool_proj_0" ],
       0
     ]
   ]
