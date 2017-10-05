@@ -13,4 +13,3 @@ packaging/linux/zen.tar.gz
 Zulib/fsharp/Extracted
 .fake
 paket-files/
-Zulib/fstar/*.hints
