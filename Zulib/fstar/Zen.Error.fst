@@ -1,25 +1,25 @@
 module Zen.Error
 open Zen.Base
 
-val return(#a:Type): a -> result a
-let return(#_) = V
+val ret(#a:Type): a -> result a
+let ret(#_) = V
 
-val raise: exn -> result 'a
-let raise e = E e
+val fail: exn -> result 'a
+let fail e = E e
 
-val failwith: string -> result 'a
-let failwith msg = Err msg
+val failw: string -> result 'a
+let failw msg = Err msg
 
 val bind(#a #b:Type): result a -> (a -> result b) -> result b
 let bind #_ #_ mx f =
   match mx with
   | V x -> f x
-  | E e -> raise e
-  | Err msg -> failwith msg
+  | E e -> fail e
+  | Err msg -> failw msg
 
 val map(#a #b:Type): (a -> b) -> result a -> result b
 let map #_ #_ f mx =
-  bind mx (return << f)
+  bind mx (ret << f)
 
 val ap(#a #b:Type): result (a -> b) -> result a -> result b
 let ap #_ #_ mf mx =
@@ -28,8 +28,8 @@ let ap #_ #_ mf mx =
 val join(#a:Type): result (result a) -> result a
 let join(#_) = function
   | V mx -> mx
-  | E e -> raise e
-  | Err msg -> failwith msg
+  | E e -> fail e
+  | Err msg -> failw msg
 
 val bind2(#a #b #c:Type):
   result a -> result b -> (a -> b -> result c) -> result c
