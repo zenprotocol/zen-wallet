@@ -1,4 +1,4 @@
-﻿module ZenModule
+module ZenModule
 
 open Zen.Base
 open Zen.Types
@@ -9,7 +9,7 @@ module      V = Zen.Vector
 module    U64 = FStar.UInt64
 module Crypto = Zen.Crypto
 
-let numeraire: hash = Zen.Util.hashFromBase64 "__numeraire__"
+let numeraire: hash = Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 let price: U64.t = 100UL
 //assume val ownerPubKey: Crypto.key
@@ -33,10 +33,34 @@ type state = { tokensIssued : U64.t;
                collateral   : U64.t;
                counter      : U64.t }
 
+
+(*assume val isAuthenticated: inputMsg -> bool
+
+val isAuthenticated : inputMsg -> bool
+let isAuthenticated inputMsg =
+  if inputMsg.cmd = 0uy || // collateralize
+     inputMsg.cmd = 3uy    // close
+  then Crypto.verifyInputMsg inputMsg ownerPubKey
+  else true
+
+val correctDataForm : inputMsg -> bool
+let correctDataForm inputMsg =
+  if inputMsg.cmd = 1uy then
+    match inputMsg.data with
+    | (| _, Data2 _ _ (Hash senderPKHash) (Hash returnPKHash) |) -> true
+    | _ -> false
+  else false
+
+val isValid: inputMsg -> bool
+let isValid inputMsg = isAuthenticated inputMsg &&
+                       correctDataForm inputMsg*)
+
 val getOutputs: inputMsg ->
   receiving : option output *
   state     : option output
 let getOutputs { data = (| _, data |); utxo = utxo } = match data with
+//  | Outpoint receiving
+//    -> utxo receiving, None
   | Data2 _ _ (Outpoint receiving) (Optional _ state)
     -> let state = match state with
                     | Some (Outpoint o) -> utxo o
@@ -108,6 +132,18 @@ let collateralize s receiving = let open U64 in
                         tokensIssued = state.tokensIssued +%^ tokensPurchased }
   | _ -> None*)
 
+//assume val exercise     : state -> state
+
+//assume val close: inputMsg -> state -> option state
+(*let close inputMsg state =
+  match inputMsg.data with
+  | (| _, Hash returnPKHash |) ->
+    let output = { lock=PKLock returnPKHash;
+                   spend= { asset =numeraire;
+                            amount=state.wallet `getFunds` numeraire } } in
+    Some @ { state with wallet = state.wallet `addOutput` output;
+                        collateral = 0UL }
+  | _ -> None*)
 
 val main: inputMsg -> cost (result transactionSkeleton) 0
 let main i = let open Zen.Option in

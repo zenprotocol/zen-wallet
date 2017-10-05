@@ -1,4 +1,4 @@
-﻿module ZenModule
+module ZenModule
 
 module V = Zen.Vector
 module O = Zen.Option
@@ -10,6 +10,14 @@ val parse_outpoint: n:nat & inputData n -> option outpoint
 let parse_outpoint = function
   | (| _ , Outpoint o |) -> Some o
   | _ -> None
+
+(*
+TODO:
+val failWith(#a:Type): string -> result a
+let failWith(#_) = Err
+
+exception FAIL1
+*)
 
 val main: inputMsg -> cost (result transactionSkeleton) 0
 let main i =
