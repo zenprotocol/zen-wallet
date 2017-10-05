@@ -16,7 +16,7 @@ using Wallet.core.Data;
 namespace Miner
 {
 	//TODO: refactor duplication
-	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
+	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, FSharpResult<Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>, string>>;
 	using UtxoLookup = FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>;
 
 	public class MinerManager : ResourceOwner
@@ -146,8 +146,25 @@ namespace Miner
 				try
 				{
                     var code = new GetContractCodeAction(contractHash).Publish().Result;
-                    var compiledCodeOpt = ContractExamples.Execution.compile(System.Text.Encoding.ASCII.GetString(code));
-                    return ContractExamples.Execution.deserialize(compiledCodeOpt.Value);
+
+					//TODO: module name
+					var extration = ContractExamples.FStarExecution.extract(System.Text.Encoding.ASCII.GetString(code));
+
+					if (FSharpOption<string>.get_IsNone(extration))
+					{
+						MinerTrace.Information("Could not extract contract");
+						return null;
+					}
+
+					var compilation = ContractExamples.FStarExecution.compile(extration.Value);
+
+					if (FSharpOption<byte[]>.get_IsNone(compilation))
+					{
+						MinerTrace.Information("Could not complie contract");
+						return null;
+					}
+
+					return ContractExamples.FStarExecution.deserialize(compilation.Value);
 				}
 				catch (Exception e)
 				{
