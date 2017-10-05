@@ -17,7 +17,7 @@ using static BlockChain.BlockVerificationHelper;
 namespace BlockChain
 {
 	using TransactionSkeleton = Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
-	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
+    using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, FSharpResult<Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>, string>>;
 	using UtxoLookup = FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>;
 	using ContractFunctionInput = Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>;
 
@@ -941,7 +941,15 @@ namespace BlockChain
 
 			try
             {
-                transactionSkeleton = contractFunction.Invoke(contractFunctionInput) as TransactionSkeleton;
+                var result = contractFunction.Invoke(contractFunctionInput);
+
+                if (result.IsError)
+                {
+                    BlockChainTrace.Information("Contract resulted in error: " + result.ErrorValue);
+                    return false;
+                } 
+
+                transactionSkeleton = result.ResultValue;
             }
 			catch (Exception e)
 			{
@@ -955,7 +963,7 @@ namespace BlockChain
             transaction = new Types.Transaction(
                 Tests.tx.version,
                 transactionSkeleton.Item1,
-                ListModule.OfSeq<byte[]>(isWitness ? new byte[][] { message } : new byte[][] { }),
+                ListModule.OfSeq(isWitness ? new byte[][] { message } : new byte[][] { }),
                 transactionSkeleton.Item2,
                 FSharpOption<Types.ExtendedContract>.None //TODO: get from txSkeleton.Item3
             );
