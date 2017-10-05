@@ -59,11 +59,12 @@ Target "Extract" (fun _ ->
   let args =
     [|
        "--use_hints";
-       //"--z3refresh";   
+       //"--z3refresh";
        //"--verify_all";
        "--codegen";"FSharp";
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Error";
+       "--extract_module";"Zen.ErrorT";
        "--extract_module";"Zen.Option";
        "--extract_module";"Zen.OptionT";
        "--extract_module";"Zen.Tuple";
@@ -102,6 +103,7 @@ Target "Build" (fun _ ->
       "fsharp/Realized/Zen.Cost.Realized.fs";
       "fsharp/Extracted/Zen.Cost.Extracted.fs";
       "fsharp/Extracted/Zen.OptionT.fs";
+      "fsharp/Extracted/Zen.ErrorT.fs";
       "fsharp/Extracted/Zen.TupleT.fs";
       "fsharp/Extracted/Zen.Vector.fs";
       "fsharp/Realized/Zen.Array.Realized.fs";
