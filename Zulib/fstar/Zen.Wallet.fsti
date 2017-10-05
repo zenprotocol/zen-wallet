@@ -31,7 +31,7 @@ assume AddOutput_GetTransaction:
   forall (w:wallet) (o:output{o.spend.amount <=^ w `getFunds` o.spend.asset}).
   let num_outputs = Tx?.l2 @ getTransaction w in
   match getTransaction (addOutput w o) with
-  | Tx _ _ l outputs _ _ ->
+  | Tx #_ _ #l outputs _ ->
     l = num_outputs + 1 /\ force (V.nth outputs (l-1)) == o
 
 (*

@@ -70,6 +70,7 @@ noeq type data : nat -> Type =
   | UInt32Array:  l:nat -> a: A.t U32.t l -> data l
   | UInt64Vector: l:nat -> v: V.t U64.t l -> data l
   | UInt64Array:  l:nat -> a: A.t U64.t l -> data l
+  | Optional: l:nat -> option (data l) -> data (l+1)
   | Data2: n1:nat -> n2:nat -> _1:data n1 -> _2:data n2 -> data (n1+n2)
   | Data3: n1:nat -> n2:nat -> n3:nat -> _1:data n1 -> _2:data n2 -> _3:data n3 -> data (n1+n2+n3)
   | Data4: n1:nat -> n2:nat -> n3:nat -> n4:nat -> _1:data n1 -> _2:data n2 -> _3:data n3 -> _4:data n4 -> data (n1+n2+n3+n4)
@@ -96,9 +97,9 @@ and outputLock =
 and output = {lock: outputLock; spend: spend}
 type inputData (n:nat) = data n
 
-unopteq type transactionSkeleton = | Tx: l1:nat -> outpoints:V.t outpoint l1
-                                      -> l2:nat -> outputs:  V.t output l2
-                                      -> l3:nat -> data:data l3
+unopteq type transactionSkeleton = | Tx: #l1:nat -> outpoints:V.t outpoint l1
+                                      -> #l2:nat -> outputs:  V.t output l2
+                                      -> option (l3:nat & data l3)
                                       -> transactionSkeleton
 
 type utxo = outpoint -> option output
@@ -107,9 +108,8 @@ unopteq type inputMsg = {
   cmd: opcode;
   data: n:nat & inputData n;
   contractHash: hash;
-  utxo: utxo;
-  lastTx: option outpoint
-  }
+  utxo: utxo
+}
 
 
 val maxCost: nat
