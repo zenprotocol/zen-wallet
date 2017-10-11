@@ -9,9 +9,10 @@ using Microsoft.FSharp.Collections;
 
 namespace BlockChain
 {
-    using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, FSharpResult<Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>, string>>;
+	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, FSharpResult<Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>, string>>;
+	using ContractCostFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, System.Numerics.BigInteger>;
 
-    public class ACSItem
+	public class ACSItem
 	{
 		public byte[] Hash { get; set; }
 		public byte[] CostFn { get; set; }
@@ -150,7 +151,7 @@ namespace BlockChain
                 return null;
             }
 
-            FSharpOption<ContractFunction> deserialization = FSharpOption<ContractFunction>.None;
+            var deserialization = FSharpOption<Tuple<ContractFunction, ContractCostFunction>>.None;
 
             try
             {
@@ -161,7 +162,7 @@ namespace BlockChain
 				BlockChainTrace.Error("Error deserializing contract", e);
 			}
 
-            if (FSharpOption<ContractFunction>.get_IsNone(deserialization) || deserialization == null)
+            if (FSharpOption<Tuple<ContractFunction, ContractCostFunction>>.get_IsNone(deserialization) || deserialization == null)
             {
                 BlockChainTrace.Information("Reserializing contract");
 
@@ -180,7 +181,7 @@ namespace BlockChain
 
                     deserialization = ContractExamples.FStarExecution.deserialize(compilation.Value);
 
-					if (FSharpOption<ContractFunction>.get_IsNone(deserialization))
+					if (FSharpOption<Tuple<ContractFunction, ContractCostFunction>>.get_IsNone(deserialization))
 					{
 						BlockChainTrace.Error("Error deserializing contract");
 						return null;
@@ -193,7 +194,7 @@ namespace BlockChain
 				}
 			}
 
-			return deserialization.Value;
+			return deserialization.Value.Item1;
 		}
 	}
 }

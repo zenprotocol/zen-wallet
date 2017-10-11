@@ -20,10 +20,14 @@ let getContractFunction contract =
     Assert.NotNull (compiled, "Should compile") // https://stackoverflow.com/questions/10435052/f-passing-none-to-function-getting-null-as-parameter-value
     Assert.That ((Option.isSome compiled), "Should compile")
 
-    let func = compiled |> Option.get |> deserialize
-    Assert.That ((Option.isSome func), "Should deserialize")
+    let mainFunc = compiled |> Option.get |> deserialize
 
-    Option.get func
+    Assert.That ((Option.isSome mainFunc), "Should deserialize")
+
+    match mainFunc with 
+    | Some (mf, cf) -> mf, cf
+    | _ -> failwith "Sould deserialize"
+
 
 let createHash b : Hash = Array.map (fun x -> b) [|0..31|]
        
@@ -32,7 +36,7 @@ context.Serializers.RegisterOverride<data<unit>>(new DataSerializer(context))
 
 [<Test>]
 let ``TestSecureToken``() =
-    let func = getContractFunction "SecureToken"
+    let mainFunc, costFunc = getContractFunction "SecureToken"
 
     let randomAddr = Array.map (fun x -> x*x) [|0uy..31uy|]
     let address = System.Convert.FromBase64String "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME="
@@ -56,7 +60,13 @@ let ``TestSecureToken``() =
 
     let message = Array.append [|0uy|] serializedOutpoint 
 
-    let resultSuccess = func (message, randomhash, utxo)
+    let input = (message, randomhash, utxo)
+
+    let cost = costFunc input
+
+    Assert.That (cost, Is.EqualTo 0)
+
+    let resultSuccess = mainFunc input
 
     match resultSuccess with 
     | Ok (outpointList, outputList, data) -> 
@@ -88,7 +98,7 @@ let ``TestSecureToken``() =
     let utxoNone : ContractExamples.Execution.Utxo =
         fun outpoint -> None
 
-    let resultCannotResolvedOutpoint = func (message, randomhash, utxoNone)
+    let resultCannotResolvedOutpoint = mainFunc (message, randomhash, utxoNone)
 
     match resultCannotResolvedOutpoint with
     | Ok _ -> Assert.Fail()
@@ -97,7 +107,7 @@ let ``TestSecureToken``() =
 
 [<Test>]
 let ``TestCallOption``() =
-    let func = getContractFunction "CallOption"
+    let mainFunc, costFunc = getContractFunction "CallOption"
 
     let numeraire = Consensus.Tests.zhash
     let contractHash = createHash 10uy
@@ -158,14 +168,23 @@ let ``TestCallOption``() =
             | _ -> Assert.Fail "unexpected data"
         | _ -> Assert.Fail "unexpected lock type"
 
-    let result = func (makeParams (0uy, 1100UL, None))
+
+    let input = makeParams (0uy, 1100UL, None)
+    let cost = costFunc input
+    Assert.That (cost, Is.EqualTo 0)
+
+    let result = mainFunc input
     let state = getStateOutput result
     match state with
     | Error msg -> Assert.Fail msg
     | Ok stateOutput -> 
         assertStateCorrectness ("collateralize (no initial state)", stateOutput, 1100UL, 0UL, 1UL)
 
-        let result = func (makeParams (0uy, 550UL, Some stateOutput))
+        let input = makeParams (0uy, 550UL, Some stateOutput)
+        let cost = costFunc input
+        Assert.That (cost, Is.EqualTo 0)
+
+        let result = mainFunc input
         let state = getStateOutput result
         match state with
         | Error msg -> Assert.Fail msg

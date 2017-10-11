@@ -5,8 +5,12 @@ open Zen.Types.Extracted
 open FStar.Pervasives
 open Zen
 
-type ContractFunction = inputMsg -> Zen.Cost.Realized.cost<result<transactionSkeleton>, Prims.unit>
 type ContractResult = Result<TransactionSkeleton, string>
+//type MainFunction = (inputMsg -> ContractResult) * (inputMsg -> int64)
+
+//  : cf:costFunction
+//           -> mf:(imsg:inputMsg -> Zen.Cost.t (result transactionSkeleton) (Zen.Cost.force ((CostFunc?.f cf) imsg)))
+//           -> mainFunction
 
 let private unCost (Zen.Cost.Realized.C inj:Zen.Cost.Realized.cost<'Aa, 'An>) : 'Aa = inj.Force()
 
@@ -186,7 +190,7 @@ let private makeDTuple (data : data<unit>) : Prims.dtuple2<Prims.nat, data<unit>
         |> System.NotImplementedException
         |> raise
 
-let private convertInput : ContractFunctionInput -> inputMsg = 
+let convertInput : ContractFunctionInput -> inputMsg = 
     function (message, contractHash, utxo) -> 
         let unpacked = context.GetSerializer<data<unit>>().UnpackSingleObject message.[1..]
         //let fundsOutpoint, data = match unpacked with 
@@ -216,7 +220,12 @@ let private convertResult (txSkeleton:result<transactionSkeleton>) : ContractRes
         let convertList f list = List.map f (vectorToList list)
         Ok (convertList fstToFsOutpoint outpoints, convertList fstToFsOutput outputs, [||])
 
-let convertContractFunction (fn:ContractFunction) = convertInput >> fn >> unCost >> convertResult
+let convertContractFunction = function 
+    | MainFunc (CostFunc (_, cf), mf) -> 
+        convertInput >> mf >> unCost >> convertResult,
+        convertInput >> cf >> unCost// function 
+       // | Cost.Realized.C (Lazy i) -> i
+
 
 open NUnit.Framework
 

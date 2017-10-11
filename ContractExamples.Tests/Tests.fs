@@ -124,14 +124,16 @@ let ``TestCallOptionMessageComposition``() =
         | Error msg -> 
             Error ("contract responded with error message: " + msg)
 
-    let result = result {
+    let result = 
         match DataGenerator.makeJson (meta, utxos, 0uy, args) with 
         | Ok json ->
-            let funcResult = func (DataGenerator.makeMessage (json, outpoint), contractHash, utxo)
-            let! state = getStateOutput funcResult
-            return! checkStateCorrectness (state, amount, 0UL, 1UL)
-        | Error x -> return! Error ("Message generator error: " + x.ToString())
-    }
+            result {
+                let funcResult = func (DataGenerator.makeMessage (json, outpoint), contractHash, utxo)
+                let! state = getStateOutput funcResult
+                return! checkStateCorrectness (state, amount, 0UL, 1UL)
+            }
+        | Error x -> Error ("Message generator error: " + x.ToString())
+    
 
     match result with 
     | Error x -> Assert.Fail x
