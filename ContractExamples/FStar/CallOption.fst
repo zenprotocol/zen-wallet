@@ -4,9 +4,13 @@ open Zen.Base
 open Zen.Types
 open Zen.Wallet
 open Zen.Cost
-
 module      V = Zen.Vector
 module    U64 = FStar.UInt64
+module      E = Zen.Error
+module      O = Zen.Option
+module     OT = Zen.OptionT
+module     ZT = Zen.Types
+module     ET = Zen.ErrorT
 module Crypto = Zen.Crypto
 
 let numeraire: hash = Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -23,16 +27,17 @@ type command =
   | Close
   | Fail
 
-val parseCommand: opcode -> command
-let parseCommand  opcode = if opcode = 0uy then Collateralize
-                      else if opcode = 1uy then Buy
-                      else if opcode = 2uy then Exercise
-                      else if opcode = 3uy then Close else Fail
+val parseCommand: opcode -> cost command 0
+
+//due to an Elaborator issue no wrapping 'ret' can be used
+let parseCommand  opcode = begin if opcode = 0uy then ret Collateralize
+                            else if opcode = 1uy then ret Buy
+                            else if opcode = 2uy then ret Exercise
+                            else if opcode = 3uy then ret Close else ret Fail end
 
 type state = { tokensIssued : U64.t;
                collateral   : U64.t;
                counter      : U64.t }
-
 
 (*assume val isAuthenticated: inputMsg -> bool
 
@@ -55,66 +60,75 @@ val isValid: inputMsg -> bool
 let isValid inputMsg = isAuthenticated inputMsg &&
                        correctDataForm inputMsg*)
 
+val getOutpoints: inputMsg -> cost (result (receiving: outpoint * state: option outpoint)) 0
+let getOutpoints { data = (| _, data |); utxo = utxo } =
+  match data with
+  | Data2 _ _ (Outpoint receiving) (Optional _ state) ->
+    let state = match state with
+      | Some (Outpoint o) -> OT.some o
+      | _ -> OT.none in
+    state <-- state;
+    ET.ret (receiving, state)
+  | _ -> ET.failw "bad data format"
 
 
-val getOutputs: inputMsg ->
-  receiving : option output *
-  state     : option output
-let getOutputs { data = (| _, data |); utxo = utxo } = match data with
-  | Data2 _ _ (Outpoint receiving) (Optional _ state)
-    -> let state = match state with
-                    | Some (Outpoint o) -> utxo o
-                    | _ -> None in
-       utxo receiving, state
-  | _ -> None, None
+val getState: contractHash:hash -> output -> cost (option state) 0
+let getState contractHash =
+  begin function
+   | { spend = { asset = asset; amount = collateral };
+        lock = ContractLock cHash _ (Data2 _ _ (UInt64 tokensIssued)
+                                               (UInt64 counter)) }
+         -> if contractHash <> cHash || asset <> numeraire
+            then OT.none
+            else OT.some @ { tokensIssued = tokensIssued;
+                          collateral   = collateral;
+                          counter      = counter }
+    | _ -> OT.none
+  end
 
-val getState: contractHash:hash -> output -> option state
-let getState contractHash = function
-  | { spend = { asset = asset; amount = collateral };
-      lock = ContractLock cHash _ (Data2 _ _ (UInt64 tokensIssued)
-                                             (UInt64 counter)) }
-     -> if contractHash <> cHash || asset <> numeraire
-        then None
-        else Some @ { tokensIssued = tokensIssued;
-                      collateral   = collateral;
-                      counter      = counter }
-  | _ -> None
-
-val makeStateOutput: contractHash:hash -> state -> output
+val makeStateOutput: contractHash:hash -> state -> cost output 0
 let makeStateOutput contractHash state =
-  let data = Data2 _ _
+  let data = ret @ Data2 _ _
                    (UInt64 state.tokensIssued)
                    (UInt64 state.counter) in
-  {  spend = { asset = numeraire; amount = state.collateral };
-     lock = ContractLock contractHash _ data }
+  data <-- data;
+  ret @ {  spend = { asset = numeraire; amount = state.collateral };
+            lock = ContractLock contractHash _ data }
 
 
 val makeTx:
      contractHash:hash
-  -> #l:nat -> V.t outpoint l
+  -> outpoint
   -> state
   -> option output
-  -> transactionSkeleton
-let makeTx contractHash #_ outpoints state output =
-  let stateOutput = V.VCons (makeStateOutput contractHash state) V.VNil in
-  match output with
-    | None        -> Tx outpoints stateOutput None
-    | Some output -> Tx outpoints (V.VCons output stateOutput) None
+  -> cost transactionSkeleton 0
+let makeTx contractHash outpoint state output = let open V in
+  stateOutput <-- makeStateOutput contractHash state;
+
+  begin match output with
+    | None        -> ret @ Tx [| outpoint |] [| stateOutput |] None
+    | Some output -> ret @ Tx [| outpoint |] [| output; stateOutput |] None
+  end
+
 
 val collateralize:
-     option state
+     s:option state
   -> receiving: output
-  -> option state * option output
+  -> cost (result state) 0
 let collateralize s receiving = let open U64 in
-  if receiving.spend.asset <> numeraire then None, None
+  if receiving.spend.asset <> numeraire then
+    ET.failw "invalid asset type received"
   else
-    let receiveAmount = receiving.spend.amount in
+    let receiveAmount = ret receiving.spend.amount in
+    receiveAmount <-- receiveAmount;
     let state = match s with
-      | None -> { counter = 1UL; collateral = receiveAmount; tokensIssued = 0UL }
-      | Some s -> { s with counter    = s.counter +%^ 1UL;            // increment the counter
+      | None -> ret @ { counter = 1UL; collateral = receiveAmount; tokensIssued = 0UL }
+      | Some s -> ret @ { s with counter    = s.counter +%^ 1UL;            // increment the counter
                            collateral = s.collateral +%^ receiveAmount } in
 
-    Some state, None
+    state <-- state;
+    ET.ret state
+
 
 //assume val buy: inputMsg -> state -> option state
 (*let buy inputMsg state = let open U64 in
@@ -145,12 +159,52 @@ let collateralize s receiving = let open U64 in
                         collateral = 0UL }
   | _ -> None*)
 
-val main: inputMsg -> cost (result transactionSkeleton) 0
-let main i = let open Zen.Option in
+val cost_fn: inputMsg -> cost nat 0
+let cost_fn _ = ret 0
+
+val callOption: inputMsg -> cost (result transactionSkeleton) 0
+let callOption i = let open ET in
    //TODO: Improve pattern match on machine integers.
   //if not (isValid inputMsg) then fail inputMsg else
 
-  let receiving, state = getOutputs i in
+  outpoints <-- getOutpoints i;
+
+  let (receivingOutpoint, stateOutpoint) = outpoints in
+
+  receivingOutput <-- begin match i.utxo receivingOutpoint with
+                      | Some output -> ret output
+                      | None -> failw "could not resolve receiving outpoint"
+                      end;
+
+  let stateOutput = stateOutpoint `O.bind` i.utxo in
+
+  let open Zen.Cost in
+  state <-- stateOutput `OT.retBind` getState i.contractHash;
+  cmd <-- parseCommand i.cmd;
+
+  let state', output = match cmd with
+     | Collateralize -> collateralize state receivingOutput, None
+     | Buy
+     | Exercise
+     | Close
+     | Fail -> ET.failw "invalid opcode", None in
+
+  let open ET in state' <-- state';
+
+  retT (makeTx i.contractHash receivingOutpoint state' output)
+
+val main: mainFunction
+let main = MainFunc (CostFunc cost_fn) callOption
+
+
+(*
+let pat = e1 in e2
+=
+(fun pat -> e2) e1
+
+*)
+
+(*
   let state = state `bind` getState i.contractHash in
 
   ret (match receiving with

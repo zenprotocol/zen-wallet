@@ -15,10 +15,9 @@ let assemblyNames = assemblies |>
                     Array.toList
                     |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
 
-//TODO: return an un-costed function instead? (to be persisted to disk)
 let suffix = """
 open MBrace.FsPickler.Combinators
-let pickler = Pickler.auto<Zen.Types.Extracted.inputMsg -> Zen.Cost.Realized.cost<FStar.Pervasives.result<Zen.Types.Extracted.transactionSkeleton>, Prims.unit>>
+let pickler = Pickler.auto<Zen.Types.Extracted.mainFunction>
 let pickled = Binary.pickle pickler main
 """
 
@@ -68,13 +67,20 @@ let extract source =
 
     try
         try
-            let moduleName = "ZenModule"
+            let moduleName = "ZenModule" //TODO: use contract's hash as module name?
             Directory.CreateDirectory tmp |> ignore
             let fn = (FileInfo (moduleName + ".fst")).Name
             let fni = Path.Combine(tmp, fn)
+            let fn'elabed = Path.Combine(fni, ".elab.fst")
             let fno = Path.ChangeExtension(fn, ".fs")
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
+
+            //ElaboratorMain.elaborate fni fn'elabed
+            //let elaborate input_filepath output_target =
+            //let ast = parse_file input_filepath
+            //let elab'd_ast = elab_ast ast
+            //write_ast_to_file elab'd_ast output_target;
 
             let args =
                 [|
@@ -85,7 +91,7 @@ let extract source =
                     "--prims"; Path.Combine (resolvePath Settings.Zulib, "prims.fst");
                     "--extract_module"; moduleName;
                     "--include"; resolvePath Settings.Zulib;
-                    "--no_default_includes"; fni;
+                    "--no_default_includes"; fni; //fn'elabed;
                     "--verify_all"
                     "--odir"; tmp
                 |]
@@ -126,14 +132,14 @@ let extract source =
         Directory.Delete (tmp, true)
 
 open FStarCompatibility
+open Zen.Types.Extracted
 
 let deserialize (bs:byte[]) = 
-    let pickler = Pickler.auto<ContractFunction>
     try
-        bs |> 
-        Binary.unpickle pickler |> 
-        convertContractFunction |> 
-        Some
+        bs 
+        |> Binary.unpickle Pickler.auto<mainFunction> 
+        |> convertContractFunction 
+        |> Some
     with msg -> 
         //TODO: trace/log?
         printfn "%A" msg
