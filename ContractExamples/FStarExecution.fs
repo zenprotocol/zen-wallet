@@ -76,11 +76,7 @@ let extract source =
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
 
-            //ElaboratorMain.elaborate fni fn'elabed
-            //let elaborate input_filepath output_target =
-            //let ast = parse_file input_filepath
-            //let elab'd_ast = elab_ast ast
-            //write_ast_to_file elab'd_ast output_target;
+            IOUtils.elaborate fno fn'elabed
 
             let args =
                 [|
@@ -91,7 +87,7 @@ let extract source =
                     "--prims"; Path.Combine (resolvePath Settings.Zulib, "prims.fst");
                     "--extract_module"; moduleName;
                     "--include"; resolvePath Settings.Zulib;
-                    "--no_default_includes"; fni; //fn'elabed;
+                    "--no_default_includes"; fn'elabed;
                     "--verify_all"
                     "--odir"; tmp
                 |]
