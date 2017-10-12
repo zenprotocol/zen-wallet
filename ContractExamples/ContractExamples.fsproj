@@ -111,23 +111,30 @@
     <Reference Include="Zulib">
       <HintPath>..\Zulib\bin\Zulib.dll</HintPath>
     </Reference>
+    <Reference Include="parser">
+      <HintPath>..\..\fstar-repo\bin\parser.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Consensus\Consensus.fsproj">
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FStar-Utils\FStar-Utils.fsproj">
+      <Project>{21857719-877E-43D5-913C-6050E4FC7372}</Project>
+      <Name>FStar-Utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="MaybeWorkflow.fs" />
     <Compile Include="Merkle.fs" />
+    <Compile Include="MerkleTests.fs" />
     <Compile Include="Oracle.fs" />
     <Compile Include="Contracts.fs" />
     <Compile Include="QuotedContracts.fs" />
     <Compile Include="Execution.fs" />
     <Compile Include="ContractTests.fs" />
-    <Compile Include="MerkleTests.fs" />
     <Compile Include="FStarCompatibility.fs" />
     <Compile Include="FStarExecution.fs" />
     <Compile Include="FStarContractsTests.fs" />

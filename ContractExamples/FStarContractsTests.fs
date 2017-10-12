@@ -64,7 +64,7 @@ let ``TestSecureToken``() =
 
     let cost = costFunc input
 
-    Assert.That (cost, Is.EqualTo 0)
+    Assert.That (cost, Is.EqualTo 0I)
 
     let resultSuccess = mainFunc input
 

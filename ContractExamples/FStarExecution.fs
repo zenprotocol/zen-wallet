@@ -76,7 +76,8 @@ let extract source =
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
 
-            IOUtils.elaborate fno fn'elabed
+            //IOUtils.elaborate fni fn'elabed
+            let fn'elabed = fni
 
             let args =
                 [|
