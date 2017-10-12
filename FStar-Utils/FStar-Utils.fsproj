@@ -34,10 +34,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="basic">
-      <HintPath>..\FStar\bin\basic.dll</HintPath>
+      <HintPath>..\tools\FStar\bin\basic.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.PPrint">
-      <HintPath>..\FStar\bin\FSharp.PPrint.dll</HintPath>
+      <HintPath>..\tools\FStar\bin\FSharp.PPrint.dll</HintPath>
     </Reference>
     <Reference Include="FSharpx.Async, Version=1.13.2.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>packages\FSharpx.Async.1.13.2\lib\net45\FSharpx.Async.dll</HintPath>
@@ -50,10 +50,10 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="parser">
-      <HintPath>..\FStar\bin\parser.dll</HintPath>
+      <HintPath>..\tools\FStar\bin\parser.dll</HintPath>
     </Reference>
     <Reference Include="prettyprint">
-      <HintPath>..\FStar\bin\prettyprint.dll</HintPath>
+      <HintPath>..\tools\FStar\bin\prettyprint.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,8 +67,11 @@
     <Reference Include="FSharp.Control.AsyncSeq">
       <HintPath>packages\FSharp.Control.AsyncSeq.2.0.16\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>
     </Reference>
+    <Reference Include="FsControl">
+      <HintPath>..\packages\FsControl.2.0.0-CI00120\lib\net40\FsControl.dll</HintPath>
+    </Reference>
     <Reference Include="FsControl.Core">
-      <HintPath>..\Elaborator\packages\FsControl.1.0.9\lib\net40\FsControl.Core.dll</HintPath>
+      <HintPath>packages\FsControl.1.0.9\lib\net40\FsControl.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
