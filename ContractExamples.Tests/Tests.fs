@@ -39,7 +39,7 @@ open ResultWorkflow
 
 [<Test>]
 let ``TestCallOptionMessageComposition``() =
-    let func = getContractFunction "CallOption"
+    let func, costFunc = getContractFunction "CallOption"
 
     let numeraire = createHash 0uy
     let contractHash = createHash 5uy

@@ -5,5 +5,6 @@
     "54.218.12.185"
   ],
   "DefaultPort": 9997,
-  "Magic": 0
+  "Magic": 0,
+  "DisableUpNP": true
 }

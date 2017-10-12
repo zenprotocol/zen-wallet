@@ -1,3 +1,5 @@
+
+//#r @"packages/System.Reflection.Metadata/lib/portable-net45+win8/System.Reflection.Metadata.dll"
 #r @"packages/System.Reflection.Metadata/lib/netstandard1.1/System.Reflection.Metadata.dll"
 #r @"packages/FAKE/tools/FakeLib.dll"
 #r @"packages/Zen.FSharp.Compiler.Service/lib/net45/Zen.FSharp.Compiler.Service.dll"
@@ -25,8 +27,8 @@ let runFStar args =
   let primsFile = FileSystemHelper.currentDirectory + "/fstar/prims.fst"
 
   let executable,fstarPath,z3Path =
-    if EnvironmentHelper.isLinux then ("mono","../tools/fstar/mono/fstar.exe", "../tools/z3/linux/z3")
-    elif EnvironmentHelper.isMacOS then ("mono","../tools/fstar/mono/fstar.exe", "z3")
+    if EnvironmentHelper.isLinux then ("../tools/fstar/ocaml/fstar","", "../tools/z3/linux/z3")
+    elif EnvironmentHelper.isMacOS then ("../../fstar-repo/bin/fstar","", "z3")
     else ("../tools/fstar/dotnet/fstar.exe","","../tools/z3/windows/z3.exe")
 
   let fstar = [|
@@ -46,7 +48,7 @@ Target "Clean" (fun _ ->
 Target "RecordHints" (fun _ ->
   let args =
     [| //"--z3refresh";
-       "--verify_all";
+       //"--verify_all";
        "--record_hints" |]
 
   let exitCode = runFStar args
@@ -60,7 +62,7 @@ Target "Extract" (fun _ ->
     [|
        "--use_hints";
        //"--z3refresh";
-       "--verify_all";
+       //"--verify_all";
        "--codegen";"FSharp";
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Error";
@@ -112,6 +114,7 @@ Target "Build" (fun _ ->
       "fsharp/Extracted/Zen.Types.Extracted.fs";
       "fsharp/Realized/Zen.Crypto.fs";
       "fsharp/Realized/Zen.Merkle.fs";
+      "fsharp/Realized/Zen.Util.fs";
     |]
 
   let checker = FSharpChecker.Create()
