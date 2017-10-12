@@ -57,27 +57,11 @@ let oracleSample = """
 """
 type OracleJsonData = JsonProvider<oracleSample, SampleIsList=true>
 
-//let initializeCall (meta:QuotedContracts.CallOptionParameters) returnHash dataPair =
-    //ContractJsonData.Root (
-    //    ContractJsonData.StringOrFirst (
-    //        ContractJsonData.First (
-    //            [|0uy|] |> getString,
-    //            meta.ownerPubKey |> getString,
-    //            Array.append [|0uy|] returnHash |> getString
-    //        )
-    //       ),
-    //    Some <| ContractJsonData.Second (
-    //        [|0uy|] |> getString,
-    //        packManyOutpoints [fst dataPair] |> getString
-    //    )
-    //)
-
 type Result =  
     | ShouldHaveControlAsset
     | ShouldHavePubKeyAddress
     | InvalidReturnAddress
     | MissingDataLock
-    | ShouldHaveCollateralThing
     | InvalidCmd
     | ContractTypeNotImplemented
 
@@ -105,33 +89,11 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
                 ContractJsonData.StringOrFirst (""),
                 Some <| ContractJsonData.Second (
                     [| opcode |] |> getString,
-                    //context.GetSerializer<Zen.Types.Extracted.data<unit>>().PackSingleObject (Zen.Types.Extracted.Data2 (1I, 1I, Zen.Types.Extracted.Outpoint { txHash = h0; index = 0ul }, stateOutpoint)) |> getString
                     bytes |> getString
                 )
             )
 
-        //let stateOutput = Seq.tryFind (fun (_, output) -> match output.lock with
-        //                                                  | ContractLock (_, data) when Seq.isEmpty data |> not -> true
-        //                                                  | _ -> false) utxos
-
-        //match opcode with
-        //| 0uy ->
-            //return ContractJsonData.Root (
-            //    ContractJsonData.StringOrFirst (""),
-            //    Some <| ContractJsonData.Second (
-            //        [| opcode |] |> getString,
-
-            //        let stateOutpoint = 
-            //            match stateOutput with
-            //            | Some (o, _) ->
-            //                Zen.Types.Extracted.Optional (1I, Native.option.Some (Zen.Types.Extracted.Outpoint (fsToFstOutpoint o)))
-            //            | None ->
-            //                Zen.Types.Extracted.Optional (1I, FStar.Pervasives.Native.option.None)
-                    
-            //        context.GetSerializer<Zen.Types.Extracted.data<unit>>().PackSingleObject (Zen.Types.Extracted.Data2 (1I, 1I, Zen.Types.Extracted.Outpoint { txHash = h0; index = 0ul }, stateOutpoint)) |> getString
-            //    )
-            //)
-
+ 
 
 
         //let! dataPair = (ShouldHaveControlAsset, Seq.tryFind (fun (_,y) -> y.spend.asset = meta.controlAsset) utxos)
@@ -224,6 +186,7 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
         | _ -> return! Error InvalidCmd
     }
 
+let parseJson = ContractJsonData.Parse
 
 let makeJson (meta:Execution.ContractMetadata, utxos:(Outpoint*Output) seq, opcode:byte, m:Map<string,string>) =
     match meta with

@@ -164,7 +164,7 @@ namespace Miner
 						return null;
 					}
 
-					return ContractExamples.FStarExecution.deserialize(compilation.Value);
+					return ContractExamples.FStarExecution.deserialize(compilation.Value).Value.Item1;
 				}
 				catch (Exception e)
 				{
