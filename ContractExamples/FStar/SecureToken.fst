@@ -11,16 +11,11 @@ let parse_outpoint = function
   | (| _ , Outpoint o |) -> Some o
   | _ -> None
 
-(*
-TODO:
-val failWith(#a:Type): string -> result a
-let failWith(#_) = Err
+val cost_fn: inputMsg -> cost nat 0
+let cost_fn _ = ret 0
 
-exception FAIL1
-*)
-
-val main: inputMsg -> cost (result transactionSkeleton) 0
-let main i =
+val secureToken: inputMsg -> cost (result transactionSkeleton) 0
+let secureToken i =
   let open O in
 
   let resTx = match parse_outpoint i.data with
@@ -43,3 +38,7 @@ let main i =
     | None -> Err "Cannot parse outpoint" in
 
   ret resTx
+
+
+  val main: mainFunction
+  let main = MainFunc (CostFunc cost_fn) secureToken
