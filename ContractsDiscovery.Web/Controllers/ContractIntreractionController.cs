@@ -187,7 +187,7 @@ namespace ContractsDiscovery.Web.Controllers
             }
             else
             {
-                contractInteraction.Data = data.ResultValue;
+                contractInteraction.Data = data.ResultValue.JsonValue.ToString();
             }
           
 			return View(contractInteraction);
