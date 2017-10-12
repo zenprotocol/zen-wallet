@@ -119,7 +119,7 @@ noeq type costFunction = | CostFunc: #n:nat{n<=maxCost} -> f:(inputMsg -> Zen.Co
 
 noeq type mainFunction =
   | MainFunc: cf:costFunction
-           -> mf:(imsg:inputMsg -> Zen.Cost.t (option transactionSkeleton) (Zen.Cost.force ((CostFunc?.f cf) imsg)))
+           -> mf:(imsg:inputMsg -> Zen.Cost.t (result transactionSkeleton) (Zen.Cost.force ((CostFunc?.f cf) imsg)))
            -> mainFunction
 
 //val contractVersion : extendedContract -> U32.t

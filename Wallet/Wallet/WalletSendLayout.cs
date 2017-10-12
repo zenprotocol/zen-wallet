@@ -8,27 +8,19 @@ using Wallet.core.Data;
 using Consensus;
 using Wallet.Constants;
 using Newtonsoft.Json.Linq;
-using Wallet;
 using System.Threading.Tasks;
 using BlockChain.Data;
 
 namespace Wallet
 {
-    //public class WitnessData
-    //{
-    //    public byte[] Initial { get; set; }
-    //    public byte[] Final { get; set; }
-    //}
-
     public class SendInfo
     {
         public bool Signed { get; set; }
         public bool AutoTxCreated { get; set; }
         public bool NeedAutoTx = false;
-		//public WitnessData WitnessData { get; set; }
-	    public string Json { get; set; }
+        public FSharp.Data.Runtime.BaseTypes.IJsonDocument Json { get; set; }
 
-		public BlockChain.BlockChain.TxResultEnum? TxResult { get; set; }
+	public BlockChain.BlockChain.TxResultEnum? TxResult { get; set; }
         public BlockChain.BlockChain.TxResultEnum? AutoTxResult { get; set; }
 
         public byte[] Asset
@@ -372,7 +364,7 @@ namespace Wallet
 
                         if (data["second"] is JObject)
                         {
-                            SendInfo.Json = data.ToString();
+                            SendInfo.Json = ContractUtilities.DataGenerator.parseJson(data.ToString());
                             SendInfo.NeedAutoTx = true;
                         }
                     } catch {
