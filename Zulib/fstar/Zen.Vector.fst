@@ -41,6 +41,7 @@ let rec append #_ #_ #_ v1 v2 = match v1 with
 
 let (@@) = append
 
+#set-options "--z3rlimit 7"
 (** [flatten v], where [v] is a vector of vectors of constant length,
     returns the vector of elements of vectors in [v], preserving their order. *)
 val flatten(#a:Type)(#l1 #l2:nat):
@@ -48,6 +49,7 @@ val flatten(#a:Type)(#l1 #l2:nat):
 let rec flatten #_ #_ #_ = function
   | VNil -> incRet 5 VNil
   | VCons hd tl -> append hd =<< (flatten tl)
+#reset-options
 
 (** [init l f] returns a vector of length l, for which the [i]th element is [f i]. *)
 val init(#a:Type)(#n:nat): l:nat -> (i:nat{i<l} -> cost a n)

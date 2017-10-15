@@ -23,7 +23,7 @@ let map #_ #_ f mx =
 
 val ap(#a #b:Type): result (a -> b) -> result a -> result b
 let ap #_ #_ mf mx =
-  bind mf (λ f -> map f mx)
+  bind mf (fun f -> map f mx)
 
 val join(#a:Type): result (result a) -> result a
 let join(#_) = function
@@ -34,15 +34,15 @@ let join(#_) = function
 val bind2(#a #b #c:Type):
   result a -> result b -> (a -> b -> result c) -> result c
 let bind2 #_ #_ #_ mx my f =
-  mx `bind` (λ x ->
-  my `bind` (λ y -> f x y))
+  mx `bind` (fun x ->
+  my `bind` (fun y -> f x y))
 
 val bind3(#a #b #c #d:Type):
   result a -> result b -> result c -> (a -> b -> c -> result d) -> result d
 let bind3 #_ #_ #_ #_ mx my mz f =
-  mx `bind` (λ x ->
-  my `bind` (λ y ->
-  mz `bind` (λ z -> f x y z)))
+  mx `bind` (fun x ->
+  my `bind` (fun y ->
+  mz `bind` (fun z -> f x y z)))
 
 val map2(#a #b #c:Type):
   (a -> b -> c) -> result a -> result b -> result c
@@ -56,7 +56,7 @@ let map3 #_ #_ #_ #_ f mx my mz =
 val (>=>) (#a #b #c:Type):
   (a -> result b) -> (b -> result c) -> (a -> result c)
 let (>=>) #_ #_ #_ f g =
-  λ x -> bind (f x) g
+  fun x -> bind (f x) g
 
 val (<=<) (#a #b #c:Type):
   (b -> result c) -> (a -> result b) -> (a-> result c)
