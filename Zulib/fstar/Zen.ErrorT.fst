@@ -32,5 +32,5 @@ let map #_ #_ #_ f mx =
 val ap(#a #b:Type)(#m #n:nat): cost (result (a->b)) m -> cost (result a) n
   -> cost (result b) (n+m)
 let ap #_ #_ #_ #_ mf mx =
-  f <-- mf;
+  do f <-- mf;
   f `map` mx
