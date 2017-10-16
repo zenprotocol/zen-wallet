@@ -112,7 +112,7 @@
       <HintPath>..\Zulib\bin\Zulib.dll</HintPath>
     </Reference>
     <Reference Include="parser">
-      <HintPath>..\..\fstar-repo\bin\parser.dll</HintPath>
+      <HintPath>..\tools\fstar\bin\parser.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
