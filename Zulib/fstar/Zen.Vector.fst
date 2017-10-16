@@ -32,8 +32,6 @@ let rec nth #_ #_ (VCons hd tl) = function
   | 0 -> 4 +~! hd
   | i -> 4 +! (nth tl (i-1))
 
-
-
 (** [append v1 v2] appends the elements of [v2] to the end of [v1]. *)
 val append(#a:Type)(#l1 #l2:nat):
   vector a l1 -> vector a l2 -> cost (vector a (l1+l2)) M.(4*l1+4)
