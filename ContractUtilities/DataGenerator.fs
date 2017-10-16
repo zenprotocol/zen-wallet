@@ -191,18 +191,27 @@ let parseJson = ContractJsonData.Parse
 let makeJson (meta:Execution.ContractMetadata, utxos:(Outpoint*Output) seq, opcode:byte, m:Map<string,string>) =
     match meta with
     | Execution.CallOption meta -> callOptionJson meta utxos opcode m
-   //| Execution.SecureToken _ ->
-       //ContractJsonData.Root (
-       //ContractJsonData.StringOrFirst (""),
-       //Some <| ContractJsonData.Second (getString [|opcode|],""))
+    | Execution.SecureToken _ -> 
+        result {
+            return ContractJsonData.Root (
+                ContractJsonData.StringOrFirst (""),
+                Some <| ContractJsonData.Second (getString [|opcode|],"")
+            )
+        }
     | _ -> Error ContractTypeNotImplemented
     
 
 
 let makeMessage (json:ContractJsonData.Root, outpoint) =
     let ser = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
-    let jsonData = ser.UnpackSingleObject (getBytes json.Second.Value.Final)
-    let wrappingData = Zen.Types.Extracted.Data2 (1I, 1I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), jsonData)
+    
+    let final = json.Second.Value.Final    
+    let wrappingData = 
+        if final = "" then
+            Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint)
+        else
+            let jsonData = ser.UnpackSingleObject (getBytes final)
+            Zen.Types.Extracted.Data2 (1I, 1I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), jsonData)
     let bytes = ser.PackSingleObject (wrappingData)
     let cmd = getBytes json.Second.Value.Initial
     Array.append cmd bytes 

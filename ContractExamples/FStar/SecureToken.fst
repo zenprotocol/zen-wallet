@@ -23,16 +23,23 @@ let secureToken i =
         begin match i.utxo outpoint with
           | Some output ->
             let outpoints = V.VCons outpoint V.VNil in
-            let outputs = V.VCons output V.VNil in
-            let tokenOutput = {
-              lock = PKLock (Zen.Util.hashFromBase64 "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME=");
-                spend = {
-                  asset = i.contractHash;
-                  amount = 1000UL
-                }
+
+            let lock = PKLock (Zen.Util.hashFromBase64 "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME=") in
+
+            let connotativeOutput = {
+              lock = lock;
+              spend = output.spend
             } in
-            let outputs = V.VCons tokenOutput outputs in
-            V (Tx outpoints outputs None)
+
+            let tokenOutput = {
+              lock = lock;
+              spend = {
+                asset = i.contractHash;
+                amount = 1000UL
+              }
+            } in
+
+            V (Tx outpoints [| tokenOutput; connotativeOutput |] None)
           | None -> Err "Cannot resolve outpoint"
         end
     | None -> Err "Cannot parse outpoint" in
@@ -40,5 +47,5 @@ let secureToken i =
   ret resTx
 
 
-  val main: mainFunction
-  let main = MainFunc (CostFunc cost_fn) secureToken
+val main: mainFunction
+let main = MainFunc (CostFunc cost_fn) secureToken
