@@ -941,6 +941,9 @@ namespace BlockChain
 
 			try
             {
+                var serializer = new ContractExamples.FStarCompatibility.DataSerializer(Consensus.Serialization.context);
+                Consensus.Serialization.context.Serializers.RegisterOverride(serializer);
+
                 var result = contractFunction.Invoke(contractFunctionInput);
 
                 if (result.IsError)
