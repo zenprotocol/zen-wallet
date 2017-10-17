@@ -1,23 +1,44 @@
-﻿fun (message, contracthash, utxos) ->
-    let p = dict [
-        "destination", box <| System.Convert.FromBase64String "__ADDRESS__";
-    ]
+﻿module ZenModule
 
-    maybe {
-        let! opcode, outpoints = tryParseInvokeMessage message
-        let! fundsLoc = Array.tryHead outpoints   
-        let! funds = utxos fundsLoc
-        let! commandSpend =
-            match funds with
-            | {
-                lock=ContractLock (contractHash=contractHash);
-                spend=spend
-              } when contractHash=contracthash
-                -> Some spend
-            | _ -> None
-        let destination = unbox<byte[]> <| p.Item "destination"
-        let oput = {lock=PKLock destination; spend=commandSpend}
-        // send a contract token as well
-        let cput = {lock=PKLock destination; spend={asset=contracthash; amount=1000UL}}
-        return ([fundsLoc;],[oput; cput;],[||])
-    } |> Option.defaultValue BadTx
+module V = Zen.Vector
+module O = Zen.Option
+
+open Zen.Types
+open Zen.Cost
+
+val parse_outpoint: n:nat & inputData n -> option outpoint
+let parse_outpoint = function
+  | (| _ , Outpoint o |) -> Some o
+  | _ -> None
+
+val cost_fn: inputMsg -> cost nat 0
+let cost_fn _ = ret 0
+
+val secureToken: inputMsg -> cost (result transactionSkeleton) 0
+let secureToken i =
+  let open O in
+
+  let resTx = match parse_outpoint i.data with
+    | Some outpoint ->
+        begin match i.utxo outpoint with
+          | Some output ->
+            let outpoints = V.VCons outpoint V.VNil in
+            let outputs = V.VCons output V.VNil in
+            let tokenOutput = {
+              lock = PKLock (Zen.Util.hashFromBase64 "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME=");
+                spend = {
+                  asset = i.contractHash;
+                  amount = 1000UL
+                }
+            } in
+            let outputs = V.VCons tokenOutput outputs in
+            V (Tx outpoints outputs None)
+          | None -> Err "Cannot resolve outpoint"
+        end
+    | None -> Err "Cannot parse outpoint" in
+
+  ret resTx
+
+
+  val main: mainFunction
+  let main = MainFunc (CostFunc cost_fn) secureToken

@@ -8,26 +8,19 @@ using Wallet.core.Data;
 using Consensus;
 using Wallet.Constants;
 using Newtonsoft.Json.Linq;
-using Wallet;
 using System.Threading.Tasks;
 using BlockChain.Data;
 
 namespace Wallet
 {
-    public class WitnessData
-    {
-        public byte[] Initial { get; set; }
-        public byte[] Final { get; set; }
-    }
-
     public class SendInfo
     {
         public bool Signed { get; set; }
         public bool AutoTxCreated { get; set; }
         public bool NeedAutoTx = false;
-        public WitnessData WitnessData { get; set; }
+        public FSharp.Data.Runtime.BaseTypes.IJsonDocument Json { get; set; }
 
-        public BlockChain.BlockChain.TxResultEnum? TxResult { get; set; }
+	public BlockChain.BlockChain.TxResultEnum? TxResult { get; set; }
         public BlockChain.BlockChain.TxResultEnum? AutoTxResult { get; set; }
 
         public byte[] Asset
@@ -74,7 +67,7 @@ namespace Wallet
             NeedAutoTx = false;
             TxResult = null;
             AutoTxResult = null;
-            WitnessData = null;
+            Json = null;
         }
     }
 
@@ -371,12 +364,7 @@ namespace Wallet
 
                         if (data["second"] is JObject)
                         {
-                            SendInfo.WitnessData = new WitnessData()
-                            {
-                                Initial = Convert.FromBase64String(data["second"]["initial"].Value<string>()),
-                                Final = Convert.FromBase64String(data["second"]["final"].Value<string>())
-                            };
-
+                            SendInfo.Json = ContractUtilities.DataGenerator.parseJson(data.ToString());
                             SendInfo.NeedAutoTx = true;
                         }
                     } catch {
@@ -405,65 +393,75 @@ namespace Wallet
 
 				await Task.Run(() =>
 				{
-					WalletSendLayout.SendInfo.TxResult = App.Instance.Node.Transmit(WalletSendLayout.Tx).Result;
-
-                    if (WalletSendLayout.SendInfo.TxResult != BlockChain.BlockChain.TxResultEnum.Accepted)
+                    try
                     {
-                        Gtk.Application.Invoke(delegate
+                        WalletSendLayout.SendInfo.TxResult = App.Instance.Node.Transmit(WalletSendLayout.Tx).Result;
+
+                        if (WalletSendLayout.SendInfo.TxResult != BlockChain.BlockChain.TxResultEnum.Accepted)
                         {
-                            UpdateStatus($"Could not broadcast transaction ({WalletSendLayout.SendInfo.TxResult})");
-                        });
-                    }
-                    else if (!WalletSendLayout.SendInfo.NeedAutoTx)
-                    {
-                        Gtk.Application.Invoke(delegate
-                        {
-                            UpdateStatus("Transaction transmitted", true);
-                        });
-                    }
-                    else
-                    {
-						var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
-						var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
-						var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
-
-						byte[] witnessData = WalletSendLayout.SendInfo.WitnessData.Initial.Concat(outpointBytes).ToArray();
-						witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Final).ToArray();
-
-						var autoTxResult = new ExecuteContractAction()
-						{
-							ContractHash = WalletSendLayout.SendInfo.Destination.Bytes,
-							Message = witnessData
-						}.Publish().Result;
-
-						WalletSendLayout.SendInfo.AutoTxCreated = autoTxResult.Item1;
-
-						if (WalletSendLayout.SendInfo.AutoTxCreated)
-						{
-							WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTxResult.Item2).Result;
-
-                            if (WalletSendLayout.SendInfo.AutoTxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
+                            Gtk.Application.Invoke(delegate
                             {
-                                Gtk.Application.Invoke(delegate
-				                {
-				                    UpdateStatus("Transmitted", true);
-				                });
+                                UpdateStatus($"Could not broadcast transaction ({WalletSendLayout.SendInfo.TxResult})");
+                            });
+                        }
+                        else if (!WalletSendLayout.SendInfo.NeedAutoTx)
+                        {
+                            Gtk.Application.Invoke(delegate
+                            {
+                                UpdateStatus("Transaction transmitted", true);
+                            });
+                        }
+                        else
+                        {
+                            var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
+                            var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
+
+                            byte[] witnessData = ContractUtilities.DataGenerator.makeMessage(
+                                WalletSendLayout.SendInfo.Json,
+                                outpoint);
+
+                            var autoTxResult = new ExecuteContractAction()
+                            {
+                                ContractHash = WalletSendLayout.SendInfo.Destination.Bytes,
+                                Message = witnessData
+                            }.Publish().Result;
+
+                            WalletSendLayout.SendInfo.AutoTxCreated = autoTxResult.Item1;
+
+                            if (WalletSendLayout.SendInfo.AutoTxCreated)
+                            {
+                                WalletSendLayout.SendInfo.AutoTxResult = App.Instance.Node.Transmit(autoTxResult.Item2).Result;
+
+                                if (WalletSendLayout.SendInfo.AutoTxResult == BlockChain.BlockChain.TxResultEnum.Accepted)
+                                {
+                                    Gtk.Application.Invoke(delegate
+                                    {
+                                        UpdateStatus("Transmitted", true);
+                                    });
+                                }
+                                else
+                                {
+                                    Gtk.Application.Invoke(delegate
+                                    {
+                                        UpdateStatus($"Could not broadcast auto transaction ({WalletSendLayout.SendInfo.AutoTxResult})");
+                                    });
+                                }
                             }
                             else
                             {
-								Gtk.Application.Invoke(delegate
-								{
-                                    UpdateStatus($"Could not broadcast auto transaction ({WalletSendLayout.SendInfo.AutoTxResult})");
-								});
-							}
-						}
-                        else 
-                        {
-							Gtk.Application.Invoke(delegate
-							{
-								UpdateStatus($"Could not execute contract");
-							});
-						}
+                                Gtk.Application.Invoke(delegate
+                                {
+                                    UpdateStatus($"Could not execute contract");
+                                });
+                            }
+                        }
+					}
+					catch
+					{
+						Gtk.Application.Invoke(delegate
+						{
+							UpdateStatus("Error sending message to contract");
+						});
 					}
 				});
 			};

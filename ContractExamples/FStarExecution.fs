@@ -10,20 +10,20 @@ let checker = FSharpChecker.Create ()
 let currentAssembly = System.Reflection.Assembly.GetExecutingAssembly()
 let assemblies = currentAssembly.GetReferencedAssemblies()
 let assemblyNames = assemblies |>
-                        Array.filter (fun a -> a.Name <> "mscorlib" && a.Name <> "FSharp.Core") |>
-                        Array.map (fun a -> Assembly.ReflectionOnlyLoad(a.FullName).Location) |> 
-                        Array.toList
-                        |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
+                    Array.filter (fun a -> a.Name <> "mscorlib" && a.Name <> "FSharp.Core") |>
+                    Array.map (fun a -> Assembly.ReflectionOnlyLoad(a.FullName).Location) |> 
+                    Array.toList
+                    |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
 
-//TODO: return an un-costed function instead? (to be persisted to disk)
 let suffix = """
 open MBrace.FsPickler.Combinators
-open ContractExamples.FStarCompatilibity
-let pickler = Pickler.auto<CostedFStarContractFunction>
+let pickler = Pickler.auto<Zen.Types.Extracted.mainFunction>
 let pickled = Binary.pickle pickler main
 """
 
-let compile (source:string) = 
+// caution, must check for nulls
+// https://stackoverflow.com/questions/10435052/f-passing-none-to-function-getting-null-as-parameter-value
+let compile source = 
     try 
         let fn = Path.GetTempFileName()
         let fni = Path.ChangeExtension(fn, ".fs")
@@ -43,8 +43,12 @@ let compile (source:string) =
             match dynamicAssembly with
                 | None -> None
                 | Some asm -> 
-                    Some (asm.GetModules().[0].GetTypes().[0].GetProperty("pickled").GetValue(null) :?> byte[])
-    with _ -> None
+                    let compiledType = asm.GetModules().[0].GetTypes().[0]
+                    let propertyValue = compiledType.GetProperty("pickled").GetValue(null)
+                    Some (propertyValue :?> byte[])
+    with err -> 
+        printfn "%A" err
+        None
 
 open System.Diagnostics;
 open FSharp.Configuration;
@@ -58,16 +62,22 @@ let resolvePath (path:string) =
         | true -> Settings.Fstar
         | false -> Path.GetFullPath (Path.Combine (workingDir, path))
 
-let extract (source:string, moduleNameTemp:string) =
+let extract source =
     let tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
 
     try
         try
+            let moduleName = "ZenModule" //TODO: use contract's hash as module name?
             Directory.CreateDirectory tmp |> ignore
-            let fn = (FileInfo (moduleNameTemp + ".fst")).Name
+            let fn = (FileInfo (moduleName + ".fst")).Name
             let fni = Path.Combine(tmp, fn)
+            let fn'elabed = Path.Combine(fni, ".elab.fst")
             let fno = Path.ChangeExtension(fn, ".fs")
+            //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
+
+            //IOUtils.elaborate fni fn'elabed
+            let fn'elabed = fni
 
             let args =
                 [|
@@ -76,9 +86,9 @@ let extract (source:string, moduleNameTemp:string) =
                     "--lax";
                     "--codegen"; "FSharp";
                     "--prims"; Path.Combine (resolvePath Settings.Zulib, "prims.fst");
-                    "--extract_module"; moduleNameTemp;
+                    "--extract_module"; moduleName;
                     "--include"; resolvePath Settings.Zulib;
-                    "--no_default_includes"; fni;
+                    "--no_default_includes"; fn'elabed;
                     "--verify_all"
                     "--odir"; tmp
                 |]
@@ -107,6 +117,7 @@ let extract (source:string, moduleNameTemp:string) =
                 p.WaitForExit()
 
                 if p.ExitCode <> 0 then
+                    printfn "%A" source
                     None
                 else
                     Some (File.ReadAllText (Path.Combine (tmp, fno)))
@@ -117,76 +128,16 @@ let extract (source:string, moduleNameTemp:string) =
     finally
         Directory.Delete (tmp, true)
 
-
-open NUnit.Framework
-open FStarCompatilibity
-
-let fstModule = "CostedSimpleContract"
-let fstSource = """
-module CostedSimpleContract
-module V = Zen.Vector
+open FStarCompatibility
 open Zen.Types.Extracted
-open Zen.Base
-open Zen.Cost
-open Zen
-
-
-val makeTx:
-    l1:nat
- -> l2:nat
- -> l3:nat
- -> outpoints: V.t outpoint l1
- -> outputs: V.t output l2
- -> data:data l3
- -> transactionSkeleton
-let makeTx l1 l2 l3 outpoints outputs data =
-  Tx l1 outpoints l2 outputs l3 data
-
-
-val main: i:inputMsg -> cost transactionSkeleton 0
-let main inputMsg =
-  let data = inputMsg.contractHash in
-
-  let outpoints' = V.VCons ({ txHash = data; index = 1ul }) V.VNil in
-  let outputs' = V.VCons ({ lock = PKLock data; spend = {asset = data; amount = 1900UL } }) V.VNil in
-  let freeTx = makeTx 1 1 32 outpoints' outputs' (ByteArray 32 data) in
-
-  ret freeTx
-"""
 
 let deserialize (bs:byte[]) = 
-    let pickler = Pickler.auto<CostedFStarContractFunction>
-    bs |> Binary.unpickle pickler
-
-open FStarCompatilibity
-
-[<Test>]
-let ``Extraction``() =
-    let extracted = extract (fstSource, fstModule)
-    Assert.IsTrue ((Option.isSome extracted), "Should extract")
-
-    let compiled = extracted |> Option.get |> compile 
-    Assert.That ((Option.isSome compiled), "Should compile")
-
-    let func = compiled |> Option.get |> deserialize |> convertContractFunction
-
-    let utxo : ContractExamples.Execution.Utxo =
-        fun outpoint -> Some { lock = Consensus.Types.PKLock outpoint.txHash; spend = {asset = outpoint.txHash; amount = 1100UL } }
-
-    let randomhash = Array.map (fun x -> x*x) [|10uy..41uy|]
-
-    let input = (randomhash, randomhash, utxo)
-
-    let result = func input
-
-    match result with 
-        (outpointList, outputList, data) -> 
-            Assert.AreEqual (randomhash, data)
-            let outpoint = List.head outpointList
-            Assert.AreEqual (1, outpoint.index)
-            Assert.AreEqual (randomhash, outpoint.txHash)
-            let output = List.head outputList
-            Assert.AreEqual (1900UL, output.spend.amount)
-            Assert.AreEqual (randomhash, output.spend.asset)
-            let pkHash = match output.lock with Consensus.Types.PKLock (pkHash) -> pkHash
-            Assert.AreEqual (randomhash, pkHash)
+    try
+        bs 
+        |> Binary.unpickle Pickler.auto<mainFunction> 
+        |> convertContractFunction 
+        |> Some
+    with msg -> 
+        //TODO: trace/log?
+        printfn "%A" msg
+        None

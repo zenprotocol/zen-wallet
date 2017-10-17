@@ -1,5 +1,5 @@
 [
-  "‘Y(À\bœp½XR@\u0005[ÇAi",
+  "Ž½f²±ÕS¼”æ‹B Tf\u001d",
   [
     [
       "Zen.Types.Extracted.hash",
@@ -7,7 +7,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "90011d22ab3c6fb2762374d9987e858a"
     ],
     [
       "Zen.Types.Extracted.signature",
@@ -15,7 +16,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "949c00941dd1bd0bf7f5cc4cc9e9c0b8"
     ],
     [
       "Zen.Types.Extracted.key",
@@ -23,7 +25,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "e7943612ccd1d6f59e578b307c6ee105"
     ],
     [
       "Zen.Types.Extracted.spend",
@@ -46,7 +49,8 @@
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
       ],
-      0
+      0,
+      "95a89b0fa3c97e625b0708d22c6edf43"
     ],
     [
       "Zen.Types.Extracted.__proj__Mkspend__item__asset",
@@ -54,7 +58,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "d37f81cf07bb4a864ac3d0affdcd7f12"
     ],
     [
       "Zen.Types.Extracted.__proj__Mkspend__item__amount",
@@ -62,7 +67,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "69b82ff295986ff22118b4825a3ea1e8"
     ],
     [
       "Zen.Types.Extracted.outpoint",
@@ -85,7 +91,8 @@
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
       ],
-      0
+      0,
+      "03eaaa0bd030e59332ddc946dc4c8a23"
     ],
     [
       "Zen.Types.Extracted.__proj__Mkoutpoint__item__txHash",
@@ -93,7 +100,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "96ac8ab1ee456286c024fa01c9e7080f"
     ],
     [
       "Zen.Types.Extracted.__proj__Mkoutpoint__item__index",
@@ -101,7 +109,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "648826cc1f2e5e21d731236fa68a187a"
     ],
     [
       "Zen.Types.Extracted.nonce",
@@ -109,7 +118,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "13ecb9a9db3e75e54f18d183cd23f1eb"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__version",
@@ -117,7 +127,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "6c83ff88b31cb29be1152e39fbf354b3"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__parent",
@@ -125,7 +136,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "8dacd2db91ce8c47c0d69e0bc42622f6"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__blockNumber",
@@ -133,7 +145,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "b687446fa8167859cbbbafcdc428a5c0"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__txMerkleRoot",
@@ -141,7 +154,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "46a1ab20ced023725881cb28622f7d55"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__witnessMerkleRoot",
@@ -149,7 +163,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "d5a83291008e0de3af89e7fe1db490ab"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__contractMerkleRoot",
@@ -157,7 +172,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "d9598fdd46caa3847fb50e37cb380337"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__extraData",
@@ -165,7 +181,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "84d6008467e3f7e3d55293f8b70daa26"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__timestamp",
@@ -173,7 +190,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "794ff8d4c3aba2ca6878eedd466ac797"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__pdiff",
@@ -181,7 +199,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "eac423b7c914854b9369ffa03ee2da50"
     ],
     [
       "Zen.Types.Extracted.__proj__MkblockHeader__item__nonce",
@@ -189,7 +208,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "49f61c66a3abb0cfc91e038ae299e2b0"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -201,7 +221,8 @@
         "primitive_Prims.op_Addition", "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
       ],
-      0
+      0,
+      "84d5309041e8a6baf7be36832d2abbac"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -213,7 +234,8 @@
         "primitive_Prims.op_Addition", "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
       ],
-      0
+      0,
+      "bd55c8e5a50c8173a4f63a6bb29eb14a"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -225,15 +247,21 @@
         "primitive_Prims.op_Addition", "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
       ],
-      0
+      0,
+      "e40d7d868e505b81026207d87977022f"
     ],
     [
       "Zen.Types.Extracted.data",
       4,
       2,
       1,
-      [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.nat",
+        "primitive_Prims.op_Addition", "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Prims_Tm_refine_ba523126f67e00e7cd55f0b92f16681d"
+      ],
+      0,
+      "74796ea0c9b30df87cee68ed191742fd"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -241,7 +269,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "930bb259a51900eceee0249638c15b71"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -249,7 +278,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "3db94d4cc510dfb746ed71fd1957626d"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -257,7 +287,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "3e4edbc26534f7f0abf63d5b6c544c1b"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -265,7 +296,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "f3e437b330a5ba16653f9500692f92fa"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -273,7 +305,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "8490045908ed1140037f28e2a826b85f"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -281,7 +314,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "0f401e0b5c411d9cd7c6ab8fad16c6c2"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -289,7 +323,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "00c7d989cdbc2c6964050cd1879f655a"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -297,7 +332,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "16ecb0487ae81b13f795f5ce35637aa3"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -305,7 +341,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "ab7e2b17411c16f7c78187e68b0215a3"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -313,7 +350,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "9fe9b339bc486fa36dbf88a89b69c80b"
     ],
     [
       "Zen.Types.Extracted.data",
@@ -321,9 +359,27 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "e4e7876d0349217461316f92099d2b42"
     ],
-    [ "Zen.Types.Extracted.uu___is_Bool", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.data",
+      16,
+      2,
+      1,
+      [ "@query", "projection_inverse_BoxBool_proj_0" ],
+      0,
+      "f8b36da18e17e2c2f89a1109f43cff41"
+    ],
+    [
+      "Zen.Types.Extracted.uu___is_Bool",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "53aee9268780160cb5de9808671d7518"
+    ],
     [
       "Zen.Types.Extracted.__proj__Bool__item__v",
       1,
@@ -335,9 +391,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_0cb98915e4f5d3c03ea3d6cf1ec72199"
       ],
-      0
+      0,
+      "fd1b6be71ad9850f1c3b18c5c0ca3738"
     ],
-    [ "Zen.Types.Extracted.uu___is_Byte", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Byte",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "9c8a37c373b3e85052d81ec8014178b1"
+    ],
     [
       "Zen.Types.Extracted.__proj__Byte__item__v",
       1,
@@ -349,10 +414,27 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_424a3ea79fc8cde1f2d9e70565fcdc3f"
       ],
-      0
+      0,
+      "4a4a127fba3f14ddc1c44139285aba76"
     ],
-    [ "Zen.Types.Extracted.uu___is_Empty", 1, 2, 1, [ "@query" ], 0 ],
-    [ "Zen.Types.Extracted.uu___is_Hash", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Empty",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "765e2b36364a1e00dd9963a5e35e3e46"
+    ],
+    [
+      "Zen.Types.Extracted.uu___is_Hash",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "96121314a0910ed828026840d9193d32"
+    ],
     [
       "Zen.Types.Extracted.__proj__Hash__item__v",
       1,
@@ -364,9 +446,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_02f156b6439c917c991cf4b76d035f7f"
       ],
-      0
+      0,
+      "c21f81941c1984e09cd57a28b0c0663f"
     ],
-    [ "Zen.Types.Extracted.uu___is_Key", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Key",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "80ee3f671dda194f6a49a6e3220919b7"
+    ],
     [
       "Zen.Types.Extracted.__proj__Key__item__v",
       1,
@@ -378,9 +469,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a712a80175f7755b94f0f5ca151427e2"
       ],
-      0
+      0,
+      "6a4152e1ef0ac563fc13dbcb13e5a741"
     ],
-    [ "Zen.Types.Extracted.uu___is_Outpoint", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Outpoint",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "b862b633d08139b7b8bb9b4a8b2918ad"
+    ],
     [
       "Zen.Types.Extracted.__proj__Outpoint__item__v",
       1,
@@ -392,9 +492,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_89022d94502bd584f55cd9d04a1f78d7"
       ],
-      0
+      0,
+      "a65ae9cafc91289b4a24c268bc4808d0"
     ],
-    [ "Zen.Types.Extracted.uu___is_Output", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Output",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "3141cd109fe8ee6a72da4a8fb354d2f5"
+    ],
     [
       "Zen.Types.Extracted.__proj__Output__item__v",
       1,
@@ -406,9 +515,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b088f532dec14733b751615ecf1fecd"
       ],
-      0
+      0,
+      "47860abcbdb344071837fb78d48bf9db"
     ],
-    [ "Zen.Types.Extracted.uu___is_OutputLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_OutputLock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "764202fea34407213782a281a60a1a43"
+    ],
     [
       "Zen.Types.Extracted.__proj__OutputLock__item__v",
       1,
@@ -420,9 +538,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_4a233acfad2f5dee15cddbfd1451e8c4"
       ],
-      0
+      0,
+      "ac8c2ffbce779aad115b8b9fbab966b6"
     ],
-    [ "Zen.Types.Extracted.uu___is_Sig", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Sig",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "24cf5c97f626b843be4ac42c170042f0"
+    ],
     [
       "Zen.Types.Extracted.__proj__Sig__item__v",
       1,
@@ -434,9 +561,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e17f02cf5f2c1398a97ae4044ead328e"
       ],
-      0
+      0,
+      "3702080cfbe1cc955dc1189217d6d829"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt8", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt8",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "ef32bfe3cf3ec5673b7781c5037d4c8f"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt8__item__v",
       1,
@@ -448,9 +584,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_667305f50e392a54bcea86ec1a00ef6c"
       ],
-      0
+      0,
+      "62e147b28bc444fbd5c9acf502751ac7"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt32", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt32",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "2b65989656e129acc4d2472395659bda"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt32__item__v",
       1,
@@ -462,9 +607,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_84f1af73b5a9925aa2c1a7b88ba7d3ef"
       ],
-      0
+      0,
+      "b23273406c76b9313d1dfff3d9861870"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt64", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt64",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "031d2930eda38e5df95b8006291c68f5"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt64__item__v",
       1,
@@ -476,9 +630,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d0163a93dfa6a8e071ad7ee46d9bacec"
       ],
-      0
+      0,
+      "9b8fb972da2bf96d7ed6fadb130b41c5"
     ],
-    [ "Zen.Types.Extracted.uu___is_BoolVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_BoolVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "8c8bc59c53b494a7b22f68aaaee9747b"
+    ],
     [
       "Zen.Types.Extracted.__proj__BoolVector__item__l",
       1,
@@ -490,7 +653,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d9b17a4475a58753c0856ab8df12bee8"
       ],
-      0
+      0,
+      "81e4bbefcd3bcda5235206fe78a558c8"
     ],
     [
       "Zen.Types.Extracted.__proj__BoolVector__item__v",
@@ -505,9 +669,18 @@
         "projection_inverse_Zen.Types.Extracted.BoolVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d9b17a4475a58753c0856ab8df12bee8"
       ],
-      0
+      0,
+      "8f0848f7be7fd5b8472fc93df24d60cf"
     ],
-    [ "Zen.Types.Extracted.uu___is_BoolArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_BoolArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "666dfe86d8061d1d8007b2fb960b5854"
+    ],
     [
       "Zen.Types.Extracted.__proj__BoolArray__item__l",
       1,
@@ -519,7 +692,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_be207484e59225040ae85859dbe8e56c"
       ],
-      0
+      0,
+      "0b30ca139f9c3532bab3f330b71c843d"
     ],
     [
       "Zen.Types.Extracted.__proj__BoolArray__item__a",
@@ -534,9 +708,18 @@
         "projection_inverse_Zen.Types.Extracted.BoolArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_be207484e59225040ae85859dbe8e56c"
       ],
-      0
+      0,
+      "26fa9cfbef05997603eeece5546e663a"
     ],
-    [ "Zen.Types.Extracted.uu___is_ByteVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_ByteVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "27fcb0c2b5d4dca52ab4d2e3ea6cb4e6"
+    ],
     [
       "Zen.Types.Extracted.__proj__ByteVector__item__l",
       1,
@@ -548,7 +731,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5988ba52f29b07c8a816f2f3414ffaba"
       ],
-      0
+      0,
+      "ced8d5abfe034984ef331056b7ffebd4"
     ],
     [
       "Zen.Types.Extracted.__proj__ByteVector__item__v",
@@ -563,9 +747,18 @@
         "projection_inverse_Zen.Types.Extracted.ByteVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5988ba52f29b07c8a816f2f3414ffaba"
       ],
-      0
+      0,
+      "12794a5d0706c6de598cdffa5f896fcb"
     ],
-    [ "Zen.Types.Extracted.uu___is_ByteArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_ByteArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "9a7e028f9ac29af7770025ca31ef35ca"
+    ],
     [
       "Zen.Types.Extracted.__proj__ByteArray__item__l",
       1,
@@ -577,7 +770,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_9501c9bb423f60a48ffceb169d9cae73"
       ],
-      0
+      0,
+      "4991e2b631011c0da335e45ec2dba80f"
     ],
     [
       "Zen.Types.Extracted.__proj__ByteArray__item__a",
@@ -592,9 +786,18 @@
         "projection_inverse_Zen.Types.Extracted.ByteArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_9501c9bb423f60a48ffceb169d9cae73"
       ],
-      0
+      0,
+      "8aaaec59f8a7cf84d45559fc47dc031a"
     ],
-    [ "Zen.Types.Extracted.uu___is_HashVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_HashVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "f219192f833a23b0ae42a7cd0703b588"
+    ],
     [
       "Zen.Types.Extracted.__proj__HashVector__item__l",
       1,
@@ -606,7 +809,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8a3cd30dce988ba2d9226620f68c5843"
       ],
-      0
+      0,
+      "4e9fb2ed7684a92973cc7100153a33b2"
     ],
     [
       "Zen.Types.Extracted.__proj__HashVector__item__v",
@@ -621,9 +825,18 @@
         "projection_inverse_Zen.Types.Extracted.HashVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8a3cd30dce988ba2d9226620f68c5843"
       ],
-      0
+      0,
+      "19eaba525276166681e2345ebd92c840"
     ],
-    [ "Zen.Types.Extracted.uu___is_HashArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_HashArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "c6375780beccfc5004ce1eaf8f0f71e3"
+    ],
     [
       "Zen.Types.Extracted.__proj__HashArray__item__l",
       1,
@@ -635,7 +848,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_79c96c00c0151e6fedcfb09b266b3fe1"
       ],
-      0
+      0,
+      "c6597a602890b204f0d1e6c9ae42f38d"
     ],
     [
       "Zen.Types.Extracted.__proj__HashArray__item__a",
@@ -650,9 +864,18 @@
         "projection_inverse_Zen.Types.Extracted.HashArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_79c96c00c0151e6fedcfb09b266b3fe1"
       ],
-      0
+      0,
+      "91a9a72c30ad8b1bdc86321213feb574"
     ],
-    [ "Zen.Types.Extracted.uu___is_KeyVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_KeyVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "f5257738cdc3bea928dad57fa3fc17c3"
+    ],
     [
       "Zen.Types.Extracted.__proj__KeyVector__item__l",
       1,
@@ -664,7 +887,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_36a65d81d178f127e26a511c65bdc012"
       ],
-      0
+      0,
+      "59389368adbfaf788841e874e38de6ce"
     ],
     [
       "Zen.Types.Extracted.__proj__KeyVector__item__v",
@@ -679,9 +903,18 @@
         "projection_inverse_Zen.Types.Extracted.KeyVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_36a65d81d178f127e26a511c65bdc012"
       ],
-      0
+      0,
+      "4e47b446b3dc27d2ae7c027ce41baabd"
     ],
-    [ "Zen.Types.Extracted.uu___is_KeyArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_KeyArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "94f627a4098e4c2f1d7819f616712c96"
+    ],
     [
       "Zen.Types.Extracted.__proj__KeyArray__item__l",
       1,
@@ -693,7 +926,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_4ce5b9f1ec671a0642411e675a9485ae"
       ],
-      0
+      0,
+      "a6756405501bfc5d894b7df3abb9180c"
     ],
     [
       "Zen.Types.Extracted.__proj__KeyArray__item__a",
@@ -708,9 +942,18 @@
         "projection_inverse_Zen.Types.Extracted.KeyArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_4ce5b9f1ec671a0642411e675a9485ae"
       ],
-      0
+      0,
+      "75c0f6e108a879df19a7f1a4b3451263"
     ],
-    [ "Zen.Types.Extracted.uu___is_SigVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_SigVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "00cb70097ee56d4a4117278b6e4e40ca"
+    ],
     [
       "Zen.Types.Extracted.__proj__SigVector__item__l",
       1,
@@ -722,7 +965,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_49cee7e8caf3cbff7466cb12092f5ea6"
       ],
-      0
+      0,
+      "b0a4368a3f61b1c952b75253155c8a4d"
     ],
     [
       "Zen.Types.Extracted.__proj__SigVector__item__v",
@@ -737,9 +981,18 @@
         "projection_inverse_Zen.Types.Extracted.SigVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_49cee7e8caf3cbff7466cb12092f5ea6"
       ],
-      0
+      0,
+      "4fbd72720c5f9d2e88a459e431907f59"
     ],
-    [ "Zen.Types.Extracted.uu___is_SigArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_SigArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "1af546162384ade538a2a9fb5aa5ad23"
+    ],
     [
       "Zen.Types.Extracted.__proj__SigArray__item__l",
       1,
@@ -751,7 +1004,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_c74a23e8a6d86588a3064df822db9637"
       ],
-      0
+      0,
+      "cb9ba15f433a1bd9b30898ab6b23cfb5"
     ],
     [
       "Zen.Types.Extracted.__proj__SigArray__item__a",
@@ -766,7 +1020,8 @@
         "projection_inverse_Zen.Types.Extracted.SigArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_c74a23e8a6d86588a3064df822db9637"
       ],
-      0
+      0,
+      "6875ae0b6865817a9bb4e0de172fe2a6"
     ],
     [
       "Zen.Types.Extracted.uu___is_OutpointVector",
@@ -774,7 +1029,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "6952e6270a07029670d05715cd186f10"
     ],
     [
       "Zen.Types.Extracted.__proj__OutpointVector__item__l",
@@ -787,7 +1043,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b73f5a49a251384de6960e9c01de7287"
       ],
-      0
+      0,
+      "8ca80263f8c8e2436404b7c8e1c5507b"
     ],
     [
       "Zen.Types.Extracted.__proj__OutpointVector__item__v",
@@ -802,9 +1059,18 @@
         "projection_inverse_Zen.Types.Extracted.OutpointVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b73f5a49a251384de6960e9c01de7287"
       ],
-      0
+      0,
+      "b47db539ab778663cac9b2f02e3ae596"
     ],
-    [ "Zen.Types.Extracted.uu___is_OutpointArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_OutpointArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "06e8ea2ae8ca609c3ac09b803bb9e920"
+    ],
     [
       "Zen.Types.Extracted.__proj__OutpointArray__item__l",
       1,
@@ -816,7 +1082,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_6c62b6e217a2ee7cca07c78cbe824b5b"
       ],
-      0
+      0,
+      "40c6208836b4a03c64d04ef7fecdecf5"
     ],
     [
       "Zen.Types.Extracted.__proj__OutpointArray__item__a",
@@ -831,9 +1098,18 @@
         "projection_inverse_Zen.Types.Extracted.OutpointArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_6c62b6e217a2ee7cca07c78cbe824b5b"
       ],
-      0
+      0,
+      "050b8f615d5ca52777e9f0a820813b05"
     ],
-    [ "Zen.Types.Extracted.uu___is_OutputVector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_OutputVector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "77831bc49f42054bd75133675c80ae36"
+    ],
     [
       "Zen.Types.Extracted.__proj__OutputVector__item__l",
       1,
@@ -845,7 +1121,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_66bdf83e39827b1a74c03350753863fe"
       ],
-      0
+      0,
+      "9996fc69f8ae3743cac92090ea943da3"
     ],
     [
       "Zen.Types.Extracted.__proj__OutputVector__item__v",
@@ -860,9 +1137,18 @@
         "projection_inverse_Zen.Types.Extracted.OutputVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_66bdf83e39827b1a74c03350753863fe"
       ],
-      0
+      0,
+      "21944ca0ae6830dd857cb1bdf0eff739"
     ],
-    [ "Zen.Types.Extracted.uu___is_OutputArray", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_OutputArray",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "20e93faa620f9d571374706fd5c9988f"
+    ],
     [
       "Zen.Types.Extracted.__proj__OutputArray__item__l",
       1,
@@ -874,7 +1160,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_454880379438b61c56371e77ea4d3fa3"
       ],
-      0
+      0,
+      "9f171af2876b41c8ad86ec83b05427e8"
     ],
     [
       "Zen.Types.Extracted.__proj__OutputArray__item__a",
@@ -889,7 +1176,8 @@
         "projection_inverse_Zen.Types.Extracted.OutputArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_454880379438b61c56371e77ea4d3fa3"
       ],
-      0
+      0,
+      "f7da3a5f845cd814f3188e8be2b7a45f"
     ],
     [
       "Zen.Types.Extracted.uu___is_OutputLockVector",
@@ -897,7 +1185,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "a46bad5aba27c6bd6353ea5b2327d988"
     ],
     [
       "Zen.Types.Extracted.__proj__OutputLockVector__item__l",
@@ -910,7 +1199,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa42df2c9ae0cbfee7f09619215238b0"
       ],
-      0
+      0,
+      "2890c9101343d7d174f00b999d2b9b13"
     ],
     [
       "Zen.Types.Extracted.__proj__OutputLockVector__item__v",
@@ -925,7 +1215,8 @@
         "projection_inverse_Zen.Types.Extracted.OutputLockVector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa42df2c9ae0cbfee7f09619215238b0"
       ],
-      0
+      0,
+      "2fa015799d54b36d57118c2557b571f2"
     ],
     [
       "Zen.Types.Extracted.uu___is_OutputLockArray",
@@ -933,7 +1224,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "75d2e3a1868a9054707cc5ebf2e38058"
     ],
     [
       "Zen.Types.Extracted.__proj__OutputLockArray__item__l",
@@ -946,7 +1238,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d699eb1021b9463a4fe868913e3f5d63"
       ],
-      0
+      0,
+      "fe9ab9b34885c19eea1b2da9a4bc41d9"
     ],
     [
       "Zen.Types.Extracted.__proj__OutputLockArray__item__a",
@@ -961,9 +1254,18 @@
         "projection_inverse_Zen.Types.Extracted.OutputLockArray_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d699eb1021b9463a4fe868913e3f5d63"
       ],
-      0
+      0,
+      "73180e262d042637a4e79376d1eff97a"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt8Vector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt8Vector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "b7bd154ae00574cda12939f7c3656e7f"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt8Vector__item__l",
       1,
@@ -975,7 +1277,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d6679e477db768cf6cd949b4db0637ea"
       ],
-      0
+      0,
+      "feeda4a2cfc961e52cf3244e56042bf0"
     ],
     [
       "Zen.Types.Extracted.__proj__UInt8Vector__item__v",
@@ -990,9 +1293,18 @@
         "projection_inverse_Zen.Types.Extracted.UInt8Vector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_d6679e477db768cf6cd949b4db0637ea"
       ],
-      0
+      0,
+      "732a71015ed362627b974050a54aa942"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt8Array", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt8Array",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "a98a2b51cf5b08d2c6a6e4f6913a2fc4"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt8Array__item__l",
       1,
@@ -1004,7 +1316,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_097ee8ecad0d645679ab8f02527a19d7"
       ],
-      0
+      0,
+      "a10eced12ad73f3b85e19997bce8869c"
     ],
     [
       "Zen.Types.Extracted.__proj__UInt8Array__item__a",
@@ -1019,9 +1332,18 @@
         "projection_inverse_Zen.Types.Extracted.UInt8Array_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_097ee8ecad0d645679ab8f02527a19d7"
       ],
-      0
+      0,
+      "05dbfbe70e109ae90c23ba839f3aeea2"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt32Vector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt32Vector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "126855a843949d94655420687422793f"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt32Vector__item__l",
       1,
@@ -1033,7 +1355,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_0ce8fc3f213642d12645d1e61a754dd6"
       ],
-      0
+      0,
+      "dae78d728f572a2705ad7802f0c2d7ff"
     ],
     [
       "Zen.Types.Extracted.__proj__UInt32Vector__item__v",
@@ -1048,9 +1371,18 @@
         "projection_inverse_Zen.Types.Extracted.UInt32Vector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_0ce8fc3f213642d12645d1e61a754dd6"
       ],
-      0
+      0,
+      "d77ca39a0929b223daa9d59c98093237"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt32Array", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt32Array",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "36511c99c9ef27079981f4db562df013"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt32Array__item__l",
       1,
@@ -1062,7 +1394,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_2145644cf0366be33f96544249ed23d7"
       ],
-      0
+      0,
+      "df265e0723b55374f3e683b6512d010a"
     ],
     [
       "Zen.Types.Extracted.__proj__UInt32Array__item__a",
@@ -1077,9 +1410,18 @@
         "projection_inverse_Zen.Types.Extracted.UInt32Array_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_2145644cf0366be33f96544249ed23d7"
       ],
-      0
+      0,
+      "457adb0bc633fd2859af8c7db47ce97f"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt64Vector", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt64Vector",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "c56bc1708117b201995939a13982b541"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt64Vector__item__l",
       1,
@@ -1091,7 +1433,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_28f7963ae0b601b9e58b89d3ce46b902"
       ],
-      0
+      0,
+      "cbe97e442493d491cfaa6e3edde3e1b7"
     ],
     [
       "Zen.Types.Extracted.__proj__UInt64Vector__item__v",
@@ -1106,9 +1449,18 @@
         "projection_inverse_Zen.Types.Extracted.UInt64Vector_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_28f7963ae0b601b9e58b89d3ce46b902"
       ],
-      0
+      0,
+      "44dd5db8baf8bcb92518a197c8ac02dc"
     ],
-    [ "Zen.Types.Extracted.uu___is_UInt64Array", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_UInt64Array",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "569e4e1d97e2096789495c05e2254358"
+    ],
     [
       "Zen.Types.Extracted.__proj__UInt64Array__item__l",
       1,
@@ -1120,7 +1472,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5addceb147e1d40dbcb13e90fcc77dfd"
       ],
-      0
+      0,
+      "bece21e960674c89f84db4d7fb23fd73"
     ],
     [
       "Zen.Types.Extracted.__proj__UInt64Array__item__a",
@@ -1135,9 +1488,57 @@
         "projection_inverse_Zen.Types.Extracted.UInt64Array_l",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_5addceb147e1d40dbcb13e90fcc77dfd"
       ],
-      0
+      0,
+      "43bbf409350050cdb3746b590b332086"
     ],
-    [ "Zen.Types.Extracted.uu___is_Data2", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Optional",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "8997ac33e68093fdabb6a3ce0dd3c403"
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Optional__item__l",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Optional",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_bfd7279fc9c986756fe56095796b983d"
+      ],
+      0,
+      "e267b8eec7826a17d55b6dac53f000bf"
+    ],
+    [
+      "Zen.Types.Extracted.__proj__Optional__item___1",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Zen.Types.Extracted.Optional",
+        "proj_equation_Zen.Types.Extracted.Optional_l",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_Zen.Types.Extracted.Optional_l",
+        "refinement_interpretation_Zen.Types.Extracted_Tm_refine_bfd7279fc9c986756fe56095796b983d"
+      ],
+      0,
+      "55c8775cd01e9a175619cffb1ea9da1a"
+    ],
+    [
+      "Zen.Types.Extracted.uu___is_Data2",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "2052080b2a54b999a22b4de15cb06ed7"
+    ],
     [
       "Zen.Types.Extracted.__proj__Data2__item__n1",
       1,
@@ -1149,7 +1550,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
       ],
-      0
+      0,
+      "4eea432bac31b138f86a6c90bd341461"
     ],
     [
       "Zen.Types.Extracted.__proj__Data2__item__n2",
@@ -1162,7 +1564,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
       ],
-      0
+      0,
+      "f8bd10a34792a857f2664ac814a86649"
     ],
     [
       "Zen.Types.Extracted.__proj__Data2__item___1",
@@ -1177,7 +1580,8 @@
         "projection_inverse_Zen.Types.Extracted.Data2_n1",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
       ],
-      0
+      0,
+      "6301ce911fec035df221f56ebb7c82ff"
     ],
     [
       "Zen.Types.Extracted.__proj__Data2__item___2",
@@ -1192,9 +1596,18 @@
         "projection_inverse_Zen.Types.Extracted.Data2_n2",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_e7511e050795cf9183dc39fd4b631f1c"
       ],
-      0
+      0,
+      "738883390bcaa91f5d2e3951250b1d42"
     ],
-    [ "Zen.Types.Extracted.uu___is_Data3", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Data3",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "475d6ff7b8f7c64c37a9829f14be8c5e"
+    ],
     [
       "Zen.Types.Extracted.__proj__Data3__item__n1",
       1,
@@ -1206,7 +1619,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
       ],
-      0
+      0,
+      "d3e66bf22bfa16d8337e36df49bd6454"
     ],
     [
       "Zen.Types.Extracted.__proj__Data3__item__n2",
@@ -1219,7 +1633,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
       ],
-      0
+      0,
+      "a9e3a01e2c103d60150c56ae3ed370ca"
     ],
     [
       "Zen.Types.Extracted.__proj__Data3__item__n3",
@@ -1232,7 +1647,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
       ],
-      0
+      0,
+      "37ed4c2fa5ba56b84941bb836ce71284"
     ],
     [
       "Zen.Types.Extracted.__proj__Data3__item___1",
@@ -1247,7 +1663,8 @@
         "projection_inverse_Zen.Types.Extracted.Data3_n1",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
       ],
-      0
+      0,
+      "576414f83c5fd0f2d516d2751b87f505"
     ],
     [
       "Zen.Types.Extracted.__proj__Data3__item___2",
@@ -1262,7 +1679,8 @@
         "projection_inverse_Zen.Types.Extracted.Data3_n2",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
       ],
-      0
+      0,
+      "213f66f08d4933d1b07a1a74a694f8ac"
     ],
     [
       "Zen.Types.Extracted.__proj__Data3__item___3",
@@ -1277,9 +1695,18 @@
         "projection_inverse_Zen.Types.Extracted.Data3_n3",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1b74cf65fca2a367f3ff7134b5896e36"
       ],
-      0
+      0,
+      "151810b9f7ce1d76a3018de99282085b"
     ],
-    [ "Zen.Types.Extracted.uu___is_Data4", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_Data4",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "54c9a63bcdbeb5394e6bd71da24c2427"
+    ],
     [
       "Zen.Types.Extracted.__proj__Data4__item__n1",
       1,
@@ -1291,7 +1718,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "1b255add246ed413c205202fefdca277"
     ],
     [
       "Zen.Types.Extracted.__proj__Data4__item__n2",
@@ -1304,7 +1732,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "a7bc5227a0aa12ba6234dae8b6489801"
     ],
     [
       "Zen.Types.Extracted.__proj__Data4__item__n3",
@@ -1317,7 +1746,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "6b4716259037aaba4dba4475b1d72434"
     ],
     [
       "Zen.Types.Extracted.__proj__Data4__item__n4",
@@ -1330,7 +1760,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "9b5e8655839d05953987f78a8e92391f"
     ],
     [
       "Zen.Types.Extracted.__proj__Data4__item___1",
@@ -1345,7 +1776,8 @@
         "projection_inverse_Zen.Types.Extracted.Data4_n1",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "5efdaea993430fe437d32d742c2c3962"
     ],
     [
       "Zen.Types.Extracted.__proj__Data4__item___2",
@@ -1360,7 +1792,8 @@
         "projection_inverse_Zen.Types.Extracted.Data4_n2",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "d84f3de765b935f1b08e6700f8c5562f"
     ],
     [
       "Zen.Types.Extracted.__proj__Data4__item___3",
@@ -1375,7 +1808,8 @@
         "projection_inverse_Zen.Types.Extracted.Data4_n3",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "2ea5eddb546d41fce72296d701f7ec63"
     ],
     [
       "Zen.Types.Extracted.__proj__Data4__item___4",
@@ -1390,9 +1824,18 @@
         "projection_inverse_Zen.Types.Extracted.Data4_n4",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_aa1a99d598f6efb54010f2e6dba724dc"
       ],
-      0
+      0,
+      "614e5dd99ed7a2a089e9e2a99f8cdf80"
     ],
-    [ "Zen.Types.Extracted.uu___is_CoinbaseLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_CoinbaseLock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "f91b8de2600103336af223c7f56826e7"
+    ],
     [
       "Zen.Types.Extracted.__proj__CoinbaseLock__item___0",
       1,
@@ -1404,9 +1847,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_1f59054d4943c359345a290781cac994"
       ],
-      0
+      0,
+      "6fd7e297d526177c882d25d58222771a"
     ],
-    [ "Zen.Types.Extracted.uu___is_FeeLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_FeeLock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "b2591aff3380e85ae6307e422756b81b"
+    ],
     [
       "Zen.Types.Extracted.__proj__FeeLock__item___0",
       1,
@@ -1418,7 +1870,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b67c86d359ff8de6d2ac2d0815ecf20f"
       ],
-      0
+      0,
+      "de4549ee68be2b9948b3b51381f31b5d"
     ],
     [
       "Zen.Types.Extracted.uu___is_ContractSacrificeLock",
@@ -1426,7 +1879,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "36356368e6094d47c3e8fe0cb24c3fc4"
     ],
     [
       "Zen.Types.Extracted.__proj__ContractSacrificeLock__item___0",
@@ -1439,9 +1893,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_2c7b39632ea83b43b65bd0da7d8bbdf1"
       ],
-      0
+      0,
+      "492bbd0f942d78efa8608cb9d9828bf5"
     ],
-    [ "Zen.Types.Extracted.uu___is_PKLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_PKLock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "445cfe97c9c75d65d7f3296576bf35c8"
+    ],
     [
       "Zen.Types.Extracted.__proj__PKLock__item___0",
       1,
@@ -1453,9 +1916,18 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_b545c0d5e402947f074363ca9117ba95"
       ],
-      0
+      0,
+      "34a195c964f68b10649699b90e9f320a"
     ],
-    [ "Zen.Types.Extracted.uu___is_ContractLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_ContractLock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "3c709a613ec7900f7f983d384d437d19"
+    ],
     [
       "Zen.Types.Extracted.__proj__ContractLock__item__contractHash",
       1,
@@ -1467,7 +1939,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a1526b8eccce7ecf76c27c15386d6e01"
       ],
-      0
+      0,
+      "817e62440c90a7bff6143d583721142d"
     ],
     [
       "Zen.Types.Extracted.__proj__ContractLock__item__n",
@@ -1480,7 +1953,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a1526b8eccce7ecf76c27c15386d6e01"
       ],
-      0
+      0,
+      "45433b7acaf23718e0fcec48a8b6b147"
     ],
     [
       "Zen.Types.Extracted.__proj__ContractLock__item___2",
@@ -1495,9 +1969,18 @@
         "projection_inverse_Zen.Types.Extracted.ContractLock_n",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_a1526b8eccce7ecf76c27c15386d6e01"
       ],
-      0
+      0,
+      "e83ef529bd126bb398bfe02a3a386b71"
     ],
-    [ "Zen.Types.Extracted.uu___is_HighVLock", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.uu___is_HighVLock",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "3625b157a82e3548b6b5bd07165ec218"
+    ],
     [
       "Zen.Types.Extracted.__proj__HighVLock__item__lockcore",
       1,
@@ -1509,7 +1992,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8ac4cdf5d2b345726baed1c292acfb11"
       ],
-      0
+      0,
+      "1166c41bb45a0974c11c541567a2077e"
     ],
     [
       "Zen.Types.Extracted.__proj__HighVLock__item__typeCode",
@@ -1522,7 +2006,8 @@
         "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Zen.Types.Extracted_Tm_refine_8ac4cdf5d2b345726baed1c292acfb11"
       ],
-      0
+      0,
+      "10f961db3b2bd9af5ceee81416c6ddb0"
     ],
     [
       "Zen.Types.Extracted.__proj__Mkoutput__item__lock",
@@ -1530,7 +2015,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "03ad5504bcf6233987103219967f8876"
     ],
     [
       "Zen.Types.Extracted.__proj__Mkoutput__item__spend",
@@ -1538,9 +2024,18 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "f11d531617dc557bac45d393f05d98ed"
     ],
-    [ "Zen.Types.Extracted.__proj__Tx__item__l1", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Tx__item__l1",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "1736c32a405b7fbfaf5908508586e5a2"
+    ],
     [
       "Zen.Types.Extracted.__proj__Tx__item__outpoints",
       1,
@@ -1550,9 +2045,18 @@
         "@query", "proj_equation_Zen.Types.Extracted.Tx_l1",
         "projection_inverse_Zen.Types.Extracted.Tx_l1"
       ],
-      0
+      0,
+      "a0c83156cec02d7a996c9ded4fdc77d7"
     ],
-    [ "Zen.Types.Extracted.__proj__Tx__item__l2", 1, 2, 1, [ "@query" ], 0 ],
+    [
+      "Zen.Types.Extracted.__proj__Tx__item__l2",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "d006f00446891ae899a0b6f23001e557"
+    ],
     [
       "Zen.Types.Extracted.__proj__Tx__item__outputs",
       1,
@@ -1562,19 +2066,17 @@
         "@query", "proj_equation_Zen.Types.Extracted.Tx_l2",
         "projection_inverse_Zen.Types.Extracted.Tx_l2"
       ],
-      0
+      0,
+      "431499bf332a1183d88e6806965854d2"
     ],
-    [ "Zen.Types.Extracted.__proj__Tx__item__l3", 1, 2, 1, [ "@query" ], 0 ],
     [
-      "Zen.Types.Extracted.__proj__Tx__item__data",
+      "Zen.Types.Extracted.__proj__Tx__item___4",
       1,
       2,
       1,
-      [
-        "@query", "proj_equation_Zen.Types.Extracted.Tx_l3",
-        "projection_inverse_Zen.Types.Extracted.Tx_l3"
-      ],
-      0
+      [ "@query" ],
+      0,
+      "1e0e8f5ac7a368bf72d0512f96aab1b5"
     ],
     [
       "Zen.Types.Extracted.__proj__MkinputMsg__item__cmd",
@@ -1582,7 +2084,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "2351311ad25e95e79f0dd1ece5cb2a97"
     ],
     [
       "Zen.Types.Extracted.__proj__MkinputMsg__item__data",
@@ -1590,7 +2093,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "d64c90360ac9267a9635a34b34248d38"
     ],
     [
       "Zen.Types.Extracted.__proj__MkinputMsg__item__contractHash",
@@ -1598,7 +2102,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "d2ff0e7dfeed3df05d2f285be0e7056a"
     ],
     [
       "Zen.Types.Extracted.__proj__MkinputMsg__item__utxo",
@@ -1606,15 +2111,8 @@
       2,
       1,
       [ "@query" ],
-      0
-    ],
-    [
-      "Zen.Types.Extracted.__proj__MkinputMsg__item__lastTx",
-      1,
-      2,
-      1,
-      [ "@query" ],
-      0
+      0,
+      "1ced6275dc189655eafab624abb93d63"
     ],
     [
       "Zen.Types.Extracted.maxCost",
@@ -1622,7 +2120,8 @@
       2,
       1,
       [ "@query", "projection_inverse_BoxBool_proj_0" ],
-      0
+      0,
+      "b94d8d5cb17a77b8299958a5ac90ee8d"
     ],
     [
       "Zen.Types.Extracted.__proj__CostFunc__item__n",
@@ -1630,7 +2129,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "7f21f7b82bf24405cc5f2a82228d1e59"
     ],
     [
       "Zen.Types.Extracted.__proj__CostFunc__item__f",
@@ -1641,7 +2141,8 @@
         "@query", "proj_equation_Zen.Types.Extracted.CostFunc_n",
         "projection_inverse_Zen.Types.Extracted.CostFunc_n"
       ],
-      0
+      0,
+      "1c6d67514a88923b720429194302133b"
     ],
     [
       "Zen.Types.Extracted.__proj__MainFunc__item__cf",
@@ -1649,7 +2150,8 @@
       2,
       1,
       [ "@query" ],
-      0
+      0,
+      "773e1386e4a7574ab2053bf851819227"
     ],
     [
       "Zen.Types.Extracted.__proj__MainFunc__item__mf",
@@ -1660,7 +2162,8 @@
         "@query", "proj_equation_Zen.Types.Extracted.MainFunc_cf",
         "projection_inverse_Zen.Types.Extracted.MainFunc_cf"
       ],
-      0
+      0,
+      "1e3af904fec9af01a3f56845adcb0257"
     ]
   ]
 ]

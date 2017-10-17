@@ -57,12 +57,12 @@ namespace Wallet
 					{
 						var outputIdx = WalletSendLayout.Tx.outputs.ToList().FindIndex(t => t.@lock is Consensus.Types.OutputLock.ContractLock);
 						var outpoint = new Types.Outpoint(Merkle.transactionHasher.Invoke(WalletSendLayout.Tx), (uint)outputIdx);
-						var outpointBytes = new byte[] { (byte)outpoint.index }.Concat(outpoint.txHash).ToArray();
 
-	                    byte[] witnessData = WalletSendLayout.SendInfo.WitnessData.Initial.Concat(outpointBytes).ToArray();
-						witnessData = witnessData.Concat(WalletSendLayout.SendInfo.WitnessData.Final).ToArray();
+						byte[] witnessData = ContractUtilities.DataGenerator.makeMessage(
+							WalletSendLayout.SendInfo.Json,
+							outpoint);
 
-	                    var autoTxResult = new ExecuteContractAction() { 
+						var autoTxResult = new ExecuteContractAction() { 
 	                        ContractHash = WalletSendLayout.SendInfo.Destination.Bytes, 
 	                        Message = witnessData 
 	                    }.Publish().Result;

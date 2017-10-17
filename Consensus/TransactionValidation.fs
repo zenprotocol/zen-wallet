@@ -320,7 +320,7 @@ let validateUserTx (ptx:PointedTransaction) =
 
 type ContractFunctionInput = byte[] * Hash * (Outpoint -> Output option)
 type TransactionSkeleton = Outpoint list * Output list * byte[]
-type ContractFunction = ContractFunctionInput -> TransactionSkeleton
+type ContractFunction = ContractFunctionInput -> Result<TransactionSkeleton, string>
 
 let validateAutoTx  (ptx:PointedTransaction)
                     (utxos:Outpoint -> Output option)
@@ -358,16 +358,20 @@ let validateAutoTx  (ptx:PointedTransaction)
             else match snd ptx.pInputs.[0] with
                  | {lock=ContractLock (_, data)} -> data
                  | _ -> Array.empty
-        let (outpoints, outputs, newcontractbytes) = contract (msg, contracthash, utxos)
-        let newcontract =
-            if newcontractbytes.Length = 0 then None
-            else try
-                    Some <| guardedDeserialise<ExtendedContract> newcontractbytes
-                 with _ ->
-                    None
-        (outpoints = List.map fst ptx.pInputs) &&
-        (outputs = ptx.outputs) &&
-        (newcontract = ptx.contract)
+        match contract (msg, contracthash, utxos) with
+        | Error msg -> 
+            printfn "contract execution resulted in error msg: %A" msg
+            false
+        | Ok (outpoints, outputs, newcontractbytes) ->
+            let newcontract =
+                if newcontractbytes.Length = 0 then None
+                else try
+                        Some <| guardedDeserialise<ExtendedContract> newcontractbytes
+                     with _ ->
+                        None
+            (outpoints = List.map fst ptx.pInputs) &&
+            (outputs = ptx.outputs) &&
+            (newcontract = ptx.contract)
 
 
 let isUserTx ptx =
