@@ -34,44 +34,41 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="basic">
-      <HintPath>..\tools\FStar\bin\basic.dll</HintPath>
+      <HintPath>..\tools\fstar\mono\basic.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.PPrint">
-      <HintPath>..\tools\FStar\bin\FSharp.PPrint.dll</HintPath>
+      <HintPath>..\tools\fstar\mono\FSharp.PPrint.dll</HintPath>
     </Reference>
     <Reference Include="FSharpx.Async, Version=1.13.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\FSharpx.Async.1.13.2\lib\net45\FSharpx.Async.dll</HintPath>
+      <HintPath>..\packages\FSharpx.Async.1.13.2\lib\net45\FSharpx.Async.dll</HintPath>
     </Reference>
     <Reference Include="FSharpx.Collections, Version=1.17.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\FSharpx.Collections.1.17.0\lib\net40\FSharpx.Collections.dll</HintPath>
+      <HintPath>..\packages\FSharpx.Collections.1.17.0\lib\net40\FSharpx.Collections.dll</HintPath>
     </Reference>
     <Reference Include="FSharpx.Extras, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\FSharpx.Extras.2.2.1\lib\net45\FSharpx.Extras.dll</HintPath>
+      <HintPath>..\packages\FSharpx.Extras.2.2.1\lib\net45\FSharpx.Extras.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="parser">
-      <HintPath>..\tools\FStar\bin\parser.dll</HintPath>
+      <HintPath>..\tools\fstar\mono\parser.dll</HintPath>
     </Reference>
     <Reference Include="prettyprint">
-      <HintPath>..\tools\FStar\bin\prettyprint.dll</HintPath>
+      <HintPath>..\tools\fstar\mono\prettyprint.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="FSharpPlus">
-      <HintPath>packages\FSharpPlus.0.0.4\lib\net40\FSharpPlus.dll</HintPath>
+      <HintPath>..\packages\FSharpPlus.0.0.4\lib\net40\FSharpPlus.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Control.AsyncSeq">
-      <HintPath>packages\FSharp.Control.AsyncSeq.2.0.16\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>
-    </Reference>
-    <Reference Include="FsControl">
-      <HintPath>..\packages\FsControl.2.0.0-CI00120\lib\net40\FsControl.dll</HintPath>
+      <HintPath>..\packages\FSharp.Control.AsyncSeq.2.0.16\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>
     </Reference>
     <Reference Include="FsControl.Core">
-      <HintPath>packages\FsControl.1.0.9\lib\net40\FsControl.Core.dll</HintPath>
+      <HintPath>..\packages\FsControl.1.0.9\lib\net40\FsControl.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
