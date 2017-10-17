@@ -87,6 +87,5 @@
     <Compile Include="ExternalTypes.fs" />
   </ItemGroup>
   <ItemGroup />
-  <Import Project="$(FSharpTargetsPath)" />
-  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
+  <Import Project="$(FSharpTargetsPath)" />  
 </Project>
