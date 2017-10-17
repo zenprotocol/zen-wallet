@@ -165,23 +165,23 @@
     <Content Include="Views\Oracle\List.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Zen.RPC.Common\Zen.RPC.Common.csproj">
+    <ProjectReference Include="..\Zen.RPC.Common\Zen.RPC.Common.csproj">
       <Project>{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}</Project>
       <Name>Zen.RPC.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ContractUtilities\ContractUtilities.fsproj">
+    <ProjectReference Include="..\ContractUtilities\ContractUtilities.fsproj">
       <Project>{52C99661-71D0-4037-858E-B605CE5F562C}</Project>
       <Name>ContractUtilities</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Consensus\Consensus.fsproj">
+    <ProjectReference Include="..\Consensus\Consensus.fsproj">
       <Project>{50605A21-04D2-4E72-B943-32F24676373D}</Project>
       <Name>Consensus</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ContractExamples\ContractExamples.fsproj">
+    <ProjectReference Include="..\ContractExamples\ContractExamples.fsproj">
       <Project>{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}</Project>
       <Name>ContractExamples</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Wallet.core\Wallet.core.csproj">
+    <ProjectReference Include="..\Wallet.core\Wallet.core.csproj">
       <Project>{489ED2E1-7304-41F1-9D6C-2FF3E0532BA8}</Project>
       <Name>Wallet.core</Name>
     </ProjectReference>
@@ -189,7 +189,7 @@
       <Project>{396B8253-5F0E-4DB4-9A06-505DE88E89B7}</Project>
       <Name>Zen.RPC</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\BlockChain\BlockChain.csproj">
+    <ProjectReference Include="..\BlockChain\BlockChain.csproj">
       <Project>{9D566AD5-659D-4042-A5CA-F804287CA992}</Project>
       <Name>BlockChain</Name>
     </ProjectReference>
@@ -208,6 +208,5 @@
         <XspParameters Port="8080" Address="127.0.0.1" SslMode="None" SslProtocol="Default" KeyType="None" CertFile="" KeyFile="" PasswordOptions="None" Password="" Verbose="True" />
       </Properties>
     </MonoDevelop>
-  </ProjectExtensions>
-  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
+  </ProjectExtensions>  
 </Project>
