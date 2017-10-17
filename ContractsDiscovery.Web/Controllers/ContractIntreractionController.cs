@@ -179,15 +179,15 @@ namespace ContractsDiscovery.Web.Controllers
             var argsMap = new FSharpMap<string, string>(args.Select(t => new Tuple<string, string>(t.Key, t.Value)));
             var result = await Client.Send<GetContractPointedOutputsResultPayload>(_address, new GetContractPointedOutputsPayload() { ContractHash = contractHash });
             var utxos = GetContractPointedOutputsResultPayload.Unpack(result.PointedOutputs);
-            var data = ContractUtilities.DataGenerator.makeData(contractMetadata, utxos, opcode, argsMap);
+            var data = ContractUtilities.DataGenerator.makeJson(contractMetadata, utxos, opcode, argsMap);
 
-            if (FSharpOption<string>.get_IsNone(data))
+            if (data.IsError)
             {
-                contractInteraction.Message = "No data";
+                contractInteraction.Message = data.ErrorValue.ToString();
             }
             else
             {
-                contractInteraction.Data = data.Value;
+                contractInteraction.Data = data.ResultValue.JsonValue.ToString();
             }
           
 			return View(contractInteraction);

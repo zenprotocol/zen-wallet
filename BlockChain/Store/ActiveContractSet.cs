@@ -1,26 +1,25 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using Store;
 using System.Linq;
 using BlockChain.Data;
-using System.Text;
 using Consensus;
 using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Collections;
-using System.Reflection;
 
 namespace BlockChain
 {
-	using TransactionSkeleton = Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>;
-	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>>;
+	using ContractFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, FSharpResult<Tuple<FSharpList<Types.Outpoint>, FSharpList<Types.Output>, byte[]>, string>>;
+	using ContractCostFunction = FSharpFunc<Tuple<byte[], byte[], FSharpFunc<Types.Outpoint, FSharpOption<Types.Output>>>, System.Numerics.BigInteger>;
 
 	public class ACSItem
 	{
 		public byte[] Hash { get; set; }
-        public string Code { get; set; }
 		public byte[] CostFn { get; set; }
 		public ulong KalapasPerBlock { get; set; }
 		public UInt32 LastBlock { get; set; }
+		public string Extracted { get; set; }
+		public byte[] Serialized { get; set; }
 	}
 
     public class ActiveContractSet : MsgPackStore<ACSItem>
@@ -76,26 +75,22 @@ namespace BlockChain
                 return false;
             }
 
-            //  string fsharpCode;
-            //  ContractHelper.Extract(contractCode, out fsharpCode);
-            //	var fsharpCode = new StrongBox<byte[]>();
-            //	return ContractHelper.Extract(contractCode, fsharpCode).ContinueWith(t => {
+			//TODO: module name
+			var extration = ContractExamples.FStarExecution.extract(contractCode);
 
-            try
-            {
-                var compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
+			if (FSharpOption<string>.get_IsNone(extration))
+			{
+				BlockChainTrace.Information("Could not extract contract");
+				return false;
+			}
 
-                if (FSharpOption<MethodInfo>.get_IsNone(compiledCodeOpt))
-                {
-                    return false;
-                }
-            }
-            catch (Exception e)
-            {
-                //TODO: print the exception on Info rather than Error, or don't print the exception at all
-                BlockChainTrace.Error("Error compiling contract", e);
-                return false;
-            }
+			var compilation = ContractExamples.FStarExecution.compile(extration.Value);
+
+			if (FSharpOption<byte[]>.get_IsNone(compilation))
+			{
+				BlockChainTrace.Information("Could not complie contract");
+				return false;
+			}
 
             var kalapasPerBlock = KalapasPerBlock(contractCode);
 
@@ -111,7 +106,8 @@ namespace BlockChain
                 Hash = contractHash,
                 KalapasPerBlock = kalapasPerBlock,
                 LastBlock = blockNumber + blocks,
-                Code = contractCode
+                Extracted = extration.Value,
+                Serialized = compilation.Value
             });
 
             BlockChainTrace.Information($"Contract activated for {blocks} blocks", contractHash);
@@ -155,26 +151,50 @@ namespace BlockChain
                 return null;
             }
 
-			try
-			{
-                var methodOpt = ContractExamples.Execution.compile(acsItem.Value.Code);
+            var deserialization = FSharpOption<Tuple<ContractFunction, ContractCostFunction>>.None;
 
-                if (FSharpOption<MethodInfo>.get_IsNone(methodOpt))
+            try
+            {
+                deserialization = ContractExamples.FStarExecution.deserialize(acsItem.Value.Serialized);
+            }
+            catch (Exception e)
+            {
+				BlockChainTrace.Error("Error deserializing contract", e);
+			}
+
+            if (FSharpOption<Tuple<ContractFunction, ContractCostFunction>>.get_IsNone(deserialization) || deserialization == null)
+            {
+                BlockChainTrace.Information("Reserializing contract");
+
+                try
+                {
+                    var compilation = ContractExamples.FStarExecution.compile(acsItem.Value.Extracted);
+
+                    if (FSharpOption<byte[]>.get_IsNone(compilation))
+                    {
+                        return null;
+                    }
+
+                    acsItem.Value.Serialized = compilation.Value;
+
+                    Add(dbTx, acsItem.Value);
+
+                    deserialization = ContractExamples.FStarExecution.deserialize(compilation.Value);
+
+					if (FSharpOption<Tuple<ContractFunction, ContractCostFunction>>.get_IsNone(deserialization))
+					{
+						BlockChainTrace.Error("Error deserializing contract");
+						return null;
+					}
+				}
+				catch (Exception e)
 				{
+					BlockChainTrace.Error("Error recompiling contract", e);
 					return null;
 				}
+			}
 
-                return ContractFunction.FromConverter(t =>
-				{
-					return (TransactionSkeleton)methodOpt.Value.Invoke(null, new object[] { t.Item1, t.Item2, t.Item3 });
-				});
-			}
-			catch (Exception e)
-			{
-				//TODO: print the exception on Info rather than Error, or don't print the exception at all
-				BlockChainTrace.Error("Error compiling contract", e);
-				return null;
-			}
+			return deserialization.Value.Item1;
 		}
 	}
 }

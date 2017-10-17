@@ -20,11 +20,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractGenerator", "Contra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zen.RPC.Common", "Zen.RPC.Common\Zen.RPC.Common.csproj", "{DF0F2C9B-02DC-4385-A19F-7A46A70D652A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ContractUtilities", "ContractUtilities\ContractUtilities.fsproj", "{52C99661-71D0-4037-858E-B605CE5F562C}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractUtilities", "ContractUtilities\ContractUtilities.fsproj", "{52C99661-71D0-4037-858E-B605CE5F562C}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ContractExamples", "ContractExamples\ContractExamples.fsproj", "{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractExamples", "ContractExamples\ContractExamples.fsproj", "{EAA17A3C-39B2-4C72-B5C2-C7331FC89F2E}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Consensus", "Consensus\Consensus.fsproj", "{50605A21-04D2-4E72-B943-32F24676373D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractsDiscovery.Web", "ContractsDiscovery.Web\ContractsDiscovery.Web.csproj", "{98B6559E-1F7B-4AAA-8CC7-E4A8B93BA514}"
 EndProject
@@ -37,6 +37,10 @@ EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "ZenInstaller", "ZenInstaller\ZenInstaller.wixproj", "{0BBFC86B-1F12-4DDF-A1B4-F8ABEFAADAD8}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "ZenPackage", "ZenPackage\ZenPackage.wixproj", "{903104FD-E61A-4A84-A0B6-53B8C7D755BD}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractExamples.Tests", "ContractExamples.Tests\ContractExamples.Tests.fsproj", "{5E554D3F-6EAB-45EC-8525-A8D42C3027F9}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "FStar-Utils", "FStar-Utils\FStar-Utils.fsproj", "{21857719-877E-43D5-913C-6050E4FC7372}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -116,6 +120,14 @@ Global
 		{903104FD-E61A-4A84-A0B6-53B8C7D755BD}.Debug|x86.Build.0 = Debug|x86
 		{903104FD-E61A-4A84-A0B6-53B8C7D755BD}.Release|x86.ActiveCfg = Release|x86
 		{903104FD-E61A-4A84-A0B6-53B8C7D755BD}.Release|x86.Build.0 = Release|x86
+		{5E554D3F-6EAB-45EC-8525-A8D42C3027F9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5E554D3F-6EAB-45EC-8525-A8D42C3027F9}.Debug|x86.Build.0 = Debug|Any CPU
+		{5E554D3F-6EAB-45EC-8525-A8D42C3027F9}.Release|x86.ActiveCfg = Release|Any CPU
+		{5E554D3F-6EAB-45EC-8525-A8D42C3027F9}.Release|x86.Build.0 = Release|Any CPU
+		{21857719-877E-43D5-913C-6050E4FC7372}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{21857719-877E-43D5-913C-6050E4FC7372}.Debug|x86.Build.0 = Debug|Any CPU
+		{21857719-877E-43D5-913C-6050E4FC7372}.Release|x86.ActiveCfg = Release|Any CPU
+		{21857719-877E-43D5-913C-6050E4FC7372}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

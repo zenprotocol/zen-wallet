@@ -46,11 +46,23 @@
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Zulib">
+      <HintPath>..\Zulib\bin\Zulib.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Compatibility.OCaml">
+      <HintPath>..\packages\FSharp.Compatibility.OCaml.0.1.12\lib\net40\FSharp.Compatibility.OCaml.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.1.0.0-beta1\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.8.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <None Include="packages.config" />
-    <Compile Include="DataGenerator.fsi" />
+    <Compile Include="ResultWorkflow.fs" />
     <Compile Include="DataGenerator.fs" />
   </ItemGroup>
   <ItemGroup>
