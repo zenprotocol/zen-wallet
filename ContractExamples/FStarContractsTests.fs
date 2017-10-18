@@ -64,7 +64,7 @@ let ``TestSecureToken``() =
 
     let cost = costFunc input
 
-    Assert.That (cost, Is.EqualTo 0I)
+    Assert.That (cost, Is.EqualTo 45I)
 
     let resultSuccess = mainFunc input
 
@@ -91,7 +91,7 @@ let ``TestSecureToken``() =
             | Consensus.Types.PKLock (pkHash) -> pkHash
             | _ -> Array.empty
 
-        Assert.AreEqual (randomhash, pkHash)
+        Assert.AreEqual (address, pkHash)
     | Error msg -> Assert.Fail msg
 
 
