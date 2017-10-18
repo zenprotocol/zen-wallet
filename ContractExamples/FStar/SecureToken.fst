@@ -2,50 +2,42 @@ module ZenModule
 
 module V = Zen.Vector
 module O = Zen.Option
+module OT = Zen.OptionT
+module ET = Zen.ErrorT
 
 open Zen.Types
 open Zen.Cost
 
-val parse_outpoint: n:nat & inputData n -> option outpoint
-let parse_outpoint = function
-  | (| _ , Outpoint o |) -> Some o
-  | _ -> None
-
-val cost_fn: inputMsg -> cost nat 0
-let cost_fn _ = ret 0
-
-val secureToken: inputMsg -> cost (result transactionSkeleton) 0
-let secureToken i =
-  let open O in
-
-  let resTx = match parse_outpoint i.data with
+val parse_outpoint: n:nat & inputData n -> cost (option outpoint) 5
+let parse_outpoint d = match d with // point-free function syntax doesn't elaborate correctly
+  | (| _ , Outpoint o |) -> OT.some o
+  | _ -> OT.none
+val cost_fn: inputMsg -> cost nat 1
+let cost_fn _ = ret 45
+val main_fn: inputMsg -> cost (result transactionSkeleton) 45
+let main_fn i =
+  //let open OT in
+  do parsed <-- parse_outpoint i.data;
+  match parsed with
     | Some outpoint ->
         begin match i.utxo outpoint with
           | Some output ->
-            let outpoints = V.VCons outpoint V.VNil in
-
-            let lock = PKLock (Zen.Util.hashFromBase64 "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME=") in
-
-            let connotativeOutput = {
+            do outpoints <-- ret [| outpoint |];
+            do lock <-- ret (PKLock (Zen.Util.hashFromBase64 "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME="));
+            do connotativeOutput <-- ret ({
               lock = lock;
               spend = output.spend
-            } in
-
-            let tokenOutput = {
+            });
+            do tokenOutput <-- ret ({
               lock = lock;
               spend = {
                 asset = i.contractHash;
                 amount = 1000UL
               }
-            } in
-
-            V (Tx outpoints [| tokenOutput; connotativeOutput |] None)
-          | None -> Err "Cannot resolve outpoint"
+            });
+            ret (V (Tx outpoints [| tokenOutput; connotativeOutput |] None))
+          | None -> ret (Err "Cannot resolve outpoint")
         end
-    | None -> Err "Cannot parse outpoint" in
-
-  ret resTx
-
-
-val main: mainFunction
-let main = MainFunc (CostFunc cost_fn) secureToken
+    | None -> ret (Err "Cannot parse outpoint")
+  (*let open ET in
+  retT resTx*)

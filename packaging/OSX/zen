@@ -7,6 +7,8 @@
 # bundle maker.
 #
 
+#TODO: mind my own changes to this generated file? (SWITCHES, OUTPUT)
+
 X11_MODE=0
 MWF_MODE=1
 COCOASHARP_MODE=0
@@ -14,7 +16,8 @@ COCOASHARP_MODE=0
 PWD=`pwd`
 # Fetch the path relative to the launch point where this shell script exists.
 APP_PATH=`echo $0 | awk '{split($0,patharr,"/"); idx=1; while(patharr[idx+3] != "") { if (patharr[idx] != "/") {printf("%s/", patharr[idx]); idx++ }} }'`
-
+SWITCHES="--arch=32"
+OUTPUT="output.txt"
 # Fetch the app name (its our own name)
 APP_NAME=zen
 ASSEMBLY=zen.exe
@@ -36,16 +39,16 @@ if [ "$X11_MODE" -eq "1" ]; then
 # elif: Keep compatibility with previous code
 elif [ -f /usr/local/bin/mono ]; then
         DIR=$(cd "$(dirname "$0")"; pwd)
-        /usr/local/bin/mono $DIR/../Resources/"$ASSEMBLY"
+        /usr/local/bin/mono $SWITCHES $DIR/../Resources/"$ASSEMBLY" > $OUTPUT
 
 # Mono 5 fix
 elif [ -f /Library/Frameworks/Mono.framework/Versions/Current/Commands/mono ]; then
         DIR=$(cd "$(dirname "$0")"; pwd)
-        /Library/Frameworks/Mono.framework/Versions/Current/Commands/mono $DIR/../Resources/"$ASSEMBLY"
+        /Library/Frameworks/Mono.framework/Versions/Current/Commands/mono $SWITCHES $DIR/../Resources/"$ASSEMBLY" > $OUTPUT
 
 else
 	if [ ! -d "./bin" ]; then mkdir bin ; fi
 	if [ -f "./bin/$APP_NAME" ]; then rm -f "./bin/$APP_NAME" ; fi
 	ln -s `which mono` "./bin/$APP_NAME"
-	"./bin/$APP_NAME" "$ASSEMBLY"
+	"./bin/$APP_NAME" $SWITCHES "$ASSEMBLY" > $OUTPUT
 fi
