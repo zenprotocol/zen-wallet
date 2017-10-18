@@ -15,10 +15,15 @@ let assemblyNames = assemblies |>
                     Array.toList
                     |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
 
-let suffix = """
+let fsSuffix = """
 open MBrace.FsPickler.Combinators
 let pickler = Pickler.auto<Zen.Types.Extracted.mainFunction>
 let pickled = Binary.pickle pickler main
+"""
+
+let fstSuffix = """
+val main: mainFunction
+let main = MainFunc (CostFunc cost_fn) main_fn
 """
 
 // caution, must check for nulls
@@ -28,7 +33,7 @@ let compile source =
         let fn = Path.GetTempFileName()
         let fni = Path.ChangeExtension(fn, ".fs")
         let fno = Path.ChangeExtension(fn, ".dll")
-        File.WriteAllText(fni, source + System.Environment.NewLine + suffix)
+        File.WriteAllText(fni, source + System.Environment.NewLine + fsSuffix)
         let assemblyParameters = List.foldBack (fun x xs -> "-r" :: x :: xs) assemblyNames []
         //FIXME: --mlcompatibility
         let compilationParameters = ["--mlcompatibility"; "-o"; fno; "-a"; fni; "--lib:" + System.AppDomain.CurrentDomain.BaseDirectory] @ assemblyParameters |> List.toArray
@@ -71,13 +76,14 @@ let extract source =
             Directory.CreateDirectory tmp |> ignore
             let fn = (FileInfo (moduleName + ".fst")).Name
             let fni = Path.Combine(tmp, fn)
-            let fn'elabed = Path.Combine(fni, ".elab.fst")
+            let fn'elabed = Path.ChangeExtension(fni, ".elab.fst")
             let fno = Path.ChangeExtension(fn, ".fs")
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
 
-            //IOUtils.elaborate fni fn'elabed
-            let fn'elabed = fni
+            IOUtils.elaborate fni fn'elabed
+            File.AppendAllText(fn'elabed, System.Environment.NewLine + fstSuffix)
+            //let fn'elabed = fni
 
             let args =
                 [|
@@ -126,7 +132,8 @@ let extract source =
             printfn "%A" msg
             None
     finally
-        Directory.Delete (tmp, true)
+          printfn "--> %A" tmp
+ //       Directory.Delete (tmp, true)
 
 open FStarCompatibility
 open Zen.Types.Extracted
