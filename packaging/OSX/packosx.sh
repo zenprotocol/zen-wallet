@@ -1,7 +1,19 @@
 #!/bin/bash
 
 pwd=`pwd`
+
 cd "$(dirname "$0")"
+
+MODE="${1:-Release}"
+echo "Compiling $MODE mode"
+
+#TODO: cleanup before
+eval "msbuild ../../unix.sln /p:Configuration=$MODE"
+ret_code=$?
+if [ $ret_code != 0 ]; then
+  printf "Error compiling project.\n aborted.\n"
+  exit $ret_code
+fi
 
 APP_NAME="Zen"
 
@@ -22,7 +34,6 @@ cd ..
 mkdir Resources
 cd Resources
 
-MODE="${1:-Release}"
 echo "Packing $MODE mode"
 
 #todo: msbuild /property:Configuration=$MODE
@@ -43,9 +54,9 @@ TOOLSPATH="../../../../../tools"
 
 mkdir tools
 # z3
-cp -r $TOOLSPATH/z3/mac ./tools/z3
+cp -r $TOOLSPATH/z3/linux ./tools/z3
 # fstar
-cp -r $TOOLSPATH/fstar/bin ./tools/fstar
+cp -r $TOOLSPATH/fstar/mono ./tools/fstar
 # Zulib-fstar
 ZULIBPATH="../../../../../Zulib/fstar"
 cp -r $ZULIBPATH ./zulib

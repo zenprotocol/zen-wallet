@@ -1,4 +1,4 @@
-﻿#I @"../../../FStar/bin"
+﻿#I @"../../../FStar/mono"
 //#r "FSharp.PowerPack.dll"
 //#r "FSharp.PowerPack.Compatibility.dll"
 #r "FsLexYacc.Runtime.dll"
@@ -21,7 +21,7 @@ System.IO.File.WriteAllText("Outputs/TestAST.txt", sprintf "%A" ast);
 (*
 // Testing the pretty_printer
 let (module_, comments) = ast
-let (doc, comments') = 
+let (doc, comments') =
     ToDoc.modul_with_comments_to_document module_ comments
 let doc_string = Pp.pretty_string 1.0 100 doc
 printfn "%s" doc_string
@@ -37,11 +37,11 @@ let mk_modul (decls:list<decl>) : modul =
     let moduleNameIdent : ident = { idText="MinimalAST";
                                     idRange={ def_range=612490106594410498L;
                                               use_range=612490106594410498L } }
-    let moduleNameLid : lid = { ns=[]; 
+    let moduleNameLid : lid = { ns=[];
                                 ident=moduleNameIdent;
                                 nsstr="";
                                 str="MinimalAST" }
-    
+
     Module (moduleNameLid, decls)
 
 let mk_topLevelLet (bindings: list< pattern * term >) : decl' =
@@ -50,7 +50,7 @@ let mk_topLevelLet (bindings: list< pattern * term >) : decl' =
 let mk_decl (bindings: list< pattern * term >) : decl =
     let drange : range = { def_range=720577589646770178L;
                            use_range=720577589646770178L }
-    
+
     { d=mk_topLevelLet bindings;
       drange=drange;
       doc=None;
@@ -58,11 +58,11 @@ let mk_decl (bindings: list< pattern * term >) : decl =
       attrs=[] }
 
 let mk_binding (tm:term) : pattern * term =
-    let patIdent : ident = 
+    let patIdent : ident =
         { idText="pat1GoesHere";
           idRange = { def_range=576462405865881602L;
                       use_range=576462405865881602L } }
-    let prange : range = 
+    let prange : range =
         { def_range=576462405865881602L;
           use_range=576462405865881602L }
     let pat : pattern =
@@ -75,31 +75,31 @@ let mk_tm (tm:term') : term =
         { def_range=720577610047864834L;
           use_range=720577610047864834L }
     let level = Un
-    
+
     { tm=tm;
       range=range;
       level=level }
 
-let mk_ast (m:modul) 
+let mk_ast (m:modul)
     : modul * list< string * range > =
         m, []
 
-let const_tm' : term' = 
+let const_tm' : term' =
     let range = { def_range=720577610097864834L;
-                  use_range=720577610097864834L }    
-    let ident1 : ident = 
+                  use_range=720577610097864834L }
+    let ident1 : ident =
         { idText="ident1";
           idRange = { def_range=720577610097864834L;
                       use_range=720577610097864834L } }
-    let lid1 : lid = { ns=[]; 
+    let lid1 : lid = { ns=[];
                       ident=ident1;
                       nsstr="";
                       str="lident1" }
     let tm1 = mk_tm <| Const (Const_bool true)
     let tm2 = mk_tm <| Const (Const_bool false)
-    
+
     Record <| (Some tm1, [lid1, tm2])
-        
+
 let ast =
     let tm = mk_tm const_tm'
     let binding = mk_binding tm

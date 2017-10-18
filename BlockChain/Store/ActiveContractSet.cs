@@ -157,9 +157,9 @@ namespace BlockChain
             {
                 deserialization = ContractExamples.FStarExecution.deserialize(acsItem.Value.Serialized);
             }
-            catch (Exception e)
+            catch
             {
-				BlockChainTrace.Error("Error deserializing contract", e);
+                BlockChainTrace.Information("Error deserializing contract");
 			}
 
             if (FSharpOption<Tuple<ContractFunction, ContractCostFunction>>.get_IsNone(deserialization) || deserialization == null)
