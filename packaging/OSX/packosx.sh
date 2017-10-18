@@ -45,7 +45,7 @@ mkdir tools
 # z3
 cp -r $TOOLSPATH/z3/mac ./tools/z3
 # fstar
-cp -r $TOOLSPATH/fstar/bin ./tools/fstar
+cp -r $TOOLSPATH/fstar/mono ./tools/fstar
 # Zulib-fstar
 ZULIBPATH="../../../../../Zulib/fstar"
 cp -r $ZULIBPATH ./zulib

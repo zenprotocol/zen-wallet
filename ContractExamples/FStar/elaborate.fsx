@@ -1,4 +1,4 @@
-﻿#I @"../../tools/FStar/bin"
+﻿#I @"../../tools/FStar/mono"
 //#r "FSharp.PowerPack.dll"
 //#r "FSharp.PowerPack.Compatibility.dll"
 #r "FsLexYacc.Runtime.dll"
@@ -8,7 +8,7 @@
 #r "parser.dll"
 #r "prettyprint.dll"
 #r "FSharp.PPrint.dll"
-#r "../../../FStar-Zen4/FStar-Utils/bin/Debug/FStar_Utils.dll"
+#r "../../FStar-Utils/bin/Debug/FStar_Utils.dll"
 
 module ToDoc = FStar.Parser.ToDocument
 
