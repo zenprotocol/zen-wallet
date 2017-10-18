@@ -5,15 +5,16 @@ open System.IO
 open System.Reflection
 open MBrace.FsPickler.Combinators
 
-let checker = FSharpChecker.Create ()
+open FSharp.Configuration;
 
-let currentAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-let assemblies = currentAssembly.GetReferencedAssemblies()
-let assemblyNames = assemblies |>
-                    Array.filter (fun a -> a.Name <> "mscorlib" && a.Name <> "FSharp.Core") |>
-                    Array.map (fun a -> Assembly.ReflectionOnlyLoad(a.FullName).Location) |> 
-                    Array.toList
-                    |> fun l -> System.Reflection.Assembly.GetExecutingAssembly().Location :: l
+type Settings = AppSettings<"app.config">
+
+let workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+
+let resolvePath (path:string) =
+    match Path.IsPathRooted path with
+        | true -> Settings.Fstar
+        | false -> Path.GetFullPath (Path.Combine (workingDir, path))
 
 let fsSuffix = """
 open MBrace.FsPickler.Combinators
@@ -26,6 +27,8 @@ val main: mainFunction
 let main = MainFunc (CostFunc cost_fn) main_fn
 """
 
+let checker = FSharpChecker.Create ()
+
 // caution, must check for nulls
 // https://stackoverflow.com/questions/10435052/f-passing-none-to-function-getting-null-as-parameter-value
 let compile source = 
@@ -33,16 +36,24 @@ let compile source =
         let fn = Path.GetTempFileName()
         let fni = Path.ChangeExtension(fn, ".fs")
         let fno = Path.ChangeExtension(fn, ".dll")
+
         File.WriteAllText(fni, source + System.Environment.NewLine + fsSuffix)
-        let assemblyParameters = List.foldBack (fun x xs -> "-r" :: x :: xs) assemblyNames []
-        //FIXME: --mlcompatibility
-        let compilationParameters = ["--mlcompatibility"; "-o"; fno; "-a"; fni; "--lib:" + System.AppDomain.CurrentDomain.BaseDirectory] @ assemblyParameters |> List.toArray
+
+        let compilationParameters = [|
+            "--mlcompatibility"; 
+            "-o"; fno;
+            "-a"; fni;
+            "-r"; "Zulib.dll";
+            "-r"; "FsPickler.dll";
+            "-r"; Path.Combine (resolvePath Settings.Fstar, "FSharp.Compatibility.OCaml.dll");
+        |]
+                    
         let compilationResult =
             checker.CompileToDynamicAssembly(compilationParameters, Some(stdout, stderr))
         let errors, exitCode, dynamicAssembly = Async.RunSynchronously compilationResult
         if exitCode <> 0 then 
             //TODO: trace/log?
-            printfn "%A" errors
+            printfn "compilation failed: %A" errors
             None
         else 
             match dynamicAssembly with
@@ -56,16 +67,6 @@ let compile source =
         None
 
 open System.Diagnostics;
-open FSharp.Configuration;
-
-type Settings = AppSettings<"app.config">
-
-let workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-
-let resolvePath (path:string) =
-    match Path.IsPathRooted path with
-        | true -> Settings.Fstar
-        | false -> Path.GetFullPath (Path.Combine (workingDir, path))
 
 let extract source =
     let tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
@@ -83,7 +84,6 @@ let extract source =
 
             IOUtils.elaborate fni fn'elabed
             File.AppendAllText(fn'elabed, System.Environment.NewLine + fstSuffix)
-            //let fn'elabed = fni
 
             let args =
                 [|
@@ -123,7 +123,7 @@ let extract source =
                 p.WaitForExit()
 
                 if p.ExitCode <> 0 then
-                    printfn "%A" source
+                    printfn "extraction/verification failed: %A" source
                     None
                 else
                     Some (File.ReadAllText (Path.Combine (tmp, fno)))
@@ -132,8 +132,7 @@ let extract source =
             printfn "%A" msg
             None
     finally
-          printfn "--> %A" tmp
- //       Directory.Delete (tmp, true)
+        Directory.Delete (tmp, true)
 
 open FStarCompatibility
 open Zen.Types.Extracted
