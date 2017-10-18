@@ -25,7 +25,7 @@ let secureToken i =
             let outpoints = V.VCons outpoint V.VNil in
             let outputs = V.VCons output V.VNil in
             let tokenOutput = {
-              lock = PKLock (Zen.Util.hashFromBase64 "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME=");
+              lock = PKLock (Zen.Util.hashFromBase64 "__ADDRESS__");
                 spend = {
                   asset = i.contractHash;
                   amount = 1000UL
