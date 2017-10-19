@@ -68,16 +68,13 @@ let compile source =
 
 open System.Diagnostics;
 
-let mono_below5 = "/usr/local/bin/mono"
-let mono_5 = "/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono"
-let mono =
-    if (File.Exists mono_below5) then
-        mono_below5
-    else 
-        if (File.Exists mono_5) then
-            mono_5
-        else
-            raise (System.Exception "Cannot find mono")
+let mono_locations = [ //TODO: prioritize
+    "/usr/bin/mono"
+    "/usr/local/bin/mono"
+    "/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono"
+]
+    
+let mono = List.tryFind File.Exists mono_locations
 
 let extract source =
     let tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
@@ -113,7 +110,7 @@ let extract source =
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    FileName = mono,
+                    FileName = Option.get mono, //TODO: handle None
                     Arguments = String.concat " " args
                 )
 
