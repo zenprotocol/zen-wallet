@@ -2,7 +2,7 @@
 <doc>
 <assembly><name>extraction</name></assembly>
 <members>
-<member name="M:FStar.Extraction.ML.UEnv.removeTick``1(System.String,``0)">
+<member name="M:FStar.Extraction.ML.UEnv.removeTick(System.String)">
 <summary>
 the addition of the space is intentional; it&apos;s apparently valid syntax of tvars
 </summary>

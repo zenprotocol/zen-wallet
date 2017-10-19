@@ -235,8 +235,8 @@ let tryParseContractMetadata (s:string) =
     | "calloption" ->
         Some <| CallOption {
             numeraire = System.Convert.FromBase64String <| json.Item("numeraire").Value<string>();
-            controlAsset = System.Convert.FromBase64String <| json.Item("controlAsset").Value<string>();
-            controlAssetReturn = System.Convert.FromBase64String <| json.Item("controlAssetReturn").Value<string>();
+            controlAsset = [||] //System.Convert.FromBase64String <| json.Item("controlAsset").Value<string>();
+            controlAssetReturn = [||] //System.Convert.FromBase64String <| json.Item("controlAssetReturn").Value<string>();
             oracle = System.Convert.FromBase64String <| json.Item("oracle").Value<string>();
             underlying = json.Item("underlying").Value<string>();
             price = json.Item("price").Value<decimal>();

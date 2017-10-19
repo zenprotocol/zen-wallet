@@ -77,6 +77,13 @@
     </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.9.1\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Data">
+      <HintPath>..\packages\FSharp.Data.2.4.1\lib\net40\FSharp.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -277,6 +284,9 @@
       <Project>{D37AC6C9-1A58-4B2D-B242-81D6ED7B3BA2}</Project>
       <Name>ContractGenerator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ContractUtilities\ContractUtilities.fsproj">
+      <Project>{52C99661-71D0-4037-858E-B605CE5F562C}</Project>
+      <Name>ContractUtilities</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets" Condition="Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.3.0\build\net40\Baseclass.Contrib.Nuget.Output.targets')" />
 </Project>

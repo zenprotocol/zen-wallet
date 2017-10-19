@@ -61,6 +61,11 @@ namespace BlockChain
 			_Trace.TraceEvent(TraceEventType.Error, 0, msg + " " + Infrastructure.Utils.ExceptionToString(ex));
 		}
 
+		internal static void Error(string msg)
+		{
+			_Trace.TraceEvent(TraceEventType.Error, 0, msg);
+		}
+
 		internal static void Verbose(string str)
 		{
 			_Trace.TraceEvent(TraceEventType.Verbose, 0, str);

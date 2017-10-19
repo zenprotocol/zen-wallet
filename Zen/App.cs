@@ -145,7 +145,7 @@ namespace Zen
 			return AddBlock(GenesisBlock.Value);
 		}
 
-		internal bool AddBlock(Types.Block block)
+        internal bool AddBlock(Consensus.Types.Block block)
 		{
             return new HandleBlockAction(block).Publish().Result.BkResultEnum == BlockChain.BlockVerificationHelper.BkResultEnum.Accepted;
 		}
@@ -247,7 +247,7 @@ namespace Zen
             SetMinerEnabled(MinerEnabled);
         }
 
-        void OnMined(Types.Block bk)
+        void OnMined(Consensus.Types.Block bk)
         {
 			if (_NodeManager != null)
 	            _NodeManager.Transmit(bk);
@@ -384,16 +384,16 @@ namespace Zen
 			Stop();
 		}
 
-		private Keyed<Types.Block> _GenesisBlock = null;
+        private Keyed<Consensus.Types.Block> _GenesisBlock = null;
 
-		public Keyed<Types.Block> GenesisBlock
+		public Keyed<Consensus.Types.Block> GenesisBlock
 		{
 			get
 			{
 				if (_GenesisBlock == null)
 				{
-					var outputs = new List<Types.Output>();
-					var inputs = new List<Types.Outpoint>();
+					var outputs = new List<Consensus.Types.Output>();
+					var inputs = new List<Consensus.Types.Outpoint>();
 					var hashes = new List<byte[]>();
 					var version = (uint)1;
 					var date = "2000-02-03";
@@ -403,12 +403,12 @@ namespace Zen
                         var key = Key.Create(JsonLoader<TestKeys>.Instance.Value.Values[i].Private);
                         var amount = JsonLoader<Outputs>.Instance.Value.Values.Where(t => t.TestKeyIdx == i).Select(t => t.Amount).First();
 
-                        outputs.Add(new Types.Output(key.Address.GetLock(), new Types.Spend(Consensus.Tests.zhash, amount)));
+                        outputs.Add(new Consensus.Types.Output(key.Address.GetLock(), new Consensus.Types.Spend(Consensus.Tests.zhash, amount)));
                     }
 
-					var txs = new List<Types.Transaction>();
+					var txs = new List<Consensus.Types.Transaction>();
 
-					txs.Add(new Types.Transaction(
+					txs.Add(new Consensus.Types.Transaction(
                         version,
 						ListModule.OfSeq(inputs),
 						ListModule.OfSeq(hashes),
@@ -416,7 +416,7 @@ namespace Zen
 					    null
 					));
 
-					var blockHeader = new Types.BlockHeader(
+					var blockHeader = new Consensus.Types.BlockHeader(
 						version,
 						new byte[] { },
 						0,
@@ -430,10 +430,10 @@ namespace Zen
 						new byte[] { }
 					);
 
-					var block = new Types.Block(blockHeader, ListModule.OfSeq<Types.Transaction>(txs));
-					var blockHash = Merkle.blockHeaderHasher.Invoke(blockHeader);
+					var block = new Consensus.Types.Block(blockHeader, ListModule.OfSeq<Consensus.Types.Transaction>(txs));
+					var blockHash = Consensus.Merkle.blockHeaderHasher.Invoke(blockHeader);
 
-					_GenesisBlock = new Keyed<Types.Block>(blockHash, block);
+					_GenesisBlock = new Keyed<Consensus.Types.Block>(blockHash, block);
 				}
 
 				return _GenesisBlock;

@@ -17,8 +17,7 @@ namespace ContractsDiscovery.Web.App_Data
 		public string Type { get; set; }
 		public string Description { get; set; }
         public UInt64 TotalAssets { get; set; }
-		public string ControlAsset { get; set; }
-
+		
 		public string AssetName { get; set; }
 		public string AssetImageUrl { get; set; }
 		public string AssetMetadataVersion { get; set; }
