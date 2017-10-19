@@ -12,8 +12,10 @@ val parse_outpoint: n:nat & inputData n -> cost (option outpoint) 5
 let parse_outpoint d = match d with // point-free function syntax doesn't elaborate correctly
   | (| _ , Outpoint o |) -> OT.some o
   | _ -> OT.none
+
 val cost_fn: inputMsg -> cost nat 1
 let cost_fn _ = ret 45
+
 val main_fn: inputMsg -> cost (result transactionSkeleton) 45
 let main_fn i =
   //let open OT in
@@ -39,5 +41,3 @@ let main_fn i =
           | None -> ret (Err "Cannot resolve outpoint")
         end
     | None -> ret (Err "Cannot parse outpoint")
-  (*let open ET in
-  retT resTx*)

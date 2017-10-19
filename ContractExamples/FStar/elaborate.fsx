@@ -1,4 +1,4 @@
-﻿#I @"../../tools/FStar/mono"
+﻿#I @"../../tools/fstar/mono"
 //#r "FSharp.PowerPack.dll"
 //#r "FSharp.PowerPack.Compatibility.dll"
 #r "FsLexYacc.Runtime.dll"
