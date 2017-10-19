@@ -5,9 +5,12 @@ pwd=`pwd`
 cd "$(dirname "$0")"
 
 MODE="${1:-Release}"
-echo "Compiling $MODE mode"
 
-#TODO: cleanup before
+echo "Cleaning up $MODE"
+ZENPATH="../../Zen/bin/$MODE"
+rm -r $ZENPATH
+
+echo "Compiling $MODE mode"
 eval "msbuild ../../unix.sln /p:Configuration=$MODE"
 ret_code=$?
 if [ $ret_code != 0 ]; then
@@ -35,8 +38,6 @@ mkdir Resources
 cd Resources
 
 echo "Packing $MODE mode"
-
-#todo: msbuild /property:Configuration=$MODE
 
 # get some files needed
 ZENPATH="../../../../../Zen/bin/$MODE"
