@@ -324,6 +324,7 @@ namespace Wallet
 			w24.Expand = false;
 			// Container child vboxMainInner.Gtk.Box+BoxChild
 			this.hbox1 = new global::Gtk.HBox();
+			this.hbox1.Name = "hbox1";
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.label1 = new global::Gtk.Label();
 			this.label1.WidthRequest = 15;

@@ -14,6 +14,11 @@ let failw msg = ret (E.failw msg)
 val ret(#a:Type): a -> cost (result a) 0
 let ret(#_) x = ret (V x)
 
+val retT(#a:Type)(#n:nat): cost a n -> cost (result a) n
+let retT #_ #_ mx =
+   do x <-- mx;
+   ret x
+
 val bind(#a #b:Type)(#m #n:nat):
   cost (result a) m
   -> (a -> cost (result b) n)

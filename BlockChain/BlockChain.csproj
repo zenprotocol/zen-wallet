@@ -41,6 +41,10 @@
     <Reference Include="DBreeze">
       <HintPath>..\packages\DBreeze.1.87.0\lib\net462\DBreeze.dll</HintPath>
     </Reference>
+    <Reference Include="Zulib">
+      <HintPath>..\Zulib\bin\Zulib.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
