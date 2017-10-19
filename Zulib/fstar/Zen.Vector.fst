@@ -34,22 +34,24 @@ let rec nth #_ #_ (VCons hd tl) = function
 
 (** [append v1 v2] appends the elements of [v2] to the end of [v1]. *)
 val append(#a:Type)(#l1 #l2:nat):
-  vector a l1 -> vector a l2 -> cost (vector a (l1+l2)) M.(4*(l1+1))
+  vector a l1 -> vector a l2 -> cost (vector a (l1+l2)) M.(4*l1+4)
 let rec append #_ #_ #_ v1 v2 = match v1 with
   | VNil -> 4 +~! v2
-  | VCons hd tl -> 4 +! (VCons hd <$> (append tl v2))
+  | VCons hd tl ->
+    do tl' <-- append tl v2;
+    4 +~! (VCons hd tl')
 
 let (@@) = append
 
-#set-options "--z3rlimit 7"
 (** [flatten v], where [v] is a vector of vectors of constant length,
     returns the vector of elements of vectors in [v], preserving their order. *)
 val flatten(#a:Type)(#l1 #l2:nat):
   vector (vector a l2) l1 -> cost (vector a M.(l1*l2)) M.(4*l1*(l2+1)+5)
-let rec flatten #_ #_ #_ = function
+let rec flatten #a #_ #_ = function
   | VNil -> incRet 5 VNil
-  | VCons hd tl -> append hd =<< (flatten tl)
-#reset-options
+  | VCons hd tl ->
+    do flat_tail <-- flatten tl;
+    append hd flat_tail
 
 (** [init l f] returns a vector of length l, for which the [i]th element is [f i]. *)
 val init(#a:Type)(#n:nat): l:nat -> (i:nat{i<l} -> cost a n)
@@ -81,7 +83,6 @@ let countWhere #_ #_ #_ f =
   let ctr (acc:nat) hd = f hd $> (fun b -> if b then acc+1 <: nat else acc) in
   admit();
   foldl ctr 0
-
 
 val zip(#a #b:Type)(#l:nat):
   vector a l -> vector b l -> cost (vector (a*b) l) M.(3*l+3)
