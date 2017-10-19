@@ -18,7 +18,7 @@ let parse_output output =
       ->  ret (| n, data, outputSpend |)
   | _ -> failw "wrong output fomat"
 
-val main_fn: inputMsg -> cost (result transactionSkeleton) 58
+val main_fn: inputMsg -> cost (result transactionSkeleton) 62
 let main_fn { data=inputData; contractHash=oracleCHash; utxo=utxo } =
   do outpoint <-- parse_outpoint inputData;
   do parsed_output <-- begin match utxo outpoint with
@@ -26,13 +26,13 @@ let main_fn { data=inputData; contractHash=oracleCHash; utxo=utxo } =
                        | None -> 10 +! failw "could not resolve utxo of outpoint"
                        end;
   let (| outputDataPoints, outputData, outputSpend |) = parsed_output in
-  do oracleCLock <-- ret (ContractLock oracleCHash outputDataPoints outputData);
-  do connotativeOutput <-- ret ({ lock=oracleCLock; spend=outputSpend });
+  do oracleCLock <-- ret @ ContractLock oracleCHash outputDataPoints outputData;
+  do connotativeOutput <-- ret @ { lock=oracleCLock; spend=outputSpend };
 
   let pk = "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME=" in
   do returnLock  <-- ret @ PKLock (Zen.Util.hashFromBase64 pk);
-  do returnSpend <-- ret ({ asset=oracleCHash; amount=0UL});
-  do dataOutput  <-- ret ({ lock=returnLock; spend=returnSpend });
+  do returnSpend <-- ret @ { asset=oracleCHash; amount=0UL};
+  do dataOutput  <-- ret @ { lock=returnLock; spend=returnSpend };
 
   ret @ Tx [|outpoint|]
            [|dataOutput; connotativeOutput|]
