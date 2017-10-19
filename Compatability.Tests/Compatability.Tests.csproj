@@ -34,7 +34,7 @@
       <HintPath>..\Consensus\bin\Debug\Consensus.dll</HintPath>
     </Reference>
     <Reference Include="MsgPack">
-      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta1\lib\net46\MsgPack.dll</HintPath>
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

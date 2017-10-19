@@ -50,7 +50,7 @@
       <HintPath>..\Zulib\bin\Zulib.dll</HintPath>
     </Reference>
     <Reference Include="MsgPack">
-      <HintPath>..\packages\MsgPack.Cli.1.0.0-beta1\lib\net46\MsgPack.dll</HintPath>
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net46\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Compatibility.OCaml">
       <HintPath>..\packages\FSharp.Compatibility.OCaml.0.1.12\lib\net40\FSharp.Compatibility.OCaml.dll</HintPath>
