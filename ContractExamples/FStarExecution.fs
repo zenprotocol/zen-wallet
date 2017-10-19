@@ -68,9 +68,19 @@ let compile source =
 
 open System.Diagnostics;
 
+let mono_below5 = "/usr/local/bin/mono"
+let mono_5 = "/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono"
+let mono =
+    if (File.Exists mono_below5) then
+        mono_below5
+    else 
+        if (File.Exists mono_5) then
+            mono_5
+        else
+            raise (System.Exception "Cannot find mono")
+
 let extract source =
     let tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-
     try
         try
             let moduleName = "ZenModule" //TODO: use contract's hash as module name?
@@ -81,7 +91,6 @@ let extract source =
             let fno = Path.ChangeExtension(fn, ".fs")
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
-
             IOUtils.elaborate fni fn'elabed
             File.AppendAllText(fn'elabed, System.Environment.NewLine + fstSuffix)
 
@@ -104,7 +113,7 @@ let extract source =
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    FileName = "mono",
+                    FileName = mono,
                     Arguments = String.concat " " args
                 )
 
