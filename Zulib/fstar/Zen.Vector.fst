@@ -21,7 +21,7 @@ let isEmpty #_ #_ = function | VNil      -> 3 +~! true
 val hd(#a:Type)(#l:nat): v:vector a l{VCons? v} -> cost a 2
 let hd #_ #_ (VCons hd _) = 2 +~! hd
 
-(** [tl v] returns the first element of [v].
+(** [tl v] returns the tail of [v].
     Requires [v] to be nonempty.*)
 val tl(#a:Type)(#l:nat): v:vector a l{VCons? v} -> cost (vector a (l-1)) 2
 let tl #_ #_ (VCons _ tl) = 2 +~! tl
