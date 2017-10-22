@@ -18,8 +18,8 @@ let parse_output output =
       ->  ret (| n, data, outputSpend |)
   | _ -> failw "wrong output fomat"
 
-val main_fn: inputMsg -> cost (result transactionSkeleton) 62
-let main_fn { data=inputData; contractHash=oracleCHash; utxo=utxo } =
+val main: inputMsg -> cost (result transactionSkeleton) 62
+let main { data=inputData; contractHash=oracleCHash; utxo=utxo } =
   do outpoint <-- parse_outpoint inputData;
   do parsed_output <-- begin match utxo outpoint with
                        | Some output -> parse_output output
@@ -37,3 +37,6 @@ let main_fn { data=inputData; contractHash=oracleCHash; utxo=utxo } =
   ret @ Tx [|outpoint|]
            [|dataOutput; connotativeOutput|]
            None
+
+val cf: inputMsg -> cost nat 1
+let cf _ = ~!62
