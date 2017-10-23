@@ -1,0 +1,3671 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>FSharp.Compatibility.OCaml</name></assembly>
+<members>
+<member name="T:AssemblyInfo">
+
+</member>
+<member name="P:CommonAssemblyInfo.assemblyConfig">
+ <summary>A subset of the conditional compilation symbols
+ specified when this assembly was compiled.</summary>
+ <remarks>Used for diagnostics purposes, e.g., to mark traced
+ and debug builds.</remarks>
+</member>
+<member name="T:CommonAssemblyInfo">
+<summary>
+ Defines assembly-level attributes common to all projects in the solution.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.ArgModule">
+<summary>
+ Parsing of command line arguments.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.Array2DModule">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.ArrayModule">
+<summary>
+ Array operations.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.Big_intModule.big_int">
+<summary>
+ The type of big integers.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.big_int_of_string(System.String)">
+<summary>
+ Convert a string to a big integer, in decimal.
+ The string consists of an optional - or + sign, followed by one or several decimal digits.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.string_of_big_int(System.Numerics.BigInteger)">
+<summary>
+ Return the string representation of the given big integer, in decimal (base 10).
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.num_digits_big_int(System.Numerics.BigInteger)">
+<summary>
+ Return the number of machine words used to store the given big integer.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.min_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Return the smaller of its two arguments.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.max_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Return the greater of its two arguments.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.compare_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ compare_big_int a b returns 0 if a and b are equal, 1 if a is greater than b, and -1 if a is smaller than b.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.sign_big_int(System.Numerics.BigInteger)">
+<summary>
+ Return 0 if the given big integer is zero, 1 if it is positive, and -1 if it is negative.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.gcd_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Greatest common divisor of two big integers.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.quomod_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Euclidean division of two big integers.
+ The first part of the result is the quotient, the second part is the remainder.
+ Writing (q,r) = quomod_big_int a b, we have a = q * b + r and 0 &lt;= r &lt; |b|.
+ Raise Division_by_zero if the divisor is zero.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.mod_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Euclidean modulus of two big integers. This is the second result r of quomod_big_int.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.div_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Euclidean quotient of two big integers. This is the first result q of quomod_big_int.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.sqrt_big_int(System.Numerics.BigInteger)">
+<summary>
+ sqrt_big_int a returns the integer square root of a, that is, the largest big integer r such that r * r &lt;= a.
+ Raise Invalid_argument if a is negative.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.square_big_int(System.Numerics.BigInteger)">
+<summary>
+ Return the square of the given big integer.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.mult_int_big_int(System.Int32,System.Numerics.BigInteger)">
+<summary>
+ Multiplication of a big integer by a small integer.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.mult_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Multiplication of two big integers.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.pred_big_int(System.Numerics.BigInteger)">
+<summary>
+ Predecessor (subtract 1).
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.sub_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Subtraction.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.add_int_big_int(System.Int32,System.Numerics.BigInteger)">
+<summary>
+ Addition of a small integer to a big integer.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.succ_big_int(System.Numerics.BigInteger)">
+<summary>
+ Successor (add 1).
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.add_big_int(System.Numerics.BigInteger,System.Numerics.BigInteger)">
+<summary>
+ Addition.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.abs_big_int(System.Numerics.BigInteger)">
+<summary>
+ Absolute value.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.Big_intModule.minus_big_int(System.Numerics.BigInteger)">
+<summary>
+ Unary negation.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.Big_intModule.unit_big_int">
+<summary>
+ The big integer 1.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.Big_intModule.zero_big_int">
+<summary>
+ The big integer 0.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.Big_intModule">
+<summary>
+ Operations on arbitrary-precision integers.
+ Big integers (type big_int) are signed integers of arbitrary size.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.BufferModule">
+<summary>
+ Extensible string buffers.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.ByteModule">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CharModule.t">
+<summary>
+ An alias for the type of characters.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.CharModule.compare(System.Char,System.Char)">
+<summary>
+ The comparison function for characters, with the same specification as &lt;see cref=&quot;compare&quot;/&gt;.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.CharModule.uppercase(System.Char)">
+<summary>
+ Convert the given character to its equivalent uppercase character.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.CharModule.lowercase(System.Char)">
+<summary>
+ Convert the given character to its equivalent lowercase character.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.CharModule.escaped(System.Char)">
+<summary>
+ Return a string representing the given character, with special
+ characters escaped following the lexical conventions of OCaml.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.CharModule.chr(System.Int32)">
+<summary>
+ Return the character with the given ASCII code.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.CharModule.code(System.Char)">
+<summary>
+ Return the ASCII code of the argument.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CharModule">
+<summary>
+ Character operations.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.lazy_t`1">
+<summary>
+ This type is used to implement the Lazy module.
+ It should not be used directly.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.format6`6">
+ <summary>The type of format strings.</summary>
+ <typeparam name="a">the type of the parameters of the format.</typeparam>
+ <typeparam name="b">the type of the first argument given to %a and %t printing functions (see module Printf).</typeparam>
+ <typeparam name="c">the result type of these functions in 'b, and also the type of the argument transmitted to the first argument of kprintf-style functions.</typeparam>
+ <typeparam name="d">the result type for the scanf-style functions (see module Scanf).</typeparam>
+ <typeparam name="e">the type of the receiver function for the scanf-style functions.</typeparam>
+ <typeparam name="f">the result type for the printf-style functions.</typeparam>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Undefined_recursive_module">
+<summary>
+ Exception raised when an ill-founded recursive module definition is evaluated.
+ The arguments are the location of the definition in the source code (file name, line number, column number).
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Sys_blocked_io">
+<summary>
+ A special case of &lt;see cref=&quot;Sys_error&quot;/&gt; raised when no I/O is possible on a non-blocking I/O channel. 
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Division_by_zero">
+<summary>
+ Exception raised by integer division and remainder operations when their second argument is zero.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.End_of_file">
+<summary>
+ Exception raised by input functions to signal that the end of file has been reached.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Sys_error">
+<summary>
+ Exception raised by the input/output functions to report an operating system error.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Stack_overflow">
+<summary>
+ Exception raised by the bytecode interpreter when the evaluation stack reaches its maximal size.
+ This often indicates infinite or excessively deep recursion in the user’s program.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Out_of_memory">
+<summary>
+ Exception raised by the garbage collector when there is insufficient memory to complete the computation.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Not_found">
+<summary>
+ Exception raised by search functions when the desired object could not be found.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Failure">
+<summary>
+ Exception raised by library functions to signal that they are undefined on the given arguments.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Invalid_argument">
+<summary>
+ Exception raised by library functions to signal that the given arguments do not make sense.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.Assert_failure">
+<summary>
+ Exception raised when an assertion fails.
+ The arguments are the location of the assert keyword in the source code (file name, line number, column number). 
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule.ExnPatterns">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.CoreModule">
+<summary>
+ Built-in types and predefined exceptions.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.FilenameModule">
+<summary>
+ Operations on file names.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.FloatModule">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.HashtblModule">
+<summary>
+ Hash tables and hash functions.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.Int16Module">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.Int32Module">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.Int64Module">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.LazyModule.create``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0})">
+<summary>
+ Build a lazy (delayed) value from the given computation.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.LazyModule.lazy_is_val``1(System.Lazy{``0})">
+<summary>
+ Check if a lazy (delayed) value has already been computed.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.LazyModule.lazy_from_val``1(``0)">
+<summary>
+ Build a lazy (delayed) value from the given pre-computed value.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.LazyModule.lazy_from_fun``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0})">
+<summary>
+ Build a lazy (delayed) value from the given computation.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.LazyModule">
+<summary>
+ Deferred computations.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.LexingModule">
+<summary>
+ The run-time library for lexers generated by fslex.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.ListModule">
+<summary>
+ List operations.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.MapModule">
+<summary>
+ Association tables over ordered types.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.NativeintModule">
+<summary>
+ Processor-native integers.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.NumModule.num">
+<summary>
+ Type alias for Num, for compatibility with OCaml.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.NumModule.Num.Big_int">
+<summary>
+ Arbitrary-precision integer.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.NumModule.Num.Int">
+<summary>
+ 32-bit signed integer.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.num_of_string(System.String)">
+<summary>
+ Convert a string to a number.
+ Raise Failure &quot;num_of_string&quot; if the given string is not a valid representation of an integer
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.min_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Return the smaller of the two arguments.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.max_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Return the greater of the two arguments.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.compare_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Return -1, 0 or 1 if the first argument is less than, equal to, or greater than the second argument.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.is_integer_num(FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Test if a number is an integer.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.abs_num(FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Absolute value.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.power_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Raise a number to an exponent.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.mod_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Modulus division.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.quo_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Euclidian division.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.div_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Division.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.square_num(FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Square the number.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.mult_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Multiplication.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.sub_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Subtraction.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.minus_num(FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Unary negation.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.NumModule.add_num(FSharp.Compatibility.OCaml.NumModule.Num,FSharp.Compatibility.OCaml.NumModule.Num)">
+<summary>
+ Addition.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.NumModule">
+ <summary>Operation on arbitrary-precision numbers.</summary>
+ <remarks>Numbers (type num) are arbitrary-precision rational numbers, plus the
+ special elements 1/0 (infinity) and 0/0 (undefined).</remarks>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.ObjModule">
+<summary>
+ Operations on internal representations of values.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.ParsingModule.clear_parser">
+<summary>
+ Empty the parser stack. Call it just after a parsing function has returned to remove
+ all pointers from the parser stack to structures that were built by semantic actions
+ during parsing. This is optional, but lowers the memory requirements of the programs.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.ParsingModule">
+<summary>
+ The run-time library for parsers generated by fsyacc.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.InChannelImpl">
+<summary>
+ See OutChannelImpl
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.out_channel">
+<summary>
+ The type of output channel.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.in_channel">
+<summary>
+ The type of input channel.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.fpclass.FP_nan">
+<summary>
+ Not a number: result of an undefined operation.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.fpclass.FP_infinite">
+<summary>
+ Number is positive or negative infinity.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.fpclass.FP_zero">
+<summary>
+ Number is 0.0 or -0.0.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.fpclass.FP_subnormal">
+<summary>
+ Number very close to 0.0, has reduced precision.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.fpclass.FP_normal">
+<summary>
+ Normal number.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.fpclass">
+<summary>
+ The five classes of floating-point numbers, as determined by
+ the &lt;see cref=&quot;classify_float&quot;/&gt; function.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.at_exit(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,Microsoft.FSharp.Core.Unit})">
+ <summary>Register the given function to be called at program termination time.</summary>
+ <remarks><para>The functions registered with <see cref="at_exit"/> will be called when
+ the program executes <see cref="exit"/>, or terminates, either normally or
+ because of an uncaught exception.</para>
+ <para>The functions are called in "last in, first out" order: the function most
+ recently added with <see cref="at_exit"/> is called first.</para></remarks>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.exit``1(System.Int32)">
+ <summary>Terminate the process, returning the given status code to the operating system:
+ usually 0 to indicate no errors, and a small positive integer to indicate failure.</summary>
+ <remarks><para>All open output channels are flushed with <see cref="flush_all"/>.</para>
+ <para>An implicit <c>exit 0</c> is performed each time a program terminates
+ normally. An implicit <c>exit 2</c> is performed if the program terminates
+ early because of an uncaught exception.</para></remarks>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.read_float">
+<summary>
+ Flush standard output, then read one line from standard input and convert it to a floating-point number.
+ The result is unspecified if the line read is not a valid representation of a floating-point number.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.read_int">
+<summary>
+ Flush standard output, then read one line from standard input and convert it to an integer.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.read_line">
+<summary>
+ Flush standard output, then read characters from standard input until a newline character is encountered.
+ Return the string of all characters read, without the newline character at the end.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.prerr_endline(System.String)">
+<summary>
+ Print a string, followed by a newline character,
+ on standard error and flush standard error.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.prerr_newline">
+<summary>
+ Print a newline character on standard error, and flush standard error.
+ This can be used to simulate line buffering of standard error.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.prerr_float(System.Double)">
+<summary>
+ Print a floating-point number, in decimal, on standard error.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.prerr_int(System.Int32)">
+<summary>
+ Print an integer, in decimal, on standard error.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.prerr_string(System.String)">
+<summary>
+ Print a string on standard error.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.prerr_char(System.Char)">
+<summary>
+ Print a character on standard error.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.print_endline(System.String)">
+<summary>
+ Print a string, followed by a newline character,
+ on standard output and flush standard output.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.print_newline">
+<summary>
+ Print a newline character on standard output, and flush standard output.
+ This can be used to simulate line buffering of standard output.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.print_float(System.Double)">
+<summary>
+ Print a floating-point number, in decimal, on standard output.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.print_int(System.Int32)">
+<summary>
+ Print an integer, in decimal, on standard output.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.print_string(System.String)">
+<summary>
+ Print a string on standard output.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.print_char(System.Char)">
+<summary>
+ Print a character on standard output.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.stderr">
+<summary>
+ The standard error output for the process.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.stdout">
+<summary>
+ The standard output for the process.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.stdin">
+<summary>
+ The standard input for the process.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.snd``2(``0,``1)">
+<summary>
+ Return the second component of a pair.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.fst``2(``0,``1)">
+<summary>
+ Return the first component of a pair.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.float_of_string(System.String)">
+<summary>
+ Convert the given string to a float.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.string_of_float(System.Double)">
+<summary>
+ Return the string representation of a floating-point number.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.int_of_string(System.String)">
+<summary>
+ Convert the given string to an integer.
+ The string is read in decimal (by default) or in hexadecimal (if it begins with 0x or 0X),
+ octal (if it begins with 0o or 0O), or binary (if it begins with 0b or 0B).
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.string_of_int(System.Int32)">
+<summary>
+ Return the string representation of an integer, in decimal.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.bool_of_string(System.String)">
+<summary>
+ Convert the given string to a boolean.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.string_of_bool(System.Boolean)">
+<summary>
+ Return the string representation of a boolean.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.char_of_int(System.Int32)">
+<summary>
+ Return the character with the given ASCII code.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.int_of_char(System.Char)">
+<summary>
+ Return the ASCII code of the argument.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.classify_float(System.Double)">
+<summary>
+ Return the class of the given floating-point number:
+ normal, subnormal, zero, infinite, or not a number.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.isSubnormal(System.Double)">
+<summary>
+ Determines if the given floating-point number is a subnormal value.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.epsilon_float">
+<summary>
+ The difference between 1.0 and the smallest exactly representable floating-point number greater than 1.0.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.min_float">
+<summary>
+ The smallest positive, non-zero, non-denormalized value of type float.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.max_float">
+<summary>
+ The largest positive finite value of type float.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.neg_infinity">
+<summary>
+ Negative infinity.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.infinity">
+<summary>
+ Positive infinity.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.int_of_float(System.Double)">
+<summary>
+ Truncate the given floating-point number to an integer.
+ The result is unspecified if the argument is nan or falls outside the range of representable integers.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.float_of_int(System.Int32)">
+<summary>
+ Convert an integer to floating-point.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.modf(System.Double)">
+<summary>
+ modf f returns the pair of the fractional and integral part of f.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.ldexp(System.Double,System.Int32)">
+<summary>
+ ldexp x n returns x *. 2 ** n.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.frexp(System.Double)">
+<summary>
+ frexp f returns the pair of the significant and the exponent of f.
+ When f is zero, the significant x and the exponent n of f are equal to zero.
+ When f is non-zero, they are defined by f = x *. 2 ** n and 0.5 &lt;= x &lt; 1.0.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.mod_float(System.Double,System.Double)">
+<summary>
+ mod_float a b returns the remainder of a with respect to b.
+ The returned value is a -. n *. b, where n is the quotient a /. b rounded towards zero to an integer.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.copysign(System.Double,System.Double)">
+<summary>
+ copysign x y returns a float whose absolute value is that of x and whose sign is that of y.
+ If x is nan, returns nan. If y is nan, returns either x or -. x, but it is not specified which.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.abs_float(System.Double)">
+<summary>
+ abs_float f returns the absolute value of f.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.hypot``1(System.Double,System.Double)">
+<summary>
+ hypot x y returns sqrt(x * x + y * y), that is, the length of the hypotenuse
+ of a right-angled triangle with sides of length x and y, or, equivalently,
+ the distance of the point (x,y) to origin.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_Exponentiation(System.Double,System.Double)">
+<summary>
+ Exponentiation.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_DivideDot(System.Double,System.Double)">
+<summary>
+ Floating-point division.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_MultiplyDot(System.Double,System.Double)">
+<summary>
+ Floating-point multiplication.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_MinusDot(System.Double,System.Double)">
+<summary>
+ Floating-point subtraction.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_PlusDot(System.Double,System.Double)">
+<summary>
+ Floating-point addition.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_TwiddlePlusDot(System.Double)">
+<summary>
+ Unary addition.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_TwiddleMinusDot(System.Double)">
+<summary>
+ Unary negation.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.asr(System.Int32,System.Int32)">
+<summary>
+ n asr m shifts n to the right by m bits.
+ This is an arithmetic shift: the sign bit of n is replicated. The result is unspecified if m &lt; 0 or m &gt;= bitsize.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.lsr(System.Int32,System.Int32)">
+<summary>
+ n lsr m shifts n to the right by m bits.
+ This is a logical shift: zeroes are inserted regardless of the sign of n. The result is unspecified if m &lt; 0 or m &gt;= bitsize.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.lsl(System.Int32,System.Int32)">
+<summary>
+ n lsl m shifts n to the left by m bits.
+ The result is unspecified if m &lt; 0 or m &gt;= bitsize, where bitsize is 32 on a 32-bit platform and 64 on a 64-bit platform.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.lnot(System.Int32)">
+<summary>
+ Bitwise logical negation.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.lxor(System.Int32,System.Int32)">
+<summary>
+ Bitwise logical exclusive or.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.lor(System.Int32,System.Int32)">
+<summary>
+ Bitwise logical or.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.land(System.Int32,System.Int32)">
+<summary>
+ Bitwise logical and.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.min_int">
+<summary>
+ The smallest representable integer.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.max_int">
+<summary>
+ The greatest representable integer.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.mod(System.Int32,System.Int32)">
+<summary>
+ Integer remainder. If y is not zero, the result of x mod y satisfies the following properties:
+ x = (x / y) * y + x mod y and abs(x mod y) &lt;= abs(y) - 1.
+ If y = 0, x mod y raises Division_by_zero. Note that x mod y is negative only if x &lt; 0.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_BangEquals``1(``0,``0)">
+<summary>
+ Negation of (==).
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.op_EqualsEquals``1(``0,``0)">
+<summary>
+ e1 == e2 tests for physical equality of e1 and e2.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PervasivesModule.ExitCallbacks.executeExitFunctionsIfNecessary``1(``0)">
+<summary>
+ Executes the exit functions if any have been registered and if
+ they have not already been executed.
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.ExitCallbacks.exitFunctionsExecutedFlag">
+<summary>
+ When set to a non-zero value, indicates the exit functions
+ have been executed (or are currently executing).
+</summary>
+</member>
+<member name="P:FSharp.Compatibility.OCaml.PervasivesModule.ExitCallbacks.exitFunctions">
+<summary>
+ Actions to be executed when the program is exiting.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.ExitCallbacks">
+<summary>
+ Contains internal, mutable state representing actions to be performed
+ upon program termination (either normally or because of an uncaught exception).
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.LargeFile">
+ <summary>Operations on large files.</summary>
+ <remarks>This sub-module provides 64-bit variants of the channel functions that manipulate
+ file positions and file sizes. By representing positions and sizes by 64-bit integers
+ (type int64) instead of regular integers (type int), these alternate functions allow operating
+ on files whose sizes are greater than max_int.</remarks>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.InChannel">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule.OutChannel">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PervasivesModule">
+<summary>
+ The initially opened module.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PrintexcModule.catch``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},``0)">
+<summary>
+ Printexc.catch fn x is similar to Printexc.print, but aborts the program with exit code 2 after printing the uncaught exception.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PrintexcModule.print``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},``0)">
+<summary>
+ Printexc.print fn x applies fn to x and returns the result.
+ If the evaluation of fn x raises any exception, the name of the exception is printed
+ on standard error output, and the exception is raised again. The typical use is to
+ catch and report exceptions that escape a function application.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.PrintexcModule.to_string(System.Exception)">
+<summary>
+ Printexc.to_string e returns a string representation of the exception e.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.PrintexcModule">
+<summary>
+ Facilities for printing exceptions.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.QueueModule.t`1">
+<summary>
+ The type of queues containing elements of type &apos;a.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.transfer``1(System.Collections.Generic.Queue{``0},System.Collections.Generic.Queue{``0})">
+<summary>
+ transfer q1 q2 adds all of q1&apos;s elements at the end of the queue q2, then clears q1.
+ It is equivalent to the sequence iter (fun x -&gt; add x q2) q1; clear q1, but runs in constant time.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.fold``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},``0,System.Collections.Generic.Queue{``1})">
+<summary>
+ fold f accu q is equivalent to List.fold_left f accu l, where l is the list of q&apos;s elements. The queue remains unchanged.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.iter``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},System.Collections.Generic.Queue{``0})">
+<summary>
+ iter f q applies f in turn to all elements of q, from the least recently entered to the most recently entered. The queue itself is unchanged.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.length``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ Return the number of elements in a queue.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.is_empty``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ Return true if the given queue is empty, false otherwise.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.copy``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ Return a copy of the given queue.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.clear``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ Discard all elements from a queue.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.top``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ top is a synonym for peek.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.peek``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ peek q returns the first element in queue q, without removing it from the queue, or raises Empty if the queue is empty.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.pop``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ pop is a synonym for take.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.take``1(System.Collections.Generic.Queue{``0})">
+<summary>
+ take q removes and returns the first element in queue q, or raises Empty if the queue is empty.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.push``1(``0,System.Collections.Generic.Queue{``0})">
+<summary>
+ push is a synonym for add.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.add``1(``0,System.Collections.Generic.Queue{``0})">
+<summary>
+ add x q adds the element x at the end of the queue q.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.QueueModule.create``1">
+<summary>
+ Return a new queue, initially empty.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.QueueModule.Empty">
+<summary>
+ Raised when Queue.take or Queue.peek is applied to an empty queue.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.QueueModule">
+<summary>
+ First-in first-out queues.
+ This module implements queues (FIFOs), with in-place modification.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.RatioModule.BigRationalLargeModule">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.RatioModule.BigRationalLargeImpl">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.RatioModule">
+ <summary>Operation on rational numbers.</summary>
+ <remarks>This module is used to support the implementation of Num and should not be called directly.</remarks>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.SByteModule">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.SeqModule">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.SetModule">
+<summary>
+ Sets over ordered types.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.StackModule.t`1">
+<summary>
+ The type of stacks containing elements of type &apos;a.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.iter``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},System.Collections.Generic.Stack{``0})">
+<summary>
+ iter f s applies f in turn to all elements of s, from the element at the top of the stack
+ to the element at the bottom of the stack. The stack itself is unchanged.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.length``1(System.Collections.Generic.Stack{``0})">
+<summary>
+ Return the number of elements in a stack.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.is_empty``1(System.Collections.Generic.Stack{``0})">
+<summary>
+ Return true if the given stack is empty, false otherwise.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.copy``1(System.Collections.Generic.Stack{``0})">
+<summary>
+ Return a copy of the given stack.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.clear``1(System.Collections.Generic.Stack{``0})">
+<summary>
+ Discard all elements from a stack.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.top``1(System.Collections.Generic.Stack{``0})">
+<summary>
+ top s returns the topmost element in stack s, or raises Empty if the stack is empty.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.pop``1(System.Collections.Generic.Stack{``0})">
+<summary>
+ pop s removes and returns the topmost element in stack s, or raises Empty if the stack is empty.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.push``1(``0,System.Collections.Generic.Stack{``0})">
+<summary>
+ push x s adds the element x at the top of stack s.
+</summary>
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StackModule.create``1">
+<summary>
+ Return a new stack, initially empty.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.StackModule.Empty">
+<summary>
+ Raised when Stack.pop or Stack.top is applied to an empty stack.
+</summary>
+</member>
+<member name="T:FSharp.Compatibility.OCaml.StackModule">
+<summary>
+ Last-in first-out stacks.
+ This module implements stacks (LIFOs), with in-place modification.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:FSharp.Compatibility.OCaml.StringModule.escaped(System.String)">
+<summary>
+ Return a copy of the argument, with special characters represented by
+ escape sequences, following the lexical conventions of OCaml.
+ If there is no special character in the argument, return the original
+ string itself, not a copy.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.StringModule">
+<summary>
+ String operations.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.UInt32Module">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:FSharp.Compatibility.OCaml.UInt64Module">
+
+</member>
+</members>
+</doc>
