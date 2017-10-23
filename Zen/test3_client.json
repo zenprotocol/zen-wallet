@@ -1,0 +1,9 @@
+{
+  "PeersToFind": 10,
+  "MaximumNodeConnection": 10,
+  "Seeds": [
+    "54.149.184.129"
+  ],
+  "DefaultPort": 9999,
+  "Magic": 0
+}
