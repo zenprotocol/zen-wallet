@@ -13,11 +13,11 @@ let parse_outpoint d = match d with // point-free function syntax doesn't elabor
   | (| _ , Outpoint o |) -> OT.some o
   | _ -> OT.none
 
-val cost_fn: inputMsg -> cost nat 1
-let cost_fn _ = ret 45
+val cf: inputMsg -> cost nat 1
+let cf _ = ret 45
 
-val main_fn: inputMsg -> cost (result transactionSkeleton) 45
-let main_fn i =
+val main: inputMsg -> cost (result transactionSkeleton) 45
+let main i =
   //let open OT in
   do parsed <-- parse_outpoint i.data;
   match parsed with
