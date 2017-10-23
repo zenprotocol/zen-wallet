@@ -142,6 +142,7 @@
     <None Include="app.config" />
     <None Include="FStar\CallOption.fst" />
     <None Include="FStar\SecureToken.fst" />
+    <None Include="FStar\OracleContract.fst" />
   </ItemGroup>
   <Import Project="$(FSharpTargetsPath)" />  
 </Project>
