@@ -85,46 +85,80 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
            end
   | _ ->  incFailw 14 "Not implemented"
 
-  //do cmd <-- ret @ imsg.cmd;
-  (*let open ET in
-    match n with
-    //| (0uy, (|1, Outpoint pt|))  -> failw "One"
-    | 1  -> failw "Two"
-    | 2  -> failw "Three"
-    | _         -> failw "Bad or unknown command"*)
-  (*match (cmd, d) with
-  (*| (0uy, (| 2, OutpointVector 2 v |)) ->
-      map Initialize @ tryAddPoints v imsg.utxo*)
-  | (0uy, (| _, OutpointVector 2 v |)) ->
-    failw "Not done"
-      (*map Collateralize @ tryAddPoints v imsg.utxo*)
-  | (1uy, (| _, OutpointVector 2 v |)) ->
-    failw "Not done"
-      (*map Buy @ tryAddPoints v imsg.utxo*)
-  | (2uy, (| _, OutpointVector 2 v |)) ->
-    failw "Not done"
-      (*map Exercise @ tryAddPoints v imsg.utxo*)
-  | _ -> failw "Unknown command"*)
-
-(*
-type command : nat -> Type =
-  | Initialize : v:pointedOutput -> v:pointedOutput -> command 2
-  | Collateralize : v:pointedOutput -> v:pointedOutput -> v:pointedOutput -> command 3
-  | Buy : v:pointedOutput -> v: pointedOutput -> v:pointedOutput -> command 3
-  | Exercise : v:pointedOutput -> v:pointedOutput -> v:pointedOutput -> command 3
 
 type state = { tokensIssued : U64.t;
                collateral   : U64.t;
                counter      : U64.t }
 
-val parseWitnessMessage : i:inputMsg -> cost (result command l) 0
-let parseWitnessMessage i = let open ET in
-  match (i.cmd,i.data) with
-  | (0uy, OutpointVector 2 [| o1; o2 |]) -> ret @ Initialize o1 o2
-  | (0uy, OutpointVector 3 [| o1; o2; o3 |]) -> ret @ Collateralize o1 o2 o3
-  | (1uy, OutpointVector 3 [| o1; o2; o3 |]) -> ret @ Buy o1 o2 o3
-  | (2uy, OutpointVector 3 [| o1; o2; o3 |]) -> ret @ Exercise o1 o2 o3
-  | _       -> failw "Invalid witness command"*)
+val encodeState : state -> cost (inputData 3) 10
+let encodeState {
+                  tokensIssued=tokensIssued;
+                  collateral=collateral;
+                  counter=counter
+                } =
+                  ret @ UInt64Vector 3 [| tokensIssued;collateral;counter |]
+
+val decodeState : #n:nat -> inputData n -> cost (result state) 16
+let decodeState #n iData =
+  let open ET in
+  if n <> 3 then autoFailw "Bad data"
+  else
+    match iData with
+    | UInt64Vector 3 [| tk; coll; cter |] ->
+      ret @ {tokensIssued=tk; collateral=coll; counter=cter}
+    | _ -> autoFailw "Bad data"
+
+val createTx : hash -> command -> cost (result transactionSkeleton) 109
+let createTx cHash cmd =
+  do numeraire <-- numeraire;
+  let open ET in
+  let open U64 in
+  match cmd with
+  | Initialize (pt, oput) ->
+      if oput.spend.asset = numeraire
+      then      // Initialize with data output
+        let initialState : state =
+          {
+            tokensIssued=0UL;
+            collateral=oput.spend.amount;
+            counter=0UL;
+          } in
+        do initialStateData <-- inc (retT @ encodeState initialState) 6;
+        let dataOutputLock = ContractLock cHash 3 initialStateData in
+        let dataOutput = {lock=dataOutputLock;spend=oput.spend} in
+        autoRet @ Tx [| pt |] [| dataOutput |] None
+        (*failw "Init"*)
+      else autoFailw "Can't initialize with this asset."
+  | Collateralize [| (pt1,dataOutput); (pt2,newFundsOutput) |] ->
+    if dataOutput.spend.asset = numeraire && newFundsOutput.spend.asset = numeraire
+    then
+      begin match dataOutput.lock, newFundsOutput.lock with
+      | ContractLock cHash 3 currentStateData, ContractLock cHash _ _ ->
+          do currentState <-- decodeState currentStateData;
+          // TODO: avoid modular addition!!
+          let newCollateral = currentState.collateral +%^ newFundsOutput.spend.amount in
+          let newState = {
+            tokensIssued = currentState.tokensIssued;
+            collateral = newCollateral;
+            counter = currentState.counter +%^ 1UL;
+          } in
+          do newStateData <-- retT @ encodeState newState;
+          let newDataOutputLock = ContractLock cHash 3 newStateData in
+          let newDataOutput =
+            {
+              lock=newDataOutputLock;
+              spend={asset=numeraire;amount=newCollateral}
+            } in
+          ret @ Tx
+                  [| pt1; pt2 |]
+                  [| newDataOutput |]
+                  None
+      | _,_ -> autoFailw "Inputs not locked to this contract!"
+      end
+    else autoFailw "Can't use these asset types for Collateralize"
+  | Buy [| pntd; pntd' |] lk -> autoFailw "Buy"
+  | Exercise [| pntd; pntd' |] lk -> autoFailw "Exercise"
+
 
 val main: inputMsg -> cost (result transactionSkeleton) 1
 let main iM = ET.failw "Not implemented"
