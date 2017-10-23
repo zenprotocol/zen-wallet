@@ -2,6 +2,7 @@ module FStar.Int
 open FStar.Mul
 
 val pow2_values: x:nat -> Lemma
+  (requires True)
   (ensures (let p = pow2 x in
    match x with
    | 0  -> p=1
