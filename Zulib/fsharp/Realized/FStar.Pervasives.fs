@@ -320,6 +320,10 @@ let rec false_elim = (fun ( u  :  Prims.unit ) -> (false_elim ()))
 type __internal_ocaml_attributes =
 | PpxDerivingShow
 | PpxDerivingShowConstant of Prims.string
+| CInline
+| Substitute
+| Gc
+| Comment of Prims.string
 
 
 let uu___is_PpxDerivingShow : __internal_ocaml_attributes  ->  Prims.bool = (fun ( projectee  :  __internal_ocaml_attributes ) -> (match (projectee) with
