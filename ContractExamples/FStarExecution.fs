@@ -84,27 +84,39 @@ let extract source =
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
             IOUtils.elaborate fni fn'elabed
+        
+            let fstarPath = Path.Combine (resolvePath Settings.Fstar, "fstar.exe")
+            
+            let executableArg =  
+                match System.Environment.OSVersion.Platform with
+                | System.PlatformID.Win32NT -> [| |]
+                | _ -> [| fstarPath |]                                  
 
-            let args =
-                [|
-                    Path.Combine (resolvePath Settings.Fstar, "fstar.exe");
-                    //TODO: remove lax
-                    "--lax";
-                    "--codegen"; "FSharp";
-                    "--prims"; Path.Combine (resolvePath Settings.Zulib, "prims.fst");
-                    "--extract_module"; moduleName;
-                    "--include"; resolvePath Settings.Zulib;
-                    "--no_default_includes"; fn'elabed;
-                    "--verify_all"
-                    "--odir"; tmp
-                |]
+            let (++) = Array.append
+
+            let args = executableArg ++ [|                    
+                                        //TODO: remove lax
+                                        "--lax";
+                                        "--codegen"; "FSharp";
+                                        "--prims"; Path.Combine (resolvePath Settings.Zulib, "prims.fst");
+                                        "--extract_module"; moduleName;
+                                        "--include"; resolvePath Settings.Zulib;
+                                        "--no_default_includes"; fn'elabed;
+                                        "--verify_all";
+                                        "--odir"; tmp
+                                    |]
+                                    
+            let executable = 
+                match System.Environment.OSVersion.Platform with
+                | System.PlatformID.Win32NT -> fstarPath
+                | _ -> Option.get mono //TODO: handle None                                  
 
             let procStartInfo = 
                 ProcessStartInfo (
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-                    FileName = Option.get mono, //TODO: handle None
+                    FileName = executable, 
                     Arguments = String.concat " " args
                 )
 
