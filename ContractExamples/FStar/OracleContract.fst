@@ -10,33 +10,37 @@ let parse_outpoint d = match d with // point-free function syntax doesn't elabor
   | (| _ , Outpoint o |) -> ret o
   | _ -> failw "Wrong data format in outpoint"
 
-val parse_output: output -> cost (result (n:nat & data:data n & spend)) 10
-let parse_output output =
+
+val parse_output: hash -> output -> cost (result spend) 12
+let parse_output oracleCHash output =
   match output with
-  | { lock=ContractLock outputCHash n data;
-      spend = outputSpend }
-      ->  ret (| n, data, outputSpend |)
+  | { lock=ContractLock outputCHash _ _;
+      spend=outputSpend }
+      -> if outputCHash = oracleCHash
+        then ret outputSpend
+        else failw "wrong contract lock"
   | _ -> failw "wrong output fomat"
 
-val main: inputMsg -> cost (result transactionSkeleton) 62
+
+val main: inputMsg -> cost (result transactionSkeleton) 50
 let main { data=inputData; contractHash=oracleCHash; utxo=utxo } =
   do outpoint <-- parse_outpoint inputData;
-  do parsed_output <-- begin match utxo outpoint with
-                       | Some output -> parse_output output
-                       | None -> 10 +! failw "could not resolve utxo of outpoint"
-                       end;
-  let (| outputDataPoints, outputData, outputSpend |) = parsed_output in
-  do oracleCLock <-- ret @ ContractLock oracleCHash outputDataPoints outputData;
-  do connotativeOutput <-- ret @ { lock=oracleCLock; spend=outputSpend };
+  do outputSpend <-- begin match utxo outpoint with
+                     | Some output -> parse_output oracleCHash output
+                     | None -> 12 +! failw "could not resolve utxo of outpoint"
+                     end;
 
-  let pk = "AAEECRAZJDFAUWR5kKnE4QAhRGmQueQRQHGk2RBJhME=" in
-  do returnLock  <-- ret @ PKLock (Zen.Util.hashFromBase64 pk);
-  do returnSpend <-- ret @ { asset=oracleCHash; amount=0UL};
-  do dataOutput  <-- ret @ { lock=returnLock; spend=returnSpend };
+  let (| inputDataPoints, inputData |) = inputData in
+  let chainedOutputLock = ContractLock oracleCHash 0 Empty in
+  let    dataOutputLock = ContractLock oracleCHash inputDataPoints inputData in
 
-  ret @ Tx [|outpoint|]
-           [|dataOutput; connotativeOutput|]
-           None
+  let chainedOutput = { lock=chainedOutputLock; spend=outputSpend } in
+  let    dataOutput = { lock=dataOutputLock;
+                        spend={asset=oracleCHash; amount=0UL} } in
+
+  ret@Tx [|outpoint|]
+         [|chainedOutput; dataOutput|]
+         None
 
 val cf: inputMsg -> cost nat 1
-let cf _ = ~!62
+let cf _ = ~!50
