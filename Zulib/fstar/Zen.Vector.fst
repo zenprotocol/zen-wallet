@@ -45,6 +45,7 @@ let (@@) = append
 
 (** [flatten v], where [v] is a vector of vectors of constant length,
     returns the vector of elements of vectors in [v], preserving their order. *)
+#set-options "--z3rlimit 10"
 val flatten(#a:Type)(#l1 #l2:nat):
   vector (vector a l2) l1 -> cost (vector a M.(l1*l2)) M.(4*l1*(l2+1)+5)
 let rec flatten #a #_ #_ = function
@@ -52,6 +53,7 @@ let rec flatten #a #_ #_ = function
   | VCons hd tl ->
     do flat_tail <-- flatten tl;
     append hd flat_tail
+#reset-options
 
 (** [init l f] returns a vector of length l, for which the [i]th element is [f i]. *)
 val init(#a:Type)(#n:nat): l:nat -> (i:nat{i<l} -> cost a n)
