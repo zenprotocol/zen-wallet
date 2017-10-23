@@ -18,7 +18,7 @@ val incSome(#a:Type): n:nat -> a -> cost (option a) n
 let incSome(#_) n x = inc (some x) n
 
 val lift(#a:Type)(#n:nat): cost a n -> cost (option a) n
-let lift #_ #_ = liftM Some
+let lift #_ #_ = map Some
 
 val incLift(#a:Type)(#m:nat): n:nat -> cost a m -> cost (option a) (m+n)
 let incLift(#_)(#_) n mx = inc (lift mx) n
@@ -95,7 +95,7 @@ unfold let (<$$>) = map2
 unfold let (<$$$>) = map3
 unfold let (<*>) = ap
 unfold let ( *>) x f = ap f x
-unfold let ($>) x f = liftM f x
+unfold let ($>) x f = map f x
 val ($$>) (#a #b #c:Type)(#m #n:nat):
   (cost (option a) m * cost (option b) n) -> (a->b->c) -> cost (option c) (m+n)
 let ($$>) #_ #_ #_ #_ #_ (mx,my) f = map2 f mx my
