@@ -51,74 +51,105 @@ type command =
   | Buy : V.t pointedOutput 2 -> outputLock -> command
   | Exercise : V.t pointedOutput 2 -> outputLock -> command
 
-val makeCommand : inputMsg -> cost (result command) 40
-let makeCommand imsg =
-  Zen.Cost.inc (let d : cost (n:nat & inputData n) 0 = ret @ imsg.data in
-      do (| n , iData |) <-- d ;
-      do cmd <-- ret @ imsg.cmd ;
-      do utxos <-- ret @ imsg.utxo ;
-      let open M in
+val makeCommand : inputMsg -> cost (result command) 44
+let makeCommand { cmd = cmd ; data = iData ; utxo = utxos } =
+  let open M in
+  let open ET in
+  Zen.Cost.inc (match cmd with
+      | 0uy ->
+        begin match iData with
+          | (| 1 , Outpoint pt |) ->
+            do pointed <-- tryAddPoint pt utxos ;
+            incRet 7 (Initialize pointed)
+          | (| 1 , _ |) -> incFailw 14 "Bad Initialization data"
+          | (| 2 , OutpointVector _ [|outpoint0 ; outpoint1|] |) ->
+            do pointedOutput0 <-- tryAddPoint outpoint0 utxos ;
+            do pointedOutput1 <-- tryAddPoint outpoint1 utxos ;
+            ret @ Collateralize [|pointedOutput0; pointedOutput1|]
+          | (| 2 , _ |) -> incFailw 14 "Bad Collateralization data"
+          | _ -> incFailw 14 "Bad Initialization/Collateralization data" end
+      | 1uy ->
+        begin match iData with
+          | (| 3 , Data2 _ _ (OutpointVector _ [|outpoint0 ; outpoint1|]) (OutputLock lk) |) ->
+            do pointedOutput0 <-- tryAddPoint outpoint0 utxos ;
+            do pointedOutput1 <-- tryAddPoint outpoint1 utxos ;
+            ret @ Buy [|pointedOutput0; pointedOutput1|] lk
+          | _ -> incFailw 14 "Bad Buy Data" end
+      | 2uy ->
+        begin match iData with
+          | (| 3 , Data2 _ _ (OutpointVector _ [|outpoint0 ; outpoint1|]) (OutputLock lk) |) ->
+            do pointedOutput0 <-- tryAddPoint outpoint0 utxos ;
+            do pointedOutput1 <-- tryAddPoint outpoint1 utxos ;
+            ret @ Exercise [|pointedOutput0; pointedOutput1|] lk
+          | _ -> incFailw 14 "Bad Exercise Data" end
+      | _ -> incFailw 14 "Not implemented")
+    30
+
+
+type state = { tokensIssued:U64.t; collateral:U64.t; counter:U64.t }
+
+val encodeState : state -> cost (inputData 3) 10
+let encodeState { tokensIssued = tokensIssued ; collateral = collateral ; counter = counter } =
+  Zen.Cost.inc (ret @ UInt64Vector 3 [|tokensIssued; collateral; counter|]) 10
+
+val decodeState : #n:nat -> inputData n -> cost (result state) 16
+let decodeState #n iData =
+  let open ET in
+  Zen.Cost.inc (if n <> 3
+      then autoFailw "Bad data"
+      else
+        match iData with
+        | UInt64Vector 3 [|tk ; coll ; cter|] ->
+          ret @ { tokensIssued = tk; collateral = coll; counter = cter }
+        | _ -> autoFailw "Bad data")
+    16
+
+val createTx : hash -> command -> cost (result transactionSkeleton) 109
+let createTx cHash cmd =
+  Zen.Cost.inc (do numeraire <-- numeraire ;
       let open ET in
-      Zen.Cost.inc (match cmd, n with
-          | 0uy, 1 ->
-            begin match iData with
-              | Outpoint pt -> do pointed <-- tryAddPoint pt utxos ; ret @ Initialize pointed
-              | _ -> autoFailw "Bad Initialization data" end
-          | 0uy, 2 ->
-            begin match iData with
-              | OutpointVector 2 v -> autoFailw "Coll"
-              | _ -> autoFailw "Bad Collateralization data" end
-          | 1uy, 2 ->
-            begin match iData with
-              | Data2 _ _ (OutpointVector 2 v) (OutputLock lk) -> autoFailw "Buy"
-              | _ -> autoFailw "Bad Buy Data" end
-          | 2uy, 2 ->
-            begin match iData with
-              | Data2 _ _ (OutpointVector 2 v) (OutputLock lk) -> autoFailw "Exercise"
-              | _ -> autoFailw "Bad Exercise Data" end
-          | _ -> autoFailw "Not implemented")
-        21)
-    12
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      let open U64 in
+      Zen.Cost.inc (match cmd with
+          | Initialize (pt, oput) ->
+            if oput.spend.asset = numeraire
+            then
+              let initialState : state =
+                { tokensIssued = 0uL; collateral = oput.spend.amount; counter = 0uL }
+              in
+              do initialStateData <-- inc (retT @ encodeState initialState) 6 ;
+              let dataOutputLock = ContractLock cHash 3 initialStateData in
+              let dataOutput = { lock = dataOutputLock; spend = oput.spend } in
+              autoRet @ Tx [|pt|] [|dataOutput|] None
+            else autoFailw "Can't initialize with this asset."
+          | Collateralize [|pt1, dataOutput ; pt2, newFundsOutput|] ->
+            if dataOutput.spend.asset = numeraire && newFundsOutput.spend.asset = numeraire
+            then
+              match dataOutput.lock, newFundsOutput.lock with
+              | ContractLock cHash 3 currentStateData, ContractLock cHash _ _ ->
+                do currentState <-- decodeState currentStateData ;
+                let newCollateral = currentState.collateral +%^ newFundsOutput.spend.amount in
+                let newState =
+                  {
+                    tokensIssued = currentState.tokensIssued;
+                    collateral = newCollateral;
+                    counter = currentState.counter +%^ 1uL
+                  }
+                in
+                do newStateData <-- retT @ encodeState newState ;
+                let newDataOutputLock = ContractLock cHash 3 newStateData in
+                let newDataOutput =
+                  {
+                    lock = newDataOutputLock;
+                    spend = { asset = numeraire; amount = newCollateral }
+                  }
+                in
+                ret @ Tx [|pt1; pt2|] [|newDataOutput|] None
+              | _, _ -> autoFailw "Inputs not locked to this contract!"
+            else autoFailw "Can't use these asset types for Collateralize"
+          | Buy [|pntd ; pntd'|] lk -> autoFailw "Buy"
+          | Exercise [|pntd ; pntd'|] lk -> autoFailw "Exercise")
+        79)
+    1
 
 
 val main : inputMsg -> cost (result transactionSkeleton) 1
