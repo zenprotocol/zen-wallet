@@ -6,7 +6,6 @@ open System
 open FStar.Parser.AST
 open FStar.Ident
 open FStar.Const
-open FSharpPlus.Operators
 //open FStar
 
 module S = FSharpx.String
@@ -66,15 +65,6 @@ let mk_inc (expr:term) n =
                 mkExplicitApp inc [paren expr; mk_int_at n expr] expr.range 
                 |> paren
 
-// all base 36 symbols
-let base36_char_array = "abcdefghijklmnopqrstuvwxyz0123456789".ToCharArray()
-// generates a random string of length 8 of base 36 symbols
-let rand = System.Random()
-let random_base36_string _ =
-    System.String [|for _ in 1..8 -> base36_char_array.[rand.Next(0,35)] |]
-// generate a random identifier for use in lambda expressions
-let random_ident range = mk_ident ("lid_" + random_base36_string (), range)
-
 // These names are not permitted to be bound in a user module
 let reserved_names =
     ["cost";"Cost";
@@ -131,7 +121,8 @@ let rec check_pattern pat =
         if  reserved_names |> List.contains symbol then failwith ("Binding to \"" + symbol + "\" is not permitted.")
     | _ -> ();
 
-let rec pat_cost {pat=pat} = match pat with
+let rec pat_cost {pat=pat} = 
+    match pat with
     | PatWild
     | PatConst _
     | PatVar _
@@ -211,12 +202,17 @@ let rec elab_term_branch
         let lambda_elaborated = mk_term_here <| Abs (patterns, expr_elaborated)
         (0, lambda_elaborated)
     
+    | Ascribed (expr1, expr2, None) -> (* [expr1 <: expr2] *)
+        let expr1_cost, expr1_elaborated = elab_term_branch expr1
+        let ascribed_elaborated = mk_term_here <| Ascribed (expr1_elaborated, expr2, None)
+        (expr1_cost, ascribed_elaborated)
+        
     | Op (op_name, args:list<term>) ->
         (* Operators. 
            [ Op ( "+", [x;y] ) ] 
            = [x + y] *)
         let args_costs, args_elaborated = 
-            map elab_term_branch args 
+            List.map elab_term_branch args 
                 |>  List.unzip
         let op_term = mk_term_here <| Op (op_name, args_elaborated)
         let sum_args_cost = List.sum args_costs
@@ -239,7 +235,7 @@ let rec elab_term_branch
         let (ctor_args_terms, ctor_args_imps) : (list<term> * list<imp>) =
             List.unzip ctor_args
         let ctor_args_costs, ctor_args_terms_elaborated = 
-            map elab_term_branch ctor_args_terms  
+            List.map elab_term_branch ctor_args_terms  
                 |>  List.unzip
         let ctor_args_elaborated : list< term * imp > = 
             List.zip ctor_args_terms_elaborated 
@@ -283,11 +279,11 @@ let rec elab_term_branch
             | None -> ()  
         branches_when |> List.iter failOnWhenClause ;
         
-        let branches_patterns_costs = map pat_cost branches_patterns
+        let branches_patterns_costs = List.map pat_cost branches_patterns
         let sum_branches_patterns_costs = List.sum branches_patterns_costs
         let (branches_terms_costs : list<int>),
             (branches_terms_elaborated : list<term>) = 
-                 map elab_term_branch branches_terms
+                 List.map elab_term_branch branches_terms
                     |>  List.unzip  
         let max_branch_cost = List.max branches_terms_costs
         let match_cost = e1_cost + sum_branches_patterns_costs + max_branch_cost
@@ -298,9 +294,25 @@ let rec elab_term_branch
         let match_term = mk_term_here <| Match (e1_elaborated, branches_elaborated)
         (match_cost, match_term)
 
-    | Let (qualifier, ls_pat_tms', t1') ->
-        (0, elab_term_node branch)
-
+    | Let (qualifier, pattern_term_pairs, expr1) -> (* let [patterns] = [terms] in expr1 *)
+        match pattern_term_pairs with
+        | [({pat=PatApp _ }, _)] -> (0, elab_term_node branch) // functions declared with let must have annotated cost
+        | _ -> 
+            let patterns, terms = List.unzip pattern_term_pairs
+            let pat_costs = patterns |> List.map pat_cost
+            let term_costs, elaborated_terms = terms |> List.map elab_term_branch
+                                                     |> List.unzip
+            //let sum_pat_costs  = List.sum pat_costs
+            let sum_term_costs = List.sum term_costs
+            let expr1_cost, expr1_elaborated = elab_term_branch expr1
+            let pattern_term_pairs_elaborated = List.zip patterns 
+                                                         elaborated_terms
+            let let_term = mk_term_here <| Let ( qualifier,
+                                                 pattern_term_pairs_elaborated,
+                                                 expr1_elaborated )
+            let let_cost = sum_term_costs + expr1_cost
+            (let_cost, let_term)
+            
     | Record (e1 : option<term>, fields: list<lid * term>) ->
         (* [ Record ( Some e1, [(lid2,e2); (lid3,e3); ...; (lidn,en)] ) ]
             = [ { e1 with lid2=e2; lid3=e3; ...; lidn=en } ],
@@ -311,12 +323,12 @@ let rec elab_term_branch
         let (field_names, field_terms) : (list<lid> * list<term>) = 
             List.unzip fields      
         let (fields_costs, fields_elaborated) : (list<int> * list<term>) = 
-            map elab_term_branch field_terms 
+            List.map elab_term_branch field_terms 
             |> List.unzip           
         let fields_cost = List.sum fields_costs
         let fields_elaborated = (field_names, fields_elaborated) ||> List.zip
         let (e1_cost, e1_elaborated) : (option<int> * option<term>) = 
-            match map elab_term_branch e1 with
+            match Option.map elab_term_branch e1 with
             | Some (e1_cost, e1_elaborated) -> (Some e1_cost, Some e1_elaborated)
             | None -> (None, None)
         let record_cost = 
@@ -353,18 +365,25 @@ and elab_term_node ({tm=tm; range=range; level=level} as node) =
     | Wild | Const _ | Tvar _ | Uvar _ | Var _ | Name _ ->
         node
     | App _ | Op _ | Construct _ | Seq _ | Bind _ | Paren _ | Match _ 
-    | Record _ | Projector _ | Project _ | Abs _ | If _ | LetOpen _ ->
+    | Record _ | Projector _ | Project _ | Abs _ | If _ | Ascribed _ 
+    | LetOpen _ ->
         let branch_cost, branch_elaborated = elab_term_branch node
         mk_inc branch_elaborated branch_cost
-    | Let (qualifier, ls_pat_tms', t1') ->
-        let t1 = elab_term_node t1'
-        let ls_pat_tms =
-            ls_pat_tms' |>
-            List.map (fun (p,t) ->
-                check_pattern p;
-                p, elab_term_node t)
-        let let_tm' = Let (qualifier, ls_pat_tms, t1)
-        mk_term let_tm' range level
+    
+    | Let (qualifier, pattern_term_pairs, expr1) ->
+        let patterns, terms = List.unzip pattern_term_pairs
+        //let pattern_costs = patterns |> List.map pat_cost
+        let _ = patterns |> List.map check_pattern
+        let term_costs, elaborated_terms = terms |> List.map elab_term_branch
+                                                 |> List.unzip
+        let sum_term_costs = List.sum term_costs
+        let expr1_cost, expr1_elaborated = elab_term_branch expr1
+        let elaborated_pattern_term_pairs = List.zip patterns 
+                                                     elaborated_terms
+        let elaborated_let_term' = Let (qualifier, elaborated_pattern_term_pairs, expr1_elaborated)
+        let elaborated_let_term = mk_term elaborated_let_term' range level
+        mk_inc elaborated_let_term (sum_term_costs + expr1_cost)
+        
     // try..with block; not currently permitted
     | TryWith _ -> failwith "try..with blocks are not currently permitted"
     | _ -> failwith ("unrecognised term " + node.ToString() + ": please file a bug report")
@@ -399,10 +418,47 @@ let elab_decl decl =
 
 let elab_decls decls = decls |> List.map elab_decl
 
+let main_decl_val range = (* [val mainFunction : Zen.Types.mainFunction] *)
+    let main_ident = id_of_text "mainFunction"
+    let main_decl_val_term' = Var <| qual_ns_str "Zen.Types" "mainFunction"
+    let main_decl_val_term = mk_term main_decl_val_term' range Type_level
+    let main_decl'_val = Val (main_ident, main_decl_val_term)
+    { d=main_decl'_val; drange=range; doc=None; quals=[]; attrs=[] }
+
+let main_decl_let range = (* [let mainFunction = MainFunc (CostFunc cf) main] *)     
+    let main_ident = id_of_text "main"
+    let main_term' = Var <| lid_of_ns_and_id [] main_ident
+    let main_term = mk_term main_term' range Expr
+    
+    let cf_ident = id_of_text "cf"
+    let cf_term' = Var <| lid_of_ns_and_id [] cf_ident
+    let cf_term = mk_term cf_term' range Expr
+    
+    let costFunc_term' = Construct (qual_ns_str "Zen.Types" "CostFunc", [cf_term, Nothing])
+    let costFunc_term = mk_term costFunc_term' range Expr
+    
+    let mainFunc_term' = 
+        Construct ( qual_ns_str "Zen.Types" "MainFunc",
+                    [ (paren costFunc_term, Nothing); (main_term, Nothing) ] )
+    let mainFunc_term = mk_term mainFunc_term' range Expr
+    
+    let main_decl'_let = TopLevelLet ( NoLetQualifier, 
+                                       [ { pat=PatVar (id_of_text "mainFunction", None);
+                                           prange=range }, 
+                                           mainFunc_term ] )
+      
+    { d=main_decl'_let; drange=range; doc=None; quals=[]; attrs=[] }
+
+let main_decl range = [ main_decl_val range; main_decl_let range ]
+
 let elab_module m =
     match m with
-    | Module (lid,decls) -> Module (lid, elab_decls decls)
-    | Interface (lid, decls, bool) -> Interface (lid, elab_decls decls, bool)
+    | Module (lid,decls) -> 
+        let decls = elab_decls decls @ main_decl FStar.Range.dummyRange 
+        Module (lid, decls)
+    | Interface (lid, decls, bool) -> 
+        let decls = elab_decls decls @ main_decl FStar.Range.dummyRange
+        Interface (lid, decls, bool)
 
 let elab_ast (ast as module_, comments) =
         (elab_module module_, comments)
@@ -422,11 +478,7 @@ let ast_to_string ast =
     sw.Flush();
     sw.Close();
     sb.ToString()
-
-let isDeclMain decl = match decl.d with
-                      | Val ({idText=name}, _) -> name = "main"
-                      | _ -> false
-
+    
 (*
 let getCost_tm tm = match tm.tm with
                     |
