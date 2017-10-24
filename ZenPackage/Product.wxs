@@ -79,20 +79,29 @@
 				<!--File Name="$(var.Zen.Cmd.TargetFileName).config" Source="$(var.Zen.Cmd.TargetDir)" DiskId="1" /-->
 				<File Name="$(var.Zen.TargetFileName)" Source="$(var.Zen.TargetPath)" DiskId="1" />
 				<File Name="$(var.Zen.TargetFileName).config" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="AsyncIO.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="atk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="basic.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="BlockChain.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="BouncyCastle.Crypto.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="CLRCLI.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="Consensus.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="ContractExamples.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="ContractGenerator.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="DBreeze.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="ContractUtilities.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />        
+        <File Name="DBreeze.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FSharp.Compatibility.OCaml.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />        
+        <File Name="FSharp.Configuration.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="FSharp.Compiler.Service.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="FSharp.Core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FSharp.Data.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FSharp.PPrint.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FsLexYacc.Runtime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<!--File Name="FSharp.Data.DesignTime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" /-->
 				<File Name="FsPickler.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="FsPickler.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="gdk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FStar_Utils.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />        
+        <File Name="gdk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="glib-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="gtk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="Infrastructure.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
@@ -107,8 +116,11 @@
 				<File Name="nunit.framework.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />				
 				<File Name="Open.Nat.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="pango-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="QRCoder.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Sodium.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="parser.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="prettyprint.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="QRCoder.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="SharpYaml.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />        
+        <File Name="Sodium.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="Store.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="System.Collections.Immutable.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="System.Reflection.Metadata.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
@@ -117,8 +129,9 @@
 				<File Name="Unquote.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="Wallet.core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="Wallet.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />				
-				<File Name="Zen.RPC.Common.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />								
-				<File Name="graph.html" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="Zen.RPC.Common.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Zulib.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="graph.html" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="d3.min.js" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="genesis_outputs.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="keys.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
@@ -126,7 +139,7 @@
 				<File Name="lan_host.json" Source="$(var.Zen.TargetDir)" DiskId="1" />				
 				<File Name="testnet_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
 				<File Name="staging_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="demo_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+				<File Name="demo_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />        
 			</Component>
 		</DirectoryRef>
 
