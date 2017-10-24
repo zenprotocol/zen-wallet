@@ -10,7 +10,9 @@
 
 		<!--<Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLFOLDER" Name="ZenWallet" />
+        <Directory Id="INSTALLFOLDER" Name="ZenWallet">
+            <Directory Id="fstar" Name="fstar" />
+        </Directory>
       </Directory>
     </Directory>-->
 
@@ -24,9 +26,46 @@
 			</Directory>
 
 			<Directory Id="DesktopFolder" />
+			
+			<Directory Id="ProgramFilesFolder">
+                <Directory Id="INSTALLDIR" Name="ZenWallet">
+                    <Directory Id="fstar" Name="fstar" />
+                </Directory>
+            </Directory>
 		</Directory>
+		
+		<DirectoryRef Id="fstar">
+		    <Component Id="fstar" Guid="96dbd467-3420-44cc-b763-6fb16c1d0ea4">
+		        <CreateFolder />
+		        
+                 <File Name="basic.dll" Source="../../tools/fstar/dotnet" />
+                 <File Name="basic.pdb" Source="../../tools/fstar/dotnet" />
+                 <File Name="extraction.dll" Source="../../tools/fstar/dotnet" />
+                 <File Name="extraction.dll.config" Source="../../tools/fstar/dotnet" />             
+                 <File Name="format.dll" Source="../../tools/fstar/dotnet" />             
+                 <File Name="fsdoc.dll" Source="../../tools/fstar/dotnet" />
+                 <File Name="fsdoc.dll.config" Source="../../tools/fstar/dotnet" />             
+                 <File Name="FSharp.Compatibility.OCaml.dll" Source="../../tools/fstar/dotnet" />
+                 <File Name="FSharp.Core.dll" Source="../../tools/fstar/dotnet" />
+                 <File Name="FSharp.PPrint.dll" Source="../../tools/fstar/dotnet" />                          
+                 <File Name="fstar.exe.config" Source="../../tools/fstar/dotnet" />                                       
+                 <File Name="parser.dll" Source="../../tools/fstar/dotnet" />             
+                 <File Name="prettyprint.dll" Source="../../tools/fstar/dotnet" />             
+                 <File Name="reflection.dll" Source="../../tools/fstar/dotnet" />             
+                 <File Name="smtencoding.dll" Source="../../tools/fstar/dotnet" />             
+                 <File Name="syntax.dll" Source="../../tools/fstar/dotnet" />             
+                 <File Name="tactics.dll" Source="../../tools/fstar/dotnet" />             
+                 <File Name="tests.exe" Source="../../tools/fstar/dotnet" />
+                 <File Name="tests.exe.config" Source="../../tools/fstar/dotnet" />             
+                 <File Name="tests.pdb" Source="../../tools/fstar/dotnet" />
+                 <File Name="tosyntax.dll" Source="../../tools/fstar/dotnet" />
+                 <File Name="tosyntax.pdb" Source="../../tools/fstar/dotnet" />
+                 <File Name="typechecker.dll" Source="../../tools/fstar/dotnet" />
+                 <File Name="typechecker.pdb" Source="../../tools/fstar/dotnet" />
+		    </Component>
+		</DirectoryRef>
 
-		<DirectoryRef Id="AppRootDirectory">
+		<DirectoryRef Id="INSTALLDIR">
 
 			<Component Id="ZenWallet" Guid="027a40a6-fe81-4c12-afea-e9bd4538aae1">
 				<CreateFolder />
@@ -118,6 +157,7 @@
 			<ComponentRef Id="ZenWallet" />
 			<ComponentRef Id="ApplicationShortcut"/>
 			<ComponentRef Id="DesktopApplicationShortcut"/>
+			<ComponentRef Id="fstar" /> 
 		</Feature>
 	</Product>
 </Wix>
