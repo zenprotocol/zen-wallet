@@ -10,7 +10,7 @@ open System.IO
 open FStarExecution
 
 let readContract fileName =
-    System.IO.File.ReadAllText(Path.Combine (resolvePath "../../FStar", Path.ChangeExtension(fileName, ".fst")))
+    System.IO.File.ReadAllText(Path.Combine (rootPath "../../FStar", Path.ChangeExtension(fileName, ".fst")))
 
 let getContractFunction contract =
     let extracted = readContract contract |> extract
