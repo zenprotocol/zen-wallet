@@ -1,0 +1,10 @@
+{
+  "PeersToFind": 10,
+  "MaximumNodeConnection": 10,
+  "DefaultPort": 9999,
+  "Seeds": [
+    "54.218.234.70"
+  ],
+  "Magic": 0,
+  "ExternalIPAddress": "54.149.184.129"
+}
