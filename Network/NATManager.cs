@@ -199,9 +199,9 @@ namespace Network
 						).Wait();
 					}
 
-					IEnumerable<Mapping> exisintMappings = _NatDevice.GetAllMappingsAsync().Result;
+					IEnumerable<Mapping> exisingMappings = _NatDevice.GetAllMappingsAsync().Result;
 
-					return exisintMappings.Count(exisintMapping => exisintMapping.PublicPort == _ServerPort) == 1;
+                    return exisingMappings.Count(exisintMapping => exisintMapping.PublicPort == _ServerPort) == 1;
 				}
 				catch (Exception e)
 				{

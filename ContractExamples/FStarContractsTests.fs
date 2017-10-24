@@ -190,3 +190,60 @@ let ``TestCallOption``() =
         | Error msg -> Assert.Fail msg
         | Ok stateOutput -> 
             assertStateCorrectness ("collateralize (with initial state)", stateOutput, 1100UL + 550UL, 0UL, 2UL)
+
+
+[<Test>]
+let ``TestOracleContract``() =
+    let mainFunc, costFunc = getContractFunction "OracleContract"
+
+    let txHash = createHash 1uy
+    let contractHash = createHash 2uy
+
+    let utxo : ContractExamples.Execution.Utxo =
+        fun outpoint -> 
+            Some { 
+                lock = Consensus.Types.ContractLock (contractHash, [||]); 
+                spend = 
+                    {
+                        asset = Consensus.Tests.zhash
+                        amount = 1100UL 
+                    } 
+            }
+
+    let outpoint = { txHash = txHash; index = 550ul}
+
+    let message = context.GetSerializer<data<unit>>().PackSingleObject (Data2 (1I, 32I, Outpoint outpoint, ByteArray (32I, createHash 10uy)))
+
+    let input = (Array.append [|0uy|] message, contractHash, utxo)
+
+    let cost = costFunc input
+
+    Assert.That (cost, Is.EqualTo 66I)
+
+    let resultSuccess = mainFunc input
+
+    match resultSuccess with 
+    | Ok (outpointList, outputList, data) -> 
+        Assert.AreEqual ([], data)
+        let outpoint = List.head outpointList
+        Assert.AreEqual (550, outpoint.index)
+        Assert.AreEqual (txHash, outpoint.txHash)
+  
+        Assert.AreEqual (1100UL, outputList.[0].spend.amount)
+        Assert.AreEqual (Consensus.Tests.zhash, outputList.[0].spend.asset)
+        Assert.AreEqual (1UL, outputList.[1].spend.amount)
+        Assert.AreEqual (contractHash, outputList.[1].spend.asset)
+
+        let pkHash = 
+            match outputList.[0].lock with 
+            | Consensus.Types.ContractLock (hash, _) -> hash
+            | _ -> Array.empty
+        Assert.AreEqual (contractHash, pkHash)
+
+        let pkHash = 
+            match outputList.[1].lock with 
+            | Consensus.Types.ContractLock (hash, _) -> hash
+            | _ -> Array.empty
+
+        Assert.AreEqual (contractHash, pkHash)
+    | Error msg -> Assert.Fail msg
