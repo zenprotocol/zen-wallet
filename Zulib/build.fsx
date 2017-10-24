@@ -9,18 +9,21 @@ open System.IO
 open Microsoft.FSharp.Compiler.SourceCodeServices
 open Microsoft.FSharp.Compiler
 
+module Array = Microsoft.FSharp.Collections.Array
+
 let extractedDir = "fsharp/Extracted"
 let binDir = "bin"
 
-let runFStar args =
-  let (++) = Array.append
+let (++) = Array.append
 
-  let getFiles pattern =
-    FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
-    |> FileSystemHelper.filesInDirMatching pattern
-    |> Array.map (fun file -> file.FullName)
+let getFiles pattern =
+  FileSystemHelper.directoryInfo  FileSystemHelper.currentDirectory
+  |> FileSystemHelper.filesInDirMatching pattern
+  |> Array.map (fun file -> file.FullName)
 
-  let zulibFiles = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
+let zulibFiles = getFiles "fstar/*.fst" ++ getFiles "fstar/*.fsti"
+
+let runFStar args files =
 
   let join = Array.reduce (fun a b -> a + " " + b)
 
@@ -38,7 +41,7 @@ let runFStar args =
     "--no_default_includes";
     "--include";"fstar/"; |]
   //printfn "%s" (join (fstar ++ args ++ zulibFiles));
-  ProcessHelper.Shell.Exec (executable, join (fstar ++ args ++ zulibFiles))
+  ProcessHelper.Shell.Exec (executable, join (fstar ++ args ++ files))
 
 Target "Clean" (fun _ ->
   CleanDir extractedDir
@@ -51,10 +54,10 @@ Target "RecordHints" (fun _ ->
        //"--verify_all";
        "--record_hints" |]
 
-  let exitCode = runFStar args
+  let exitCodes = Array.Parallel.map (fun file -> runFStar args [|file|]) zulibFiles
+  if not (Array.forall (fun exitCode -> exitCode = 0) exitCodes)
+    then failwith "recording Zulib hints failed"
 
-  if exitCode <> 0 then
-    failwith "recording Zulib hints failed"
 )
 
 Target "Extract" (fun _ ->
@@ -80,7 +83,7 @@ Target "Extract" (fun _ ->
        "--codegen-lib";"Zen.Types";
        "--odir";extractedDir; |]
 
-  let exitCode = runFStar args
+  let exitCode = runFStar args zulibFiles
 
   if exitCode <> 0 then
     failwith "extracting Zulib failed"
