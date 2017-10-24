@@ -17,7 +17,7 @@ let private innerHash : byte[] -> byte[] =
 let rootFromAuditPath
     ( _: Prims.nat)
     ( item : hash )
-    ( location: Prims.nat )
+    ( location: uint32 )
     ( hashes : ZArr.t<hash, Prims.unit> )
     : Cost.t<hash, Prims.unit> =
         lazy (
@@ -29,6 +29,6 @@ let rootFromAuditPath
                         (innerHash <| Array.append v h, loc >>> 1)
                     else
                         (innerHash <| Array.append h v, loc >>> 1))
-                (item,uint32 location) hashes
+                (item,location) hashes
         )
         |> Cost.C
