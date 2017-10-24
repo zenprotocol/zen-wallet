@@ -93,7 +93,7 @@ val div(#n:pos): a:int_t n -> b:int_t n{b <> 0} -> Pure (int_t n)
 let div(#_) a b = a / b
 
 (* Modulo primitives *)
-#set-options "--max_ifuel 11"
+#set-options "--z3rlimit 25"
 val mod(#n:pos): a:int_t n -> b:int_t n{b <> 0} -> int_t n
 let mod(#_) a b = a - ((a/b) * b)
 #reset-options
