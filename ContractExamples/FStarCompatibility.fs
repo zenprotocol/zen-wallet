@@ -103,9 +103,9 @@ type DataSerializer(ownerContext) =
             let serializer = context.GetSerializer<data<unit>>()
             p.Pack(8).Pack(l).PackBinary(serializer.PackSingleObject(d))
         | Optional (l, Native.option.None) ->
-            //TODO: reafactor
-            let serializer = context.GetSerializer<data<unit>>()
             p.Pack(9).Pack(l)
+        | ByteArray (n, bytes) ->
+            p.Pack(10).PackBinary(bytes)
         | _ -> 
             //TODO: complete cases
             data.ToString()
@@ -117,19 +117,19 @@ type DataSerializer(ownerContext) =
         p.Read() |> ignore
         match code with
         | 0 -> Bool (System.Convert.ToBoolean (p.Unpack<byte>()))
-        | 1 -> Byte (p.Unpack<byte>())
+        | 1 -> Byte (p.Unpack())
         | 2 -> Empty
-        | 3 -> Hash (p.Unpack<byte[]>())
-        | 4 -> UInt64 (p.Unpack<System.UInt64>())
+        | 3 -> Hash (p.Unpack())
+        | 4 -> UInt64 (p.Unpack())
         | 5 -> 
-            let txHash = p.Unpack<byte[]>()
+            let txHash = p.Unpack()
             p.Read() |> ignore
-            let index = p.Unpack<uint32>()
+            let index = p.Unpack()
             Outpoint { txHash = txHash; index = index} 
         | 6 -> 
             //TODO: reafactor
             let serializer = context.GetSerializer<Consensus.Types.Output>()
-            let bytes = p.Unpack<byte[]>()
+            let bytes = p.Unpack()
             let output = serializer.UnpackSingleObject bytes
             match fsToFstOutput (Some (output)) with
             | Native.option.Some o -> Output o
@@ -140,28 +140,35 @@ type DataSerializer(ownerContext) =
         | 7 ->
             //TODO: reafactor
             let serializer = context.GetSerializer<data<unit>>()
-            let l1 = p.Unpack<Prims.nat>()
+            let l1 = p.Unpack()
             p.Read() |> ignore
-            let l2 = p.Unpack<Prims.nat>()
+            let l2 = p.Unpack()
             p.Read() |> ignore
-            let d1 = serializer.UnpackSingleObject(p.Unpack<byte[]>())
+            let d1 = serializer.UnpackSingleObject(p.Unpack())
             p.Read() |> ignore
-            let d2 = serializer.UnpackSingleObject(p.Unpack<byte[]>())
+            let d2 = serializer.UnpackSingleObject(p.Unpack())
             p.Read() |> ignore
             Data2 (l1, l2, d1, d2)
         | 8 ->
             //TODO: reafactor
             let serializer = context.GetSerializer<data<unit>>()
-            let l = p.Unpack<Prims.nat>()
+            let l = p.Unpack()
             p.Read() |> ignore
-            let d = serializer.UnpackSingleObject(p.Unpack<byte[]>())
+            let d = serializer.UnpackSingleObject(p.Unpack())
             p.Read() |> ignore
             Optional (l, Native.option.Some d)
         | 9 ->
             let serializer = context.GetSerializer<data<unit>>()
-            let l = p.Unpack<Prims.nat>()
+            let l = p.Unpack()
             p.Read() |> ignore
             Optional (l, Native.option.None)
+        | 10 ->
+            let serializer = context.GetSerializer<data<unit>>()
+            let l = p.Unpack()
+            p.Read() |> ignore
+            let bytes = p.Unpack()
+            p.Read() |> ignore
+            ByteArray (l, bytes)
         | _ -> 
             "Unwnown code encountered while unpacking data: " + code.ToString()
             |> SerializationException

@@ -19,12 +19,7 @@ let resolvePath (path:string) =
 let fsSuffix = """
 open MBrace.FsPickler.Combinators
 let pickler = Pickler.auto<Zen.Types.Extracted.mainFunction>
-let pickled = Binary.pickle pickler main
-"""
-
-let fstSuffix = """
-val main: mainFunction
-let main = MainFunc (CostFunc cost_fn) main_fn
+let pickled = Binary.pickle pickler mainFunction
 """
 
 let checker = FSharpChecker.Create ()
@@ -89,7 +84,6 @@ let extract source =
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
             IOUtils.elaborate fni fn'elabed
-            File.AppendAllText(fn'elabed, System.Environment.NewLine + fstSuffix)
 
             let args =
                 [|
