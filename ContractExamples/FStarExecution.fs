@@ -7,14 +7,9 @@ open MBrace.FsPickler.Combinators
 
 open FSharp.Configuration;
 
-type Settings = AppSettings<"app.config">
-
 let workingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
-let resolvePath (path:string) =
-    match Path.IsPathRooted path with
-        | true -> Settings.Fstar
-        | false -> Path.GetFullPath (Path.Combine (workingDir, path))
+let rootPath path = Path.Combine (workingDir, path)
 
 let fsSuffix = """
 open MBrace.FsPickler.Combinators
@@ -40,7 +35,7 @@ let compile source =
             "-a"; fni;
             "-r"; "Zulib.dll";
             "-r"; "FsPickler.dll";
-            "-r"; Path.Combine (resolvePath Settings.Fstar, "FSharp.Compatibility.OCaml.dll");
+            "-r"; "FSharp.Compatibility.OCaml.dll"
         |]
                     
         let compilationResult =
@@ -69,7 +64,27 @@ let mono_locations = [ //TODO: prioritize
     "/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono"
 ]
     
-let mono = List.tryFind File.Exists mono_locations
+let mono = List.tryFind File.Exists mono_locations 
+
+let fstarPath =     
+    let fstarDevPath =
+        match System.Environment.OSVersion.Platform with
+        | System.PlatformID.Win32NT -> rootPath "../../../tools/fstar/dotnet/fstar.exe"               
+        | _ -> rootPath "../../../tools/fstar/mono/fstar.exe"
+                                      
+    List.find File.Exists [fstarDevPath; rootPath "tools/fstar/fstar.exe"]            
+    
+let z3Path =
+    let z3Locations = 
+        match System.Environment.OSVersion.Platform with
+        | System.PlatformID.Win32NT -> [rootPath "../../../tools/z3/windows/z3.exe"; rootPath "tools/z3.exe"]
+        | System.PlatformID.MacOSX -> [rootPath "../../../tools/z3/osx/z3"; rootPath "tools/z3"]
+        | _ -> [rootPath "../../../tools/z3/linux/z3"; rootPath "tools/z3"]
+        
+    List.find File.Exists z3Locations
+    
+let zulibPath = List.find Directory.Exists [rootPath "../../../Zulib/fstar"; rootPath "Zulib"]
+    
 
 let extract source =
     let tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
@@ -84,9 +99,7 @@ let extract source =
             //File.WriteAllText(fni, "module " + moduleName + System.Environment.NewLine + source)
             File.WriteAllText(fni, source)
             IOUtils.elaborate fni fn'elabed
-        
-            let fstarPath = Path.Combine (resolvePath Settings.Fstar, "fstar.exe")
-            
+
             let executableArg =  
                 match System.Environment.OSVersion.Platform with
                 | System.PlatformID.Win32NT -> [| |]
@@ -97,10 +110,11 @@ let extract source =
             let args = executableArg ++ [|                    
                                         //TODO: remove lax
                                         "--lax";
+                                        "--smt";
                                         "--codegen"; "FSharp";
-                                        "--prims"; Path.Combine (resolvePath Settings.Zulib, "prims.fst");
+                                        "--prims"; Path.Combine (zulibPath, "prims.fst");
                                         "--extract_module"; moduleName;
-                                        "--include"; resolvePath Settings.Zulib;
+                                        "--include"; zulibPath;
                                         "--no_default_includes"; fn'elabed;
                                         "--verify_all";
                                         "--odir"; tmp
