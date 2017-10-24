@@ -178,10 +178,11 @@ let createTx cHash cmd =
     1
 
 
-val main : inputMsg -> cost (result transactionSkeleton) 1
-let main iM = Zen.Cost.inc (ET.failw "Not implemented") 1
+val main : inputMsg -> cost (result transactionSkeleton) 172
+let main iM =
+  let open ET in Zen.Cost.inc (do comm <-- makeCommand iM ; createTx iM.contractHash comm) 5
 
 val cf : inputMsg -> cost nat 1
-let cf _ = Zen.Cost.inc ~!1 1
+let cf _ = Zen.Cost.inc ~!172 1
 val mainFunction : Zen.Types.mainFunction
 let mainFunction = Zen.Types.MainFunc (Zen.Types.CostFunc cf) main

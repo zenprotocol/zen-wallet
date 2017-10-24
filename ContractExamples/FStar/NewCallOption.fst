@@ -192,8 +192,11 @@ let createTx cHash cmd =
   | Exercise [| pntd; pntd' |] lk -> autoFailw "Exercise"
 
 
-val main: inputMsg -> cost (result transactionSkeleton) 1
-let main iM = ET.failw "Not implemented"
+val main: inputMsg -> cost (result transactionSkeleton) 172
+let main iM =
+  let open ET in
+  do comm <-- makeCommand iM;
+  createTx (iM.contractHash) comm
 
 val cf: inputMsg -> cost nat 1
-let cf _ = ~!1
+let cf _ = ~!172
