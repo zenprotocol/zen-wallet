@@ -108,6 +108,10 @@ type DataSerializer(ownerContext) =
             p.Pack(9).Pack(l)
         | ByteArray (n, bytes) ->
             p.Pack(10).PackBinary(bytes)
+        | UInt32 (v) ->
+            p.Pack(11).Pack(v)
+        | UInt64 (v) ->
+            p.Pack(12).Pack(v) //TODO: simplify by consolidating?
         | _ -> 
             //TODO: complete cases
             data.ToString()
@@ -171,6 +175,12 @@ type DataSerializer(ownerContext) =
             let bytes = p.Unpack()
             p.Read() |> ignore
             ByteArray (l, bytes)
+        | 11 ->
+            let v = p.Unpack()
+            UInt32 v
+        | 12 ->
+            let v = p.Unpack()
+            UInt64 v
         | _ -> 
             "Unwnown code encountered while unpacking data: " + code.ToString()
             |> SerializationException
