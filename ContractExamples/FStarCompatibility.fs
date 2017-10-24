@@ -38,6 +38,8 @@ let private fsToFstLock (outputLock:Consensus.Types.OutputLock) : outputLock =
     match outputLock with 
     | Consensus.Types.PKLock (pkHash) ->
         PKLock pkHash
+    | Consensus.Types.ContractLock (pkHash, null) ->
+        ContractLock (pkHash, 0I, Empty)
     | Consensus.Types.ContractLock (pkHash, [||]) ->
         ContractLock (pkHash, 0I, Empty)
     | Consensus.Types.ContractLock (pkHash, data) ->

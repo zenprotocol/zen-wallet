@@ -66,13 +66,13 @@ type Result =
     | ContractTypeNotImplemented
 
 open Consensus.Serialization
+//open Zen.Types.Extracted
 
 context.Serializers.RegisterOverride<Zen.Types.Extracted.data<unit>>(new DataSerializer(context))
 
 let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*Output) seq) opcode (m:Map<string,string>) =
     result {
         let stateOutput = Seq.tryFind (fun (_,y) -> y.spend.asset = meta.numeraire) utxos
-
         let stateOutpoint = 
             match stateOutput with
             | Some (o, _) ->
@@ -82,7 +82,6 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
 
         let bytes = context.GetSerializer<Zen.Types.Extracted.data<unit>>().PackSingleObject stateOutpoint
     
-
         match opcode with
         | 0uy ->
             return ContractJsonData.Root (
@@ -215,3 +214,10 @@ let makeMessage (json:ContractJsonData.Root, outpoint) =
     let bytes = ser.PackSingleObject (wrappingData)
     let cmd = getBytes json.Second.Value.Initial
     Array.append cmd bytes 
+
+let makeOracleMessage (data, outpoint) = 
+    let ser = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
+    
+    let message = ser.PackSingleObject (Zen.Types.Extracted.Data2 (1I, 32I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), Zen.Types.Extracted.ByteArray (32I, data)))
+
+    Array.append [|0uy|] message
