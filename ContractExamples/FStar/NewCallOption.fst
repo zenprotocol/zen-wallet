@@ -108,7 +108,7 @@ let decodeState #n iData =
       ret @ {tokensIssued=tk; collateral=coll; counter=cter}
     | _ -> autoFailw "Bad data"
 
-val createTx : hash -> command -> cost (result transactionSkeleton) 109
+val createTx : hash -> command -> cost (result transactionSkeleton) 123
 let createTx cHash cmd =
   do numeraire <-- numeraire;
   let open ET in
@@ -140,7 +140,7 @@ let createTx cHash cmd =
           let newState = {
             tokensIssued = currentState.tokensIssued;
             collateral = newCollateral;
-            counter = currentState.counter +%^ 1UL;
+            counter = currentState.counter +%^ 1UL;   // We actually prefer modular arithmetic for the counter
           } in
           do newStateData <-- retT @ encodeState newState;
           let newDataOutputLock = ContractLock cHash 3 newStateData in
@@ -156,7 +156,39 @@ let createTx cHash cmd =
       | _,_ -> autoFailw "Inputs not locked to this contract!"
       end
     else autoFailw "Can't use these asset types for Collateralize"
-  | Buy [| pntd; pntd' |] lk -> autoFailw "Buy"
+  | Buy [| (pt1, dataOutput); (pt2, purchaseOutput) |] lk ->
+    if dataOutput.spend.asset = numeraire && purchaseOutput.spend.asset = numeraire
+    then
+    begin match dataOutput.lock, purchaseOutput.lock with
+    | ContractLock cHash 3 currentStateData, ContractLock cHash _ _ ->
+        do currentState <-- decodeState currentStateData;
+        // TODO: avoid modular addition!!
+        let newCollateral = currentState.collateral +%^ purchaseOutput.spend.amount in
+        let newTokens = purchaseOutput.spend.amount /^ price in   //downwards rounding
+        let newState = {
+          tokensIssued = currentState.tokensIssued +%^ newTokens; //TODO: modular
+          collateral = newCollateral +%^ newCollateral;
+          counter = currentState.counter;
+        } in        //TODO: return to sender with insufficient collateral
+        do newStateData <-- retT @ encodeState newState;
+        let newDataOutputLock = ContractLock cHash 3 newStateData in
+        let newDataOutput =
+          {
+            lock=newDataOutputLock;
+            spend={asset=numeraire;amount=newCollateral}
+          } in
+        let buyersOutput =
+          {
+            lock=lk;
+            spend={asset=cHash;amount=newTokens}
+          } in
+        ret @ Tx
+                [| pt1; pt2 |]
+                [| newDataOutput; buyersOutput |]
+                None
+    | _,_ -> autoFailw "Inputs not locked to this contract!"
+    end
+    else autoFailw "Can't buy with these assets."
   | Exercise [| pntd; pntd' |] lk -> autoFailw "Exercise"
 
 

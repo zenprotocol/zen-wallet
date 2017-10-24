@@ -104,7 +104,7 @@ let decodeState #n iData =
         | _ -> autoFailw "Bad data")
     16
 
-val createTx : hash -> command -> cost (result transactionSkeleton) 109
+val createTx : hash -> command -> cost (result transactionSkeleton) 123
 let createTx cHash cmd =
   Zen.Cost.inc (do numeraire <-- numeraire ;
       let open ET in
@@ -146,9 +146,35 @@ let createTx cHash cmd =
                 ret @ Tx [|pt1; pt2|] [|newDataOutput|] None
               | _, _ -> autoFailw "Inputs not locked to this contract!"
             else autoFailw "Can't use these asset types for Collateralize"
-          | Buy [|pntd ; pntd'|] lk -> autoFailw "Buy"
+          | Buy [|pt1, dataOutput ; pt2, purchaseOutput|] lk ->
+            if dataOutput.spend.asset = numeraire && purchaseOutput.spend.asset = numeraire
+            then
+              match dataOutput.lock, purchaseOutput.lock with
+              | ContractLock cHash 3 currentStateData, ContractLock cHash _ _ ->
+                do currentState <-- decodeState currentStateData ;
+                let newCollateral = currentState.collateral +%^ purchaseOutput.spend.amount in
+                let newTokens = purchaseOutput.spend.amount /^ price in
+                let newState =
+                  {
+                    tokensIssued = currentState.tokensIssued +%^ newTokens;
+                    collateral = newCollateral +%^ newCollateral;
+                    counter = currentState.counter
+                  }
+                in
+                do newStateData <-- retT @ encodeState newState ;
+                let newDataOutputLock = ContractLock cHash 3 newStateData in
+                let newDataOutput =
+                  {
+                    lock = newDataOutputLock;
+                    spend = { asset = numeraire; amount = newCollateral }
+                  }
+                in
+                let buyersOutput = { lock = lk; spend = { asset = cHash; amount = newTokens } } in
+                ret @ Tx [|pt1; pt2|] [|newDataOutput; buyersOutput|] None
+              | _, _ -> autoFailw "Inputs not locked to this contract!"
+            else autoFailw "Can't buy with these assets."
           | Exercise [|pntd ; pntd'|] lk -> autoFailw "Exercise")
-        79)
+        93)
     1
 
 
