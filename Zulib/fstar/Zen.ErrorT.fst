@@ -19,6 +19,24 @@ let retT #_ #_ mx =
    do x <-- mx;
    ret x
 
+ val incFail(#a:Type): n:nat -> exn -> cost (result a) n
+ let incFail #_ n e = inc (fail e) n
+
+val incFailw(#a:Type): n:nat -> string -> cost (result a) n
+let incFailw #_ n msg = inc (failw msg) n
+
+val incRet(#a:Type): n:nat -> a -> cost (result a) n
+let incRet(#_) n x = inc (ret x) n
+
+val autoFailw(#a:Type)(#n:nat): string -> cost (result a) n
+let autoFailw #_ #_ = failw >> autoInc
+
+val autoFail(#a:Type)(#n:nat): exn -> cost (result a) n
+let autoFail #_ #_ = fail >> autoInc
+
+val autoRet(#a:Type)(#n:nat): a -> cost (result a) n
+let autoRet #_ #_ = ret >> autoInc
+
 val bind(#a #b:Type)(#m #n:nat):
   cost (result a) m
   -> (a -> cost (result b) n)
