@@ -31,7 +31,7 @@ let hashData
 let rootFromAuditPath
     ( _: Prims.nat)
     ( item : hash )
-    ( location: Prims.nat )
+    ( location: uint32 )
     ( hashes : ZArr.t<hash, Prims.unit> )
     : Cost.t<hash, Prims.unit> =
         lazy (

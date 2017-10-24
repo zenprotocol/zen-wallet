@@ -8,6 +8,7 @@ module ET = Zen.ErrorT
 module U64 = FStar.UInt64
 module Crypto = Zen.Crypto
 module M = FStar.Mul
+module I64 = FStar.Int64
 
 open Zen.Base
 open Zen.Types
@@ -44,11 +45,28 @@ let rec tryAddPoints #l v utxos =
         | None ->
           (17 * l) +! failw "Cannot find output in UTXO set"
 
+type oracleData = {
+                    underlying: (n:nat & A.t byte n);
+                    price : U64.t;
+                    timestamp : I64.t;
+                    nonce : hash
+                  }
+
+type auditPath =  {
+                    location : U32.t;
+                    hashes : (n:nat & A.t hash n)
+                  }
+
 unopteq type command =
   | Initialize of pointedOutput
   | Collateralize of V.t pointedOutput 2
   | Buy: (V.t pointedOutput 2) -> outputLock -> command
-  | Exercise: (V.t pointedOutput 2) -> outputLock -> command
+  | Exercise:
+           (V.t pointedOutput 3)
+        -> oracleData
+        -> auditPath
+        -> outputLock
+        -> command
 
 val makeCommand : inputMsg -> cost (result command) 44
 let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
@@ -76,13 +94,26 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
            | _ -> incFailw 14 "Bad Buy Data"
            end
   | 2uy -> begin match iData with
+           | (| _,
+                Data4 _ _ _ _
+                  (OutpointVector _ [| outpoint0; outpoint1; outpoint 2 |])
+                  (Data 4 _ _ _ _
+                    (ByteArray n assetId)
+                    (UInt64 price)
+                    (UInt64 time)
+                    (Hash oracleRoot))
+                  (Data3 _ _ _
+                    (UInt64 location)
+                    ())
+              |)
+  (*| 2uy -> begin match iData with
            | (|3, Data2 _ _ (OutpointVector _ [| outpoint0; outpoint1 |] )
                             (OutputLock lk) |) ->
              do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
              do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
              ret @ Exercise [| pointedOutput0; pointedOutput1 |] lk
            | _ -> incFailw 14 "Bad Exercise Data"
-           end
+           end*)
   | _ ->  incFailw 14 "Not implemented"
 
 
