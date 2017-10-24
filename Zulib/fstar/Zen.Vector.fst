@@ -41,7 +41,10 @@ let rec append #a #l1 #l2 v1 v2 =
            VCons hd <$> append tl v2 <: cost (vector a (l1+l2)) M.(4*l1)
        | VNil -> ret v2
        end
-let (@@) = append
+
+unfold val (@@) (#a:Type)(#l1 #l2:nat):
+  vector a l1 -> vector a l2 -> cost (vector a (l1+l2)) M.(4*l1+4)
+unfold let (@@) #_ #_ #_ v1 v2 = append v1 v2
 
 (*
 (** [flatten v], where [v] is a vector of vectors of constant length,

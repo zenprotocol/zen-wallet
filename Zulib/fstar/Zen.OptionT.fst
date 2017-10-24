@@ -88,22 +88,44 @@ let bindLift3 #_ #_ #_ #_ #_ #_ #_ #_ mx my mz f =
 unfold let (+~!) = incSome // infix
 unfold let (~+!) = incSome // prefix
 
-unfold let (>>=) = bind
-unfold let (=<<) f x = bind x f
+unfold val (>>=) (#a #b:Type)(#m #n:nat):
+  cost (option a) m -> (a -> cost (option b) n) -> cost (option b) (m+n)
+unfold let (>>=) #_ #_ #_ #_ mx f = bind mx f
 
-unfold let (<$>) = map
-unfold let ($>) x f = map f x
+unfold val (=<<) (#a #b:Type)(#m #n:nat):
+  (a -> cost (option b) n) -> cost (option a) m -> cost (option b) (m+n)
+unfold let (=<<) #_ #_ #_ #_ f mx = bind mx f
+
+unfold val (<$>) (#a #b:Type)(#n:nat):
+  (a->b) -> cost (option a) n -> cost (option b) n
+unfold let (<$>) #_ #_ #_ f mx = map f mx
+
+unfold val ( $>) (#a #b:Type)(#n:nat):
+  cost (option a) n -> (a->b) -> cost (option b) n
+unfold let ( $>) #_ #_ #_ mx f = map f mx
+
+unfold val (<*>) (#a #b:Type)(#m #n:nat): cost (option (a->b)) m -> cost (option a) n
+  -> cost (option b) (n+m)
+unfold let (<*>) #_ #_ #_ #_ mf mx = ap mf mx
+
+unfold val ( *>) (#a #b:Type)(#m #n:nat): cost (option a) n -> cost (option (a->b)) m
+  -> cost (option b) (n+m)
+unfold let ( *>) #_ #_ #_ #_ mx mf = ap mf mx
 
 unfold val (<$$>) (#a #b #c:Type)(#m #n:nat):
   (a->b->c) -> (cost (option a) m * cost (option b) n) -> cost (option c) (m+n)
 unfold let (<$$>) #_ #_ #_ #_ #_ f (mx, my) = map2 f mx my
-unfold let ($$>) (mx, my) f = f <$$> (mx, my)
+
+unfold val ( $$>) (#a #b #c:Type)(#m #n:nat):
+  (cost (option a) m * cost (option b) n) -> (a->b->c) -> cost (option c) (m+n)
+unfold let ( $$>) #_ #_ #_ #_ #_ (mx, my) f = f <$$> (mx, my)
 
 unfold val (<$$$>) (#a #b #c #d:Type)(#n1 #n2 #n3:nat):
   (a->b->c->d) -> (cost (option a) n1 * cost (option b) n2 * cost (option c) n3)
   -> cost (option d) (n1+n2+n3)
 unfold let (<$$$>) #_ #_ #_ #_ #_ #_ #_ f (mx, my, mz) = map3 f mx my mz
-unfold let ($$$>) (mx, my, mz) f = f <$$$> (mx, my, mz)
 
-unfold let (<*>) = ap
-unfold let ( *>) x f = ap f x
+unfold val ( $$$>) (#a #b #c #d:Type)(#n1 #n2 #n3:nat):
+  (cost (option a) n1 * cost (option b) n2 * cost (option c) n3) -> (a->b->c->d)
+  -> cost (option d) (n1+n2+n3)
+unfold let ( $$$>) #_ #_ #_ #_ #_ #_ #_ (mx, my, mz) f = f <$$$> (mx, my, mz)
