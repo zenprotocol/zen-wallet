@@ -5,6 +5,7 @@ module A = Zen.Array
 module O = Zen.Option
 module OT = Zen.OptionT
 module ET = Zen.ErrorT
+module U32 = FStar.UInt32
 module U64 = FStar.UInt64
 module Crypto = Zen.Crypto
 module M = FStar.Mul
@@ -14,11 +15,38 @@ open Zen.Base
 open Zen.Types
 open Zen.Cost
 
+type oracleData = {
+                    underlying: (n:nat & A.t byte n);
+                    price : U64.t;
+                    timestamp : U64.t; // TODO: use I64.t
+                    nonce : hash
+                  }
+
+type auditPath =  {
+                    location : U32.t;
+                    hashes : (n:nat & A.t hash n)
+                  }
+
+type pointedOutput = outpoint * output
+
+unopteq type command =
+  | Initialize of pointedOutput
+  | Collateralize of V.t pointedOutput 2
+  | Buy: (V.t pointedOutput 2) -> outputLock -> command
+  | Exercise:
+           (V.t pointedOutput 3)
+        -> oracleData
+        -> auditPath
+        -> outputLock
+        -> command
+
+type state = { tokensIssued : U64.t;
+               collateral   : U64.t;
+               counter      : U64.t }
+
 let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 let price: U64.t = 100UL
-
-type pointedOutput = outpoint * output
 
 val tryAddPoint: outpoint -> utxos:utxo -> cost (result pointedOutput) 7
 let tryAddPoint pt utxos =
@@ -45,30 +73,7 @@ let rec tryAddPoints #l v utxos =
         | None ->
           (17 * l) +! failw "Cannot find output in UTXO set"
 
-type oracleData = {
-                    underlying: (n:nat & A.t byte n);
-                    price : U64.t;
-                    timestamp : I64.t;
-                    nonce : hash
-                  }
-
-type auditPath =  {
-                    location : U32.t;
-                    hashes : (n:nat & A.t hash n)
-                  }
-
-unopteq type command =
-  | Initialize of pointedOutput
-  | Collateralize of V.t pointedOutput 2
-  | Buy: (V.t pointedOutput 2) -> outputLock -> command
-  | Exercise:
-           (V.t pointedOutput 3)
-        -> oracleData
-        -> auditPath
-        -> outputLock
-        -> command
-
-val makeCommand : inputMsg -> cost (result command) 44
+val makeCommand : inputMsg -> cost (result command) 92
 let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
   let open M in
   let open ET in
@@ -76,50 +81,55 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
   | 0uy -> begin match iData with
            | (| 1, Outpoint pt |) ->
              do pointed <-- tryAddPoint pt utxos;
-             incRet 7 (Initialize pointed)
-           | (| 1, _ |) -> incFailw 14 "Bad Initialization data"
+             incRet 14 (Initialize pointed)
+           | (| 1, _ |) -> incFailw 21 "Bad Initialization data"
            | (| 2, OutpointVector _ [| outpoint0; outpoint1 |] |) ->
              do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
              do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             ret @ Collateralize [| pointedOutput0; pointedOutput1 |]
-           | (| 2, _ |) -> incFailw 14 "Bad Collateralization data"
-           | _ -> incFailw 14 "Bad Initialization/Collateralization data"
+             incRet 7 (Collateralize [| pointedOutput0; pointedOutput1 |])
+           | (| 2, _ |) -> incFailw 21 "Bad Collateralization data"
+           | _ -> incFailw 21 "Bad Initialization/Collateralization data"
            end
   | 1uy -> begin match iData with
            | (|3, Data2 _ _ (OutpointVector _ [| outpoint0; outpoint1 |] )
                             (OutputLock lk) |) ->
              do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
              do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             ret @ Buy [| pointedOutput0; pointedOutput1 |] lk
-           | _ -> incFailw 14 "Bad Buy Data"
+             incRet 7 (Buy [| pointedOutput0; pointedOutput1 |] lk)
+           | _ -> incFailw 21 "Bad Buy Data"
            end
   | 2uy -> begin match iData with
            | (| _,
                 Data4 _ _ _ _
-                  (OutpointVector _ [| outpoint0; outpoint1; outpoint 2 |])
-                  (Data 4 _ _ _ _
-                    (ByteArray n assetId)
+                  (OutpointVector _ [| outpoint0; outpoint1; outpoint2 |])
+                  (Data4 _ _ _ _
+                    (ByteArray n_bytes assetId)
                     (UInt64 price)
                     (UInt64 time)
                     (Hash oracleRoot))
-                  (Data3 _ _ _
-                    (UInt64 location)
-                    ())
-              |)
-  (*| 2uy -> begin match iData with
-           | (|3, Data2 _ _ (OutpointVector _ [| outpoint0; outpoint1 |] )
-                            (OutputLock lk) |) ->
-             do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
-             do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             ret @ Exercise [| pointedOutput0; pointedOutput1 |] lk
-           | _ -> incFailw 14 "Bad Exercise Data"
-           end*)
-  | _ ->  incFailw 14 "Not implemented"
+                  (Data2 _ _
+                    (UInt32 location)
+                    (HashArray n_hashes hashes))
+                  (OutputLock lk)
+              |) ->
+                let oracleData = { underlying = (| n_bytes, assetId |);
+                                   price=price;
+                                   timestamp=time;
+                                   nonce=oracleRoot } in
+                let auditPath = { location=location;
+                                  hashes = (| n_hashes, hashes |) } in
+                do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
+                do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
+                do pointedOutput2 <-- tryAddPoint outpoint2 utxos;
+                ret@Exercise [| pointedOutput0; pointedOutput1; pointedOutput2 |]
+                             oracleData
+                             auditPath
+                             lk
+           | _ -> incFailw 21 "Bad Exercise Data"
+           end
 
 
-type state = { tokensIssued : U64.t;
-               collateral   : U64.t;
-               counter      : U64.t }
+  | _ ->  incFailw 21 "Not implemented"
 
 val encodeState : state -> cost (inputData 3) 10
 let encodeState {
@@ -138,7 +148,7 @@ let decodeState #n iData =
     | UInt64Vector 3 [| tk; coll; cter |] ->
       ret @ {tokensIssued=tk; collateral=coll; counter=cter}
     | _ -> autoFailw "Bad data"
-
+(*)
 val createTx : hash -> command -> cost (result transactionSkeleton) 123
 let createTx cHash cmd =
   do numeraire <-- numeraire;
