@@ -21,7 +21,7 @@ let isEmpty #_ #_ = function | VNil      -> 3 +~! true
 val hd(#a:Type)(#l:nat): v:vector a l{VCons? v} -> cost a 2
 let hd #_ #_ (VCons hd _) = 2 +~! hd
 
-(** [tl v] returns the first element of [v].
+(** [tl v] returns the tail of [v].
     Requires [v] to be nonempty.*)
 val tl(#a:Type)(#l:nat): v:vector a l{VCons? v} -> cost (vector a (l-1)) 2
 let tl #_ #_ (VCons _ tl) = 2 +~! tl
@@ -45,7 +45,7 @@ let (@@) = append
 
 (** [flatten v], where [v] is a vector of vectors of constant length,
     returns the vector of elements of vectors in [v], preserving their order. *)
-#set-options "--z3rlimit 10"
+#set-options "--z3rlimit 15"
 val flatten(#a:Type)(#l1 #l2:nat):
   vector (vector a l2) l1 -> cost (vector a M.(l1*l2)) M.(4*l1*(l2+1)+5)
 let rec flatten #a #_ #_ = function
