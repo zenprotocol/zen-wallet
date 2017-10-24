@@ -9,6 +9,7 @@ module U64 = FStar.UInt64
 module Crypto = Zen.Crypto
 module M = FStar.Mul
 module I64 = FStar.Int64
+module U32 = FStar.UInt32
 
 open Zen.Base
 open Zen.Types
@@ -93,7 +94,7 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
              ret @ Buy [| pointedOutput0; pointedOutput1 |] lk
            | _ -> incFailw 14 "Bad Buy Data"
            end
-  | 2uy -> begin match iData with
+  (*| 2uy -> begin match iData with
            | (| _,
                 Data4 _ _ _ _
                   (OutpointVector _ [| outpoint0; outpoint1; outpoint 2 |])
@@ -105,7 +106,7 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
                   (Data3 _ _ _
                     (UInt64 location)
                     ())
-              |)
+              |)*)
   (*| 2uy -> begin match iData with
            | (|3, Data2 _ _ (OutpointVector _ [| outpoint0; outpoint1 |] )
                             (OutputLock lk) |) ->
@@ -220,7 +221,19 @@ let createTx cHash cmd =
     | _,_ -> autoFailw "Inputs not locked to this contract!"
     end
     else autoFailw "Can't buy with these assets."
-  | Exercise [| pntd; pntd' |] lk -> autoFailw "Exercise"
+  | Exercise
+      [| (pt1,dataOutput); (pt2,tokenOutput); (pt3,oracleOutput) |]
+      {
+            underlying = (| n, underlyingBytes |);
+            price=price;
+            timestamp=timestamp;
+            nonce=nonce
+      }
+      { location = location; hashes = (| m, hashArray |)}
+      payoffOutputLock ->
+      if dataOutput.spend.asset <> numeraire || tokenOutput.spend.asset <> cHash
+      then autoFailw "Can't exercise with these assets."
+      else autoFailw "Exercise"
 
 
 val main: inputMsg -> cost (result transactionSkeleton) 172
