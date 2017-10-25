@@ -6,21 +6,16 @@ open FStar.Pervasives
 open Zen
 
 type ContractResult = Result<TransactionSkeleton, string>
-//type MainFunction = (inputMsg -> ContractResult) * (inputMsg -> int64)
-
-//  : cf:costFunction
-//           -> mf:(imsg:inputMsg -> Zen.Cost.t (result transactionSkeleton) (Zen.Cost.force ((CostFunc?.f cf) imsg)))
-//           -> mainFunction
 
 let private unCost (Zen.Cost.Realized.C inj:Zen.Cost.Realized.cost<'Aa, 'An>) : 'Aa = inj.Force()
 
-let private vectorToList (z:Vector.t<'Aa, _>) : List<'Aa> =
+let vectorToList (z:Vector.t<'Aa, _>) : List<'Aa> =
      // 0I's are eraseable
      Vector.foldl 0I 0I (fun acc e -> Zen.Cost.Realized.ret (e::acc)) [] z 
      |> unCost
      |> List.rev
 
-let private listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
+let listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
     let len = List.length ls 
     let lsIndexed = List.mapi (fun i elem -> bigint (len - i - 1), elem) ls // vertors are reverse-zero-indexed
     List.foldBack (fun (i,x) acc -> Vector.VCons (i, x, acc)) lsIndexed Vector.VNil
@@ -28,11 +23,19 @@ let private listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
 let private fstToFsOutpoint (a:outpoint) : Consensus.Types.Outpoint =
     { txHash = a.txHash; index = a.index }
 
-//private
 let fsToFstOutpoint (a:Consensus.Types.Outpoint) : outpoint =
     { txHash = a.txHash; index = a.index }
 
 open Consensus.Serialization
+
+let private getLen (data : data<unit>) =
+    match data with 
+    | UInt64Vector (l, _) -> l
+    | _ -> 
+        //TODO: complete cases
+        data.ToString()
+        |> System.NotImplementedException
+        |> raise
 
 let private fsToFstLock (outputLock:Consensus.Types.OutputLock) : outputLock =
     match outputLock with 
@@ -42,9 +45,10 @@ let private fsToFstLock (outputLock:Consensus.Types.OutputLock) : outputLock =
         ContractLock (pkHash, 0I, Empty)
     | Consensus.Types.ContractLock (pkHash, [||]) ->
         ContractLock (pkHash, 0I, Empty)
-    | Consensus.Types.ContractLock (pkHash, data) ->
+    | Consensus.Types.ContractLock (pkHash, bytes) ->
         let serializer = context.GetSerializer<data<unit>>()
-        ContractLock (pkHash, bigint data.Length, serializer.UnpackSingleObject data)
+        let data = serializer.UnpackSingleObject bytes
+        ContractLock (pkHash, getLen data, data)
     | _ ->
         //TODO
         outputLock.ToString()
@@ -110,8 +114,15 @@ type DataSerializer(ownerContext) =
             p.Pack(10).PackBinary(bytes)
         | UInt32 (v) ->
             p.Pack(11).Pack(v)
-        | UInt64 (v) ->
-            p.Pack(12).Pack(v) //TODO: simplify by consolidating?
+        | UInt64Vector (l, v) ->
+            let list = vectorToList v
+            p.Pack(12).Pack(l).Pack<List<uint64>>(list)
+        | UInt32Vector (l, v) ->
+            let list = vectorToList v
+            p.Pack(13).Pack(l).Pack<List<uint32>>(list)
+        | OutpointVector (l, v) ->
+            let list = vectorToList v
+            p.Pack(14).Pack(l).Pack<List<outpoint>>(list)
         | _ -> 
             //TODO: complete cases
             data.ToString()
@@ -177,10 +188,29 @@ type DataSerializer(ownerContext) =
             ByteArray (l, bytes)
         | 11 ->
             let v = p.Unpack()
+            p.Read() |> ignore
             UInt32 v
         | 12 ->
-            let v = p.Unpack()
-            UInt64 v
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let lst = p.Unpack()
+            let vec = listToVector lst
+            p.Read() |> ignore
+            UInt64Vector (len, vec)
+        | 13 ->
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let lst = p.Unpack()
+            let vec = listToVector lst
+            p.Read() |> ignore
+            UInt32Vector (len, vec)
+        | 14 ->
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let lst = p.Unpack()
+            let vec = listToVector lst
+            p.Read() |> ignore
+            OutpointVector (len, vec)
         | _ -> 
             "Unwnown code encountered while unpacking data: " + code.ToString()
             |> SerializationException
@@ -203,6 +233,8 @@ let private makeDTuple (data : data<unit>) : Prims.dtuple2<Prims.nat, data<unit>
     | UInt32 _ -> Prims.Mkdtuple2 (1I, data)
     | UInt64 _ -> Prims.Mkdtuple2 (1I, data)
     | Data2 (n1, n2, _, _) -> Prims.Mkdtuple2 (n1 + n2, data)
+    | Data3 (n1, n2, n3, _, _, _) -> Prims.Mkdtuple2 (n1 + n2 + n3, data)
+    | OutpointVector (l, _) -> Prims.Mkdtuple2 (l, data)
     | _ -> 
         //TODO: complete cases
         data.ToString()
@@ -212,15 +244,8 @@ let private makeDTuple (data : data<unit>) : Prims.dtuple2<Prims.nat, data<unit>
 let convertInput : ContractFunctionInput -> inputMsg = 
     function (message, contractHash, utxo) -> 
         let unpacked = context.GetSerializer<data<unit>>().UnpackSingleObject message.[1..]
-        //let fundsOutpoint, data = match unpacked with 
-        //| Zen.Types.Extracted.Data2 (_, _, Outpoint fundsOutpoint, data) -> fundsOutpoint, data
-
-
-        //let value:data<unit> = Zen.Types.Extracted.Data2 (15I, 25I, (Bool true), Optional (1I, Native.option.Some (Bool true)))
-
         {
             cmd = message.[0];
-       //     fundsOutpoint = fundsOutpoint
             data = makeDTuple unpacked;
             contractHash = contractHash;
             utxo = convertUtxo utxo
