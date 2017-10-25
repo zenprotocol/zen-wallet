@@ -1,0 +1,14 @@
+image: mono:5.2
+
+before_script:
+ - apt-get update
+ - apt-get install -y -qq libsodium-dev gtk2.0 gtk-sharp2
+
+build:
+ stage: build
+ script:
+  - nuget restore unix.sln
+  - cd Zulib
+  - ./build.sh
+  - cd ..
+  - msbuild unix.sln
