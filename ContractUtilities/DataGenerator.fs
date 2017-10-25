@@ -70,18 +70,32 @@ open Consensus.Serialization
 
 context.Serializers.RegisterOverride<Zen.Types.Extracted.data<unit>>(new DataSerializer(context))
 
+let getCallOptionDataPOutput numeraire (utxos:(Outpoint*Output) seq) =
+    let matcher = fun (_, output) -> 
+        match output.lock with
+        | ContractLock (_, null) -> false
+        | ContractLock (_, [||]) -> false
+        | ContractLock (_, bytes) ->
+            let data = context.GetSerializer<Zen.Types.Extracted.data<unit>>().UnpackSingleObject bytes
+            match data with
+            | Zen.Types.Extracted.UInt64Vector (l, _) when l = 3I ->
+                output.spend.asset = numeraire
+            | _ -> false
+        | _ -> false
+
+    Seq.tryFind matcher utxos
+
 let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*Output) seq) opcode (m:Map<string,string>) =
     result {
-        let stateOutput = Seq.tryFind (fun (_,y) -> y.spend.asset = meta.numeraire) utxos
-        let stateOutpoint = 
+        let stateOutput = getCallOptionDataPOutput meta.numeraire utxos
+
+        let bytes = 
             match stateOutput with
             | Some (o, _) ->
-                Zen.Types.Extracted.Optional (1I, Native.option.Some (Zen.Types.Extracted.Outpoint (fsToFstOutpoint o)))
+                context.GetSerializer<Zen.Types.Extracted.data<unit>>().PackSingleObject (fsToFstOutpoint o)
             | None ->
-                Zen.Types.Extracted.Optional (1I, FStar.Pervasives.Native.option.None)
+                [||]
 
-        let bytes = context.GetSerializer<Zen.Types.Extracted.data<unit>>().PackSingleObject stateOutpoint
-    
         match opcode with
         | 0uy ->
             return ContractJsonData.Root (
@@ -187,7 +201,7 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
 
 let parseJson = ContractJsonData.Parse
 
-let makeJson (meta:Execution.ContractMetadata, utxos:(Outpoint*Output) seq, opcode:byte, m:Map<string,string>) =
+let makeJson (meta:Execution.ContractMetadata) (utxos:(Outpoint*Output) seq) (opcode:byte) (m:Map<string,string>) =
     match meta with
     | Execution.CallOption meta -> callOptionJson meta utxos opcode m
     | Execution.SecureToken _ -> 
@@ -201,7 +215,7 @@ let makeJson (meta:Execution.ContractMetadata, utxos:(Outpoint*Output) seq, opco
     
 
 
-let makeMessage (json:ContractJsonData.Root, outpoint) =
+let makeMessage (json:ContractJsonData.Root) outpoint =
     let ser = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
     
     let final = json.Second.Value.Final    
@@ -215,9 +229,10 @@ let makeMessage (json:ContractJsonData.Root, outpoint) =
     let cmd = getBytes json.Second.Value.Initial
     Array.append cmd bytes 
 
-let makeOracleMessage (data, outpoint) = 
+let makeOracleMessage data outpoint = 
     let ser = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
     
     let message = ser.PackSingleObject (Zen.Types.Extracted.Data2 (1I, 32I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), Zen.Types.Extracted.ByteArray (32I, data)))
 
     Array.append [|0uy|] message
+   

@@ -71,16 +71,21 @@
             using (@Html.BeginForm("PrepareAction", "ContractInteraction", FormMethod.Post))
             {
                 @Html.HiddenFor(m => m.ActiveContract.Address)
+	            if (@Model.ActiveContract.Initialized)
+		        {
                 <div>
                     <button type="submit" value="Buy" name="action" class="zen-button zen-dark-blue-button">Buy</button>
                     <button type="submit" value="Exercise" name="action" class="zen-button zen-dark-blue-button">Exercise</button>
+                    <button type="submit" value="Collateralize" name="action" class="zen-button zen-dark-blue-button">Collateralize</button>
+                    <!--button type="submit" value="Close" name="action" class="zen-button zen-grey-button">Close</button-->
                 </div>
-                <hr class='button-devider' />
+		        } else {
                 <div>
-                    <button type="submit" value="Collateralize" name="action" class="zen-button zen-grey-button">Collateralize</button>
-                    <button type="submit" value="Close" name="action" class="zen-button zen-grey-button">Close</button>
+                    <button type="submit" value="Collateralize" name="action" class="zen-button zen-dark-blue-button">Collateralize</button>
+                    <!--button type="submit" value="Close" name="action" class="zen-button zen-grey-button">Close</button-->
                 </div>
-            }
+		        }
+		    }
             break;
         case "secure-token-generator":
             using (@Html.BeginForm("Action", "ContractInteraction", FormMethod.Post))
