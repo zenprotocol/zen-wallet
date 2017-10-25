@@ -31,8 +31,6 @@ cp -r $TOOLSPATH/fstar/mono ./fstar
 # Zulib-fstar
 ZULIBPATH="../../../Zulib/fstar"
 cp -r $ZULIBPATH ./zulib
-# libsodium
-cp /usr/local/lib/libsodium.dylib ./
 
 # configure
 # todo: use args
