@@ -65,6 +65,9 @@ val add(#n:pos): a:int_t n -> b:int_t n -> Pure (int_t n)
   (ensures (fun _ -> True))
 let add(#_) a b = a + b
 
+val checked_add(#n:pos): int_t n -> int_t n -> option (int_t n)
+let checked_add #n a b = if fits (a + b) n then Some (a + b) else None
+
 val add_mod(#n:pos): int_t n -> int_t n -> int_t n
 let add_mod #n a b = (a + b) @% (pow2 n)
 
@@ -77,6 +80,9 @@ let sub(#_) a b = a - b
 val sub_mod(#n:pos): a:int_t n -> b:int_t n -> int_t n
 let sub_mod #n a b = (a - b) @% (pow2 n)
 
+val checked_sub(#n:pos): int_t n -> int_t n -> option (int_t n)
+let checked_sub #n a b = if fits (a - b) n then Some (a - b) else None
+
 (* Multiplication primitives *)
 val mul(#n:pos): a:int_t n -> b:int_t n -> Pure (int_t n)
   (requires (size (a * b) n))
@@ -86,11 +92,19 @@ let mul(#_) a b = a * b
 val mul_mod(#n:pos): a:int_t n -> b:int_t n -> int_t n
 let mul_mod #n a b = (a * b) @% (pow2 n)
 
+val checked_mul(#n:pos): int_t n -> int_t n -> option (int_t n)
+let checked_mul #n a b = if fits (a * b) n then Some (a * b) else None
+
 (* Division primitives *)
 val div(#n:pos): a:int_t n -> b:int_t n{b <> 0} -> Pure (int_t n)
   (requires (size (a / b) n))
   (ensures (fun c -> b <> 0 ==> a / b = c))
 let div(#_) a b = a / b
+
+val checked_div(#n:pos): a:int_t n -> b:int_t n -> option (int_t n)
+let checked_div(#n) a b =
+  if b = 0 then None else
+  if fits (a / b) n then Some (a / b) else None
 
 (* Modulo primitives *)
 #set-options "--z3rlimit 25"
