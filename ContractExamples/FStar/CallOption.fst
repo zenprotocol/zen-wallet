@@ -8,16 +8,19 @@ module ET = Zen.ErrorT
 module U64 = FStar.UInt64
 module Crypto = Zen.Crypto
 module M = FStar.Mul
-module I64 = FStar.Int64
 module U32 = FStar.UInt32
 
 open Zen.Base
 open Zen.Types
 open Zen.Cost
+open Zen.Types.Serialized.Realized
+
 
 let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 let price: U64.t = 100UL
+
+let oracleHash: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 type pointedOutput = outpoint * output
 
@@ -49,7 +52,7 @@ let rec tryAddPoints #l v utxos =
 type oracleData = {
                     underlying: (n:nat & A.t byte n);
                     price : U64.t;
-                    timestamp : U64.t;    //TODO: I64.t
+                    timestamp : U64.t; //Using UInt64 casts outside consensus for now
                     nonce : hash
                   }
 
@@ -68,7 +71,6 @@ unopteq type command =
         -> auditPath
         -> outputLock
         -> command
-
 
 val makeCommand : inputMsg -> cost (result command) 92
 let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
@@ -103,7 +105,7 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
                     (ByteArray n_bytes assetId)
                     (UInt64 price)
                     (UInt64 time)
-                    (Hash oracleRoot))
+                    (Hash nonce))
                   (Data2 _ _
                     (UInt32 location)
                     (HashArray n_hashes hashes))
@@ -112,7 +114,7 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
                 let oracleData = { underlying = (| n_bytes, assetId |);
                                    price=price;
                                    timestamp=time;
-                                   nonce=oracleRoot } in
+                                   nonce=nonce } in
                 let auditPath = { location=location;
                                   hashes = (| n_hashes, hashes |) } in
                 do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
@@ -234,7 +236,7 @@ let createTx cHash cmd =
                 [| newDataOutput; buyersOutput |]
                 None
         end
-    | _,_ -> autoFailw "Inputs not locked to this contract!"
+    | _,_ -> autoFailw "Incorrect data or purchase lock"
     end
     else autoFailw "Can't buy with these assets."
   | Exercise
@@ -249,7 +251,50 @@ let createTx cHash cmd =
       payoffOutputLock ->
       if dataOutput.spend.asset <> numeraire || tokenOutput.spend.asset <> cHash
       then autoFailw "Can't exercise with these assets."
-      else autoFailw "Exercise"
+      else
+      begin match dataOutput.lock, tokenOutput.lock with
+      | ContractLock h1 3 currentStateData, ContractLock h2 _ _ ->
+          if h1 <> cHash || h2 <> cHash
+          then autoFailw "Locked to wrong contract"
+          else begin
+          do currentState <-- decodeState currentStateData;
+          match oracleOutput with
+          | {
+              lock=(ContractLock oHash 1 (Hash mroot));
+              spend={asset=oHash2}
+            } ->
+            do oracleHash <-- retT @ oracleHash;
+            if oHash <> oracleHash then autoFailw "Incorrect oracle ID"
+            else if oHash2 <> oracleHash then autoFailw "Wrong oracle asset type"
+            else
+            // Avoid evil cost by bounding length of underlyingBytes
+            if n > 100 then autoFailw "Underlying string is too long"
+            else
+            let bn = n in
+            // Compute expected merkle root
+            let dataToHash  =
+              (Data4 bn 1 1 1
+                (ByteArray bn underlyingBytes)
+                (UInt64 price)
+                (UInt64 timestamp)
+                (Hash nonce)) in
+            let boundedHash = (autoInc sha3_256) <: cost (option hash) 39450 in
+            let expectedRoot = begin
+            let open Zen.Cost in
+            do optRoot <-- sha3_256 dataToHash;
+            match optRoot with
+            | Some r -> ET.ret r
+            | None -> ET.failw "Can't hash the data"
+            end in
+            do expectedRoot <-- expectedRoot;
+            if expectedRoot <> mroot then autoFailw "Incorrect merkle root"
+            else
+            // TODO: Calculate payoff
+            autoFailw "Exercise"
+          | _ -> autoFailw "Incorrect oracle output"
+          end
+      | _,_ -> autoFailw "Incorrect data or exercise lock"
+      end
 
 
 val main: inputMsg -> cost (result transactionSkeleton) 241
