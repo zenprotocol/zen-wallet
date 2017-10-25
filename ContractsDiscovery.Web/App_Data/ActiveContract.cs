@@ -14,13 +14,16 @@ namespace ContractsDiscovery.Web.App_Data
 		public string Oracle { get; set; }
 		public string OracleTickerUrl { get; set; }
 		public string Underlying { get; set; }
-		public string Type { get; set; }
+        public byte[] Numeraire { get; set; }
+        public string Type { get; set; }
 		public string Description { get; set; }
         public UInt64 TotalAssets { get; set; }
 		
 		public string AssetName { get; set; }
 		public string AssetImageUrl { get; set; }
 		public string AssetMetadataVersion { get; set; }
+
+        public bool Initialized { get; set; }
 
 		public string ActiveUntil
 		{
