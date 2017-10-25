@@ -28,9 +28,25 @@ let fsToFstOutpoint (a:Consensus.Types.Outpoint) : outpoint =
 
 open Consensus.Serialization
 
-let private getLen (data : data<unit>) =
+let private getDataPoints (data : data<unit>) : bigint =
     match data with 
+    | Empty -> 0I
+    | Bool _ -> 1I
+    | Byte _ -> 1I
+    | Hash _ -> 1I
+    | Key _ -> 1I
+    | Outpoint _ -> 1I
+    | Output _ -> 1I
+    | OutputLock _ -> 1I
+    | Sig _ -> 1I
+    | UInt8 _ -> 1I
+    | UInt32 _ -> 1I
+    | UInt64 _ -> 1I
+    | Data2 (n1, n2, _, _) -> (n1 + n2)
+    | Data3 (n1, n2, n3, _, _, _) -> (n1 + n2 + n3)
+    | OutpointVector (l, _) -> l
     | UInt64Vector (l, _) -> l
+    | ByteArray (l, _) -> l
     | _ -> 
         //TODO: complete cases
         data.ToString()
@@ -48,7 +64,7 @@ let private fsToFstLock (outputLock:Consensus.Types.OutputLock) : outputLock =
     | Consensus.Types.ContractLock (pkHash, bytes) ->
         let serializer = context.GetSerializer<data<unit>>()
         let data = serializer.UnpackSingleObject bytes
-        ContractLock (pkHash, getLen data, data)
+        ContractLock (pkHash, getDataPoints data, data)
     | _ ->
         //TODO
         outputLock.ToString()
@@ -218,35 +234,12 @@ type DataSerializer(ownerContext) =
 
 context.Serializers.RegisterOverride<data<unit>>(new DataSerializer(context))
 
-let private makeDTuple (data : data<unit>) : Prims.dtuple2<Prims.nat, data<unit>> =
-    match data with 
-    | Empty -> Prims.Mkdtuple2 (0I, data)
-    | Bool _ -> Prims.Mkdtuple2 (1I, data)
-    | Byte _ -> Prims.Mkdtuple2 (1I, data)
-    | Hash _ -> Prims.Mkdtuple2 (1I, data)
-    | Key _ -> Prims.Mkdtuple2 (1I, data)
-    | Outpoint _ -> Prims.Mkdtuple2 (1I, data)
-    | Output _ -> Prims.Mkdtuple2 (1I, data)
-    | OutputLock _ -> Prims.Mkdtuple2 (1I, data)
-    | Sig _ -> Prims.Mkdtuple2 (1I, data)
-    | UInt8 _ -> Prims.Mkdtuple2 (1I, data)
-    | UInt32 _ -> Prims.Mkdtuple2 (1I, data)
-    | UInt64 _ -> Prims.Mkdtuple2 (1I, data)
-    | Data2 (n1, n2, _, _) -> Prims.Mkdtuple2 (n1 + n2, data)
-    | Data3 (n1, n2, n3, _, _, _) -> Prims.Mkdtuple2 (n1 + n2 + n3, data)
-    | OutpointVector (l, _) -> Prims.Mkdtuple2 (l, data)
-    | _ -> 
-        //TODO: complete cases
-        data.ToString()
-        |> System.NotImplementedException
-        |> raise
-
 let convertInput : ContractFunctionInput -> inputMsg = 
     function (message, contractHash, utxo) -> 
         let unpacked = context.GetSerializer<data<unit>>().UnpackSingleObject message.[1..]
         {
             cmd = message.[0];
-            data = makeDTuple unpacked;
+            data = Prims.Mkdtuple2 (getDataPoints unpacked, unpacked);
             contractHash = contractHash;
             utxo = convertUtxo utxo
         }
