@@ -116,29 +116,34 @@ let ``TestCallOption``() =
         let h0 = createHash 0uy
         let h1 = createHash 1uy
 
-        let stateOutpoint = 
+        let stateOutpoint = { txHash = h1; index = 11ul }
+        let fundsOutpoint = { txHash = h0; index = 10ul }
+
+        let data = 
             match state with
             | Some _ ->
-                Optional (1I, FStar.Pervasives.Native.option.Some (Outpoint { txHash = h1; index = 0ul }))
+                OutpointVector (2I, listToVector [ stateOutpoint; fundsOutpoint ])
             | None ->
-                Optional (1I, FStar.Pervasives.Native.option.None)
+                Outpoint fundsOutpoint 
 
-        let data = context.GetSerializer<data<unit>>().PackSingleObject (Data2 (1I, 1I, Outpoint { txHash = h0; index = 0ul }, stateOutpoint))
+        let bytes = context.GetSerializer<data<unit>>().PackSingleObject data
 
-        let message = Array.append [|cmd|] data 
+        let message = Array.append [|cmd|] bytes 
 
         let utxo : ContractExamples.Execution.Utxo =
             function 
-            | { txHash = txHash; index = _ } when txHash = h0 -> 
+            | { txHash = txHash; index = 10u } when txHash = h0 -> 
                 Some {
-                    lock = Consensus.Types.PKLock contractHash 
+                    lock = Consensus.Types.ContractLock (contractHash, [||])
                     spend = {
                             asset = numeraire
                             amount = amount 
                         } 
                 }
-            | { txHash = txHash; index = _ } when txHash = h1 -> state 
-            | _ -> None
+            | { txHash = txHash; index = 11u } when txHash = h1 -> state 
+            | x -> 
+                printfn "unit-testing utxo fn returning none, query was %A" x
+                None
 
         (message, contractHash, utxo)
     
@@ -162,34 +167,37 @@ let ``TestCallOption``() =
         | Consensus.Types.ContractLock (hash, data) ->
             let serializer = context.GetSerializer<data<unit>>()
             match serializer.UnpackSingleObject data with
-            | Data2 (_, _, UInt64 d1, UInt64 d2) ->
-                Assert.AreEqual (tokensIssued, d1, "tokens issued")
-                Assert.AreEqual (counter, d2, "counter")
-            | _ -> Assert.Fail "unexpected data"
-        | _ -> Assert.Fail "unexpected lock type"
+            | UInt64Vector (_, v) ->
+                let list = FStarCompatibility.vectorToList v
+                Assert.AreEqual (tokensIssued, list.[0], "tokens issued, " + desc)
+                Assert.AreEqual (collateral, list.[1], "collateral, " + desc)
+                Assert.AreEqual (counter, list.[2], "counter, " + desc)
+            | _ -> Assert.Fail ("unexpected data, " + desc)
+        | _ -> Assert.Fail ("unexpected lock type, " + desc)
 
 
     let input = makeParams (0uy, 1100UL, None)
     let cost = costFunc input
-    Assert.That (cost, Is.EqualTo 0I)
+    Assert.That (cost, Is.EqualTo 172I)
 
     let result = mainFunc input
     let state = getStateOutput result
     match state with
     | Error msg -> Assert.Fail msg
     | Ok stateOutput -> 
-        assertStateCorrectness ("collateralize (no initial state)", stateOutput, 1100UL, 0UL, 1UL)
+        let desc = "collateralize (no initial state)"
+        assertStateCorrectness (desc, stateOutput, 1100UL, 0UL, 0UL)
 
         let input = makeParams (0uy, 550UL, Some stateOutput)
         let cost = costFunc input
-        Assert.That (cost, Is.EqualTo 0I)
+        Assert.That (cost, Is.EqualTo 172I)
 
         let result = mainFunc input
         let state = getStateOutput result
         match state with
-        | Error msg -> Assert.Fail msg
+        | Error msg -> Assert.Fail (desc + ", " + msg)
         | Ok stateOutput -> 
-            assertStateCorrectness ("collateralize (with initial state)", stateOutput, 1100UL + 550UL, 0UL, 2UL)
+            assertStateCorrectness ("collateralize (with initial state)", stateOutput, 1100UL + 550UL, 0UL, 1UL)
 
 
 [<Test>]
@@ -212,13 +220,13 @@ let ``TestOracleContract``() =
 
     let outpoint = { txHash = txHash; index = 550ul}
 
-    let message = context.GetSerializer<data<unit>>().PackSingleObject (Data2 (1I, 32I, Outpoint outpoint, ByteArray (32I, createHash 10uy)))
+    let message = context.GetSerializer<data<unit>>().PackSingleObject (Data2 (1I, 1I, Outpoint outpoint, Hash (createHash 10uy)))
 
     let input = (Array.append [|0uy|] message, contractHash, utxo)
 
     let cost = costFunc input
 
-    Assert.That (cost, Is.EqualTo 66I)
+    Assert.That (cost, Is.EqualTo 58I)
 
     let resultSuccess = mainFunc input
 
