@@ -49,7 +49,7 @@ let rec tryAddPoints #l v utxos =
 type oracleData = {
                     underlying: (n:nat & A.t byte n);
                     price : U64.t;
-                    timestamp : I64.t;
+                    timestamp : U64.t;    //TODO: I64.t
                     nonce : hash
                   }
 
@@ -69,7 +69,8 @@ unopteq type command =
         -> outputLock
         -> command
 
-val makeCommand : inputMsg -> cost (result command) 44
+
+val makeCommand : inputMsg -> cost (result command) 92
 let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
   let open M in
   let open ET in
@@ -77,45 +78,53 @@ let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
   | 0uy -> begin match iData with
            | (| 1, Outpoint pt |) ->
              do pointed <-- tryAddPoint pt utxos;
-             incRet 7 (Initialize pointed)
-           | (| 1, _ |) -> incFailw 14 "Bad Initialization data"
+             incRet 14 (Initialize pointed)
+           | (| 1, _ |) -> incFailw 21 "Bad Initialization data"
            | (| 2, OutpointVector _ [| outpoint0; outpoint1 |] |) ->
              do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
              do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             ret @ Collateralize [| pointedOutput0; pointedOutput1 |]
-           | (| 2, _ |) -> incFailw 14 "Bad Collateralization data"
-           | _ -> incFailw 14 "Bad Initialization/Collateralization data"
+             incRet 7 (Collateralize [| pointedOutput0; pointedOutput1 |])
+           | (| 2, _ |) -> incFailw 21 "Bad Collateralization data"
+           | _ -> incFailw 21 "Bad Initialization/Collateralization data"
            end
   | 1uy -> begin match iData with
            | (|3, Data2 _ _ (OutpointVector _ [| outpoint0; outpoint1 |] )
                             (OutputLock lk) |) ->
              do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
              do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             ret @ Buy [| pointedOutput0; pointedOutput1 |] lk
-           | _ -> incFailw 14 "Bad Buy Data"
+             incRet 7 (Buy [| pointedOutput0; pointedOutput1 |] lk)
+           | _ -> incFailw 21 "Bad Buy Data"
            end
-  (*| 2uy -> begin match iData with
+  | 2uy -> begin match iData with
            | (| _,
                 Data4 _ _ _ _
-                  (OutpointVector _ [| outpoint0; outpoint1; outpoint 2 |])
-                  (Data 4 _ _ _ _
-                    (ByteArray n assetId)
+                  (OutpointVector _ [| outpoint0; outpoint1; outpoint2 |])
+                  (Data4 _ _ _ _
+                    (ByteArray n_bytes assetId)
                     (UInt64 price)
                     (UInt64 time)
                     (Hash oracleRoot))
-                  (Data3 _ _ _
-                    (UInt64 location)
-                    ())
-              |)*)
-  (*| 2uy -> begin match iData with
-           | (|3, Data2 _ _ (OutpointVector _ [| outpoint0; outpoint1 |] )
-                            (OutputLock lk) |) ->
-             do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
-             do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             ret @ Exercise [| pointedOutput0; pointedOutput1 |] lk
-           | _ -> incFailw 14 "Bad Exercise Data"
-           end*)
-  | _ ->  incFailw 14 "Not implemented"
+                  (Data2 _ _
+                    (UInt32 location)
+                    (HashArray n_hashes hashes))
+                  (OutputLock lk)
+              |) ->
+                let oracleData = { underlying = (| n_bytes, assetId |);
+                                   price=price;
+                                   timestamp=time;
+                                   nonce=oracleRoot } in
+                let auditPath = { location=location;
+                                  hashes = (| n_hashes, hashes |) } in
+                do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
+                do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
+                do pointedOutput2 <-- tryAddPoint outpoint2 utxos;
+                ret@Exercise [| pointedOutput0; pointedOutput1; pointedOutput2 |]
+                             oracleData
+                             auditPath
+                             lk
+           | _ -> incFailw 21 "Bad Exercise Data"
+           end
+  | _ ->  incFailw 21 "Not implemented"
 
 
 type state = { tokensIssued : U64.t;
@@ -140,7 +149,7 @@ let decodeState #n iData =
       ret @ {tokensIssued=tk; collateral=coll; counter=cter}
     | _ -> autoFailw "Bad data"
 
-val createTx : hash -> command -> cost (result transactionSkeleton) 123
+val createTx : hash -> command -> cost (result transactionSkeleton) 144
 let createTx cHash cmd =
   do numeraire <-- numeraire;
   let open ET in
@@ -159,13 +168,15 @@ let createTx cHash cmd =
         let dataOutputLock = ContractLock cHash 3 initialStateData in
         let dataOutput = {lock=dataOutputLock;spend=oput.spend} in
         autoRet @ Tx [| pt |] [| dataOutput |] None
-        (*failw "Init"*)
       else autoFailw "Can't initialize with this asset."
   | Collateralize [| (pt1,dataOutput); (pt2,newFundsOutput) |] ->
     if dataOutput.spend.asset = numeraire && newFundsOutput.spend.asset = numeraire
     then
       begin match dataOutput.lock, newFundsOutput.lock with
-      | ContractLock cHash 3 currentStateData, ContractLock cHash _ _ ->
+      | ContractLock h1 3 currentStateData, ContractLock h2 _ _ ->
+          if h1 <> cHash || h2 <> cHash
+          then autoFailw "Locked to wrong contract"
+          else begin
           do currentState <-- decodeState currentStateData;
           // TODO: avoid modular addition!!
           let newCollateral = currentState.collateral +%^ newFundsOutput.spend.amount in
@@ -185,6 +196,7 @@ let createTx cHash cmd =
                   [| pt1; pt2 |]
                   [| newDataOutput |]
                   None
+          end
       | _,_ -> autoFailw "Inputs not locked to this contract!"
       end
     else autoFailw "Can't use these asset types for Collateralize"
@@ -192,7 +204,10 @@ let createTx cHash cmd =
     if dataOutput.spend.asset = numeraire && purchaseOutput.spend.asset = numeraire
     then
     begin match dataOutput.lock, purchaseOutput.lock with
-    | ContractLock cHash 3 currentStateData, ContractLock cHash _ _ ->
+    | ContractLock h1 3 currentStateData, ContractLock h2 _ _ ->
+        if h1 <> cHash || h2 <> cHash
+        then autoFailw "Locked to wrong contract"
+        else begin
         do currentState <-- decodeState currentStateData;
         // TODO: avoid modular addition!!
         let newCollateral = currentState.collateral +%^ purchaseOutput.spend.amount in
@@ -218,6 +233,7 @@ let createTx cHash cmd =
                 [| pt1; pt2 |]
                 [| newDataOutput; buyersOutput |]
                 None
+        end
     | _,_ -> autoFailw "Inputs not locked to this contract!"
     end
     else autoFailw "Can't buy with these assets."
@@ -236,11 +252,11 @@ let createTx cHash cmd =
       else autoFailw "Exercise"
 
 
-val main: inputMsg -> cost (result transactionSkeleton) 172
+val main: inputMsg -> cost (result transactionSkeleton) 241
 let main iM =
   let open ET in
   do comm <-- makeCommand iM;
   createTx (iM.contractHash) comm
 
 val cf: inputMsg -> cost nat 1
-let cf _ = ~!172
+let cf _ = ~!241
