@@ -1,123 +1,264 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="ZenWallet" Language="1033" Version="0.0.0.3" Manufacturer="Zen Protocol" UpgradeCode="1cd2b1b7-c0fb-4f00-8be0-a6cdd022c3b3">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" InstallPrivileges="limited" />
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Product Id="*" Name="ZenWallet" Language="1033" Version="0.0.0.3" Manufacturer="Zen Protocol" UpgradeCode="1cd2b1b7-c0fb-4f00-8be0-a6cdd022c3b3">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" InstallPrivileges="limited" />
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
 
-		<Icon Id="Icon" SourceFile="icon.ico" />
+    <Icon Id="Icon" SourceFile="icon.ico" />
 
-		<!--<Directory Id="TARGETDIR" Name="SourceDir">
+    <!--<Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLFOLDER" Name="ZenWallet" />
+        <Directory Id="INSTALLFOLDER" Name="ZenWallet">
+            <Directory Id="fstar" Name="fstar" />
+        </Directory>
       </Directory>
     </Directory>-->
 
-		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="LocalAppDataFolder" Name="AppData">
-				<Directory Id="AppRootDirectory" Name="ZenWallet"/>
-			</Directory>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder" Name="AppData">
+        <Directory Id="AppRootDirectory" Name="ZenWallet">
+          <Directory Id="FStar" Name="fstar" />
+          <Directory Id="Z3" Name="z3" />
+          <Directory Id="Zulib" Name="zulib" />
+        </Directory>
+      </Directory>
 
-			<Directory Id="ProgramMenuFolder">
-				<Directory Id="ApplicationProgramsFolder" Name="Zen Wallet"/>
-			</Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Zen Wallet"/>
+      </Directory>
 
-			<Directory Id="DesktopFolder" />
-		</Directory>
+      <Directory Id="DesktopFolder" />
+    </Directory>
 
-		<DirectoryRef Id="AppRootDirectory">
+    <DirectoryRef Id="Zulib">
+      <Component Id="Zulib" Guid="5bce8e02-7dd3-4a03-8550-c93cd39372fb">
+        <CreateFolder />
+        <RemoveFolder Id="RemoveZulib" On="uninstall"/>
+        <RegistryKey Root="HKCU" Key="Software\Zen\Wallet" Action="createAndRemoveOnUninstall">
+          <RegistryValue Name="zulib" Value="[ProductVersion]" Type="string" KeyPath="yes"/>
+        </RegistryKey>
+        <File Name="FStar.Int.fst" Source="../Zulib/FStar/FStar.Int.fst" />
+        <File Name="FStar.Int.fst.hints" Source="../Zulib/FStar/FStar.Int.fst.hints" />
+        <File Name="FStar.Int64.fst" Source="../Zulib/FStar/FStar.Int64.fst" />
+        <File Name="FStar.Int64.fst.hints" Source="../Zulib/FStar/FStar.Int64.fst.hints" />
+        <File Name="FStar.Mul.fst" Source="../Zulib/FStar/FStar.Mul.fst" />
+        <File Name="FStar.Mul.fst.hints" Source="../Zulib/FStar/FStar.Mul.fst.hints" />
+        <File Name="FStar.Option.fsti" Source="../Zulib/FStar/FStar.Option.fsti" />
+        <File Name="FStar.Option.fsti.hints" Source="../Zulib/FStar/FStar.Option.fsti.hints" />
+        <File Name="FStar.Pervasives.fst" Source="../Zulib/FStar/FStar.Pervasives.fst" />
+        <File Name="FStar.Pervasives.fst.hints" Source="../Zulib/FStar/FStar.Pervasives.fst.hints" />
+        <File Name="FStar.Pervasives.Native.fst" Source="../Zulib/FStar/FStar.Pervasives.Native.fst" />
+        <File Name="FStar.Pervasives.Native.fst.hints" Source="../Zulib/FStar/FStar.Pervasives.Native.fst.hints" />
+        <File Name="FStar.UInt.fst" Source="../Zulib/FStar/FStar.UInt.fst" />
+        <File Name="FStar.UInt.fst.hints" Source="../Zulib/FStar/FStar.UInt.fst.hints" />
+        <File Name="FStar.UInt32.fst" Source="../Zulib/FStar/FStar.UInt32.fst" />
+        <File Name="FStar.UInt32.fst.hints" Source="../Zulib/FStar/FStar.UInt32.fst.hints" />
+        <File Name="FStar.UInt64.fst" Source="../Zulib/FStar/FStar.UInt64.fst" />
+        <File Name="FStar.UInt64.fst.hints" Source="../Zulib/FStar/FStar.UInt64.fst.hints" />
+        <File Name="FStar.UInt8.fst" Source="../Zulib/FStar/FStar.UInt8.fst" />
+        <File Name="FStar.UInt8.fst.hints" Source="../Zulib/FStar/FStar.UInt8.fst.hints" />
+        <File Name="prims.fst" Source="../Zulib/FStar/prims.fst" />
+        <File Name="Zen.Array.Extracted.fst" Source="../Zulib/FStar/Zen.Array.Extracted.fst" />
+        <File Name="Zen.Array.Extracted.fst.hints" Source="../Zulib/FStar/Zen.Array.Extracted.fst.hints" />
+        <File Name="Zen.Array.fst" Source="../Zulib/FStar/Zen.Array.fst" />
+        <File Name="Zen.Array.fst.hints" Source="../Zulib/FStar/Zen.Array.fst.hints" />
+        <File Name="Zen.Array.Realized.fsti" Source="../Zulib/FStar/Zen.Array.Realized.fsti" />
+        <File Name="Zen.Array.Realized.fsti.hints" Source="../Zulib/FStar/Zen.Array.Realized.fsti.hints" />
+        <File Name="Zen.Base.fst" Source="../Zulib/FStar/Zen.Base.fst" />
+        <File Name="Zen.Base.fst.hints" Source="../Zulib/FStar/Zen.Base.fst.hints" />
+        <File Name="Zen.Cost.Extracted.fst" Source="../Zulib/FStar/Zen.Cost.Extracted.fst" />
+        <File Name="Zen.Cost.Extracted.fst.hints" Source="../Zulib/FStar/Zen.Cost.Extracted.fst.hints" />
+        <File Name="Zen.Cost.fst" Source="../Zulib/FStar/Zen.Cost.fst" />
+        <File Name="Zen.Cost.fst.hints" Source="../Zulib/FStar/Zen.Cost.fst.hints" />
+        <File Name="Zen.Cost.Realized.fst" Source="../Zulib/FStar/Zen.Cost.Realized.fst" />
+        <File Name="Zen.Cost.Realized.fst.hints" Source="../Zulib/FStar/Zen.Cost.Realized.fst.hints" />
+        <File Name="Zen.Crypto.fsti" Source="../Zulib/FStar/Zen.Crypto.fsti" />
+        <File Name="Zen.Crypto.fsti.hints" Source="../Zulib/FStar/Zen.Crypto.fsti.hints" />
+        <File Name="Zen.Error.fst" Source="../Zulib/FStar/Zen.Error.fst" />
+        <File Name="Zen.Error.fst.hints" Source="../Zulib/FStar/Zen.Error.fst.hints" />
+        <File Name="Zen.ErrorT.fst" Source="../Zulib/FStar/Zen.ErrorT.fst" />
+        <File Name="Zen.ErrorT.fst.hints" Source="../Zulib/FStar/Zen.ErrorT.fst.hints" />
+        <File Name="Zen.Merkle.fsti" Source="../Zulib/FStar/Zen.Merkle.fsti" />
+        <File Name="Zen.Merkle.fsti.hints" Source="../Zulib/FStar/Zen.Merkle.fsti.hints" />
+        <File Name="Zen.Option.fst" Source="../Zulib/FStar/Zen.Option.fst" />
+        <File Name="Zen.Option.fst.hints" Source="../Zulib/FStar/Zen.Option.fst.hints" />
+        <File Name="Zen.OptionT.fst" Source="../Zulib/FStar/Zen.OptionT.fst" />
+        <File Name="Zen.OptionT.fst.hints" Source="../Zulib/FStar/Zen.OptionT.fst.hints" />
+        <File Name="Zen.Tuple.fst" Source="../Zulib/FStar/Zen.Tuple.fst" />
+        <File Name="Zen.Tuple.fst.hints" Source="../Zulib/FStar/Zen.Tuple.fst.hints" />
+        <File Name="Zen.TupleT.fst" Source="../Zulib/FStar/Zen.TupleT.fst" />
+        <File Name="Zen.TupleT.fst.hints" Source="../Zulib/FStar/Zen.TupleT.fst.hints" />
+        <File Name="Zen.Types.Extracted.fst" Source="../Zulib/FStar/Zen.Types.Extracted.fst" />
+        <File Name="Zen.Types.Extracted.fst.hints" Source="../Zulib/FStar/Zen.Types.Extracted.fst.hints" />
+        <File Name="Zen.Types.fst" Source="../Zulib/FStar/Zen.Types.fst" />
+        <File Name="Zen.Types.fst.hints" Source="../Zulib/FStar/Zen.Types.fst.hints" />
+        <File Name="Zen.Types.Realized.fsti" Source="../Zulib/FStar/Zen.Types.Realized.fsti" />
+        <File Name="Zen.Types.Realized.fsti.hints" Source="../Zulib/FStar/Zen.Types.Realized.fsti.hints" />
+        <File Name="Zen.Util.fsti" Source="../Zulib/FStar/Zen.Util.fsti" />
+        <File Name="Zen.Vector.fst" Source="../Zulib/FStar/Zen.Vector.fst" />
+        <File Name="Zen.Vector.fst.hints" Source="../Zulib/FStar/Zen.Vector.fst.hints" />
+        <File Name="Zen.Wallet.fsti" Source="../Zulib/FStar/Zen.Wallet.fsti" />
+        <File Name="Zen.Wallet.fsti.hints" Source="../Zulib/FStar/Zen.Wallet.fsti.hints" />
+      </Component>
+    </DirectoryRef>
 
-			<Component Id="ZenWallet" Guid="027a40a6-fe81-4c12-afea-e9bd4538aae1">
-				<CreateFolder />
-				<RemoveFolder Id="RemoveAppRootDirectory" On="uninstall"/>
-				<RegistryKey Root="HKCU" Key="Software\Zen\Wallet" Action="createAndRemoveOnUninstall">
-					<RegistryValue Name="Version" Value="[ProductVersion]" Type="string" KeyPath="yes"/>
-				</RegistryKey>
+    <DirectoryRef Id="Z3">
+      <Component Id="Z3" Guid="66404d9c-dd13-4b49-973c-028687125d2e">
+        <CreateFolder />
+        <RemoveFolder Id="RemoveZ3" On="uninstall"/>
+        <RegistryKey Root="HKCU" Key="Software\Zen\Wallet" Action="createAndRemoveOnUninstall">
+          <RegistryValue Name="z3" Value="[ProductVersion]" Type="string" KeyPath="yes"/>
+        </RegistryKey>
+        <File Name="z3.exe" Source="../tools/z3/windows/z3.exe" />
+      </Component>
+    </DirectoryRef>
 
-				<File Name="libsodium.dll" DiskId="1" />
+    <DirectoryRef Id="FStar">
+      <Component Id="FStar" Guid="96dbd467-3420-44cc-b763-6fb16c1d0ea4">
+        <CreateFolder />
+        <RemoveFolder Id="RemoveFStar" On="uninstall"/>
+        <RegistryKey Root="HKCU" Key="Software\Zen\Wallet" Action="createAndRemoveOnUninstall">
+          <RegistryValue Name="fstar" Value="[ProductVersion]" Type="string" KeyPath="yes"/>
+        </RegistryKey>
+
+        <File Id="fstar_basic.dll" Name="basic.dll" Source="../tools/fstar/dotnet/basic.dll" />
+        <File Name="extraction.dll" Source="../tools/fstar/dotnet/extraction.dll" />
+        <File Name="extraction.dll.config" Source="../tools/fstar/dotnet/extraction.dll.config" />
+        <File Name="format.dll" Source="../tools/fstar/dotnet/format.dll" />
+        <File Name="fsdoc.dll" Source="../tools/fstar/dotnet/fsdoc.dll" />
+        <File Name="fsdoc.dll.config" Source="../tools/fstar/dotnet/fsdoc.dll.config" />
+        <File Id="fstar_FSharp.Compatibility.OCaml.dll" Name="FSharp.Compatibility.OCaml.dll" Source="../tools/fstar/dotnet/FSharp.Compatibility.OCaml.dll" />
+        <File Id="fstar_FSharp.Core.dll" Name="FSharp.Core.dll" Source="../tools/fstar/dotnet/FSharp.Core.dll" />
+        <File Id="fstar_FSharp.PPrint.dll" Name="FSharp.PPrint.dll" Source="../tools/fstar/dotnet/FSharp.PPrint.dll" />
+        <File Id="fstar_FsLexYacc.Runtime.dll" Name="FsLexYacc.Runtime.dll" Source="../tools/fstar/dotnet/FsLexYacc.Runtime.dll" />
+        <File Name="fstar.exe" Source="../tools/fstar/dotnet/fstar.exe" />
+        <File Name="fstar.exe.config" Source="../tools/fstar/dotnet/fstar.exe.config" />
+        <File Id="fstar_parser.dll" Name="parser.dll" Source="../tools/fstar/dotnet/parser.dll" />
+        <File Id="fstar_prettyprint.dll" Name="prettyprint.dll" Source="../tools/fstar/dotnet/prettyprint.dll" />
+        <File Name="reflection.dll" Source="../tools/fstar/dotnet/reflection.dll" />
+        <File Name="smtencoding.dll" Source="../tools/fstar/dotnet/smtencoding.dll" />
+        <File Name="syntax.dll" Source="../tools/fstar/dotnet/syntax.dll" />
+        <File Name="tactics.dll" Source="../tools/fstar/dotnet/tactics.dll" />
+        <File Name="tests.exe" Source="../tools/fstar/dotnet/tests.exe" />
+        <File Name="tests.exe.config" Source="../tools/fstar/dotnet/tests.exe.config" />
+        <File Name="tosyntax.dll" Source="../tools/fstar/dotnet/tosyntax.dll" />
+        <File Name="typechecker.dll" Source="../tools/fstar/dotnet/typechecker.dll" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="AppRootDirectory">
+
+      <Component Id="ZenWallet" Guid="027a40a6-fe81-4c12-afea-e9bd4538aae1">
+        <CreateFolder />
+        <RemoveFolder Id="RemoveAppRootDirectory" On="uninstall"/>
+        <RegistryKey Root="HKCU" Key="Software\Zen\Wallet" Action="createAndRemoveOnUninstall">
+          <RegistryValue Name="Version" Value="[ProductVersion]" Type="string" KeyPath="yes"/>
+        </RegistryKey>
+
+        <File Name="libsodium.dll" DiskId="1" />
         <!--File Name="$(var.Zen.Cmd.TargetFileName)" Source="$(var.Zen.Cmd.TargetPath)" DiskId="1" /-->
-				<!--File Name="$(var.Zen.Cmd.TargetFileName).config" Source="$(var.Zen.Cmd.TargetDir)" DiskId="1" /-->
-				<File Name="$(var.Zen.TargetFileName)" Source="$(var.Zen.TargetPath)" DiskId="1" />
-				<File Name="$(var.Zen.TargetFileName).config" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="atk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="BlockChain.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="BouncyCastle.Crypto.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="CLRCLI.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Consensus.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="ContractExamples.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="ContractGenerator.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="DBreeze.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="FSharp.Compiler.Service.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="FSharp.Core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<!--File Name="FSharp.Data.DesignTime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" /-->
-				<File Name="FsPickler.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="FsPickler.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="gdk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="glib-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="gtk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Infrastructure.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Miner.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Mono.Cairo.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Mono.Posix.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="MsgPack.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="NDesk.Options.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="NetMQ.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Network.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Newtonsoft.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="nunit.framework.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />				
-				<File Name="Open.Nat.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="pango-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="QRCoder.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Sodium.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Store.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="System.Collections.Immutable.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="System.Reflection.Metadata.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="System.Threading.Tasks.Dataflow.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="UnityEngine.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Unquote.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Wallet.core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="Wallet.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />				
-				<File Name="Zen.RPC.Common.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />								
-				<File Name="graph.html" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="d3.min.js" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="genesis_outputs.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="keys.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="lan_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="lan_host.json" Source="$(var.Zen.TargetDir)" DiskId="1" />				
-				<File Name="testnet_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="staging_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-				<File Name="demo_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
-			</Component>
-		</DirectoryRef>
+        <!--File Name="$(var.Zen.Cmd.TargetFileName).config" Source="$(var.Zen.Cmd.TargetDir)" DiskId="1" /-->
+        <File Name="$(var.Zen.TargetFileName)" Source="$(var.Zen.TargetPath)" DiskId="1" />
+        <File Name="$(var.Zen.TargetFileName).config" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="AsyncIO.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="atk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="basic.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="BlockChain.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="BouncyCastle.Crypto.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="CLRCLI.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Consensus.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="ContractExamples.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="ContractGenerator.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="ContractUtilities.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="DBreeze.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FSharp.Compatibility.OCaml.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
 
-		<DirectoryRef Id="ApplicationProgramsFolder">
-			<Component Id="ApplicationShortcut" Guid="1b5b8703-5779-4775-8823-1524f452a642">
-				<Shortcut Id="ApplicationStartMenuShortcut"
+        <File Name="FSharp.Compiler.Service.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FSharp.Core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FSharp.Data.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FSharp.PPrint.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FsLexYacc.Runtime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <!--File Name="FSharp.Data.DesignTime.dll" Source="$(var.Zen.TargetDir)" DiskId="1" /-->
+        <File Name="FsPickler.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FsPickler.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="FStar_Utils.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="gdk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="glib-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="gtk-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Infrastructure.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Miner.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Mono.Cairo.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Mono.Posix.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="MsgPack.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="NDesk.Options.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="NetMQ.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Network.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Newtonsoft.Json.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="nunit.framework.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Open.Nat.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="pango-sharp.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="parser.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="prettyprint.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="QRCoder.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Sodium.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Store.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="System.Collections.Immutable.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="System.Reflection.Metadata.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="System.Threading.Tasks.Dataflow.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="UnityEngine.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Unquote.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Wallet.core.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Wallet.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Zen.RPC.Common.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="Zulib.dll" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="graph.html" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="d3.min.js" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="genesis_outputs.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="keys.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="lan_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="lan_host.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="testnet_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="staging_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+        <File Name="demo_client.json" Source="$(var.Zen.TargetDir)" DiskId="1" />
+
+        <util:XmlFile Id="SetNetwork" File="[#$(var.Zen.TargetFileName).config]" Action="setValue" ElementPath="/configuration/appSettings/add[\[]@key='network'[\]]" Name="value" Value="staging_client" />
+        <util:XmlFile Id="SetDiscovery" File="[#$(var.Zen.TargetFileName).config]" Action="setValue" ElementPath="/configuration/appSettings/add[\[]@key='assetsDiscovery'[\]]" Name="value" Value="staging.zenprotocol.com" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="1b5b8703-5779-4775-8823-1524f452a642">
+        <Shortcut Id="ApplicationStartMenuShortcut"
 						 Name="Zen Wallet"
 						 Description="Zen Wallet"
 						 Target="[#$(var.Zen.TargetFileName)]"
 						 WorkingDirectory="AppRootDirectory"/>
-				<RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
-				<RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
-			</Component>
-		</DirectoryRef>
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
 
-		<DirectoryRef Id="DesktopFolder">
-			<Component Id="DesktopApplicationShortcut" Guid="19ce7c89-74ad-4cf0-9c22-c076fea24528">
-				<Shortcut Id="ApplicationDesktopShortcut"
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopApplicationShortcut" Guid="19ce7c89-74ad-4cf0-9c22-c076fea24528">
+        <Shortcut Id="ApplicationDesktopShortcut"
 						 Name="Zen Wallet"
 						 Description="Zen Wallet"
 						 Target="[#$(var.Zen.TargetFileName)]"
 						 WorkingDirectory="AppRootDirectory"/>
-				<RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="desktop" Type="integer" Value="1" KeyPath="yes"/>
-			</Component>
-		</DirectoryRef>
+        <RegistryValue Root="HKCU" Key="Software\Zen\Wallet" Name="desktop" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
 
-		<Feature Id="ProductFeature" Title="Zen Wallet" Level="1">
-			<ComponentRef Id="ZenWallet" />
-			<ComponentRef Id="ApplicationShortcut"/>
-			<ComponentRef Id="DesktopApplicationShortcut"/>
-		</Feature>
-	</Product>
+    <Feature Id="ProductFeature" Title="Zen Wallet" Level="1">
+      <ComponentRef Id="ZenWallet" />
+      <ComponentRef Id="ApplicationShortcut"/>
+      <ComponentRef Id="DesktopApplicationShortcut"/>
+      <ComponentRef Id="FStar" />
+      <ComponentRef Id="Z3" />
+      <ComponentRef Id="Zulib" />
+    </Feature>
+  </Product>
 </Wix>
