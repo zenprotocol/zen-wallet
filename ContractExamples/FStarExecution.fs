@@ -72,14 +72,14 @@ let fstarPath =
         | System.PlatformID.Win32NT -> rootPath "../../../tools/fstar/dotnet/fstar.exe"               
         | _ -> rootPath "../../../tools/fstar/mono/fstar.exe"
                                       
-    List.find File.Exists [fstarDevPath; rootPath "tools/fstar/fstar.exe"]            
+    List.find File.Exists [fstarDevPath; rootPath "fstar/fstar.exe"]            
     
 let z3Path =
     let z3Locations = 
         match System.Environment.OSVersion.Platform with
-        | System.PlatformID.Win32NT -> [rootPath "../../../tools/z3/windows/z3.exe"; rootPath "tools/z3.exe"]
-        | System.PlatformID.MacOSX -> [rootPath "../../../tools/z3/osx/z3"; rootPath "tools/z3"]
-        | _ -> [rootPath "../../../tools/z3/linux/z3"; rootPath "tools/z3"]
+        | System.PlatformID.Win32NT -> [rootPath "../../../tools/z3/windows/z3.exe"; rootPath "z3/z3.exe"]
+        | System.PlatformID.MacOSX -> [rootPath "../../../tools/z3/osx/z3"; rootPath "z3/z3"]
+        | _ -> [rootPath "../../../tools/z3/linux/z3"; rootPath "z3/z3"]
         
     List.find File.Exists z3Locations
     
@@ -87,7 +87,7 @@ let zulibPath = List.find Directory.Exists [rootPath "../../../Zulib/fstar"; roo
     
 
 let extract source =
-    let tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+    let tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())    
     try
         try
             let moduleName = "ZenModule" //TODO: use contract's hash as module name?
@@ -110,7 +110,7 @@ let extract source =
             let args = executableArg ++ [|                    
                                         //TODO: remove lax
                                         "--lax";
-                                        "--smt";
+                                        "--smt";z3Path;
                                         "--codegen"; "FSharp";
                                         "--prims"; Path.Combine (zulibPath, "prims.fst");
                                         "--extract_module"; moduleName;
