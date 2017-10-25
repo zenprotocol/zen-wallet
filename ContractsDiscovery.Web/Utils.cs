@@ -71,6 +71,7 @@ namespace ContractsDiscovery.Web
                         var callOptionParameters = ((ContractExamples.Execution.ContractMetadata.CallOption)metadata.Value).Item;
 
                         activeContract.Underlying = callOptionParameters.underlying;
+                        activeContract.Numeraire = callOptionParameters.numeraire;
 
 						activeContract.Type = "call-option";
 						activeContract.Description = "Call Option";

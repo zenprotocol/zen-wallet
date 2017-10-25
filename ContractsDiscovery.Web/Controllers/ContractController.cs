@@ -63,13 +63,19 @@ namespace ContractsDiscovery.Web.Controllers
 			//{
 			//	Hash = new Wallet.core.Data.Address(Convert.ToBase64String(contractHash)).Bytes
 			//});
-
 			contractData.ActiveContract.Address = new Wallet.core.Data.Address(contractHash, Wallet.core.Data.AddressType.Contract).ToString();
 
 			if (contractCode != null)
             {
 				contractData.ActiveContract.Code = contractCode;
                 Utils.SetContractInfo(contractData.ActiveContract, contractCode);
+
+                var utxos = GetContractPointedOutputsResultPayload.Unpack(result.PointedOutputs);
+
+                var stateOutputOption = ContractUtilities.DataGenerator.getCallOptionDataPOutput(contractData.ActiveContract.Numeraire, utxos);
+                var isSomeOutputOption = FSharpOption<Tuple<Consensus.Types.Outpoint, Consensus.Types.Output>>.get_IsSome(stateOutputOption);
+
+                contractData.ActiveContract.Initialized = isSomeOutputOption;
 			}
 
 			//string oracleService = WebConfigurationManager.AppSettings["oracleService"];

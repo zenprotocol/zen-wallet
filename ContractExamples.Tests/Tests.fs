@@ -73,10 +73,10 @@ let ``TestSecureTokenMessageComposition``() =
     let utxos = []
     let args = Map.ofList [("", "");]
 
-    match DataGenerator.makeJson (meta, utxos, 0uy, args) with 
+    match DataGenerator.makeJson meta utxos 0uy args with 
     | Ok json ->
-        let input = DataGenerator.makeMessage (json, outpoint)
-        let message = DataGenerator.makeMessage (json, outpoint)
+        let input = DataGenerator.makeMessage json outpoint
+        let message = DataGenerator.makeMessage json outpoint
         let funcResult = mainFunc (message, contractHash, utxo)
 
         match funcResult with 
@@ -174,7 +174,7 @@ let ``TestCallOptionMessageComposition``() =
         function 
         | { txHash = txHash; index = 55ul } when txHash = txHash -> 
             Some {
-                lock = Consensus.Types.PKLock contractHash 
+                lock = Consensus.Types.ContractLock (contractHash, [||])
                 spend = {
                         asset = numeraire
                         amount = amount 
@@ -198,12 +198,13 @@ let ``TestCallOptionMessageComposition``() =
                 | Consensus.Types.ContractLock (hash, data) ->
                     let serializer = context.GetSerializer<data<unit>>()
                     match serializer.UnpackSingleObject data with
-                    | Data2 (_, _, UInt64 d1, UInt64 d2) ->
-                        if tokensIssued <> d1 then
+                    | UInt64Vector (_, v) ->
+                        let list = FStarCompatibility.vectorToList v
+                        if tokensIssued <> list.[0] then
                             Error "Invalid tokens issued"
                         else 
-                            if counter <> d2 then
-                                Error "Invalid counter"
+                            if counter <> list.[2] then
+                                Error ("Invalid counter: expected " + counter.ToString() + " got " + list.[1].ToString())
                             else
                                 Ok true //
                     | _ -> Error "unexpected data"
@@ -224,16 +225,16 @@ let ``TestCallOptionMessageComposition``() =
             Error ("contract responded with error message: " + msg)
 
     let result = 
-        match DataGenerator.makeJson (meta, utxos, 0uy, args) with 
+        match DataGenerator.makeJson meta utxos 0uy args with 
         | Ok json ->
             result {
-                let funcResult = func (DataGenerator.makeMessage (json, outpoint), contractHash, utxo)
+                let funcResult = func (DataGenerator.makeMessage json outpoint, contractHash, utxo)
                 let! state = getStateOutput funcResult
-                return! checkStateCorrectness (state, amount, 0UL, 1UL)
+                return! checkStateCorrectness (state, amount, 0UL, 0UL)
             }
         | Error x -> Error ("Message generator error: " + x.ToString())
     
 
     match result with 
-    | Error x -> Assert.Fail x
+    | Error x -> Assert.Fail ("failed:" + x)
     | _ -> ignore()
