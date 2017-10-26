@@ -59,13 +59,27 @@ Target "RecordHints" (fun _ ->
     then failwith "recording Zulib hints failed"
 
 )
+Target "Verify" (fun _ ->
+  let args =
+    [| "--use_hints"; 
+       "--use_hint_hashes" 
+    |]
+
+  let exitCodes = Array.Parallel.map (fun file -> runFStar args [|file|]) zulibFiles
+  if not (Array.forall (fun exitCode -> exitCode = 0) exitCodes)
+    then failwith "Verifying Zulib failed"
+)
+
 
 Target "Extract" (fun _ ->
+  let cores = System.Environment.ProcessorCount
+  let threads = cores * 2  
+  
   let args =
     [|
-       "--use_hints";
-       //"--z3refresh";
-       //"--verify_all";
+       "--lax";
+       //"--use_hints";
+       //"--use_hint_hashes";
        "--codegen";"FSharp";
        "--extract_module";"Zen.Base";
        "--extract_module";"Zen.Error";
@@ -81,7 +95,7 @@ Target "Extract" (fun _ ->
        "--codegen-lib";"Zen.Array";
        "--extract_module";"Zen.Types.Extracted";
        "--codegen-lib";"Zen.Types";
-       "--odir";extractedDir; |]
+       "--odir";extractedDir |]
 
   let exitCode = runFStar args zulibFiles
 
@@ -142,6 +156,7 @@ Target "Build" (fun _ ->
 Target "Default" ignore
 
 "Clean"
+  ==> "Verify"
   ==> "Extract"
   ==> "Build"
   ==> "Default"
