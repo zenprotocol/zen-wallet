@@ -5,6 +5,6 @@ open Zen.Types.Extracted
 
 module M = FStar.Mul
 
-val get256: #n:nat
+val hash256: #n:nat
   -> data n
   -> cost (option hash) M.(n*384 + 1050)

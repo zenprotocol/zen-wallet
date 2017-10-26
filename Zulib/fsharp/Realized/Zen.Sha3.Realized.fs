@@ -1,6 +1,6 @@
 module Zen.Sha3.Realized
 
-let get256 : byte[] -> byte[] =
+let hash256 : byte[] -> byte[] =
     fun bs ->
     let res = Array.zeroCreate 32 in
     let sha3 = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256) in

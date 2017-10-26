@@ -19,21 +19,16 @@ let private serialize = function
         |> Some
     | _ -> None
 
-let getDataHash
+let hashData
     ( _ : Prims.nat)
     data
     : Cost.t<hash option, Prims.unit> =
         lazy (
-            match serialize data with
-            | None -> None
-            | Some bytes -> bytes |> sha3.get256 |> Some
-//TODO: use Option.bind
-//            serialize data
-//            |> Option.bind (fun bytes -> bytes |> sha3.get256 |> Some)
+            FSharp.Core.Option.map sha3.hash256 <| serialize data
         )
         |> Cost.C
 
-let getRootFromAuditPath
+let rootFromAuditPath
     ( _: Prims.nat)
     ( item : hash )
     ( location: Prims.nat )
@@ -45,9 +40,9 @@ let getRootFromAuditPath
                 (fun (v, loc) h ->
                     if loc % 2u = 0u
                     then
-                        (sha3.get256 <| Array.append v h, loc >>> 1)
+                        (sha3.hash256 <| Array.append v h, loc >>> 1)
                     else
-                        (sha3.get256 <| Array.append h v, loc >>> 1))
+                        (sha3.hash256 <| Array.append h v, loc >>> 1))
                 (item,uint32 location) hashes
         )
         |> Cost.C
