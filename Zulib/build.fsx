@@ -130,6 +130,7 @@ Target "Build" (fun _ ->
       "fsharp/Realized/Zen.Types.Realized.fs";
       "fsharp/Extracted/Zen.Types.Extracted.fs";
       "fsharp/Realized/Zen.Crypto.fs";
+      "fsharp/Realized/Zen.Sha3.Realized.fs";
       "fsharp/Realized/Zen.Merkle.fs";
       "fsharp/Realized/Zen.Util.fs";
     |]
