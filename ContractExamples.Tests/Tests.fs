@@ -11,7 +11,7 @@ open System.IO
 open ContractExamples.FStarExecution
 
 let readContract fileName =
-    System.IO.File.ReadAllText(Path.Combine (resolvePath "../../../ContractExamples/FStar", Path.ChangeExtension(fileName, ".fst")))
+    System.IO.File.ReadAllText(Path.Combine (rootPath "../../../ContractExamples/FStar", Path.ChangeExtension(fileName, ".fst")))
 
 let getContractFunction contract =
     let extracted = readContract contract |> extract
