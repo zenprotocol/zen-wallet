@@ -24,23 +24,20 @@ cp $ZENPATH/graph.html ./
 # get 3rd party tools and libs
 TOOLSPATH="../../../tools"
 
-mkdir tools
 # z3
-cp -r $TOOLSPATH/z3/linux ./tools/z3
+cp -r $TOOLSPATH/z3/linux ./z3
 # fstar
-cp -r $TOOLSPATH/fstar/mono ./tools/fstar
+cp -r $TOOLSPATH/fstar/mono ./fstar
 # Zulib-fstar
 ZULIBPATH="../../../Zulib/fstar"
 cp -r $ZULIBPATH ./zulib
-# libsodium
-cp /usr/local/lib/libsodium.dylib ./
 
 # configure
 # todo: use args
 CONFIG="zen.exe.config"
 xmlstarlet edit -L -u "/configuration/appSettings/add[@key='network']/@value" -v 'staging_client' $CONFIG
 xmlstarlet edit -L -u "/configuration/appSettings/add[@key='assetsDiscovery']/@value" -v 'staging.zenprotocol.com' $CONFIG
-xmlstarlet edit -L -u "/configuration/appSettings/add[@key='fstar']/@value" -v 'tools/fstar' $CONFIG
+xmlstarlet edit -L -u "/configuration/appSettings/add[@key='fstar']/@value" -v 'fstar' $CONFIG
 xmlstarlet edit -L -u "/configuration/appSettings/add[@key='zulib']/@value" -v 'zulib' $CONFIG
 
 cp ../run-zen ./zen
