@@ -7,4 +7,5 @@ exit_code=$?
     exit $exit_code
   fi
 
+ulimit -n 9001
 mono packages/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx

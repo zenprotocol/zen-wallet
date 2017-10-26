@@ -1,10 +1,10 @@
-module Zen.Types.Serialized.Realized
+module Zen.Sha3.Realized
 
 open Zen.Cost
 open Zen.Types.Extracted
 
 module M = FStar.Mul
 
-val sha3_256: #n:nat
+val hash256: #n:nat
   -> data n
   -> cost (option hash) M.(n*384 + 1050)
