@@ -1,71 +1,90 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NUnit.Framework;
 
 namespace ContractsDiscovery.Web.App_Code
 {
-	public class Ticker
-	{
-		public string Name { get; set; }
-		public decimal Value { get; set; }
-	}
+    public class Ticker
+    {
+        public string Name { get; set; }
+        public decimal Value { get; set; }
+    }
 
-	class DataItem
-	{
-		public string t { get; set; }
-		public decimal l { get; set; }
-	}
+    public class StockAPI
+    {
+        readonly string _UrlFormat = "http://finance.yahoo.com/d/quotes.csv?s={0}&f=snl1";
+        string[] _Tickers;
 
-	public class StockAPI
-	{
-		readonly string _Source = "NASDAQ";
-		readonly string _UrlFormat = "http://finance.google.com/finance/info?q={0}";
-		string[] _Tickers;
+        public string[] Tickers
+        {
+            set
+            {
+                _Tickers = value;
+            }
+        }
 
-		public string[] Tickers
-		{
-			set
-			{
-				_Tickers = value;
-			}
-		}
-
-		public async Task<List<Ticker>> FetchResults()
-		{
+        public async Task<List<Ticker>> FetchResults()
+        {
             var values = new List<Ticker>();
             var query = "";
 
             foreach (var ticker in _Tickers)
             {
-                query += (query == "" ? "" : ",") + string.Format("{0}:{1}", _Source, ticker);
+                query += (query == "" ? "" : "+") + ticker;
+            }
 
-                var uri = new Uri(string.Format(_UrlFormat, query));
+            var uri = new Uri(string.Format(_UrlFormat, query));
+           
+            try
+            {
+                var response = await new HttpClient().GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
 
-                try
+                if (response.IsSuccessStatusCode)
                 {
-					var response = await new HttpClient().GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
-
-                    if (response.IsSuccessStatusCode)
+                    var raw = await response.Content.ReadAsStringAsync();
+                    var lines = raw.Split(new[] { "\n" }, StringSplitOptions.None);
+                    foreach (var line in lines)
                     {
-                        var raw = await response.Content.ReadAsStringAsync();
-                        raw = raw.Replace("//", "");
-                        var json = JsonConvert.DeserializeObject<List<DataItem>>(raw);
-
-                        foreach (var dataItem in json)
+                        if (!string.IsNullOrWhiteSpace(line))
                         {
-                            values.Add(new Ticker() { Name = dataItem.t, Value = dataItem.l });
+                            try
+                            {
+                                var parts = Regex.Split(line, @",(?=(?:[^""]*""[^""]*"")*[^""]*$)");
+                                values.Add(new Ticker() { Name = parts[0].Replace("\"", ""), Value = Decimal.Parse(parts[2]) }); //TODO: instead of using replace, use same regex
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("Error parsing value: " + line, e);
+                            }
                         }
                     }
                 }
-                catch
-                {
-
-                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error fetching data from url: "+ uri.ToString(), e);
             }
 
             return values;
-		}
-	}
+        }
+    }
+
+    internal class Tests
+    {
+        [Test()]
+        public void ShouldGetTickerData()
+        {
+            var stockAPI = new StockAPI();
+            var tickers = "AAPL,AABA,AMZN,GOOGL,INTC,TSLA".Split(',');
+            stockAPI.Tickers = tickers;
+            var results = stockAPI.FetchResults().Result;
+
+            Assert.That(results, Is.Not.Null);
+            Assert.That(results.Count, Is.EqualTo(tickers.Length));
+        }
+    }
 }

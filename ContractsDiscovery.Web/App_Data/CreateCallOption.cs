@@ -13,7 +13,7 @@ namespace ContractsDiscovery.Web.App_Data
 		public DecimalField Price { get; set; }
 		public DecimalField Strike { get; set; }
 		public DecimalField MinimumCollateralRatio { get; set; }
-		public PublicKeyField OwnerPubKey { get; set; }
+		//public PublicKeyField OwnerPubKey { get; set; }
         public List<string> Tickers { get; set; }
         //public string OracleServiceUrl { get; set; }
 
@@ -25,7 +25,7 @@ namespace ContractsDiscovery.Web.App_Data
             Price = new DecimalField();
             Strike = new DecimalField();
             MinimumCollateralRatio = new DecimalField();
-            OwnerPubKey = new PublicKeyField();
+            //OwnerPubKey = new PublicKeyField();
             Tickers = new List<string>();
 
 			Numeraire.SetValue("cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
@@ -42,8 +42,8 @@ namespace ContractsDiscovery.Web.App_Data
                     Underlying.Invalid ||
                     Price.Invalid ||
                     Strike.Invalid ||
-                    MinimumCollateralRatio.Invalid ||
-                    OwnerPubKey.Invalid;
+                    MinimumCollateralRatio.Invalid; //||
+                    //OwnerPubKey.Invalid;
             }
         }
 	}

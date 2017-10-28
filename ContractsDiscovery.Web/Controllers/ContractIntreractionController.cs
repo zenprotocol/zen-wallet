@@ -121,16 +121,16 @@ namespace ContractsDiscovery.Web.Controllers
                 switch (action)
                 {
                     case "Collateralize":
-						var pkAddress = new PKAddressField();
-						pkAddress.SetValue(Request["return-address"]);
+						//var pkAddress = new PKAddressField();
+						//pkAddress.SetValue(Request["return-address"]);
 
-						if (pkAddress.Invalid)
-						{
-			                contractInteraction.Message = "Invalid return address";
-							return View(contractInteraction);
-						}
+						//if (pkAddress.Invalid)
+						//{
+			   //             contractInteraction.Message = "Invalid return address";
+						//	return View(contractInteraction);
+						//}
 
-						args.Add("returnPubKeyAddress", pkAddress.Value);
+						//args.Add("returnPubKeyAddress", pkAddress.Value);
                         opcode = OPCODE_COLLATERALIZE;
                         break;
                     case "Exercise":
@@ -215,7 +215,7 @@ namespace ContractsDiscovery.Web.Controllers
 					var file = Path.Combine("db", $"{item}");
 					var mapFile = Path.ChangeExtension(file, ".data.json");
 
-					var commitmentDataMap = (FSharpMap<string, Tuple<byte[],uint,byte[][]>>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(mapFile));
+					var commitmentDataMap = (FSharpMap<string, Tuple<Tuple<byte[],uint,byte[][]>, byte[]>>)ContractExamples.Oracle.proofMapSerializer.ReadObject(System.IO.File.OpenRead(mapFile));
 
 					foreach (var _value in commitmentDataMap)
 					{
@@ -225,15 +225,16 @@ namespace ContractsDiscovery.Web.Controllers
 							var outpointData = Convert.FromBase64String(System.IO.File.ReadAllText(outpointFile));
 							var outpoint = Consensus.Serialization.context.GetSerializer<Types.Outpoint>().UnpackSingleObject(outpointData);
 
-							data = ContractExamples.Oracle.rawData.Invoke(new Tuple<Tuple<byte[], uint, byte[][]>, Types.Outpoint>(_value.Value, outpoint));
+                            data = ContractExamples.Oracle.rawDataTypedJson(_value.Value.Item1, outpoint, _value.Value.Item2).ToString();
 
 							return true;
 						}
 					}
 				}
 			}
-			catch
+            catch (Exception e)
 			{
+                Console.WriteLine(e);
 			}
 
 			return false;

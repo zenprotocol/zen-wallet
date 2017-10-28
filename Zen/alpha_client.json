@@ -1,0 +1,10 @@
+{
+  "PeersToFind": 1,
+  "MaximumNodeConnection": 1,
+  "Seeds": [
+    "34.213.103.167"
+  ],
+  "DefaultPort": 9999,
+  "Magic": 0,
+  "DisableUpNP": true
+}

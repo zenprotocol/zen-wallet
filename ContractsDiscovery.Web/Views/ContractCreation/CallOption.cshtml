@@ -103,18 +103,6 @@
     	    </div>
         </div>
 
-        <div class="form-group">
-    		<label for="ownerPubKey" class="col-sm-3 control-label">Owner&nbsp;PubKey</label>
-            <div class="col-sm-9">
-    	        <input type="text" required="true" class="form-control" id="ownerPubKey" name="ownerPubKey" placeholder="Owner PubKey" value="@Model.OwnerPubKey.Value"/>
-    		    @if (@Model.OwnerPubKey.Invalid)
-    	        {
-    	            <p class="text-left form-text text-muted explainer-text">Invalid input</p>
-    	        }
-                <p class="text-left form-text text-muted explainer-text">Please copy a public-key from your wallet here (Click the "Copy Public Key" button in the "Wallet" tab).</p>
-            </div>
-        </div>
-
         <div class="row">
           <div class="col-sm-3">
           </div>

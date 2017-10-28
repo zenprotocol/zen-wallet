@@ -52,48 +52,146 @@ let oracleSample = """
       "k/vjrP3C9O8U1LvDeREENVkjk3mazg/O1p2vjOQeNaI="
     ]
   },
+  "origin": "some string",
   "outpoint": "ksQgi4nI1a+7LHQZgqcHzjLNnXKzJ9vBRCbkIz+tIYx2HPQB"
 }
 """
 type OracleJsonData = JsonProvider<oracleSample, SampleIsList=true>
 
 type Result =  
-    | ShouldHaveControlAsset
-    | ShouldHavePubKeyAddress
-    | InvalidReturnAddress
-    | MissingDataLock
+    | ShouldHaveState
+    | ShouldHaveReturnAddress
+    | ShouldHaveValidReturnAddress
+    | ShouldHaveOracleJson
+    | ShouldParseOracleJson
+    | ShouldParseOracleJsonOutpoint
     | InvalidCmd
     | ContractTypeNotImplemented
 
 open Consensus.Serialization
+//open Zen.Types.Extracted
 
 context.Serializers.RegisterOverride<Zen.Types.Extracted.data<unit>>(new DataSerializer(context))
 
+let getCallOptionDataPOutput numeraire (utxos:(Outpoint*Output) seq) =
+    let matcher = fun (_, output) -> 
+        match output.lock with
+        | ContractLock (_, null) -> false
+        | ContractLock (_, [||]) -> false
+        | ContractLock (_, bytes) ->
+            let data = context.GetSerializer<Zen.Types.Extracted.data<unit>>().UnpackSingleObject bytes
+            match data with
+            | Zen.Types.Extracted.UInt64Vector (l, _) when l = 3I ->
+                output.spend.asset = numeraire
+            | _ -> false
+        | _ -> false
+
+    Seq.tryFind matcher utxos
+
+let stubFundsOutpoint = { Zen.Types.Extracted.txHash = Array.zeroCreate<byte>(32); Zen.Types.Extracted.index = System.UInt32.MaxValue }
+let serializer = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
+
+let secureTokenOptionJson =
+    let data = Zen.Types.Extracted.Outpoint stubFundsOutpoint
+
+    result {
+        return ContractJsonData.Root (
+            ContractJsonData.StringOrFirst (""),
+            Some <| ContractJsonData.Second (getString [|0uy|], data |> serializer.PackSingleObject |> getString)
+        )
+    }
+
 let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*Output) seq) opcode (m:Map<string,string>) =
     result {
-        let stateOutput = Seq.tryFind (fun (_,y) -> y.spend.asset = meta.numeraire) utxos
-
-        let stateOutpoint = 
-            match stateOutput with
-            | Some (o, _) ->
-                Zen.Types.Extracted.Optional (1I, Native.option.Some (Zen.Types.Extracted.Outpoint (fsToFstOutpoint o)))
-            | None ->
-                Zen.Types.Extracted.Optional (1I, FStar.Pervasives.Native.option.None)
-
-        let bytes = context.GetSerializer<Zen.Types.Extracted.data<unit>>().PackSingleObject stateOutpoint
-    
+        let stateOutput = getCallOptionDataPOutput meta.numeraire utxos
 
         match opcode with
         | 0uy ->
+            let data = 
+                match stateOutput with
+                | Some (stateOutpoint, _) ->
+                    Zen.Types.Extracted.OutpointVector (2I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint ])
+                | None ->
+                    Zen.Types.Extracted.Outpoint stubFundsOutpoint
+
             return ContractJsonData.Root (
                 ContractJsonData.StringOrFirst (""),
                 Some <| ContractJsonData.Second (
                     [| opcode |] |> getString,
-                    bytes |> getString
+                    data |> serializer.PackSingleObject |> getString
+                )
+            )
+        | 1uy ->
+            let! (stateOutpoint, _) = (ShouldHaveState, stateOutput)
+            let! addressStr = (ShouldHaveReturnAddress, m.TryFind("returnPubKeyAddress"))
+            let! address = (ShouldHaveValidReturnAddress, try Some <| Address addressStr with _ -> None)
+
+            let data = 
+                Zen.Types.Extracted.Data2 (
+                    2I, 
+                    1I, 
+                    Zen.Types.Extracted.OutpointVector (2I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint ]),
+                    Zen.Types.Extracted.OutputLock (Zen.Types.Extracted.PKLock address.Bytes))
+
+            return ContractJsonData.Root (
+                ContractJsonData.StringOrFirst (""),
+                Some <| ContractJsonData.Second (
+                    [| opcode |] |> getString,
+                    data |> serializer.PackSingleObject |> getString
+                )
+            )
+        | 2uy ->
+            let! (stateOutpoint, _) = (ShouldHaveState, stateOutput)
+            let! addressStr = (ShouldHaveReturnAddress, m.TryFind("returnPubKeyAddress"))
+            let! address = (ShouldHaveValidReturnAddress, try Some <| Address addressStr with _ -> None)
+
+            let! oracleRawData = (ShouldHaveOracleJson, m.TryFind "oracleRawData")
+            let! oracleJson = (ShouldParseOracleJson, try Some <| OracleJsonData.Parse oracleRawData with _ -> None)
+            let! oracleOutpoint = (ShouldParseOracleJsonOutpoint, try Some <| (Consensus.TransactionValidation.guardedDeserialise<Outpoint> <| System.Convert.FromBase64String oracleJson.Outpoint) with _ -> None)
+
+            let originalCommitment = oracleJson.Origin |> getBytes |> serializer.UnpackSingleObject 
+
+            //TODO: validate data matches expected pattern
+            //match commitmentData with 
+            //| Zen.Types.Extracted.Data4(32I, 1I, 1I, 1I, 
+            //    Zen.Types.Extracted.ByteArray (32I, _), 
+            //    Zen.Types.Extracted.UInt64 (uint64 _), 
+            //    Zen.Types.Extracted.UInt64 (uint64 _), 
+            //    Zen.Types.Extracted.Hash nonceBytes) -> true
+            //| _ -> false
+
+            let path = oracleJson.AuditPath.Path
+            let pathLength = bigint path.Length
+            let auditPath = 
+                Zen.Types.Extracted.Data2(
+                    1I, 
+                    pathLength,
+                    Zen.Types.Extracted.UInt32 (uint32 oracleJson.AuditPath.Location), 
+                    Zen.Types.Extracted.HashArray (pathLength, Array.map getBytes path))
+
+            let data = 
+                Zen.Types.Extracted.Data4(
+                    3I, 
+                    1I, 
+                    32I + 1I + 1I + 1I,
+                    1I + pathLength,
+                    originalCommitment,
+                    auditPath,
+                    Zen.Types.Extracted.OutpointVector (3I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint; fsToFstOutpoint oracleOutpoint ]),
+                    Zen.Types.Extracted.OutputLock (Zen.Types.Extracted.PKLock address.Bytes))
+
+            let auditPath =
+                oracleJson.AuditPath.JsonValue.ToString() |>
+                System.Text.Encoding.ASCII.GetBytes
+
+            return ContractJsonData.Root (
+                ContractJsonData.StringOrFirst (""),
+                Some <| ContractJsonData.Second (
+                    [| opcode |] |> getString,
+                    data |> serializer.PackSingleObject |> getString
                 )
             )
 
- 
 
 
         //let! dataPair = (ShouldHaveControlAsset, Seq.tryFind (fun (_,y) -> y.spend.asset = meta.controlAsset) utxos)
@@ -188,30 +286,35 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
 
 let parseJson = ContractJsonData.Parse
 
-let makeJson (meta:Execution.ContractMetadata, utxos:(Outpoint*Output) seq, opcode:byte, m:Map<string,string>) =
+let makeJson (meta:Execution.ContractMetadata) (utxos:(Outpoint*Output) seq) (opcode:byte) (m:Map<string,string>) =
     match meta with
     | Execution.CallOption meta -> callOptionJson meta utxos opcode m
-    | Execution.SecureToken _ -> 
-        result {
-            return ContractJsonData.Root (
-                ContractJsonData.StringOrFirst (""),
-                Some <| ContractJsonData.Second (getString [|opcode|],"")
-            )
-        }
+    | Execution.SecureToken _ -> secureTokenOptionJson
     | _ -> Error ContractTypeNotImplemented
-    
 
+let makeMessage (json:ContractJsonData.Root) outpoint =
+    let final = getBytes json.Second.Value.Final
+    let data = serializer.UnpackSingleObject final
+    let fundsOutpoint = outpoint |> fsToFstOutpoint
+    let actualData = 
+        match data with 
+        | Zen.Types.Extracted.Outpoint o -> fundsOutpoint |> Zen.Types.Extracted.Outpoint
+        | Zen.Types.Extracted.OutpointVector (l, vec) ->
+            let list = vectorToList vec
+            Zen.Types.Extracted.OutpointVector (l, listToVector [ list.[0]; fundsOutpoint ])
+        | Zen.Types.Extracted.Data2 (l1, l2, Zen.Types.Extracted.OutpointVector (l3, vec), lock) ->
+            let list = vectorToList vec
+            let vec2 = Zen.Types.Extracted.OutpointVector (l3, listToVector [ list.[0]; fundsOutpoint ])
+            Zen.Types.Extracted.Data2 (l1, l2, vec2, lock)
+    let bytes = serializer.PackSingleObject actualData 
 
-let makeMessage (json:ContractJsonData.Root, outpoint) =
-    let ser = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
-    
-    let final = json.Second.Value.Final    
-    let wrappingData = 
-        if final = "" then
-            Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint)
-        else
-            let jsonData = ser.UnpackSingleObject (getBytes final)
-            Zen.Types.Extracted.Data2 (1I, 1I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), jsonData)
-    let bytes = ser.PackSingleObject (wrappingData)
     let cmd = getBytes json.Second.Value.Initial
     Array.append cmd bytes 
+
+let makeOracleMessage data outpoint = 
+    let ser = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
+    
+    let message = ser.PackSingleObject (Zen.Types.Extracted.Data2 (1I, 32I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), Zen.Types.Extracted.ByteArray (32I, data)))
+
+    Array.append [|0uy|] message
+   
