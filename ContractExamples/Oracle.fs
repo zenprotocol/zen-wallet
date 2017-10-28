@@ -1,6 +1,8 @@
 ﻿module ContractExamples.Oracle
 
 open Newtonsoft.Json.Linq
+open Zen.Types
+
 let innerHash = Consensus.Merkle.innerHash
 type Outpoint = Consensus.Types.Outpoint
 let deserializeOutpoint = Consensus.TransactionValidation.guardedDeserialise<Outpoint>
@@ -15,16 +17,19 @@ let commitments (items: TickerItem seq) (secret: byte[]) =
         jsonOfTickerItem(item).ToString() |> System.Text.Encoding.ASCII.GetBytes
     let nonceB (bs:byte[]) = innerHash (Array.append bs secret)
     let leaf (item:TickerItem) =
-        let itemJson = jsonOfTickerItem item
         let nonceBytes = nonceB (serializedTickerItem item)
-        let nonce = System.Convert.ToBase64String nonceBytes
-        //ItemJsonData.Root(itemJson,nonce)
-        new JObject(
-            [
-                new JProperty("item", itemJson);
-                new JProperty("nonce", nonce)
-            ]
-        )
+        let underlying = System.Text.Encoding.ASCII.GetBytes item.underlying
+        let underlyingBytes = Array.append underlying (Array.zeroCreate<byte>(32 - (Array.length underlying)))
+
+        let leafData = 
+            Extracted.Data4(32I, 1I, 1I, 1I, 
+                Extracted.ByteArray (32I, underlyingBytes), 
+                Extracted.UInt64 (uint64 item.price * 1000UL), 
+                Extracted.UInt64 (uint64 item.timestamp), 
+                Extracted.Hash nonceBytes)
+
+        Zen.Merkle.serialize leafData
+
     let leafData = [|
         for item in items ->
             (leaf item).ToString() |> System.Text.Encoding.ASCII.GetBytes
