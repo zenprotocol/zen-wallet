@@ -78,7 +78,7 @@
       <HintPath>..\packages\FSharp.Compiler.Service.12.0.8\lib\net45\FSharp.Compiler.Service.MSBuild.v12.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="FsPickler">
       <HintPath>..\packages\FsPickler.3.3.0\lib\net45\FsPickler.dll</HintPath>
