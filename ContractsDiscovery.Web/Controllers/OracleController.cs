@@ -138,7 +138,7 @@ namespace ContractsDiscovery.Web.Controllers
 			}
 			else
 			{
-				ViewData["Message"] = "Resson: send result was '" + sendContractResult.Message + "'";
+				ViewData["Message"] = "Reason: send result was '" + sendContractResult.Message + "'";
 			}
 
 			return View();
