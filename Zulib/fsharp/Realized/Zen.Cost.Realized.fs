@@ -47,9 +47,13 @@ let assoc ( _: Prims.nat)
           ( _: 'Ab -> cost<'Ac, Prims.unit> )
           : Prims.unit = ()
 
-let force ( _: Prims.nat)
-          ( _: cost<'Aa, Prims.unit> ) =
-          failwith "force is not allowed in executed code."
+//let force ( _: Prims.nat)
+//          ( _: cost<'Aa, Prims.unit> ) =
+//          failwith "force is not allowed in executed code."
+
+// Implement force to get this working for now
+let force (_: Prims.nat) ( C x : cost<'Aa, Prims.unit> ) : 'Aa = x.Value
+
 
 type forceT<'DummyA,'DummyB> = Prims.unit
 
