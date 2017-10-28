@@ -130,12 +130,11 @@
     <Compile Include="MaybeWorkflow.fs" />
     <Compile Include="Merkle.fs" />
     <Compile Include="MerkleTests.fs" />
-    <Compile Include="Oracle.fs" />
     <Compile Include="Contracts.fs" />
     <Compile Include="QuotedContracts.fs" />
     <Compile Include="Execution.fs" />
-    <Compile Include="ContractTests.fs" />
     <Compile Include="FStarCompatibility.fs" />
+    <Compile Include="Oracle.fs" />
     <Compile Include="FStarExecution.fs" />
     <Compile Include="FStarContractsTests.fs" />
     <None Include="packages.config" />
@@ -144,5 +143,5 @@
     <None Include="FStar\SecureToken.fst" />
     <None Include="FStar\OracleContract.fst" />
   </ItemGroup>
-  <Import Project="$(FSharpTargetsPath)" />  
+  <Import Project="$(FSharpTargetsPath)" />
 </Project>
