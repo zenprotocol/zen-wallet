@@ -289,18 +289,12 @@ type exTestCost (n:nat) (path:auditPath) =
     | { hashes = (| m , _ |) } ->
       let open M in (n + 3) * 384 + 1073 + m)
 
-assume val restOfEx :
-          hash -> pointedOutput -> pointedOutput -> pointedOutput
-          -> U64.t
-          -> outputLock
-          -> cost (result transactionSkeleton) 41
-
-val restOfEx' :
+val restOfEx :
           hash -> pointedOutput -> pointedOutput -> pointedOutput
           -> U64.t
           -> outputLock
           -> cost (result transactionSkeleton) 124
-let restOfEx'
+let restOfEx
         cHash
         (pt1,dataOutput) (pt2,tokenOutput) (pt3,oracleOutput)
         spot
@@ -360,7 +354,7 @@ val exerciseTx :
           -> cost (result transactionSkeleton)
                   (
                     match d, path with
-                    | {underlying=(|n, _|)}, {hashes=(|m, _|)} -> M.((n+3) * 384 + 1179 + m)
+                    | {underlying=(|n, _|)}, {hashes=(|m, _|)} -> M.((n+3) * 384 + 1262 + m)
                   )
 
 let exerciseTx
@@ -421,7 +415,7 @@ type createTxInnerCost (cmd:command) =
           | Collateralize _ -> 102
           | Buy _ _ -> 112
           | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-              M.(((n+3) * 384 + 1179 + m))
+              M.(((n+3) * 384 + 1262 + m))
         )
 
 type createTxCost (cmd:command) =
@@ -431,7 +425,7 @@ type createTxCost (cmd:command) =
           | Collateralize _ -> 102
           | Buy _ _ -> 112
           | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-              M.(((n+3) * 384 + 1179 + m))
+              M.(((n+3) * 384 + 1262 + m))
         ) + 23)
 
 val createTx :
@@ -450,15 +444,77 @@ match cmd with
     exerciseTx cHash ptd ptd' ptd'' d path lk <: createTxInnerCost cmd
 
 
-type mainCost (cmd:command) =
+(*type liftedCreateTxCost (cmdRes: result command) =
   cost (result transactionSkeleton)
-        ((match cmd with
+        (match cmdRes with
+        | V c -> ((match c with
+                    | Initialize _ -> 45
+                    | Collateralize _ -> 102
+                    | Buy _ _ -> 112
+                    | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
+                        M.(((n+3) * 384 + 1262 + m))
+                  ) + 23) + 5
+        | _ -> 5)
+
+val liftedCreateTx :
+      hash
+      -> cmdRes : result command
+      -> liftedCreateTxCost cmdRes
+let liftedCreateTx cHash cmdRes =
+match cmdRes with
+| V c -> createTx cHash c
+| _ -> ET.autoFailw "Bad command"*)
+
+(*type mainInnerCost (iM:inputMsg) =
+  cost (result transactionSkeleton)
+        (match force (makeCommand iM) with
+        | V c -> ((match c with
           | Initialize _ -> 45
           | Collateralize _ -> 102
           | Buy _ _ -> 112
           | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-              M.(((n+3) * 384 + 1179 + m))
-        ) + 123)
+              M.(((n+3) * 384 + 1262 + m))
+                )  + 23)
+        | E _ -> 0
+        | Err _ -> 0
+        )
+
+
+
+
+val main' : (iM:inputMsg) -> cost (result transactionSkeleton)
+        ((match force (makeCommand iM) with
+        | V c -> ((match c with
+          | Initialize _ -> 45
+          | Collateralize _ -> 102
+          | Buy _ _ -> 112
+          | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
+              M.(((n+3) * 384 + 1262 + m))
+                )  + 23)
+        | E _ -> 0
+        | Err _ -> 0
+        )+103)
+
+let main' iM =
+  let open Zen.Cost in
+  do cRes <-- makeCommand iM; // cRes has type result command
+  match cRes with
+  | V c ->
+      do cTx <-- createTx (iM.contractHash) c;
+      ret cTx
+  | E _ ->
+      ET.autoFailw "Can't get command" <: mainInnerCost iM
+  | Err msg ->
+      ET.autoFailw msg <: mainInnerCost iM*)
+
+(* OLD
+let main' iM =
+  let open ET in
+  do c <-- makeCommand iM;
+  createTx (iM.contractHash) c
+  //(makeCommand iM) >>= (createTx (iM.contractHash))
+*)
+
 (*
 val main': iM:inputMsg -> cost (result transactionSkeleton) (mainCost iM.cmd)
 let main' iM =
