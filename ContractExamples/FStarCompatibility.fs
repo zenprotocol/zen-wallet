@@ -47,6 +47,7 @@ let private getDataPoints (data : data<unit>) : bigint =
     | OutpointVector (l, _) -> l
     | UInt64Vector (l, _) -> l
     | ByteArray (l, _) -> l
+    | HashArray (l, _) -> l
     | _ -> 
         //TODO: complete cases
         data.ToString()
@@ -126,8 +127,8 @@ type DataSerializer(ownerContext) =
             p.Pack(8).Pack(l).PackBinary(serializer.PackSingleObject(d))
         | Optional (l, Native.option.None) ->
             p.Pack(9).Pack(l)
-        | ByteArray (n, bytes) ->
-            p.Pack(10).PackBinary(bytes)
+        | ByteArray (l, bytes) ->
+            p.Pack(10).Pack(l).PackBinary(bytes)
         | UInt32 (v) ->
             p.Pack(11).Pack(v)
         | UInt64Vector (l, v) ->
@@ -141,6 +142,20 @@ type DataSerializer(ownerContext) =
             p.Pack(14).Pack(l).Pack<List<outpoint>>(list)
         | OutputLock (PKLock bytes) ->
             p.Pack(15).PackBinary(bytes)
+        | HashArray (l, hashes) ->
+            p.Pack(16).Pack(l).Pack<List<byte[]>>(List.ofArray hashes)
+        | Data4 (l1, l2, l3, l4, d1, d2, d3, d4) -> 
+            //TODO: reafactor
+            let serializer = context.GetSerializer<data<unit>>()
+            p.Pack(17)
+                .Pack(l1)
+                .Pack(l2)
+                .Pack(l3)
+                .Pack(l4)
+                .PackBinary(serializer.PackSingleObject(d1))
+                .PackBinary(serializer.PackSingleObject(d2))
+                .PackBinary(serializer.PackSingleObject(d3))
+                .PackBinary(serializer.PackSingleObject(d4))
         | _ -> 
             //TODO: complete cases
             data.ToString()
@@ -233,6 +248,33 @@ type DataSerializer(ownerContext) =
             let bytes = p.Unpack()
             p.Read() |> ignore
             OutputLock (PKLock bytes)
+        | 16 ->
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let list = p.Unpack()
+            p.Read() |> ignore
+            let hashes = Array.ofList list
+            HashArray (len, hashes)
+        | 17 ->
+            //TODO: reafactor
+            let serializer = context.GetSerializer<data<unit>>()
+            let l1 = p.Unpack()
+            p.Read() |> ignore
+            let l2 = p.Unpack()
+            p.Read() |> ignore
+            let l3 = p.Unpack()
+            p.Read() |> ignore
+            let l4 = p.Unpack()
+            p.Read() |> ignore
+            let d1 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            let d2 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            let d3 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            let d4 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            Data4 (l1, l2, l3, l4, d1, d2, d3, d4)
         | _ -> 
             "Unwnown code encountered while unpacking data: " + code.ToString()
             |> SerializationException
