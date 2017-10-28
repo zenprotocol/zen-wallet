@@ -15,7 +15,7 @@ open Zen.Cost
 
 let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "__numeraire__"
 
-let price: U64.t = 100UL
+let price: U64.t = __price__UL
 
 type pointedOutput = outpoint * output
 
