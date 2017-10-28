@@ -52,16 +52,19 @@ let oracleSample = """
       "k/vjrP3C9O8U1LvDeREENVkjk3mazg/O1p2vjOQeNaI="
     ]
   },
+  "origin": "some string",
   "outpoint": "ksQgi4nI1a+7LHQZgqcHzjLNnXKzJ9vBRCbkIz+tIYx2HPQB"
 }
 """
 type OracleJsonData = JsonProvider<oracleSample, SampleIsList=true>
 
 type Result =  
-    //| ShouldHaveControlAsset
-    | ShouldHavePubKeyAddress
-    //| InvalidReturnAddress
-    //| MissingDataLock
+    | ShouldHaveState
+    | ShouldHaveReturnAddress
+    | ShouldHaveValidReturnAddress
+    | ShouldHaveOracleJson
+    | ShouldParseOracleJson
+    | ShouldParseOracleJsonOutpoint
     | InvalidCmd
     | ContractTypeNotImplemented
 
@@ -119,12 +122,67 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
                 )
             )
         | 1uy ->
-            let (stateOutpoint, _) = Option.get stateOutput //TODO
-            let! addressStr = (ShouldHavePubKeyAddress, m.TryFind("returnPubKeyAddress"))
-            let address = Address addressStr
-            let outpoints = Zen.Types.Extracted.OutpointVector (2I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint ])
-            let lock = Zen.Types.Extracted.OutputLock (Zen.Types.Extracted.PKLock address.Bytes)
-            let data = Zen.Types.Extracted.Data2 (1I, 2I, outpoints, lock)
+            let! (stateOutpoint, _) = (ShouldHaveState, stateOutput)
+            let! addressStr = (ShouldHaveReturnAddress, m.TryFind("returnPubKeyAddress"))
+            let! address = (ShouldHaveValidReturnAddress, try Some <| Address addressStr with _ -> None)
+
+            let data = 
+                Zen.Types.Extracted.Data2 (
+                    2I, 
+                    1I, 
+                    Zen.Types.Extracted.OutpointVector (2I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint ]),
+                    Zen.Types.Extracted.OutputLock (Zen.Types.Extracted.PKLock address.Bytes))
+
+            return ContractJsonData.Root (
+                ContractJsonData.StringOrFirst (""),
+                Some <| ContractJsonData.Second (
+                    [| opcode |] |> getString,
+                    data |> serializer.PackSingleObject |> getString
+                )
+            )
+        | 2uy ->
+            let! (stateOutpoint, _) = (ShouldHaveState, stateOutput)
+            let! addressStr = (ShouldHaveReturnAddress, m.TryFind("returnPubKeyAddress"))
+            let! address = (ShouldHaveValidReturnAddress, try Some <| Address addressStr with _ -> None)
+
+            let! oracleRawData = (ShouldHaveOracleJson, m.TryFind "oracleRawData")
+            let! oracleJson = (ShouldParseOracleJson, try Some <| OracleJsonData.Parse oracleRawData with _ -> None)
+            let! oracleOutpoint = (ShouldParseOracleJsonOutpoint, try Some <| (Consensus.TransactionValidation.guardedDeserialise<Outpoint> <| System.Convert.FromBase64String oracleJson.Outpoint) with _ -> None)
+
+            let originalCommitment = oracleJson.Origin |> getBytes |> serializer.UnpackSingleObject 
+
+            //TODO: validate data matches expected pattern
+            //match commitmentData with 
+            //| Zen.Types.Extracted.Data4(32I, 1I, 1I, 1I, 
+            //    Zen.Types.Extracted.ByteArray (32I, _), 
+            //    Zen.Types.Extracted.UInt64 (uint64 _), 
+            //    Zen.Types.Extracted.UInt64 (uint64 _), 
+            //    Zen.Types.Extracted.Hash nonceBytes) -> true
+            //| _ -> false
+
+            let path = oracleJson.AuditPath.Path
+            let pathLength = bigint path.Length
+            let auditPath = 
+                Zen.Types.Extracted.Data2(
+                    1I, 
+                    pathLength,
+                    Zen.Types.Extracted.UInt32 (uint32 oracleJson.AuditPath.Location), 
+                    Zen.Types.Extracted.HashArray (pathLength, Array.map getBytes path))
+
+            let data = 
+                Zen.Types.Extracted.Data4(
+                    3I, 
+                    1I, 
+                    32I + 1I + 1I + 1I,
+                    1I + pathLength,
+                    originalCommitment,
+                    auditPath,
+                    Zen.Types.Extracted.OutpointVector (3I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint; fsToFstOutpoint oracleOutpoint ]),
+                    Zen.Types.Extracted.OutputLock (Zen.Types.Extracted.PKLock address.Bytes))
+
+            let auditPath =
+                oracleJson.AuditPath.JsonValue.ToString() |>
+                System.Text.Encoding.ASCII.GetBytes
 
             return ContractJsonData.Root (
                 ContractJsonData.StringOrFirst (""),
