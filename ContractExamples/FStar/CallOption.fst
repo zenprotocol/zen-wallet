@@ -15,7 +15,7 @@ open Zen.Base
 open Zen.Types
 open Zen.Cost
 open Zen.Merkle
-open Zen.Types.Serialized.Realized
+open Zen.Sha3.Realized
 
 
 let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -168,7 +168,7 @@ let decodeState #n iData =
 val findRoot : #n:nat -> inputData n -> (path:auditPath)
     -> cost (result hash) M.((n * 384 + 1065 + dfst path.hashes))
 let findRoot #n iData {location=location;hashes=hashes} =
-  let inputHash = sha3_256 iData in
+  let inputHash = hash256 iData in
   let optRoot = OT.bindLift inputHash (function h -> rootFromAuditPath h location (dsnd hashes)) in
   do optRoot' <-- optRoot;
   ret @ O.maybe (E.failw "Can't hash input data") (E.ret) optRoot'
@@ -447,7 +447,7 @@ type createTxPlusK (cmdRes:result command) (k:nat) =
 val createTx :
       hash
       -> cmdRes:result command
-      -> createTxPlusK cmdRes 26
+      -> createTxPlusK cmdRes 29
 let createTx cHash cmdRes =
 match cmdRes with
 | V c -> (match c with
@@ -460,9 +460,10 @@ match cmdRes with
   | Exercise [| ptd; ptd'; ptd'' |] d path lk ->
       exerciseTx cHash ptd ptd' ptd'' d path lk <: createTxPlusK cmdRes 0
   )
-| _ -> ET.autoFailw "Bad command" <: createTxPlusK cmdRes 0
+| E e -> ET.autoFail e <: createTxPlusK cmdRes 0
+| Err msg -> ET.autoFailw msg <: createTxPlusK cmdRes 0
 
-val main' : (iM:inputMsg) -> createTxPlusK (force (makeCommand iM)) 123
+val main' : (iM:inputMsg) -> createTxPlusK (force (makeCommand iM)) 128
 let main' iM =
   do cmdRes <-- makeCommand iM;
   do tx <-- createTx iM.contractHash cmdRes;
