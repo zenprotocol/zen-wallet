@@ -121,16 +121,16 @@ namespace ContractsDiscovery.Web.Controllers
                 switch (action)
                 {
                     case "Collateralize":
-						var pkAddress = new PKAddressField();
-						pkAddress.SetValue(Request["return-address"]);
+						//var pkAddress = new PKAddressField();
+						//pkAddress.SetValue(Request["return-address"]);
 
-						if (pkAddress.Invalid)
-						{
-			                contractInteraction.Message = "Invalid return address";
-							return View(contractInteraction);
-						}
+						//if (pkAddress.Invalid)
+						//{
+			   //             contractInteraction.Message = "Invalid return address";
+						//	return View(contractInteraction);
+						//}
 
-						args.Add("returnPubKeyAddress", pkAddress.Value);
+						//args.Add("returnPubKeyAddress", pkAddress.Value);
                         opcode = OPCODE_COLLATERALIZE;
                         break;
                     case "Exercise":
