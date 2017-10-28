@@ -33,7 +33,7 @@ namespace ContractsDiscovery.Web.App_Code
 
             var keypair = EnsureKeyPair();
             PrivateKey = keypair.PrivateKey;
-            var contractCode = EnsureContractCode(keypair.PublicKey);
+            var contractCode = GetContractCode(keypair.PublicKey);
 
 			ContractAddress = new Address(Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)), AddressType.Contract);
 
@@ -101,7 +101,7 @@ namespace ContractsDiscovery.Web.App_Code
             return new KeyPair(Convert.FromBase64String(parts[0]), Convert.FromBase64String(parts[1]));
         }
 
-        string EnsureContractCode(byte[] publicKey)
+        string GetContractCode(byte[] publicKey)
         {
             if (System.IO.File.Exists(System.IO.Path.Combine("db", "oracle-contract.txt")))
             {

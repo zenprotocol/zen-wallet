@@ -6,21 +6,16 @@ open FStar.Pervasives
 open Zen
 
 type ContractResult = Result<TransactionSkeleton, string>
-//type MainFunction = (inputMsg -> ContractResult) * (inputMsg -> int64)
-
-//  : cf:costFunction
-//           -> mf:(imsg:inputMsg -> Zen.Cost.t (result transactionSkeleton) (Zen.Cost.force ((CostFunc?.f cf) imsg)))
-//           -> mainFunction
 
 let private unCost (Zen.Cost.Realized.C inj:Zen.Cost.Realized.cost<'Aa, 'An>) : 'Aa = inj.Force()
 
-let private vectorToList (z:Vector.t<'Aa, _>) : List<'Aa> =
+let vectorToList (z:Vector.t<'Aa, _>) : List<'Aa> =
      // 0I's are eraseable
      Vector.foldl 0I 0I (fun acc e -> Zen.Cost.Realized.ret (e::acc)) [] z 
      |> unCost
      |> List.rev
 
-let private listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
+let listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
     let len = List.length ls 
     let lsIndexed = List.mapi (fun i elem -> bigint (len - i - 1), elem) ls // vertors are reverse-zero-indexed
     List.foldBack (fun (i,x) acc -> Vector.VCons (i, x, acc)) lsIndexed Vector.VNil
@@ -28,21 +23,49 @@ let private listToVector (ls:List<'Aa>) : Vector.t<'Aa, _> =
 let private fstToFsOutpoint (a:outpoint) : Consensus.Types.Outpoint =
     { txHash = a.txHash; index = a.index }
 
-//private
 let fsToFstOutpoint (a:Consensus.Types.Outpoint) : outpoint =
     { txHash = a.txHash; index = a.index }
 
 open Consensus.Serialization
 
+let private getDataPoints (data : data<unit>) : bigint =
+    match data with 
+    | Empty -> 0I
+    | Bool _ -> 1I
+    | Byte _ -> 1I
+    | Hash _ -> 1I
+    | Key _ -> 1I
+    | Outpoint _ -> 1I
+    | Output _ -> 1I
+    | OutputLock _ -> 1I
+    | Sig _ -> 1I
+    | UInt8 _ -> 1I
+    | UInt32 _ -> 1I
+    | UInt64 _ -> 1I
+    | Data2 (n1, n2, _, _) -> (n1 + n2)
+    | Data3 (n1, n2, n3, _, _, _) -> (n1 + n2 + n3)
+    | OutpointVector (l, _) -> l
+    | UInt64Vector (l, _) -> l
+    | ByteArray (l, _) -> l
+    | HashArray (l, _) -> l
+    | _ -> 
+        //TODO: complete cases
+        data.ToString()
+        |> System.NotImplementedException
+        |> raise
+
 let private fsToFstLock (outputLock:Consensus.Types.OutputLock) : outputLock =
     match outputLock with 
     | Consensus.Types.PKLock (pkHash) ->
         PKLock pkHash
+    | Consensus.Types.ContractLock (pkHash, null) ->
+        ContractLock (pkHash, 0I, Empty)
     | Consensus.Types.ContractLock (pkHash, [||]) ->
         ContractLock (pkHash, 0I, Empty)
-    | Consensus.Types.ContractLock (pkHash, data) ->
+    | Consensus.Types.ContractLock (pkHash, bytes) ->
         let serializer = context.GetSerializer<data<unit>>()
-        ContractLock (pkHash, bigint data.Length, serializer.UnpackSingleObject data)
+        let data = serializer.UnpackSingleObject bytes
+        ContractLock (pkHash, getDataPoints data, data)
     | _ ->
         //TODO
         outputLock.ToString()
@@ -104,8 +127,35 @@ type DataSerializer(ownerContext) =
             p.Pack(8).Pack(l).PackBinary(serializer.PackSingleObject(d))
         | Optional (l, Native.option.None) ->
             p.Pack(9).Pack(l)
-        | ByteArray (n, bytes) ->
-            p.Pack(10).PackBinary(bytes)
+        | ByteArray (l, bytes) ->
+            p.Pack(10).Pack(l).PackBinary(bytes)
+        | UInt32 (v) ->
+            p.Pack(11).Pack(v)
+        | UInt64Vector (l, v) ->
+            let list = vectorToList v
+            p.Pack(12).Pack(l).Pack<List<uint64>>(list)
+        | UInt32Vector (l, v) ->
+            let list = vectorToList v
+            p.Pack(13).Pack(l).Pack<List<uint32>>(list)
+        | OutpointVector (l, v) ->
+            let list = vectorToList v
+            p.Pack(14).Pack(l).Pack<List<outpoint>>(list)
+        | OutputLock (PKLock bytes) ->
+            p.Pack(15).PackBinary(bytes)
+        | HashArray (l, hashes) ->
+            p.Pack(16).Pack(l).Pack<List<byte[]>>(List.ofArray hashes)
+        | Data4 (l1, l2, l3, l4, d1, d2, d3, d4) -> 
+            //TODO: reafactor
+            let serializer = context.GetSerializer<data<unit>>()
+            p.Pack(17)
+                .Pack(l1)
+                .Pack(l2)
+                .Pack(l3)
+                .Pack(l4)
+                .PackBinary(serializer.PackSingleObject(d1))
+                .PackBinary(serializer.PackSingleObject(d2))
+                .PackBinary(serializer.PackSingleObject(d3))
+                .PackBinary(serializer.PackSingleObject(d4))
         | _ -> 
             //TODO: complete cases
             data.ToString()
@@ -169,6 +219,62 @@ type DataSerializer(ownerContext) =
             let bytes = p.Unpack()
             p.Read() |> ignore
             ByteArray (l, bytes)
+        | 11 ->
+            let v = p.Unpack()
+            p.Read() |> ignore
+            UInt32 v
+        | 12 ->
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let lst = p.Unpack()
+            let vec = listToVector lst
+            p.Read() |> ignore
+            UInt64Vector (len, vec)
+        | 13 ->
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let lst = p.Unpack()
+            let vec = listToVector lst
+            p.Read() |> ignore
+            UInt32Vector (len, vec)
+        | 14 ->
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let lst = p.Unpack()
+            let vec = listToVector lst
+            p.Read() |> ignore
+            OutpointVector (len, vec)
+        | 15 ->
+            let bytes = p.Unpack()
+            p.Read() |> ignore
+            OutputLock (PKLock bytes)
+        | 16 ->
+            let len = p.Unpack()
+            p.Read() |> ignore
+            let list = p.Unpack()
+            p.Read() |> ignore
+            let hashes = Array.ofList list
+            HashArray (len, hashes)
+        | 17 ->
+            //TODO: reafactor
+            let serializer = context.GetSerializer<data<unit>>()
+            let l1 = p.Unpack()
+            p.Read() |> ignore
+            let l2 = p.Unpack()
+            p.Read() |> ignore
+            let l3 = p.Unpack()
+            p.Read() |> ignore
+            let l4 = p.Unpack()
+            p.Read() |> ignore
+            let d1 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            let d2 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            let d3 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            let d4 = serializer.UnpackSingleObject(p.Unpack())
+            p.Read() |> ignore
+            Data4 (l1, l2, l3, l4, d1, d2, d3, d4)
         | _ -> 
             "Unwnown code encountered while unpacking data: " + code.ToString()
             |> SerializationException
@@ -176,40 +282,12 @@ type DataSerializer(ownerContext) =
 
 context.Serializers.RegisterOverride<data<unit>>(new DataSerializer(context))
 
-let private makeDTuple (data : data<unit>) : Prims.dtuple2<Prims.nat, data<unit>> =
-    match data with 
-    | Empty -> Prims.Mkdtuple2 (0I, data)
-    | Bool _ -> Prims.Mkdtuple2 (1I, data)
-    | Byte _ -> Prims.Mkdtuple2 (1I, data)
-    | Hash _ -> Prims.Mkdtuple2 (1I, data)
-    | Key _ -> Prims.Mkdtuple2 (1I, data)
-    | Outpoint _ -> Prims.Mkdtuple2 (1I, data)
-    | Output _ -> Prims.Mkdtuple2 (1I, data)
-    | OutputLock _ -> Prims.Mkdtuple2 (1I, data)
-    | Sig _ -> Prims.Mkdtuple2 (1I, data)
-    | UInt8 _ -> Prims.Mkdtuple2 (1I, data)
-    | UInt32 _ -> Prims.Mkdtuple2 (1I, data)
-    | UInt64 _ -> Prims.Mkdtuple2 (1I, data)
-    | Data2 (n1, n2, _, _) -> Prims.Mkdtuple2 (n1 + n2, data)
-    | _ -> 
-        //TODO: complete cases
-        data.ToString()
-        |> System.NotImplementedException
-        |> raise
-
 let convertInput : ContractFunctionInput -> inputMsg = 
     function (message, contractHash, utxo) -> 
         let unpacked = context.GetSerializer<data<unit>>().UnpackSingleObject message.[1..]
-        //let fundsOutpoint, data = match unpacked with 
-        //| Zen.Types.Extracted.Data2 (_, _, Outpoint fundsOutpoint, data) -> fundsOutpoint, data
-
-
-        //let value:data<unit> = Zen.Types.Extracted.Data2 (15I, 25I, (Bool true), Optional (1I, Native.option.Some (Bool true)))
-
         {
             cmd = message.[0];
-       //     fundsOutpoint = fundsOutpoint
-            data = makeDTuple unpacked;
+            data = Prims.Mkdtuple2 (getDataPoints unpacked, unpacked);
             contractHash = contractHash;
             utxo = convertUtxo utxo
         }

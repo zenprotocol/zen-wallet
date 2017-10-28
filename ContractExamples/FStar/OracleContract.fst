@@ -1,4 +1,4 @@
-module OracleContract
+module ZenModule
 
 open Zen.Base
 open Zen.Cost

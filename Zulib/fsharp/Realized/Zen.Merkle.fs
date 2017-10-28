@@ -7,7 +7,7 @@ module ZArr = Zen.Array.Extracted
 module Cost = Zen.Cost.Realized
 module sha3 = Zen.Sha3.Realized
 
-let private serialize = function
+let serialize = function
     // Oracle data structure
     | Data4 (_, _, _, _,
       ByteArray (_, underlyingBytes),

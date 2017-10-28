@@ -78,7 +78,7 @@
       <HintPath>..\packages\FSharp.Compiler.Service.12.0.8\lib\net45\FSharp.Compiler.Service.MSBuild.v12.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="FsPickler">
       <HintPath>..\packages\FsPickler.3.3.0\lib\net45\FsPickler.dll</HintPath>
@@ -130,12 +130,11 @@
     <Compile Include="MaybeWorkflow.fs" />
     <Compile Include="Merkle.fs" />
     <Compile Include="MerkleTests.fs" />
-    <Compile Include="Oracle.fs" />
     <Compile Include="Contracts.fs" />
     <Compile Include="QuotedContracts.fs" />
     <Compile Include="Execution.fs" />
-    <Compile Include="ContractTests.fs" />
     <Compile Include="FStarCompatibility.fs" />
+    <Compile Include="Oracle.fs" />
     <Compile Include="FStarExecution.fs" />
     <Compile Include="FStarContractsTests.fs" />
     <None Include="packages.config" />
@@ -144,5 +143,5 @@
     <None Include="FStar\SecureToken.fst" />
     <None Include="FStar\OracleContract.fst" />
   </ItemGroup>
-  <Import Project="$(FSharpTargetsPath)" />  
+  <Import Project="$(FSharpTargetsPath)" />
 </Project>

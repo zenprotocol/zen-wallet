@@ -20,10 +20,10 @@ namespace ContractsDiscovery.Web.Controllers
 		StockAPI _StockAPI = new StockAPI();
 		static string NodeRPCAddress = WebConfigurationManager.AppSettings["node"];
 
-    public ActionResult List()
+        public ActionResult List()
 		{
-      return View();
-    }
+          return View();
+        }
 
 		public ActionResult Index()
 		{
@@ -103,12 +103,17 @@ namespace ContractsDiscovery.Web.Controllers
 
 			var utxo = utxos.First();
 
-			var data = ContractExamples.QuotedContracts.simplePackOutpoint(utxo.Item1)
-						   .Concat(commitmentData.Item2).ToArray();
 
-			var signiture = Authentication.sign(data, contractManager.PrivateKey);
+            //var serializer = new ContractExamples.FStarCompatibility.DataSerializer(Consensus.Serialization.context);
+            //Consensus.Serialization.context.Serializers.RegisterOverride(serializer);
 
-			data = data.Concat(signiture).ToArray();
+            var data = ContractUtilities.DataGenerator.makeOracleMessage(commitmentData.Item2, utxo.Item1);
+			//var data = ContractExamples.QuotedContracts.simplePackOutpoint(utxo.Item1)
+			//			   .Concat(commitmentData.Item2).ToArray();
+
+			//var signiture = Authentication.sign(data, contractManager.PrivateKey);
+
+			//data = data.Concat(signiture).ToArray();
 
 			var sendContractResult = Client.Send<SendContractResultPayload>(NodeRPCAddress, new SendContractPayload()
 			{
@@ -133,7 +138,7 @@ namespace ContractsDiscovery.Web.Controllers
 			}
 			else
 			{
-				ViewData["Message"] = "Resson: send result was '" + sendContractResult.Message + "'";
+				ViewData["Message"] = "Reason: send result was '" + sendContractResult.Message + "'";
 			}
 
 			return View();
