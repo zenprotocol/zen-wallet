@@ -139,6 +139,8 @@ type DataSerializer(ownerContext) =
         | OutpointVector (l, v) ->
             let list = vectorToList v
             p.Pack(14).Pack(l).Pack<List<outpoint>>(list)
+        | OutputLock (PKLock bytes) ->
+            p.Pack(15).PackBinary(bytes)
         | _ -> 
             //TODO: complete cases
             data.ToString()
@@ -227,6 +229,10 @@ type DataSerializer(ownerContext) =
             let vec = listToVector lst
             p.Read() |> ignore
             OutpointVector (len, vec)
+        | 15 ->
+            let bytes = p.Unpack()
+            p.Read() |> ignore
+            OutputLock (PKLock bytes)
         | _ -> 
             "Unwnown code encountered while unpacking data: " + code.ToString()
             |> SerializationException
