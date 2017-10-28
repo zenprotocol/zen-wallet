@@ -77,7 +77,7 @@ namespace ContractsDiscovery.Web.Controllers
 			createCallOption.Price.SetValue(Request["price"]);
             createCallOption.Strike.SetValue(Request["strike"]);
 			createCallOption.MinimumCollateralRatio.SetValue(Request["minimumCollateralRatio"]);
-			createCallOption.OwnerPubKey.SetValue(Request["ownerPubKey"]);
+			//createCallOption.OwnerPubKey.SetValue(Request["ownerPubKey"]);
 
 			if (createCallOption.Invalid)
             {
@@ -95,7 +95,7 @@ namespace ContractsDiscovery.Web.Controllers
                         createCallOption.Price.Decimal,
                         createCallOption.Strike.Decimal,
 						createCallOption.MinimumCollateralRatio.Decimal,
-                        createCallOption.OwnerPubKey.PublicKey);
+                        new byte[] { }/*createCallOption.OwnerPubKey.PublicKey*/);
 
 					//var contract = ContractExamples.QuotedContracts.callOptionFactory(callOptionParameters);
 					//var contractCode = ContractExamples.Execution.quotedToString(contract);
@@ -113,14 +113,14 @@ namespace ContractsDiscovery.Web.Controllers
 						ownerPubKey = Convert.ToBase64String(callOptionParameters.ownerPubKey)
 					};
                     var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
-					var contractCode = tpl
-						 .Replace("__numeraire__", Convert.ToBase64String(callOptionParameters.numeraire))
-						 .Replace("__oracle__", Convert.ToBase64String(callOptionParameters.oracle))
-						 .Replace("__underlying__", callOptionParameters.underlying)
-						 .Replace("__price__", "" + callOptionParameters.price)
-						 .Replace("__strike__", "" + callOptionParameters.strike)
-						 .Replace("__minimumCollateralRatio__", "" + callOptionParameters.minimumCollateralRatio)
-						 .Replace("__ownerPubKey__", Convert.ToBase64String(callOptionParameters.ownerPubKey));
+                    var contractCode = tpl
+                         .Replace("__numeraire__", Convert.ToBase64String(callOptionParameters.numeraire))
+                         .Replace("__oracle__", Convert.ToBase64String(callOptionParameters.oracle))
+                         .Replace("__underlying__", callOptionParameters.underlying)
+                         .Replace("__price__", "" + callOptionParameters.price)
+                         .Replace("__strike__", "" + callOptionParameters.strike)
+                         .Replace("__minimumCollateralRatio__", "" + callOptionParameters.minimumCollateralRatio);
+						// .Replace("__ownerPubKey__", Convert.ToBase64String(callOptionParameters.ownerPubKey));
 					contractCode += "\n" + jsonHeader;
 
                     var code = Utils.Dos2Unix(contractCode);
