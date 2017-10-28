@@ -54,7 +54,7 @@ namespace ContractsDiscovery.Web.App_Code
                             try
                             {
                                 var parts = Regex.Split(line, @",(?=(?:[^""]*""[^""]*"")*[^""]*$)");
-                                values.Add(new Ticker() { Name = parts[0], Value = Decimal.Parse(parts[2]) });
+                                values.Add(new Ticker() { Name = parts[0].Replace("\"", ""), Value = Decimal.Parse(parts[2]) }); //TODO: instead of using replace, use same regex
                             }
                             catch (Exception e)
                             {
