@@ -408,131 +408,65 @@ let exerciseTx
           | _ -> autoFailw "Bad oracle output format"
           end
 
-type createTxInnerCost (cmd:command) =
+type createTxInnerCost (cmdRes:result command) =
   cost (result transactionSkeleton)
-        (match cmd with
-          | Initialize _ -> 45
-          | Collateralize _ -> 102
-          | Buy _ _ -> 112
-          | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-              M.(((n+3) * 384 + 1262 + m))
-        )
+          (match cmdRes with
+            | V c -> (match c with
+              | Initialize _ -> 45
+              | Collateralize _ -> 102
+              | Buy _ _ -> 112
+              | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
+                  M.(((n+3) * 384 + 1262 + m)))
+            | _ -> 0
+          )
 
-type createTxCost (cmd:command) =
+type createTxCost (cmdRes:result command) =
   cost (result transactionSkeleton)
-        ((match cmd with
-          | Initialize _ -> 45
-          | Collateralize _ -> 102
-          | Buy _ _ -> 112
-          | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-              M.(((n+3) * 384 + 1262 + m))
-        ) + 23)
+        ((match cmdRes with
+          | V c -> (match c with
+            | Initialize _ -> 45
+            | Collateralize _ -> 102
+            | Buy _ _ -> 112
+            | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
+                M.(((n+3) * 384 + 1262 + m)))
+          | _ -> 0
+        ) + 26)
+
+type createTxPlusK (cmdRes:result command) (k:nat) =
+    cost  (result transactionSkeleton)
+          ((match cmdRes with
+            | V c -> (match c with
+              | Initialize _ -> 45
+              | Collateralize _ -> 102
+              | Buy _ _ -> 112
+              | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
+                  M.(((n+3) * 384 + 1262 + m)))
+            | _ -> 0
+          ) + k)
 
 val createTx :
       hash
-      -> cmd:command
-      -> (createTxCost cmd)
-let createTx cHash cmd =
-match cmd with
-| Initialize pointed ->
-    initializeTx cHash pointed <: createTxInnerCost cmd
-| Collateralize [| pointed; pointed'|] ->
-    collateralizeTx cHash pointed pointed' <: createTxInnerCost cmd
-| Buy [| ptd; ptd' |] lk ->
-    buyTx cHash ptd ptd' lk <: createTxInnerCost cmd
-| Exercise [| ptd; ptd'; ptd'' |] d path lk ->
-    exerciseTx cHash ptd ptd' ptd'' d path lk <: createTxInnerCost cmd
-
-
-(*type liftedCreateTxCost (cmdRes: result command) =
-  cost (result transactionSkeleton)
-        (match cmdRes with
-        | V c -> ((match c with
-                    | Initialize _ -> 45
-                    | Collateralize _ -> 102
-                    | Buy _ _ -> 112
-                    | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-                        M.(((n+3) * 384 + 1262 + m))
-                  ) + 23) + 5
-        | _ -> 5)
-
-val liftedCreateTx :
-      hash
-      -> cmdRes : result command
-      -> liftedCreateTxCost cmdRes
-let liftedCreateTx cHash cmdRes =
+      -> cmdRes:result command
+      -> createTxPlusK cmdRes 26
+let createTx cHash cmdRes =
 match cmdRes with
-| V c -> createTx cHash c
-| _ -> ET.autoFailw "Bad command"*)
+| V c -> (match c with
+  | Initialize pointed ->
+      initializeTx cHash pointed <: createTxPlusK cmdRes 0
+  | Collateralize [| pointed; pointed'|] ->
+      collateralizeTx cHash pointed pointed' <: createTxPlusK cmdRes 0
+  | Buy [| ptd; ptd' |] lk ->
+      buyTx cHash ptd ptd' lk <: createTxPlusK cmdRes 0
+  | Exercise [| ptd; ptd'; ptd'' |] d path lk ->
+      exerciseTx cHash ptd ptd' ptd'' d path lk <: createTxPlusK cmdRes 0
+  )
+| _ -> ET.autoFailw "Bad command" <: createTxPlusK cmdRes 0
 
-(*type mainInnerCost (iM:inputMsg) =
-  cost (result transactionSkeleton)
-        (match force (makeCommand iM) with
-        | V c -> ((match c with
-          | Initialize _ -> 45
-          | Collateralize _ -> 102
-          | Buy _ _ -> 112
-          | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-              M.(((n+3) * 384 + 1262 + m))
-                )  + 23)
-        | E _ -> 0
-        | Err _ -> 0
-        )
-
-
-
-
-val main' : (iM:inputMsg) -> cost (result transactionSkeleton)
-        ((match force (makeCommand iM) with
-        | V c -> ((match c with
-          | Initialize _ -> 45
-          | Collateralize _ -> 102
-          | Buy _ _ -> 112
-          | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-              M.(((n+3) * 384 + 1262 + m))
-                )  + 23)
-        | E _ -> 0
-        | Err _ -> 0
-        )+103)
-
+val main' : (iM:inputMsg) -> createTxPlusK (force (makeCommand iM)) 123
 let main' iM =
-  let open Zen.Cost in
-  do cRes <-- makeCommand iM; // cRes has type result command
-  match cRes with
-  | V c ->
-      do cTx <-- createTx (iM.contractHash) c;
-      ret cTx
-  | E _ ->
-      ET.autoFailw "Can't get command" <: mainInnerCost iM
-  | Err msg ->
-      ET.autoFailw msg <: mainInnerCost iM*)
-
-(* OLD
-let main' iM =
-  let open ET in
-  do c <-- makeCommand iM;
-  createTx (iM.contractHash) c
-  //(makeCommand iM) >>= (createTx (iM.contractHash))
-*)
-
-(*
-val main': iM:inputMsg -> cost (result transactionSkeleton) (mainCost iM.cmd)
-let main' iM =
-  let comm = makeCommand iM
-  let open ET in
-  do comm <-- makeCommand iM;
-  createTx (iM.contractHash) comm
-
-val cf' : inputMsg -> cost nat 26
-let cf' {cmd=cmd} =
-  let open M in
-  match cmd with
-    | Initialize _ -> autoRet @ 45 + 23
-    | Collateralize _ -> autoRet @ 102 + 23
-    | Buy _ _ -> autoRet @112 + 23
-    | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-        ret @ ((n+3) * 384 + 1179 + m) + 23*)
-
+  do cmdRes <-- makeCommand iM;
+  do tx <-- createTx iM.contractHash cmdRes;
+  ret tx
 
 assume val main: inputMsg -> cost (result transactionSkeleton) 241
 
