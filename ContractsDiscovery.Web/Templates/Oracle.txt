@@ -19,7 +19,7 @@ let parse_output oracleCHash output =
       -> if outputCHash = oracleCHash
         then ret outputSpend
         else failw "wrong contract lock"
-  | _ -> failw "wrong output fomat"
+  | _ -> failw "wrong output format"
 
 
 val main: inputMsg -> cost (result transactionSkeleton) 58
@@ -38,8 +38,8 @@ let main { data=inputData; contractHash=oracleCHash; utxo=utxo } =
   let    dataOutput = { lock=dataOutputLock;
                         spend={asset=oracleCHash; amount=1UL} } in
 
-  ret@Tx [|outpoint|]
-         [|chainedOutput; dataOutput|]
+  ret@Tx V[outpoint]
+         V[chainedOutput; dataOutput]
          None
 
 val cf: inputMsg -> cost nat 1
