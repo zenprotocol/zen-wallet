@@ -44,6 +44,7 @@ let private getDataPoints (data : data<unit>) : bigint =
     | UInt64 _ -> 1I
     | Data2 (n1, n2, _, _) -> (n1 + n2)
     | Data3 (n1, n2, n3, _, _, _) -> (n1 + n2 + n3)
+    | Data4 (n1, n2, n3, n4, _, _, _, _) -> (n1 + n2 + n3)
     | OutpointVector (l, _) -> l
     | UInt64Vector (l, _) -> l
     | ByteArray (l, _) -> l
