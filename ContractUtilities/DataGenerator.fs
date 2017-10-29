@@ -301,7 +301,7 @@ let makeMessage (json:ContractJsonData.Root) outpoint =
         | Zen.Types.Extracted.Outpoint o -> fundsOutpoint |> Zen.Types.Extracted.Outpoint
         | Zen.Types.Extracted.OutpointVector (l, vec) ->
             let list = vectorToList vec
-            Zen.Types.Extracted.OutpointVector (l, listToVector [ list.[0]; fundsOutpoint ])*****
+            Zen.Types.Extracted.OutpointVector (l, listToVector [ list.[0]; fundsOutpoint ])
         | Zen.Types.Extracted.Data2 (l1, l2, Zen.Types.Extracted.OutpointVector (l3, vec), lock) ->
             let list = vectorToList vec
             let vec2 = Zen.Types.Extracted.OutpointVector (l3, listToVector [ list.[0]; fundsOutpoint ])
