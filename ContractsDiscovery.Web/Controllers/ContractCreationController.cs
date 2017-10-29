@@ -113,12 +113,14 @@ namespace ContractsDiscovery.Web.Controllers
 						ownerPubKey = Convert.ToBase64String(callOptionParameters.ownerPubKey)
 					};
                     var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
+                    var underlying = Enumerable.Repeat((byte)0, 32).ToArray();
+                    Encoding.ASCII.GetBytes(callOptionParameters.underlying).CopyTo(underlying, 0);
                     var contractCode = tpl
                          .Replace("__numeraire__", Convert.ToBase64String(callOptionParameters.numeraire))
                          .Replace("__oracle__", Convert.ToBase64String(callOptionParameters.oracle))
-                         .Replace("__underlying__", callOptionParameters.underlying)
+                         .Replace("__underlying__", Convert.ToBase64String(underlying))
                          .Replace("__price__", "" + callOptionParameters.price)
-                         .Replace("__strike__", "" + callOptionParameters.strike)
+                         .Replace("__strike__", "" + Math.Round(callOptionParameters.strike) * 1000)
                          .Replace("__minimumCollateralRatio__", "" + callOptionParameters.minimumCollateralRatio);
 						// .Replace("__ownerPubKey__", Convert.ToBase64String(callOptionParameters.ownerPubKey));
 					contractCode += "\n" + jsonHeader;
