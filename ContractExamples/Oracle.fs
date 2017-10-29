@@ -34,8 +34,8 @@ let commitments (items: TickerItem seq) (secret: byte[]) =
         item
         |> leafData
         |> Zen.Merkle.serialize 
-        |> Option.map innerHash
-        |> Option.get //TODO
+        |> Zen.Option.map innerHash
+        |> function FStar.Pervasives.Native.option.Some x -> x  //TODO
 
     let tree = Seq.map leaf items |> Seq.toArray |> Merkle.merkleTree
     let root = (Array.last tree).[0]

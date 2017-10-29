@@ -172,12 +172,12 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
             let data = 
                 Zen.Types.Extracted.Data4(
                     3I, 
-                    1I, 
                     32I + 1I + 1I + 1I,
                     1I + pathLength,
+                    1I, 
+                    Zen.Types.Extracted.OutpointVector (3I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint; fsToFstOutpoint oracleOutpoint ]),
                     originalCommitment,
                     auditPath,
-                    Zen.Types.Extracted.OutpointVector (3I, listToVector [ fsToFstOutpoint stateOutpoint; stubFundsOutpoint; fsToFstOutpoint oracleOutpoint ]),
                     Zen.Types.Extracted.OutputLock (Zen.Types.Extracted.PKLock address.Bytes))
 
             let auditPath =
@@ -301,11 +301,19 @@ let makeMessage (json:ContractJsonData.Root) outpoint =
         | Zen.Types.Extracted.Outpoint o -> fundsOutpoint |> Zen.Types.Extracted.Outpoint
         | Zen.Types.Extracted.OutpointVector (l, vec) ->
             let list = vectorToList vec
-            Zen.Types.Extracted.OutpointVector (l, listToVector [ list.[0]; fundsOutpoint ])
+            Zen.Types.Extracted.OutpointVector (l, listToVector [ list.[0]; fundsOutpoint ])*****
         | Zen.Types.Extracted.Data2 (l1, l2, Zen.Types.Extracted.OutpointVector (l3, vec), lock) ->
             let list = vectorToList vec
             let vec2 = Zen.Types.Extracted.OutpointVector (l3, listToVector [ list.[0]; fundsOutpoint ])
             Zen.Types.Extracted.Data2 (l1, l2, vec2, lock)
+        | Zen.Types.Extracted.Data4 (l1, l2, l3, l4, Zen.Types.Extracted.OutpointVector (l, vec), originalCommitment, auditPath, lock) 
+            when l1 = 3I && l2 = 32I + 1I + 1I + 1I && l4 = 1I ->
+            let list = vectorToList vec
+            let vec2 = Zen.Types.Extracted.OutpointVector (l3, listToVector [ list.[0]; fundsOutpoint; list.[2] ])
+            Zen.Types.Extracted.Data4 (l1, l2, l3, l4, vec2, originalCommitment, auditPath, lock)
+        
+
+
     let bytes = serializer.PackSingleObject actualData 
 
     let cmd = getBytes json.Second.Value.Initial
@@ -314,7 +322,7 @@ let makeMessage (json:ContractJsonData.Root) outpoint =
 let makeOracleMessage data outpoint = 
     let ser = context.GetSerializer<Zen.Types.Extracted.data<unit>>()
     
-    let message = ser.PackSingleObject (Zen.Types.Extracted.Data2 (1I, 32I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), Zen.Types.Extracted.ByteArray (32I, data)))
+    let message = ser.PackSingleObject (Zen.Types.Extracted.Data2 (1I, 32I, Zen.Types.Extracted.Outpoint (fsToFstOutpoint outpoint), Zen.Types.Extracted.Hash data))
 
     Array.append [|0uy|] message
    

@@ -1,13 +1,14 @@
 module Zen.Merkle
 
+open FStar.Pervasives
 open System
 open Zen.Types.Extracted
-
+open Zen.Option
 module ZArr = Zen.Array.Extracted
 module Cost = Zen.Cost.Realized
 module sha3 = Zen.Sha3.Realized
 
-let serialize = function
+let serialize : data<Prims.unit> -> Native.option<byte []> = function
     // Oracle data structure
     | Data4 (_, _, _, _,
       ByteArray (_, underlyingBytes),
@@ -16,15 +17,15 @@ let serialize = function
       Hash nonce) ->
         [ underlyingBytes; BitConverter.GetBytes price; BitConverter.GetBytes timestamp ]
         |> List.fold (fun acc elem -> Array.append elem acc) [||]
-        |> Some
-    | _ -> None
+        |> Native.Some
+    | _ -> Native.None
 
 let hashData
     ( _ : Prims.nat)
     data
-    : Cost.t<hash option, Prims.unit> =
+    : Cost.t<hash Native.option, Prims.unit> =
         lazy (
-            FSharp.Core.Option.map sha3.hash256 <| serialize data
+            map sha3.hash256 <| serialize data
         )
         |> Cost.C
 
