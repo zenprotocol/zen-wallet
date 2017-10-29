@@ -58,31 +58,43 @@ let compile source =
 
 open System.Diagnostics;
 
-let mono_locations = [ //TODO: prioritize
+let monoLocations = [ //TODO: prioritize
     "/usr/bin/mono"
     "/usr/local/bin/mono"
     "/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono"
 ]
     
-let mono = List.tryFind File.Exists mono_locations 
+let mono = List.tryFind File.Exists monoLocations 
+
+let platform = //https://stackoverflow.com/questions/10138040/how-to-detect-properly-windows-linux-mac-operating-systems
+    match System.Environment.OSVersion.Platform with
+    | System.PlatformID.Unix -> 
+        if (Directory.Exists "/Applications"
+            && Directory.Exists "/System"
+            && Directory.Exists "/Users"
+            && Directory.Exists "/Volumes")
+            then System.PlatformID.MacOSX
+            else System.PlatformID.Unix
+    | x -> x
 
 let fstarPath =     
     let fstarDevPath =
-        match System.Environment.OSVersion.Platform with
+        match platform with
         | System.PlatformID.Win32NT -> rootPath "../../../tools/fstar/dotnet/fstar.exe"               
         | _ -> rootPath "../../../tools/fstar/mono/fstar.exe"
                                       
     List.find File.Exists [fstarDevPath; rootPath "fstar/fstar.exe"]            
-    
+
+
 let z3Path =
     let z3Locations = 
-        match System.Environment.OSVersion.Platform with
+        match platform with
         | System.PlatformID.Win32NT -> [rootPath "../../../tools/z3/windows/z3.exe"; rootPath "z3/z3.exe"]
         | System.PlatformID.MacOSX -> [rootPath "../../../tools/z3/osx/z3"; rootPath "z3/z3"]
         | _ -> [rootPath "../../../tools/z3/linux/z3"; rootPath "z3/z3"]
         
     List.find File.Exists z3Locations
-    
+
 let zulibPath = List.find Directory.Exists [rootPath "../../../Zulib/fstar"; rootPath "Zulib"]
     
 
