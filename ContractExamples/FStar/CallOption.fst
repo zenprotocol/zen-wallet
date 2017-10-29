@@ -63,85 +63,96 @@ let rec tryAddPoints #l v utxos =
         | None ->
           (17 * l) +! failw "Cannot find output in UTXO set"
 
-type oracleData = {
-                    underlying: (n:nat & A.t byte n);
-                    price : U64.t;
-                    timestamp : U64.t; //Using UInt64 casts outside consensus for now
-                    nonce : hash
-                  }
+type oracleData (n:nat) = {
+  underlying: A.t byte n;
+  price : U64.t;
+  timestamp : U64.t; //Using UInt64 casts outside consensus for now
+  nonce : hash
+  }
 
-type auditPath =  {
-                    location : U32.t;
-                    hashes : (n:nat & A.t hash n)
-                  }
+type auditPath (n:nat) = {
+  location : U32.t;
+  hashes : A.t hash n
+  }
 
 unopteq type command =
-  | Initialize of pointedOutput
-  | Collateralize of V.t pointedOutput 2
-  | Buy: (V.t pointedOutput 2) -> outputLock -> command
+  | Initialize of outpoint
+  | Collateralize of V.t outpoint 2
+  | Buy: V.t outpoint 2 -> outputLock -> command
   | Exercise:
-           (V.t pointedOutput 3)
-        -> oracleData
-        -> auditPath
+           V.t outpoint 3
+        -> nUnderlyingAssetBytes : nat
+        -> oracleData nUnderlyingAssetBytes
+        -> nAuditPathHashes : nat
+        -> auditPath nAuditPathHashes
         -> outputLock
         -> command
+  | Fail of string
 
-val makeCommand : inputMsg -> cost (result command) 92
-let makeCommand {cmd=cmd; data=iData; utxo=utxos} =
+type dcommand (iMsg:inputMsg) = dcmd:command // Command that depends on input message
+  { match iMsg with
+    | { cmd=0uy; data=(| _, Outpoint pt |) }->
+         Initialize? dcmd
+    | { cmd=1uy; data=(| _, OutpointVector 2 _ |) } ->
+         Collateralize? dcmd
+    | { cmd=2uy; data=(| _, Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } ->
+         Buy? dcmd
+    | { cmd=3uy;
+        data= (| _, Data4 _ _ _ _
+                      _
+                      (Data4 _ _ _ _
+                        (ByteArray nUnderlyingAssetBytes _)
+                        _
+                        _
+                        _)
+                      (Data2 _ _
+                        _
+                        (HashArray nAuditPathHashes _))
+                      _ |) } ->
+           Exercise? dcmd
+        /\ Exercise?.nUnderlyingAssetBytes dcmd = nUnderlyingAssetBytes
+        /\ Exercise?.nAuditPathHashes dcmd = nAuditPathHashes
+    | _ -> Fail? dcmd }
+
+val makeCommand : iMsg:inputMsg -> cost (dcommand iMsg) 72
+let makeCommand iMsg =
   let open M in
-  let open ET in
-  match cmd with
-  | 0uy -> begin match iData with
-           | (| 1, Outpoint pt |) ->
-             do pointed <-- tryAddPoint pt utxos;
-             incRet 14 (Initialize pointed)
-           | (| 1, _ |) -> incFailw 21 "Bad Initialization data"
-           | (| 2, OutpointVector _ [| outpoint0; outpoint1 |] |) ->
-             do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
-             do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             incRet 7 (Collateralize [| pointedOutput0; pointedOutput1 |])
-           | (| 2, _ |) -> incFailw 21 "Bad Collateralization data"
-           | _ -> incFailw 21 "Bad Initialization/Collateralization data"
-           end
-  | 1uy -> begin match iData with
-           | (|3, Data2 _ _ (OutpointVector _ [| outpoint0; outpoint1 |] )
-                            (OutputLock lk) |) ->
-             do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
-             do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-             incRet 7 (Buy [| pointedOutput0; pointedOutput1 |] lk)
-           | _ -> incFailw 21 "Bad Buy Data"
-           end
-  | 2uy -> begin match iData with
-           | (| _,
-                Data4 _ _ _ _
-                  (OutpointVector _ [| outpoint0; outpoint1; outpoint2 |])
-                  (Data4 _ _ _ _
-                    (ByteArray n_bytes assetId)
-                    (UInt64 price)
-                    (UInt64 time)
-                    (Hash nonce))
-                  (Data2 _ _
-                    (UInt32 location)
-                    (HashArray n_hashes hashes))
-                  (OutputLock lk)
-              |) ->
-                let oracleData = { underlying = (| n_bytes, assetId |);
-                                   price=price;
-                                   timestamp=time;
-                                   nonce=nonce } in
-                let auditPath = { location=location;
-                                  hashes = (| n_hashes, hashes |) } in
-                do pointedOutput0 <-- tryAddPoint outpoint0 utxos;
-                do pointedOutput1 <-- tryAddPoint outpoint1 utxos;
-                do pointedOutput2 <-- tryAddPoint outpoint2 utxos;
-                ret@Exercise [| pointedOutput0; pointedOutput1; pointedOutput2 |]
-                             oracleData
-                             auditPath
-                             lk
-           | _ -> incFailw 21 "Bad Exercise Data"
-           end
-  | _ ->  incFailw 21 "Not implemented"
-
+  match iMsg with
+  | { cmd=0uy; data=(| _, Outpoint pt |) }->
+      ret@Initialize pt
+  | { cmd=0uy } ->
+      ret@Fail "Bad Initialization data"
+  | { cmd=1uy; data=(| _, OutpointVector 2 outpoints |) } ->
+      ret@Collateralize outpoints
+  | { cmd=1uy } ->
+      ret@Fail "Bad Collateralization data"
+  | { cmd=2uy; data=(| _, Data2 _ _ (OutpointVector 2 outpoints)
+                                    (OutputLock lk) |) } ->
+      ret@Buy outpoints lk
+  | { cmd=2uy } ->
+      ret@Fail "Bad Buy Data"
+  | { cmd=3uy; data=
+        (| _, Data4 _ _ _ _ (OutpointVector 3 outpoints)
+                            (Data4 _ _ _ _
+                                (ByteArray n_bytes assetId)
+                                (UInt64 price)
+                                (UInt64 time)
+                                (Hash nonce))
+                            (Data2 _ _
+                                (UInt32 location)
+                                (HashArray n_hashes hashes))
+                            (OutputLock lk) |) }
+    ->
+      ret@Exercise outpoints
+                   n_bytes
+                   ({underlying=assetId; price=price; timestamp=time; nonce=nonce})
+                   n_hashes
+                   ({location=location; hashes=hashes})
+                   lk
+  | { cmd=3uy } ->
+      ret@Fail "Bad Exercise Data"
+  | _ ->
+      ret@Fail "Not implemented"
 
 type state = { tokensIssued : U64.t;
                collateral   : U64.t;
@@ -153,7 +164,7 @@ let encodeState {
                   collateral=collateral;
                   counter=counter
                 } =
-                  ret @ UInt64Vector 3 [| tokensIssued;collateral;counter |]
+                  ret @ UInt64Vector 3 V[tokensIssued;collateral;counter]
 
 val decodeState : #n:nat -> inputData n -> cost (result state) 16
 let decodeState #n iData =
@@ -161,23 +172,24 @@ let decodeState #n iData =
   if n <> 3 then autoFailw "Bad data"
   else
     match iData with
-    | UInt64Vector 3 [| tk; coll; cter |] ->
+    | UInt64Vector 3 V[tk; coll; cter] ->
       ret @ {tokensIssued=tk; collateral=coll; counter=cter}
     | _ -> autoFailw "Bad data"
 
-val findRoot : #n:nat -> inputData n -> (path:auditPath)
-    -> cost (result hash) M.((n * 384 + 1065 + dfst path.hashes))
-let findRoot #n iData {location=location;hashes=hashes} =
+val findRoot : #n:nat -> inputData n -> #nAuditPathHashes:nat -> (path:auditPath nAuditPathHashes)
+    -> cost (result hash) M.(n * 384 + 1064 + nAuditPathHashes)
+let findRoot #n iData #nAuditPathHashes {location=location;hashes=hashes} =
   let inputHash = hash256 iData in
-  let optRoot = OT.bindLift inputHash (function h -> rootFromAuditPath h location (dsnd hashes)) in
+  let optRoot = OT.bindLift inputHash (function h -> rootFromAuditPath h location hashes) in
   do optRoot' <-- optRoot;
   ret @ O.maybe (E.failw "Can't hash input data") (E.ret) optRoot'
 
-val initializeTx : hash -> pointedOutput -> cost (result transactionSkeleton) 45
-let initializeTx cHash (pt, oput) =
+val initializeTx : utxo -> hash -> outpoint -> cost (result transactionSkeleton) 55
+let initializeTx utxo cHash outpoint =
       (do numeraire <-- numeraire;
       let open ET in
       let open U64 in
+      do (pt, oput) <-- tryAddPoint outpoint utxo;
       if oput.spend.asset = numeraire
       then      // Initialize with data output
         let initialState : state =
@@ -189,20 +201,22 @@ let initializeTx cHash (pt, oput) =
         do initialStateData <-- retT @ encodeState initialState;
         let dataOutputLock = ContractLock cHash 3 initialStateData in
         let dataOutput = {lock=dataOutputLock;spend=oput.spend} in
-        ret @ Tx [| pt |] [| dataOutput |] None
+        ret @ Tx V[pt] V[dataOutput] None
       else
       autoFailw "Can't initialize with this asset.")
 
-
 val collateralizeTx :
-    hash
-    -> pointedOutput
-    -> pointedOutput
-    -> cost (result transactionSkeleton) 102
-let collateralizeTx cHash (pt1,dataOutput) (pt2,newFundsOutput) =
+    utxo
+    -> hash
+    -> outpoint
+    -> outpoint
+    -> cost (result transactionSkeleton) 122
+let collateralizeTx utxo cHash outpoint0 outpoint1 =
       do numeraire <-- numeraire;
       let open ET in
       let open U64 in
+      do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
+      do (pt1, newFundsOutput) <-- tryAddPoint outpoint1 utxo;
       if dataOutput.spend.asset = numeraire && newFundsOutput.spend.asset = numeraire
       then
         begin match dataOutput.lock, newFundsOutput.lock with
@@ -226,25 +240,27 @@ let collateralizeTx cHash (pt1,dataOutput) (pt2,newFundsOutput) =
                 spend={asset=numeraire;amount=newCollateral}
               } in
             ret @ Tx
-                    [| pt1; pt2 |]
-                    [| newDataOutput |]
+                    V[pt0; pt1]
+                    V[newDataOutput]
                     None
             end
         | _,_ -> autoFailw "Inputs not locked to this contract!"
         end
       else autoFailw "Can't use these asset types for Collateralize"
 
-
 val buyTx :
-    hash
-    -> pointedOutput
-    -> pointedOutput
+    utxo
+    -> hash
+    -> outpoint
+    -> outpoint
     -> outputLock
-    -> cost (result transactionSkeleton) 112
-let buyTx cHash (pt1, dataOutput) (pt2, purchaseOutput) lk =
+    -> cost (result transactionSkeleton) 132
+let buyTx utxo cHash outpoint0 outpoint1 lk =
       do numeraire <-- numeraire;
       let open ET in
       let open U64 in
+      do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
+      do (pt1, purchaseOutput) <-- tryAddPoint outpoint0 utxo;
       if dataOutput.spend.asset = numeraire && purchaseOutput.spend.asset = numeraire
       then
       begin match dataOutput.lock, purchaseOutput.lock with
@@ -274,20 +290,13 @@ let buyTx cHash (pt1, dataOutput) (pt2, purchaseOutput) lk =
               spend={asset=cHash;amount=newTokens}
             } in
           ret @ Tx
-                  [| pt1; pt2 |]
-                  [| newDataOutput; buyersOutput |]
+                  V[pt0; pt1]
+                  V[newDataOutput; buyersOutput]
                   None
           end
       | _,_ -> autoFailw "Incorrect data or purchase lock"
       end
       else autoFailw "Can't buy with these assets."
-
-
-type exTestCost (n:nat) (path:auditPath) =
-  cost (result transactionSkeleton)
-  (match path with
-    | { hashes = (| m , _ |) } ->
-      let open M in (n + 3) * 384 + 1073 + m)
 
 val restOfEx :
           hash -> pointedOutput -> pointedOutput -> pointedOutput
@@ -339,40 +348,46 @@ let restOfEx
                     spend={asset=numeraire;amount=totalPayoff}
                   } in
                 ret @ Tx
-                        [| pt1; pt2 |]
-                        [| newDataOutput; payoffOutput |]
+                        V[pt1; pt2]
+                        V[newDataOutput; payoffOutput]
                         None
               end
           | _, _ -> autoFailw "Incorrect data or exercise(token) lock"
          end
 
 val exerciseTx :
-          hash -> pointedOutput -> pointedOutput -> pointedOutput
-          -> (d:oracleData)
-          -> (path:auditPath)
+          utxo -> hash
+          -> outpoint -> outpoint -> outpoint
+          -> #nUnderlyingAssetBytes:nat
+          -> d:oracleData nUnderlyingAssetBytes
+          -> #nAuditPathHashes:nat
+          -> (path:auditPath nAuditPathHashes)
           -> outputLock
           -> cost (result transactionSkeleton)
-                  (
-                    match d, path with
-                    | {underlying=(|n, _|)}, {hashes=(|m, _|)} -> M.((n+3) * 384 + 1262 + m)
-                  )
+                   M.((nUnderlyingAssetBytes+3) * 384 + 1291 + nAuditPathHashes)
 
 let exerciseTx
+          utxo
           cHash
-          (pt1,dataOutput) (pt2,tokenOutput) (pt3,oracleOutput)
+          outpoint0 outpoint1 outpoint2
+          #nUnderlyingAssetBytes
           {
-                underlying = (| n, underlyingBytes |);
+                underlying=underlyingBytes;
                 price=price;
                 timestamp=timestamp;
                 nonce=nonce
           }
+          #nAuditPathHashes
           auditPath
           payoffOutputLock =
           begin
           let open ET in
+          do (pt0, dataOutput)   <-- tryAddPoint outpoint0 utxo;
+          do (pt1, tokenOutput)  <-- tryAddPoint outpoint1 utxo;
+          do (pt2, oracleOutput) <-- tryAddPoint outpoint2 utxo;
           let dataToHash  =
-            (Data4 n 1 1 1
-              (ByteArray n underlyingBytes)
+            (Data4 nUnderlyingAssetBytes 1 1 1
+              (ByteArray nUnderlyingAssetBytes underlyingBytes)
               (UInt64 price)
               (UInt64 timestamp)
               (Hash nonce)) in
@@ -393,7 +408,7 @@ let exerciseTx
             else
             if not (expectedRoot = mroot) then
               autoFailw "wrong root"
-            else if n <> 32 then autoFailw "Limitation: symbol must be 32 bytes."
+            else if nUnderlyingAssetBytes <> 32 then autoFailw "Limitation: symbol must be 32 bytes."
             else begin
             do underlyingSymbol <-- retT @ underlyingSymbol;
             if underlyingBytes <> underlyingSymbol then
@@ -401,132 +416,52 @@ let exerciseTx
             else
               restOfEx
                 cHash
-                (pt1,dataOutput) (pt2,tokenOutput) (pt3,oracleOutput)
+                (pt0,dataOutput) (pt1,tokenOutput) (pt2,oracleOutput)
                 price
                 payoffOutputLock
             end
           | _ -> autoFailw "Bad oracle output format"
           end
 
-type createTxPlusK (cmdRes:result command) (k:nat) =
-    cost  (result transactionSkeleton)
-          ((match cmdRes with
-            | V c -> (match c with
-              | Initialize _ -> 45
-              | Collateralize _ -> 102
-              | Buy _ _ -> 112
-              | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-                  M.(((n+3) * 384 + 1262 + m)))
-            | _ -> 0
-          ) + k)
+val cf': inputMsg -> nat -> cost nat 58
+let cf' iMsg k =
+  let open M in
+  match iMsg with
+  | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> ret (55 + k)
+  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> ret (122 + k)
+  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> ret(132 + k)
+  | { cmd = 3uy ;
+    data =
+      (|
+        _ ,
+        Data4
+          _
+          _
+          _
+          _
+          _
+          (Data4 _ _ _ _ (ByteArray nUnderlyingAssetBytes _) _ _ _)
+          (Data2 _ _ _ (HashArray nAuditPathHashes _))
+          _
+      |) }
+    ->
+    ret ((nUnderlyingAssetBytes + 3) * 384 + 1291 + nAuditPathHashes + k)
+  | _ -> ret k
 
-val createTx :
-      hash
-      -> cmdRes:result command
-      -> createTxPlusK cmdRes 29
-let createTx cHash cmdRes =
-match cmdRes with
-| V c -> (match c with
-  | Initialize pointed ->
-      initializeTx cHash pointed <: createTxPlusK cmdRes 0
-  | Collateralize [| pointed; pointed'|] ->
-      collateralizeTx cHash pointed pointed' <: createTxPlusK cmdRes 0
-  | Buy [| ptd; ptd' |] lk ->
-      buyTx cHash ptd ptd' lk <: createTxPlusK cmdRes 0
-  | Exercise [| ptd; ptd'; ptd'' |] d path lk ->
-      exerciseTx cHash ptd ptd' ptd'' d path lk <: createTxPlusK cmdRes 0
-  )
-| E e -> ET.autoFail e <: createTxPlusK cmdRes 0
-| Err msg -> ET.autoFailw msg <: createTxPlusK cmdRes 0
+val cf : i:inputMsg -> res:cost nat 60
+let cf i = cf' i 104
 
-type mainPlusK'
-  (i : inputMsg)
-  (k:nat)
-  =
-  cost (result transactionSkeleton)
-  (let cmdRes = force (makeCommand i) in
-      ((match cmdRes with
-          | V c ->
-            begin match c with
-              | Initialize _ -> 45
-              | Collateralize _ -> 102
-              | Buy _ _ -> 112
-              | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-                let open M in (n + 3) * 384 + 1262 + m end
-          | _ -> 0) +
-        k))
-
-type mainPlusK
-  (i : inputMsg)
-  (k:nat)
-  =
-  cost (result transactionSkeleton)
-  (let cst = (
-
-    do cmdRes <-- makeCommand i;
-      ret @ (match cmdRes with
-          | V c ->
-            begin match c with
-              | Initialize _ -> 45 <: nat
-              | Collateralize _ -> 102 <: nat
-              | Buy _ _ -> 112 <: nat
-              | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-                let open M in (n + 3) * 384 + 1262 + m <: nat
-                end
-          | _ -> 0 <: nat) <: cost nat 0
-    ) in (k + force cst) <: nat)
-
-type mainInner
-  (i:inputMsg)
-=
-  cost (result transactionSkeleton)
-    (force (do cmdRes <-- makeCommand i ;
-          (match cmdRes with
-            | V c ->
-              begin match c with
-                | Initialize _ -> ret 45 <: cost nat 0
-                | Collateralize _ -> ret 102 <: cost nat 0
-                | Buy _ _ -> ret 112 <: cost nat 0
-                | Exercise _ { underlying = (| n , _ |) } { hashes = (| m , _ |) } _ ->
-                  ret (let open M in (n + 3) * 384 + 1262 + m) <: cost nat 0
-                  end
-            | _ -> ret 0 <: cost nat 0)
-          <:
-          cost nat 0)
-      <:
-      nat)
-
-(*val main'' : (iM:inputMsg) -> mainPlusK iM 124
-let main'' i =
-  do cmdRes <-- makeCommand i;
-  match cmdRes with
-  | V c -> (match c with
-    | Initialize pointed ->
-        initializeTx i.contractHash pointed <: mainInner i
-    | Collateralize [| pointed; pointed'|] ->
-        collateralizeTx i.contractHash pointed pointed' <: mainInner i
-    | Buy [| ptd; ptd' |] lk ->
-        buyTx i.contractHash ptd ptd' lk <: mainInner i
-    | Exercise [| ptd; ptd'; ptd'' |] d path lk ->
-        exerciseTx i.contractHash ptd ptd' ptd'' d path lk <: mainInner i
-    )
-  | E e -> ET.autoFail e <: mainInner i
-  | Err msg -> ET.autoFailw msg <: mainInner i*)
-
-(*
-
-val main' : (iM:inputMsg) -> createTxPlusK (force (makeCommand iM)) 126
-let main' iM =
-  (do cmdRes <-- makeCommand iM;
-  createTx iM.contractHash cmdRes)
-      <: createTxPlusK (force (makeCommand iM)) 121*)
-
-val main : (i:inputMsg) -> cost (result transactionSkeleton) 50
+val main : i:inputMsg -> cost (result transactionSkeleton) (force (cf i))
 let main i =
-  let tempCommand = force (makeCommand i) in
-  incRet 42 (force (createTx (i.contractHash) tempCommand))
-
-(*assume val main: inputMsg -> cost (result transactionSkeleton) 241*)
-
-val cf: inputMsg -> cost nat 1
-let cf _ = ~!50
+  do command <-- makeCommand i ;
+  match command with
+  | Initialize pointed ->
+      initializeTx i.utxo i.contractHash pointed <: cost (result transactionSkeleton) (force (cf' i 0))
+  | Collateralize V[pointed ; pointed'] ->
+      collateralizeTx i.utxo i.contractHash pointed pointed' <: cost (result transactionSkeleton) (force (cf' i 0))
+  | Buy V[ptd ; ptd'] lk ->
+      buyTx i.utxo i.contractHash ptd ptd' lk <: cost (result transactionSkeleton) (force (cf' i 0))
+  | Exercise V[ptd ; ptd' ; ptd''] nUnderlyingAssetBytes d nAuditPathHashes path lk ->
+      exerciseTx i.utxo i.contractHash ptd ptd' ptd'' d path lk <: cost (result transactionSkeleton) (force (cf' i 0))
+  | Fail msg ->
+      ET.failw msg <: cost (result transactionSkeleton) (force (cf' i 0))
