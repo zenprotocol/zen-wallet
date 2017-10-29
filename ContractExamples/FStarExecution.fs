@@ -58,21 +58,13 @@ let compile source =
 
 open System.Diagnostics;
 
-let mono_locations = [ //TODO: prioritize
+let monoLocations = [ //TODO: prioritize
     "/usr/bin/mono"
     "/usr/local/bin/mono"
     "/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono"
 ]
     
-let mono = List.tryFind File.Exists mono_locations 
-
-let fstarPath =     
-    let fstarDevPath =
-        match System.Environment.OSVersion.Platform with
-        | System.PlatformID.Win32NT -> rootPath "../../../tools/fstar/dotnet/fstar.exe"               
-        | _ -> rootPath "../../../tools/fstar/mono/fstar.exe"
-                                      
-    List.find File.Exists [fstarDevPath; rootPath "fstar/fstar.exe"]            
+let mono = List.tryFind File.Exists monoLocations 
 
 let platform = //https://stackoverflow.com/questions/10138040/how-to-detect-properly-windows-linux-mac-operating-systems
     match System.Environment.OSVersion.Platform with
@@ -84,6 +76,14 @@ let platform = //https://stackoverflow.com/questions/10138040/how-to-detect-prop
             then System.PlatformID.MacOSX
             else System.PlatformID.Unix
     | x -> x
+
+let fstarPath =     
+    let fstarDevPath =
+        match platform with
+        | System.PlatformID.Win32NT -> rootPath "../../../tools/fstar/dotnet/fstar.exe"               
+        | _ -> rootPath "../../../tools/fstar/mono/fstar.exe"
+                                      
+    List.find File.Exists [fstarDevPath; rootPath "fstar/fstar.exe"]            
 
 
 let z3Path =
