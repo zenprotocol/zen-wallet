@@ -15,6 +15,7 @@ open Zen.Base
 open Zen.Types
 open Zen.Cost
 open Zen.Merkle
+open Zen.Sha3.Realized
 
 
 let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -175,11 +176,11 @@ let decodeState #n iData =
       ret @ {tokensIssued=tk; collateral=coll; counter=cter}
     | _ -> autoFailw "Bad data"
 
-val findRoot : #n:nat -> inputData n -> (path:auditPath)
-    -> cost (result hash) M.((n * 384 + 1065 + dfst path.hashes))
-let findRoot #n iData {location=location;hashes=hashes} =
-  let inputHash = hashData iData in
-  let optRoot = OT.bindLift inputHash (function h -> rootFromAuditPath h location (dsnd hashes)) in
+val findRoot : #n:nat -> inputData n -> #nAuditPathHashes:nat -> (path:auditPath nAuditPathHashes)
+    -> cost (result hash) M.(n * 384 + 1064 + nAuditPathHashes)
+let findRoot #n iData #nAuditPathHashes {location=location;hashes=hashes} =
+  let inputHash = hash256 iData in
+  let optRoot = OT.bindLift inputHash (function h -> rootFromAuditPath h location hashes) in
   do optRoot' <-- optRoot;
   ret @ O.maybe (E.failw "Can't hash input data") (E.ret) optRoot'
 
