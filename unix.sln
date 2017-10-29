@@ -38,6 +38,8 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ContractExamples.Tests", "C
 EndProject
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "FStar-Utils", "FStar-Utils\FStar-Utils.fsproj", "{21857719-877E-43D5-913C-6050E4FC7372}"
 EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "ZenFSharpC", "ZenFSharpC\ZenFSharpC.fsproj", "{6F780517-092A-4BD4-8A13-0282EB49CF48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -124,6 +126,10 @@ Global
 		{21857719-877E-43D5-913C-6050E4FC7372}.Debug|x86.Build.0 = Debug|Any CPU
 		{21857719-877E-43D5-913C-6050E4FC7372}.Release|x86.ActiveCfg = Release|Any CPU
 		{21857719-877E-43D5-913C-6050E4FC7372}.Release|x86.Build.0 = Release|Any CPU
+		{6F780517-092A-4BD4-8A13-0282EB49CF48}.Debug|x86.ActiveCfg = Debug|x86
+		{6F780517-092A-4BD4-8A13-0282EB49CF48}.Debug|x86.Build.0 = Debug|x86
+		{6F780517-092A-4BD4-8A13-0282EB49CF48}.Release|x86.ActiveCfg = Release|x86
+		{6F780517-092A-4BD4-8A13-0282EB49CF48}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
