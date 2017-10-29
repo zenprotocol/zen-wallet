@@ -71,8 +71,8 @@
     <Reference Include="System.Reflection.Metadata">
       <HintPath>..\packages\System.Reflection.Metadata.1.4.2\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Compiler.Service">
-      <HintPath>..\packages\FSharp.Compiler.Service.12.0.8\lib\net45\FSharp.Compiler.Service.dll</HintPath>
+    <Reference Include="Zen.FSharp.Compiler.Service">
+      <HintPath>..\packages\Zen.FSharp.Compiler.Service.13.0.1\lib\net45\Zen.FSharp.Compiler.Service.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Compiler.Service.MSBuild.v12">
       <HintPath>..\packages\FSharp.Compiler.Service.12.0.8\lib\net45\FSharp.Compiler.Service.MSBuild.v12.dll</HintPath>
