@@ -1,5 +1,9 @@
 module FStar.UInt64
 
+module Check = FSharp.Core.Operators.Checked
+
+open FStar.Pervasives.Native
+
 type uint64 = System.UInt64
 type uint8 = int
 type t = uint64
@@ -55,3 +59,5 @@ let op_Less_Equals_Hat = lte
 
 let to_string s = s.ToString()
 let of_string s : uint64 = uint64.Parse s
+
+let checked_mul (a:uint64) (b:uint64) = try Check.(*) a b |> Some with _ -> None
