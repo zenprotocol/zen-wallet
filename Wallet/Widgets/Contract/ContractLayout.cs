@@ -120,6 +120,9 @@ namespace Wallet.Widgets.Contract
             txtCode.ModifyText(StateType.Normal, Constants.Colors.Text.Gdk);
             txtCode.ModifyFont(Constants.Fonts.ActionBarSmall);
             txtCode.ModifyBase(StateType.Normal, Constants.Colors.ButtonUnselected.Gdk);
+
+            //remove the secure-token box
+            vbox.Remove(vbox5);
 		}
 
         void InitSecureTokenSelect()
