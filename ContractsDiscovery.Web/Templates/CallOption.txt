@@ -15,10 +15,9 @@ open Zen.Base
 open Zen.Types
 open Zen.Cost
 open Zen.Merkle
-open Zen.Sha3.Realized
 
 
-let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "__numeraire__="
+let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "__numeraire__"
 
 // "price" is the premium, in kalapas
 let price: U64.t = __price__UL
@@ -26,7 +25,7 @@ let price: U64.t = __price__UL
 // strike in u64 is real strike * 1000, rounded down
 let strike: U64.t = __strike__UL
 
-let oracleHash: cost hash 3 = ret @ Zen.Util.hashFromBase64 "__oracle__="
+let oracleHash: cost hash 3 = ret @ Zen.Util.hashFromBase64 "__oracle__"
 
 // No string -> byte arrays, yet. So 32 byte arrays to represent
 // the underlying, i.e. stuff like "AAPL", "MSFT", etc. To use:
@@ -34,7 +33,7 @@ let oracleHash: cost hash 3 = ret @ Zen.Util.hashFromBase64 "__oracle__="
 // pass in here.
 // The example decodes to "AAPL", followed by 28 zero bytes.
 let underlyingSymbol = ret @ Zen.Util.hashFromBase64
-"__underlying__="
+"__underlying__"
 
 type pointedOutput = outpoint * output
 
@@ -179,7 +178,7 @@ let decodeState #n iData =
 val findRoot : #n:nat -> inputData n -> #nAuditPathHashes:nat -> (path:auditPath nAuditPathHashes)
     -> cost (result hash) M.(n * 384 + 1064 + nAuditPathHashes)
 let findRoot #n iData #nAuditPathHashes {location=location;hashes=hashes} =
-  let inputHash = hash256 iData in
+  let inputHash = hashData iData in
   let optRoot = OT.bindLift inputHash (function h -> rootFromAuditPath h location hashes) in
   do optRoot' <-- optRoot;
   ret @ O.maybe (E.failw "Can't hash input data") (E.ret) optRoot'
