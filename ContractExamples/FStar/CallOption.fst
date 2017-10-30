@@ -15,6 +15,12 @@ open Zen.Base
 open Zen.Types
 open Zen.Cost
 open Zen.Merkle
+open FStar.UInt64
+
+val (+?^): U64.t -> U64.t -> cost (result U64.t) 6
+let (+?^) x y = match U64.checked_add x y with
+                | Some r -> ET.ret r
+                | None -> ET.failw "Overflow Error"
 
 
 let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -43,24 +49,6 @@ let tryAddPoint pt utxos =
   match utxos pt with
   | Some oput -> ret (pt, oput)
   | None -> failw "Cannot find output in UTXO set"
-
-val tryAddPoints: #l:nat ->      //TODO: use tryAddPoint
-                V.t outpoint l ->
-                utxos:utxo ->
-                cost (result (V.t pointedOutput l)) M.((17*l + 17))
-let rec tryAddPoints #l v utxos =
-  let open M in
-  let open ET in
-    match v with
-    | V.VNil -> let r:cost (result (V.t pointedOutput l)) (17*l) = ret V.VNil in
-      r
-    | V.VCons pt rest ->
-        match utxos pt with
-        | Some oput ->
-          do remainder <-- tryAddPoints rest utxos;
-          ret @ V.VCons (pt, oput) remainder
-        | None ->
-          (17 * l) +! failw "Cannot find output in UTXO set"
 
 type oracleData (n:nat) = {
   underlying: A.t byte n;
@@ -187,7 +175,6 @@ val initializeTx : utxo -> hash -> outpoint -> cost (result transactionSkeleton)
 let initializeTx utxo cHash outpoint =
       (do numeraire <-- numeraire;
       let open ET in
-      let open U64 in
       do (pt, oput) <-- tryAddPoint outpoint utxo;
       if oput.spend.asset = numeraire
       then      // Initialize with data output
@@ -209,11 +196,10 @@ val collateralizeTx :
     -> hash
     -> outpoint
     -> outpoint
-    -> cost (result transactionSkeleton) 122
+    -> cost (result transactionSkeleton) 129
 let collateralizeTx utxo cHash outpoint0 outpoint1 =
       do numeraire <-- numeraire;
       let open ET in
-      let open U64 in
       do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
       do (pt1, newFundsOutput) <-- tryAddPoint outpoint1 utxo;
       if dataOutput.spend.asset = numeraire && newFundsOutput.spend.asset = numeraire
@@ -224,8 +210,7 @@ let collateralizeTx utxo cHash outpoint0 outpoint1 =
             then autoFailw "Locked to wrong contract"
             else begin
             do currentState <-- decodeState currentStateData;
-            // TODO: avoid modular addition!!
-            let newCollateral = currentState.collateral +%^ newFundsOutput.spend.amount in
+            do newCollateral <-- currentState.collateral +?^ newFundsOutput.spend.amount;
             let newState = {
               tokensIssued = currentState.tokensIssued;
               collateral = newCollateral;
@@ -253,11 +238,10 @@ val buyTx :
     -> outpoint
     -> outpoint
     -> outputLock
-    -> cost (result transactionSkeleton) 132
+    -> cost (result transactionSkeleton) 146
 let buyTx utxo cHash outpoint0 outpoint1 lk =
       do numeraire <-- numeraire;
       let open ET in
-      let open U64 in
       do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
       do (pt1, purchaseOutput) <-- tryAddPoint outpoint0 utxo;
       if dataOutput.spend.asset = numeraire && purchaseOutput.spend.asset = numeraire
@@ -268,11 +252,11 @@ let buyTx utxo cHash outpoint0 outpoint1 lk =
           then autoFailw "Locked to wrong contract"
           else begin
           do currentState <-- decodeState currentStateData;
-          // TODO: avoid modular addition!!
-          let newCollateral = currentState.collateral +%^ purchaseOutput.spend.amount in
+          do newCollateral <--currentState.collateral +?^ purchaseOutput.spend.amount;
           let newTokens = purchaseOutput.spend.amount /^ price in   //downwards rounding
+          do tokensIssued <-- currentState.tokensIssued +?^ newTokens;
           let newState = {
-            tokensIssued = currentState.tokensIssued +%^ newTokens; //TODO: modular
+            tokensIssued = tokensIssued;
             collateral = newCollateral;
             counter = currentState.counter;
           } in        //TODO: return to sender with insufficient collateral
@@ -428,8 +412,8 @@ let cf' iMsg k =
   ret (k +
   begin match iMsg with
   | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
-  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 122
-  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 132
+  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 129
+  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 146
   | { cmd = 3uy ;
     data =
       (|
@@ -456,8 +440,8 @@ val cf_lemma: i:inputMsg -> Lemma (let open M in
    force (cf i) == 105 +
    begin match i with
    | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
-   | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 122
-   | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 132
+   | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 129
+   | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 146
    | { cmd = 3uy ;
      data =
        (|
@@ -509,8 +493,8 @@ let main i =
          (let open M in
           match i with
           | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
-          | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 122
-          | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 132
+          | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 129
+          | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 146
           | { cmd = 3uy ;
             data =
               (|
