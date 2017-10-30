@@ -425,10 +425,11 @@ let exerciseTx
 val cf': inputMsg -> nat -> cost nat 58
 let cf' iMsg k =
   let open M in
-  match iMsg with
-  | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> ret (55 + k)
-  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> ret (122 + k)
-  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> ret(132 + k)
+  ret (k +
+  begin match iMsg with
+  | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
+  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 122
+  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 132
   | { cmd = 3uy ;
     data =
       (|
@@ -444,23 +445,94 @@ let cf' iMsg k =
           _
       |) }
     ->
-    ret ((nUnderlyingAssetBytes + 3) * 384 + 1291 + nAuditPathHashes + k)
-  | _ -> ret k
+    (nUnderlyingAssetBytes + 3) * 384 + 1291 + nAuditPathHashes
+  | _ -> 0
+  end)
 
 val cf : i:inputMsg -> res:cost nat 60
-let cf i = cf' i 104
+let cf i = cf' i 105
+
+val cf_lemma: i:inputMsg -> Lemma (let open M in
+   force (cf i) == 105 +
+   begin match i with
+   | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
+   | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 122
+   | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 132
+   | { cmd = 3uy ;
+     data =
+       (|
+         _ ,
+         Data4
+           _
+           _
+           _
+           _
+           _
+           (Data4 _ _ _ _ (ByteArray nUnderlyingAssetBytes _) _ _ _)
+           (Data2 _ _ _ (HashArray nAuditPathHashes _))
+           _
+       |) }
+     ->
+     (nUnderlyingAssetBytes + 3) * 384 + 1291 + nAuditPathHashes
+   | _ -> 0
+   end)
+let cf_lemma = function
+  | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> ()
+  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> ()
+  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> ()
+  | { cmd = 3uy ;
+    data =
+      (|
+        _ ,
+        Data4
+          _
+          _
+          _
+          _
+          _
+          (Data4 _ _ _ _ (ByteArray nUnderlyingAssetBytes _) _ _ _)
+          (Data2 _ _ _ (HashArray nAuditPathHashes _))
+          _
+      |) }
+    -> ()
+  | _ -> ()
+
 
 val main : i:inputMsg -> cost (result transactionSkeleton) (force (cf i))
 let main i =
+  cf_lemma i;
   do command <-- makeCommand i ;
   match command with
   | Initialize pointed ->
-      initializeTx i.utxo i.contractHash pointed <: cost (result transactionSkeleton) (force (cf' i 0))
+      initializeTx i.utxo i.contractHash pointed
+      <: (cost (result transactionSkeleton)
+         (let open M in
+          match i with
+          | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
+          | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 122
+          | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 132
+          | { cmd = 3uy ;
+            data =
+              (|
+                _ ,
+                Data4
+                  _
+                  _
+                  _
+                  _
+                  _
+                  (Data4 _ _ _ _ (ByteArray nUnderlyingAssetBytes _) _ _ _)
+                  (Data2 _ _ _ (HashArray nAuditPathHashes _))
+                  _
+              |) }
+            ->
+            (nUnderlyingAssetBytes + 3) * 384 + 1291 + nAuditPathHashes
+          | _ -> 0))
   | Collateralize V[pointed ; pointed'] ->
-      collateralizeTx i.utxo i.contractHash pointed pointed' <: cost (result transactionSkeleton) (force (cf' i 0))
+      collateralizeTx i.utxo i.contractHash pointed pointed'
   | Buy V[ptd ; ptd'] lk ->
-      buyTx i.utxo i.contractHash ptd ptd' lk <: cost (result transactionSkeleton) (force (cf' i 0))
+      buyTx i.utxo i.contractHash ptd ptd' lk
   | Exercise V[ptd ; ptd' ; ptd''] nUnderlyingAssetBytes d nAuditPathHashes path lk ->
-      exerciseTx i.utxo i.contractHash ptd ptd' ptd'' d path lk <: cost (result transactionSkeleton) (force (cf' i 0))
+      exerciseTx i.utxo i.contractHash ptd ptd' ptd'' d path lk
   | Fail msg ->
-      ET.failw msg <: cost (result transactionSkeleton) (force (cf' i 0))
+      ET.failw msg
