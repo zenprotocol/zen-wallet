@@ -106,7 +106,7 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
         let stateOutput = getCallOptionDataPOutput meta.numeraire utxos
 
         match opcode with
-        | 0uy ->
+        | 1uy ->
             let data = 
                 match stateOutput with
                 | Some (stateOutpoint, _) ->
@@ -114,14 +114,21 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
                 | None ->
                     Zen.Types.Extracted.Outpoint stubFundsOutpoint
 
+            let newOpcode = 
+                match stateOutput with
+                | Some (stateOutpoint, _) ->
+                    1uy
+                | None ->
+                    0uy
+
             return ContractJsonData.Root (
                 ContractJsonData.StringOrFirst (""),
                 Some <| ContractJsonData.Second (
-                    [| opcode |] |> getString,
+                    [| newOpcode |] |> getString,
                     data |> serializer.PackSingleObject |> getString
                 )
             )
-        | 1uy ->
+        | 2uy ->
             let! (stateOutpoint, _) = (ShouldHaveState, stateOutput)
             let! addressStr = (ShouldHaveReturnAddress, m.TryFind("returnPubKeyAddress"))
             let! address = (ShouldHaveValidReturnAddress, try Some <| Address addressStr with _ -> None)
@@ -140,7 +147,7 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
                     data |> serializer.PackSingleObject |> getString
                 )
             )
-        | 2uy ->
+        | 3uy ->
             let! (stateOutpoint, _) = (ShouldHaveState, stateOutput)
             let! addressStr = (ShouldHaveReturnAddress, m.TryFind("returnPubKeyAddress"))
             let! address = (ShouldHaveValidReturnAddress, try Some <| Address addressStr with _ -> None)
@@ -149,7 +156,8 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
             let! oracleJson = (ShouldParseOracleJson, try Some <| OracleJsonData.Parse oracleRawData with _ -> None)
             let! oracleOutpoint = (ShouldParseOracleJsonOutpoint, try Some <| (Consensus.TransactionValidation.guardedDeserialise<Outpoint> <| System.Convert.FromBase64String oracleJson.Outpoint) with _ -> None)
 
-            let originalCommitment = oracleJson.Origin |> getBytes |> serializer.UnpackSingleObject 
+            let originalCommitment = oracleJson.Origin |> getBytes |> serializer.UnpackSingleObject
+
 
             //TODO: validate data matches expected pattern
             //match commitmentData with 
@@ -180,10 +188,7 @@ let callOptionJson (meta:QuotedContracts.CallOptionParameters) (utxos:(Outpoint*
                     auditPath,
                     Zen.Types.Extracted.OutputLock (Zen.Types.Extracted.PKLock address.Bytes))
 
-            let auditPath =
-                oracleJson.AuditPath.JsonValue.ToString() |>
-                System.Text.Encoding.ASCII.GetBytes
-
+       
             return ContractJsonData.Root (
                 ContractJsonData.StringOrFirst (""),
                 Some <| ContractJsonData.Second (
@@ -309,7 +314,7 @@ let makeMessage (json:ContractJsonData.Root) outpoint =
         | Zen.Types.Extracted.Data4 (l1, l2, l3, l4, Zen.Types.Extracted.OutpointVector (l, vec), originalCommitment, auditPath, lock) 
             when l1 = 3I && l2 = 32I + 1I + 1I + 1I && l4 = 1I ->
             let list = vectorToList vec
-            let vec2 = Zen.Types.Extracted.OutpointVector (l3, listToVector [ list.[0]; fundsOutpoint; list.[2] ])
+            let vec2 = Zen.Types.Extracted.OutpointVector (l, listToVector [ list.[0]; fundsOutpoint; list.[2] ])
             Zen.Types.Extracted.Data4 (l1, l2, l3, l4, vec2, originalCommitment, auditPath, lock)
         
 
