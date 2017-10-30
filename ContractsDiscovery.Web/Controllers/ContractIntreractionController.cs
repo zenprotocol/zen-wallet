@@ -26,10 +26,10 @@ namespace ContractsDiscovery.Web.Controllers
     public class ContractInteractionController : Controller
     {
         string _address = WebConfigurationManager.AppSettings["node"];
-		const byte OPCODE_BUY = 0x01;
-		const byte OPCODE_COLLATERALIZE = 0x00;
-		const byte OPCODE_EXERCISE = 0x02;
-		const byte OPCODE_CLOSE = 0x03;
+		const byte OPCODE_BUY = 0x02;
+		const byte OPCODE_COLLATERALIZE = 0x01;
+		const byte OPCODE_EXERCISE = 0x03;
+//		const byte OPCODE_CLOSE = 0x03;
 
 		[HttpPost]
 		public ActionResult PrepareAction()
@@ -71,7 +71,7 @@ namespace ContractsDiscovery.Web.Controllers
         {
             var action = Request["Action"];
             var args = new Dictionary<string, string>();
-			byte opcode = default(byte);
+			byte opcode = 0x01;
 
 			var address = Request["Address"];
 
@@ -170,9 +170,9 @@ namespace ContractsDiscovery.Web.Controllers
 						args.Add("returnPubKeyAddress", pkSendAddress.Value);
 						opcode = OPCODE_BUY;
 						break;
-					case "Close":
-						opcode = OPCODE_CLOSE;
-						break;	
+					//case "Close":
+					//	opcode = OPCODE_CLOSE;
+					//	break;	
                 }
             }
 
