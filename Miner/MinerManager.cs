@@ -284,7 +284,7 @@ namespace Miner
                     {
 						try
 						{
-							var compiledCodeOpt = ContractExamples.Execution.compile(contractCode);
+                            var compiledCodeOpt = ContractExamples.FStarExecution.compile(contractCode);
 
                             if (FSharpOption<byte[]>.get_IsSome(compiledCodeOpt))
                             {
