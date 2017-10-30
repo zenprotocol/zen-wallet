@@ -31,9 +31,9 @@ namespace ContractsDiscovery.Web.App_Code
                 return;
             }
 
-            var keypair = EnsureKeyPair();
-            PrivateKey = keypair.PrivateKey;
-            var contractCode = GetContractCode(keypair.PublicKey);
+         //   var keypair = EnsureKeyPair();
+         //   PrivateKey = keypair.PrivateKey;
+            var contractCode = GetContractCode(/*keypair.PublicKey*/);
 
 			ContractAddress = new Address(Merkle.innerHash(Encoding.ASCII.GetBytes(contractCode)), AddressType.Contract);
 
@@ -101,21 +101,21 @@ namespace ContractsDiscovery.Web.App_Code
             return new KeyPair(Convert.FromBase64String(parts[0]), Convert.FromBase64String(parts[1]));
         }
 
-        string GetContractCode(byte[] publicKey)
+        string GetContractCode(/*byte[] publicKey*/)
         {
             if (System.IO.File.Exists(System.IO.Path.Combine("db", "oracle-contract.txt")))
             {
                 return System.IO.File.ReadAllText(System.IO.Path.Combine("db", "oracle-contract.txt"));
             }
 
-            var @params = new ContractExamples.QuotedContracts.OracleParameters(publicKey);
+       //     var @params = new ContractExamples.QuotedContracts.OracleParameters(publicKey);
 			//var contract = ContractExamples.QuotedContracts.oracleFactory(@params);
 			//var contractCode = ContractExamples.Execution.quotedToString(contract);
             var tpl = Utils.GetTemplate("Oracle");
 
-			var metadata = new { contractType = "oracle", ownerPubKey = Convert.ToBase64String(@params.ownerPubKey) };
+			var metadata = new { contractType = "oracle" /*, ownerPubKey = Convert.ToBase64String(@params.ownerPubKey)*/ };
 			var jsonHeader = "//" + JsonConvert.SerializeObject(metadata);
-			var contractCode = tpl.Replace("__ownerPubKey__", Convert.ToBase64String(@params.ownerPubKey));
+            var contractCode = tpl; //.Replace("__ownerPubKey__", Convert.ToBase64String(@params.ownerPubKey));
 			contractCode += "\n" + jsonHeader;
 
 
