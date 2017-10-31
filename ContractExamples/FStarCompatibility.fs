@@ -295,12 +295,12 @@ let convertInput : ContractFunctionInput -> inputMsg =
 
 let private convertResult (txSkeleton:result<transactionSkeleton>) : ContractResult =
   match txSkeleton with 
-  | result.E exp -> //TODO
+  | result.EX exp -> //TODO
       ""
       |> System.NotImplementedException
       |> raise
-  | result.Err msg -> Error msg
-  | result.V txSkeleton -> 
+  | result.ERR msg -> Error msg
+  | result.OK txSkeleton -> 
     match txSkeleton with 
     | Tx (_, outpoints, _, outputs, _) -> 
         let convertList f list = List.map f (vectorToList list)
