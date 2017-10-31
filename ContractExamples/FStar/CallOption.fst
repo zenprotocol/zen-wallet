@@ -4,6 +4,7 @@ open Zen.Base
 open Zen.Cost
 open Zen.Types
 open Zen.Merkle
+open Zen.ErrorT
 open FStar.UInt64
 
 module M = FStar.Mul
@@ -15,12 +16,17 @@ module OT = Zen.OptionT
 module U64 = FStar.UInt64
 module U32 = FStar.UInt32
 
-val (+?^): U64.t -> U64.t -> cost (result U64.t) 6
-let (+?^) x y = match U64.checked_add x y with
-                | Some r -> ET.ret r
-                | None -> ET.failw "Overflow Error"
+(* Make integer overflow return an informative error message *)
+val (+?^): U64.t -> U64.t -> cost (result U64.t) 4
+let (+?^) x y = ET.of_option "Overflow Error" (U64.checked_add x y)
 
-let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+val (-?^): U64.t -> U64.t -> cost (result U64.t) 4
+let (-?^) x y = ET.of_option "Overflow Error" (U64.checked_sub x y)
+
+val ( *?^ ): U64.t -> U64.t -> cost (result U64.t) 4
+let ( *?^ ) x y = ET.of_option "Overflow Error" (U64.checked_mul x y)
+
+let numeraire: cost (result hash) 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 // "price" is the premium, in kalapas
 let price: U64.t = 100UL
@@ -28,7 +34,7 @@ let price: U64.t = 100UL
 // strike in u64 is real strike * 1000, rounded down
 let strike: U64.t = 1000000UL
 
-let oracleHash: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+let oracleHash: cost (result hash) 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 // No string -> byte arrays, yet. So 32 byte arrays to represent
 // the underlying, i.e. stuff like "AAPL", "MSFT", etc. To use:
@@ -41,10 +47,9 @@ let underlyingSymbol = ret @ Zen.Util.hashFromBase64
 type pointedOutput = outpoint * output
 
 val tryAddPoint: outpoint -> utxos:utxo -> cost (result pointedOutput) 7
-let tryAddPoint pt utxos = let open ET in
-  match utxos pt with
-  | Some oput -> ret (pt, oput)
-  | None -> failw "Cannot find output in UTXO set"
+let tryAddPoint pt utxos = match utxos pt with
+                           | Some oput -> ret (pt, oput)
+                           | None -> failw "Cannot find output in UTXO set"
 
 type oracleData (n:nat) = { underlying: Zen.Array.t byte n;
                             price : U64.t;
@@ -93,7 +98,7 @@ type dcommand (iMsg:inputMsg) = dcmd:command // Command that depends on input me
     | _ -> Fail? dcmd }
 
 val makeCommand : iMsg:inputMsg -> cost (dcommand iMsg) 72
-let makeCommand iMsg = let open M in
+let makeCommand iMsg = let open Zen.Cost in
   match iMsg with
   | { cmd=0uy; data=(| _, Outpoint pt |) }->
       ret@Initialize pt
@@ -137,11 +142,11 @@ type state = { tokensIssued : U64.t;
 val encodeState : state -> cost (inputData 3) 10
 let encodeState { tokensIssued=tokensIssued;
                   collateral=collateral;
-                  counter=counter } =
+                  counter=counter } = let open Zen.Cost in
     ret @ UInt64Vector 3 V[tokensIssued; collateral; counter]
 
 val decodeState : #n:nat -> inputData n -> cost (result state) 16
-let decodeState #n iData = let open ET in
+let decodeState #n iData =
   if n <> 3 then autoFailw "Bad data" else
   match iData with
   | UInt64Vector 3 V[tk; coll; cter] ->
@@ -149,39 +154,34 @@ let decodeState #n iData = let open ET in
   | _ -> autoFailw "Bad data"
 
 val findRoot : #n:nat -> inputData n -> #nAuditPathHashes:nat -> (path:auditPath nAuditPathHashes)
-    -> cost (result hash) M.(n * 384 + 1064 + nAuditPathHashes)
+    -> cost (result hash) M.(n * 384 + 1059 + nAuditPathHashes)
 let findRoot #n iData #nAuditPathHashes {location=location;hashes=hashes} =
   let inputHash = hashData iData in
   let optRoot = OT.bindLift inputHash (function h -> rootFromAuditPath h location hashes) in
-  do optRoot' <-- optRoot;
-  ret @ O.maybe (E.failw "Can't hash input data") (E.ret) optRoot'
+  ET.of_optionT "Can't hash input data" optRoot
 
-val initializeTx : utxo -> hash -> outpoint -> cost (result transactionSkeleton) 56
-let initializeTx utxo cHash outpoint = let open ET in
-    do numeraire <-- retT numeraire;
+val initializeTx : utxo -> hash -> outpoint -> cost (result transactionSkeleton) 55
+let initializeTx utxo cHash outpoint =
+    do numeraire <-- numeraire;
     do (pt, oput) <-- tryAddPoint outpoint utxo;
-    if oput.spend.asset = numeraire
-    then      // Initialize with data output
-      let initialState : state =
-        {
-          tokensIssued=0UL;
-          collateral=oput.spend.amount;
-          counter=0UL;
-        } in
-      do initialStateData <-- retT @ encodeState initialState;
-      let dataOutputLock = ContractLock cHash 3 initialStateData in
-      let dataOutput = {lock=dataOutputLock;spend=oput.spend} in
-      ret @ Tx V[pt] V[dataOutput] None
-    else
-    autoFailw "Can't initialize with this asset."
+    if oput.spend.asset <> numeraire
+    then autoFailw "Can't initialize with this asset." else     // Initialize with data output
+    let initialState = { tokensIssued=0UL;
+                         collateral=oput.spend.amount;
+                         counter=0UL;
+                       } in
+    do initialStateData <-- retT @ encodeState initialState;
+    let dataOutputLock = ContractLock cHash 3 initialStateData in
+    let dataOutput = {lock=dataOutputLock;spend=oput.spend} in
+    ret @ Tx V[pt] V[dataOutput] None
 
 val collateralizeTx: utxo
                      -> hash
                      -> outpoint
                      -> outpoint
-                     -> cost (result transactionSkeleton) 130
-let collateralizeTx utxo cHash outpoint0 outpoint1 = let open ET in
-    do numeraire <-- retT numeraire;
+                     -> cost (result transactionSkeleton) 127
+let collateralizeTx utxo cHash outpoint0 outpoint1 =
+    do numeraire <-- numeraire;
     do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
     do (pt1, newFundsOutput) <-- tryAddPoint outpoint1 utxo;
     if dataOutput.spend.asset <> numeraire || newFundsOutput.spend.asset <> numeraire
@@ -210,9 +210,9 @@ val buyTx: utxo
            -> outpoint
            -> outpoint
            -> outputLock
-           -> cost (result transactionSkeleton) 147
-let buyTx utxo cHash outpoint0 outpoint1 lk = let open ET in
-    do numeraire <-- retT numeraire;
+           -> cost (result transactionSkeleton) 142
+let buyTx utxo cHash outpoint0 outpoint1 lk =
+    do numeraire <-- numeraire;
     do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
     do (pt1, purchaseOutput) <-- tryAddPoint outpoint1 utxo;
     if dataOutput.spend.asset <> numeraire || purchaseOutput.spend.asset <> numeraire
@@ -242,14 +242,12 @@ let buyTx utxo cHash outpoint0 outpoint1 lk = let open ET in
 val restOfEx: hash -> pointedOutput -> pointedOutput -> pointedOutput
               -> U64.t
               -> outputLock
-              -> cost (result transactionSkeleton) 125
+              -> cost (result transactionSkeleton) 134
 let restOfEx cHash
              (pt1,dataOutput) (pt2,tokenOutput) (pt3,oracleOutput)
              spot
              payoffOutputLock =
-    let open ET in
-    let open U64 in
-    do numeraire <-- retT numeraire;
+    do numeraire <-- numeraire;
     if dataOutput.spend.asset <> numeraire || tokenOutput.spend.asset <> cHash
     then autoFailw "Can't exercise with these assets." else
     match dataOutput.lock, tokenOutput.lock with
@@ -259,13 +257,11 @@ let restOfEx cHash
         if spot <=^ strike
         then autoFailw "Spot price lower than strike." else begin
         let payoff = spot -^ strike in
-        do totalPayoff <-- O.maybe
-                            (autoFailw "Overflow")
-                            (ET.ret)
-                            (tokenOutput.spend.amount *?^ payoff);
-        do currentState <-- decodeState currentStateData;
-        let newCollateral = currentState.collateral -%^ totalPayoff in
-        let newState = { tokensIssued = currentState.tokensIssued -%^ tokenOutput.spend.amount; //TODO: modular
+        do   totalPayoff <-- tokenOutput.spend.amount *?^ payoff;
+        do  currentState <-- decodeState currentStateData;
+        do  tokensIssued <-- currentState.tokensIssued -?^ tokenOutput.spend.amount;
+        do newCollateral <-- currentState.collateral -?^ totalPayoff;
+        let newState = { tokensIssued = tokensIssued;
                          collateral = newCollateral;
                          counter = currentState.counter } in
         //TODO: return to sender with insufficient collateral
@@ -300,7 +296,7 @@ let exerciseTx utxo
                  nonce=nonce }
                #nAuditPathHashes
                auditPath
-               payoffOutputLock = let open ET in
+               payoffOutputLock =
     do (pt0, dataOutput)   <-- tryAddPoint outpoint0 utxo;
     do (pt1, tokenOutput)  <-- tryAddPoint outpoint1 utxo;
     do (pt2, oracleOutput) <-- tryAddPoint outpoint2 utxo;
@@ -315,13 +311,13 @@ let exerciseTx utxo
     match oracleOutput with
     | { lock=(ContractLock oHash 1 (Hash mroot));
         spend={asset=oHash2} } ->
-          do oracleHash <-- retT @ oracleHash;
+          do oracleHash <-- oracleHash;
           if oHash <> oracleHash then autoFailw "Incorrect oracle ID" else
           if oHash2 <> oracleHash then autoFailw "Wrong oracle asset type" else
           if not (expectedRoot = mroot) then autoFailw "wrong root" else
           if nUnderlyingAssetBytes <> 32
           then autoFailw "Limitation: symbol must be 32 bytes." else begin
-          do underlyingSymbol <-- retT @ underlyingSymbol;
+          do underlyingSymbol <-- underlyingSymbol;
           if underlyingBytes <> underlyingSymbol
           then autoFailw "Trying to use the wrong underlying!" else
           restOfEx cHash
@@ -333,11 +329,11 @@ let exerciseTx utxo
 
 val cf': inputMsg -> nat -> cost nat 58
 let cf' iMsg k = let open M in
-  ret (k +
+  Zen.Cost.ret (k +
   begin match iMsg with
-  | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 56
-  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 130
-  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 147
+  | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
+  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 127
+  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 142
   | { cmd = 3uy ;
       data=(| _, Data4 _ _ _ _
                    _
@@ -354,9 +350,9 @@ let cf i = cf' i 105
 val cf_lemma: i:inputMsg -> Lemma (let open M in
    force (cf i) == 105 +
    begin match i with
-   | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 56
-   | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 130
-   | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 147
+   | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
+   | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 127
+   | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 142
    | { cmd = 3uy ;
        data=(| _, Data4 _ _ _ _
                     _
@@ -380,6 +376,7 @@ let cf_lemma = function
 
 val main : i:inputMsg -> cost (result transactionSkeleton) (force (cf i))
 let main i = let open M in
+             let open Zen.Cost in
   cf_lemma i;
   do command <-- makeCommand i;
   match command with
@@ -387,9 +384,9 @@ let main i = let open M in
       initializeTx i.utxo i.contractHash pointed
       <: cost (result transactionSkeleton)
          (match i with
-          | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 56
-          | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 130
-          | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 147
+          | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 55
+          | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 127
+          | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 142
           | { cmd = 3uy ;
               data=(| _, Data4 _ _ _ _
                            _
@@ -405,4 +402,4 @@ let main i = let open M in
   | Exercise V[ptd ; ptd' ; ptd''] nUnderlyingAssetBytes d nAuditPathHashes path lk ->
       exerciseTx i.utxo i.contractHash ptd ptd' ptd'' d path lk
   | Fail msg ->
-      ET.failw msg
+      failw msg
