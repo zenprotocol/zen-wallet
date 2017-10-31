@@ -15,10 +15,15 @@ module OT = Zen.OptionT
 module U64 = FStar.UInt64
 module U32 = FStar.UInt32
 
-val (+?^): U64.t -> U64.t -> cost (result U64.t) 6
-let (+?^) x y = match U64.checked_add x y with
-                | Some r -> ET.ret r
-                | None -> ET.failw "Overflow Error"
+(* Make integer overflow return an informative error message *)
+val (+?^): U64.t -> U64.t -> cost (result U64.t) 4
+let (+?^) x y = ET.of_option "Overflow Error" (U64.checked_add x y)
+
+val (-?^): U64.t -> U64.t -> cost (result U64.t) 4
+let (-?^) x y = ET.of_option "Overflow Error" (U64.checked_sub x y)
+
+val ( *?^ ): U64.t -> U64.t -> cost (result U64.t) 4
+let ( *?^ ) x y = ET.of_option "Overflow Error" (U64.checked_mul x y)
 
 let numeraire: cost hash 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
@@ -160,26 +165,22 @@ val initializeTx : utxo -> hash -> outpoint -> cost (result transactionSkeleton)
 let initializeTx utxo cHash outpoint = let open ET in
     do numeraire <-- retT numeraire;
     do (pt, oput) <-- tryAddPoint outpoint utxo;
-    if oput.spend.asset = numeraire
-    then      // Initialize with data output
-      let initialState : state =
-        {
-          tokensIssued=0UL;
-          collateral=oput.spend.amount;
-          counter=0UL;
-        } in
-      do initialStateData <-- retT @ encodeState initialState;
-      let dataOutputLock = ContractLock cHash 3 initialStateData in
-      let dataOutput = {lock=dataOutputLock;spend=oput.spend} in
-      ret @ Tx V[pt] V[dataOutput] None
-    else
-    autoFailw "Can't initialize with this asset."
+    if oput.spend.asset <> numeraire
+    then autoFailw "Can't initialize with this asset." else     // Initialize with data output
+    let initialState = { tokensIssued=0UL;
+                         collateral=oput.spend.amount;
+                         counter=0UL;
+                       } in
+    do initialStateData <-- retT @ encodeState initialState;
+    let dataOutputLock = ContractLock cHash 3 initialStateData in
+    let dataOutput = {lock=dataOutputLock;spend=oput.spend} in
+    ret @ Tx V[pt] V[dataOutput] None
 
 val collateralizeTx: utxo
                      -> hash
                      -> outpoint
                      -> outpoint
-                     -> cost (result transactionSkeleton) 130
+                     -> cost (result transactionSkeleton) 128
 let collateralizeTx utxo cHash outpoint0 outpoint1 = let open ET in
     do numeraire <-- retT numeraire;
     do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
@@ -210,7 +211,7 @@ val buyTx: utxo
            -> outpoint
            -> outpoint
            -> outputLock
-           -> cost (result transactionSkeleton) 147
+           -> cost (result transactionSkeleton) 143
 let buyTx utxo cHash outpoint0 outpoint1 lk = let open ET in
     do numeraire <-- retT numeraire;
     do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
@@ -242,13 +243,11 @@ let buyTx utxo cHash outpoint0 outpoint1 lk = let open ET in
 val restOfEx: hash -> pointedOutput -> pointedOutput -> pointedOutput
               -> U64.t
               -> outputLock
-              -> cost (result transactionSkeleton) 125
+              -> cost (result transactionSkeleton) 135
 let restOfEx cHash
              (pt1,dataOutput) (pt2,tokenOutput) (pt3,oracleOutput)
              spot
-             payoffOutputLock =
-    let open ET in
-    let open U64 in
+             payoffOutputLock = let open ET in
     do numeraire <-- retT numeraire;
     if dataOutput.spend.asset <> numeraire || tokenOutput.spend.asset <> cHash
     then autoFailw "Can't exercise with these assets." else
@@ -259,13 +258,11 @@ let restOfEx cHash
         if spot <=^ strike
         then autoFailw "Spot price lower than strike." else begin
         let payoff = spot -^ strike in
-        do totalPayoff <-- O.maybe
-                            (autoFailw "Overflow")
-                            (ET.ret)
-                            (tokenOutput.spend.amount *?^ payoff);
-        do currentState <-- decodeState currentStateData;
-        let newCollateral = currentState.collateral -%^ totalPayoff in
-        let newState = { tokensIssued = currentState.tokensIssued -%^ tokenOutput.spend.amount; //TODO: modular
+        do   totalPayoff <-- tokenOutput.spend.amount *?^ payoff;
+        do  currentState <-- decodeState currentStateData;
+        do  tokensIssued <-- currentState.tokensIssued -?^ tokenOutput.spend.amount;
+        do newCollateral <-- currentState.collateral -?^ totalPayoff;
+        let newState = { tokensIssued = tokensIssued;
                          collateral = newCollateral;
                          counter = currentState.counter } in
         //TODO: return to sender with insufficient collateral
@@ -289,7 +286,7 @@ val exerciseTx: utxo -> hash
                 -> (path:auditPath nAuditPathHashes)
                 -> outputLock
                 -> cost (result transactionSkeleton)
-                         M.((nUnderlyingAssetBytes+3) * 384 + 1292 + nAuditPathHashes)
+                         M.((nUnderlyingAssetBytes+3) * 384 + 1302 + nAuditPathHashes)
 let exerciseTx utxo
                cHash
                outpoint0 outpoint1 outpoint2
@@ -336,15 +333,15 @@ let cf' iMsg k = let open M in
   ret (k +
   begin match iMsg with
   | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 56
-  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 130
-  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 147
+  | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 128
+  | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 143
   | { cmd = 3uy ;
       data=(| _, Data4 _ _ _ _
                    _
                    (Data4 _ _ _ _ (ByteArray nUnderlyingAssetBytes _) _ _ _)
                    (Data2 _ _ _ (HashArray nAuditPathHashes _))
                    _ |) } ->
-                     (nUnderlyingAssetBytes + 3) * 384 + 1292 + nAuditPathHashes
+                     (nUnderlyingAssetBytes + 3) * 384 + 1302 + nAuditPathHashes
   | _ -> 0
   end)
 
@@ -355,15 +352,15 @@ val cf_lemma: i:inputMsg -> Lemma (let open M in
    force (cf i) == 105 +
    begin match i with
    | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 56
-   | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 130
-   | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 147
+   | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 128
+   | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 143
    | { cmd = 3uy ;
        data=(| _, Data4 _ _ _ _
                     _
                     (Data4 _ _ _ _ (ByteArray nUnderlyingAssetBytes _) _ _ _)
                     (Data2 _ _ _ (HashArray nAuditPathHashes _))
                     _ |) } ->
-                      (nUnderlyingAssetBytes + 3) * 384 + 1292 + nAuditPathHashes
+                      (nUnderlyingAssetBytes + 3) * 384 + 1302 + nAuditPathHashes
    | _ -> 0
    end)
 let cf_lemma = function
@@ -388,15 +385,15 @@ let main i = let open M in
       <: cost (result transactionSkeleton)
          (match i with
           | { cmd = 0uy ; data = (| _ , Outpoint pt |) } -> 56
-          | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 130
-          | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 147
+          | { cmd = 1uy ; data = (| _ , OutpointVector 2 _ |) } -> 128
+          | { cmd = 2uy ; data = (| _ , Data2 _ _ (OutpointVector 2 _) (OutputLock lk) |) } -> 143
           | { cmd = 3uy ;
               data=(| _, Data4 _ _ _ _
                            _
                            (Data4 _ _ _ _ (ByteArray nUnderlyingAssetBytes _) _ _ _)
                            (Data2 _ _ _ (HashArray nAuditPathHashes _))
                            _ |) } ->
-                             (nUnderlyingAssetBytes + 3) * 384 + 1292 + nAuditPathHashes
+                             (nUnderlyingAssetBytes + 3) * 384 + 1302 + nAuditPathHashes
           | _ -> 0)
   | Collateralize V[pointed ; pointed'] ->
       collateralizeTx i.utxo i.contractHash pointed pointed'
