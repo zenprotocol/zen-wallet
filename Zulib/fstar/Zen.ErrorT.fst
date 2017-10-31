@@ -12,15 +12,15 @@ val failw: string -> cost (result 'a) 0
 let failw msg = ret (E.failw msg)
 
 val ret(#a:Type): a -> cost (result a) 0
-let ret(#_) x = ret (V x)
+let ret(#_) x = ret (OK x)
 
 val retT(#a:Type)(#n:nat): cost a n -> cost (result a) n
 let retT #_ #_ mx =
    do x <-- mx;
    ret x
 
- val incFail(#a:Type): n:nat -> exn -> cost (result a) n
- let incFail #_ n e = inc (fail e) n
+val incFail(#a:Type): n:nat -> exn -> cost (result a) n
+let incFail #_ n e = inc (fail e) n
 
 val incFailw(#a:Type): n:nat -> string -> cost (result a) n
 let incFailw #_ n msg = inc (failw msg) n
@@ -43,9 +43,9 @@ val bind(#a #b:Type)(#m #n:nat):
   -> cost (result b) (m+n)
 let bind #_ #_ #_ #n mx f =
   mx >>= (function
-  | V x -> f x
-  | E e -> fail e `inc` n
-  | Err msg -> failw msg `inc` n)
+  | OK x -> f x
+  | EX e -> fail e `inc` n
+  | ERR msg -> failw msg `inc` n)
 
 val map(#a #b:Type)(#n:nat): (a -> b) -> cost (result a) n
   -> cost (result b) n
@@ -57,3 +57,11 @@ val ap(#a #b:Type)(#m #n:nat): cost (result (a->b)) m -> cost (result a) n
 let ap #_ #_ #_ #_ mf mx =
   do f <-- mf;
   f `map` mx
+
+val of_option(#a:Type): string -> option a -> cost (result a) 0
+let of_option(#_) msg = function
+  | Some v -> ret v
+  | None -> failw msg
+
+val of_optionT(#a:Type)(#n:nat): string -> cost (option a) n -> cost (result a) n
+let of_optionT #_ #_ msg mx = Zen.Cost.bind mx (of_option msg)

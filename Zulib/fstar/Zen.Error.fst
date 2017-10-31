@@ -2,20 +2,20 @@ module Zen.Error
 open Zen.Base
 
 val ret(#a:Type): a -> result a
-let ret(#_) = V
+let ret(#_) = OK
 
 val fail: exn -> result 'a
-let fail e = E e
+let fail e = EX e
 
 val failw: string -> result 'a
-let failw msg = Err msg
+let failw msg = ERR msg
 
 val bind(#a #b:Type): result a -> (a -> result b) -> result b
 let bind #_ #_ mx f =
   match mx with
-  | V x -> f x
-  | E e -> fail e
-  | Err msg -> failw msg
+  | OK x -> f x
+  | EX e -> fail e
+  | ERR msg -> failw msg
 
 val map(#a #b:Type): (a -> b) -> result a -> result b
 let map #_ #_ f mx =
@@ -27,9 +27,9 @@ let ap #_ #_ mf mx =
 
 val join(#a:Type): result (result a) -> result a
 let join(#_) = function
-  | V mx -> mx
-  | E e -> fail e
-  | Err msg -> failw msg
+  | OK mx -> mx
+  | EX e -> fail e
+  | ERR msg -> failw msg
 
 val bind2(#a #b #c:Type):
   result a -> result b -> (a -> b -> result c) -> result c
@@ -61,3 +61,8 @@ let (>=>) #_ #_ #_ f g =
 val (<=<) (#a #b #c:Type):
   (b -> result c) -> (a -> result b) -> (a-> result c)
 let (<=<) #_ #_ #_ f g = g >=> f
+
+val of_option(#a:Type): string -> option a -> result a
+let of_option(#_) msg = function
+  | Some v -> ret v
+  | None -> failw msg
