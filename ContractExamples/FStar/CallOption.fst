@@ -41,8 +41,7 @@ let underlyingSymbol = ret @ Zen.Util.hashFromBase64
 type pointedOutput = outpoint * output
 
 val tryAddPoint: outpoint -> utxos:utxo -> cost (result pointedOutput) 7
-let tryAddPoint pt utxos =
-  let open ET in
+let tryAddPoint pt utxos = let open ET in
   match utxos pt with
   | Some oput -> ret (pt, oput)
   | None -> failw "Cannot find output in UTXO set"
@@ -119,8 +118,7 @@ let makeCommand iMsg = let open M in
                             (Data2 _ _
                                 (UInt32 location)
                                 (HashArray n_hashes hashes))
-                            (OutputLock lk) |) }
-    ->
+                            (OutputLock lk) |) } ->
       ret@Exercise outpoints
                    n_bytes
                    ({underlying=assetId; price=price; timestamp=time; nonce=nonce})
@@ -216,7 +214,7 @@ val buyTx: utxo
 let buyTx utxo cHash outpoint0 outpoint1 lk = let open ET in
     do numeraire <-- retT numeraire;
     do (pt0, dataOutput)     <-- tryAddPoint outpoint0 utxo;
-    do (pt1, purchaseOutput) <-- tryAddPoint outpoint0 utxo;
+    do (pt1, purchaseOutput) <-- tryAddPoint outpoint1 utxo;
     if dataOutput.spend.asset <> numeraire || purchaseOutput.spend.asset <> numeraire
     then autoFailw "Can't buy with these assets." else
     match dataOutput.lock, purchaseOutput.lock with
