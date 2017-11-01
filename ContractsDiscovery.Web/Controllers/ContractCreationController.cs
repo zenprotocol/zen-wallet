@@ -120,7 +120,7 @@ namespace ContractsDiscovery.Web.Controllers
                          .Replace("__oracle__", Convert.ToBase64String(callOptionParameters.oracle))
                          .Replace("__underlying__", Convert.ToBase64String(underlying))
                          .Replace("__price__", "" + callOptionParameters.price)
-                         .Replace("__strike__", "" + Math.Round(callOptionParameters.strike) * 1000)
+                         .Replace("__strike__", "" + Math.Round(callOptionParameters.strike).ToString())
                          .Replace("__minimumCollateralRatio__", "" + callOptionParameters.minimumCollateralRatio);
 						// .Replace("__ownerPubKey__", Convert.ToBase64String(callOptionParameters.ownerPubKey));
 					contractCode += "\n" + jsonHeader;

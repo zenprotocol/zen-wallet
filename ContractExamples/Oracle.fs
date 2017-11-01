@@ -27,7 +27,7 @@ let commitments (items: TickerItem seq) (secret: byte[]) =
         let underlyingBytes = Array.append underlying (Array.zeroCreate<byte>(32 - (Array.length underlying)))
         Extracted.Data4(32I, 1I, 1I, 1I, 
             Extracted.ByteArray (32I, underlyingBytes), 
-            Extracted.UInt64 (uint64 item.price * 1000UL), 
+            Extracted.UInt64 (uint64 item.price), 
             Extracted.UInt64 (uint64 item.timestamp), 
             Extracted.Hash nonceBytes)
     let leaf (item:TickerItem) =
@@ -106,7 +106,7 @@ let priceTable m =
         let data = serializer.UnpackSingleObject bs
         match data with 
         | Extracted.Data4(l1, l2, l3, l4, Extracted.ByteArray (l5, _), Extracted.UInt64 price, Extracted.UInt64 _, Extracted.Hash _) when l1 = 32I && l2 = 1I && l3 = 1I && l4 = 1I && l5 = 32I 
-            -> (decimal price) / 1000m
+            -> (decimal price)
         | _ -> 0m
 //        let item = JObject.Parse(System.Text.Encoding.ASCII.GetString bs)
 //        item.Item("item").Item("price").Value<decimal>()
