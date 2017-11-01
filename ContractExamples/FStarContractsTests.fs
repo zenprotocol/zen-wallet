@@ -178,7 +178,7 @@ let ``TestCallOption``() =
 
     let input = makeParams (0uy, 1100UL, None)
     let cost = costFunc input
-    Assert.That (cost, Is.EqualTo 159I)
+    Assert.That (cost, Is.EqualTo 160I)
 
     let result = mainFunc input
     let state = getStateOutput result
@@ -190,7 +190,7 @@ let ``TestCallOption``() =
 
         let input = makeParams (0uy, 550UL, Some stateOutput)
         let cost = costFunc input
-        Assert.That (cost, Is.EqualTo 104I)
+        Assert.That (cost, Is.EqualTo 105I)
 
         let result = mainFunc input
         let state = getStateOutput result
