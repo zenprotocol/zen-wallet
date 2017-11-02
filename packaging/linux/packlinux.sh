@@ -21,6 +21,12 @@ cp $ZENPATH/*.json ./
 cp $ZENPATH/d3.min.js ./
 cp $ZENPATH/graph.html ./
 
+if [ $1 = "Debug" ]
+then
+    echo "Including Debug symbols"
+    cp $ZENPATH/*.pdb ./
+fi
+
 # get 3rd party tools and libs
 TOOLSPATH="../../../tools"
 

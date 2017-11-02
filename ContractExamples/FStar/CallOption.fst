@@ -16,6 +16,23 @@ module OT = Zen.OptionT
 module U64 = FStar.UInt64
 module U32 = FStar.UInt32
 
+let numeraire: cost (result hash) 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
+// "price" is the premium, in kalapas
+let price: U64.t = 100UL
+
+// strike in u64 is real strike * 1000, rounded down
+let strike: U64.t = 5UL
+
+let oracleHash: cost (result hash) 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
+// No string -> byte arrays, yet. So 32 byte arrays to represent
+// the underlying, i.e. stuff like "AAPL", "MSFT", etc. To use:
+// take string, cast to byte array, pad to 32 bytes, base64 encode,
+// pass in here.
+// The example decodes to "AAPL", followed by 28 zero bytes.
+let underlyingSymbol = ret @ Zen.Util.hashFromBase64 "QUFQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
 (* Make integer overflow return an informative error message *)
 val (+?^): U64.t -> U64.t -> cost (result U64.t) 4
 let (+?^) x y = ET.of_option "Overflow Error" (U64.checked_add x y)
@@ -26,23 +43,7 @@ let (-?^) x y = ET.of_option "Overflow Error" (U64.checked_sub x y)
 val ( *?^ ): U64.t -> U64.t -> cost (result U64.t) 4
 let ( *?^ ) x y = ET.of_option "Overflow Error" (U64.checked_mul x y)
 
-let numeraire: cost (result hash) 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
-// "price" is the premium, in kalapas
-let price: U64.t = 100UL
-
-// strike in u64 is real strike * 1000, rounded down
-let strike: U64.t = 1000000UL
-
-let oracleHash: cost (result hash) 3 = ret @ Zen.Util.hashFromBase64 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
-
-// No string -> byte arrays, yet. So 32 byte arrays to represent
-// the underlying, i.e. stuff like "AAPL", "MSFT", etc. To use:
-// take string, cast to byte array, pad to 32 bytes, base64 encode,
-// pass in here.
-// The example decodes to "AAPL", followed by 28 zero bytes.
-let underlyingSymbol = ret @ Zen.Util.hashFromBase64
-  "QUFQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 type pointedOutput = outpoint * output
 
@@ -256,11 +257,19 @@ let restOfEx cHash
         then autoFailw "Locked to wrong contract" else
         if spot <=^ strike
         then autoFailw "Spot price lower than strike." else begin
-        let payoff = spot -^ strike in
-        do   totalPayoff <-- tokenOutput.spend.amount *?^ payoff;
+        let payoffPerToken = spot -^ strike in
+        do   totalPayoff <-- tokenOutput.spend.amount *?^ payoffPerToken;
         do  currentState <-- decodeState currentStateData;
         do  tokensIssued <-- currentState.tokensIssued -?^ tokenOutput.spend.amount;
-        do newCollateral <-- currentState.collateral -?^ totalPayoff;
+
+        let payout =
+            if currentState.collateral <^ totalPayoff then
+                currentState.collateral
+            else
+                totalPayoff in
+
+        let newCollateral = currentState.collateral -^ payout in
+
         let newState = { tokensIssued = tokensIssued;
                          collateral = newCollateral;
                          counter = currentState.counter } in
@@ -270,7 +279,7 @@ let restOfEx cHash
         let newDataOutput = { lock=newDataOutputLock;
                               spend={asset=numeraire;amount=newCollateral} } in
         let  payoffOutput = { lock=payoffOutputLock;
-                              spend={asset=numeraire;amount=totalPayoff} } in
+                              spend={asset=numeraire;amount=payout} } in
         ret @ Tx V[pt1; pt2]
                  V[newDataOutput; payoffOutput]
                  None
