@@ -25,6 +25,8 @@ namespace Zen
 
 		public static void Main (string[] args)
 		{
+            Console.WriteLine($"\n\n ** Node starting with args: {String.Join(" ", args)}\n");
+
             app = new App();
 
 			bool show_help = false;
