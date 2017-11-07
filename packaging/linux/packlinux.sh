@@ -21,7 +21,7 @@ cp $ZENPATH/*.json ./
 cp $ZENPATH/d3.min.js ./
 cp $ZENPATH/graph.html ./
 
-if [ $1 = "Debug" ]
+if [ $MODE = "Debug" ]
 then
     echo "Including Debug symbols"
     cp $ZENPATH/*.pdb ./
@@ -41,8 +41,8 @@ cp -r $ZULIBPATH ./zulib
 # configure
 # todo: use args
 CONFIG="zen.exe.config"
-xmlstarlet edit -L -u "/configuration/appSettings/add[@key='network']/@value" -v 'staging_client' $CONFIG
-xmlstarlet edit -L -u "/configuration/appSettings/add[@key='assetsDiscovery']/@value" -v 'staging.zenprotocol.com' $CONFIG
+xmlstarlet edit -L -u "/configuration/appSettings/add[@key='network']/@value" -v 'alpha_client' $CONFIG
+xmlstarlet edit -L -u "/configuration/appSettings/add[@key='assetsDiscovery']/@value" -v 'alpha.zenprotocol.com' $CONFIG
 xmlstarlet edit -L -u "/configuration/appSettings/add[@key='fstar']/@value" -v 'fstar' $CONFIG
 xmlstarlet edit -L -u "/configuration/appSettings/add[@key='zulib']/@value" -v 'zulib' $CONFIG
 
