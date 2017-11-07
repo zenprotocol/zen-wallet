@@ -4,7 +4,7 @@
   "Seeds": [
     "34.213.103.167"
   ],
-  "DefaultPort": 9998,
-  "Magic": 0,
+  "DefaultPort": 9997,
+  "Magic": 1,
   "DisableUpNP": true
 }
