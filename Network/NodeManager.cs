@@ -10,6 +10,7 @@ using System.Net;
 using Consensus;
 using BlockChain.Data;
 using static BlockChain.BlockVerificationHelper;
+using Network.Serialization;
 
 namespace Network
 {
@@ -35,6 +36,9 @@ namespace Network
 		public async Task Connect(NetworkInfo networkInfo)
 		{
 			IPAddress ipAddress = null;
+            WireSerialization.Instance.Magic = networkInfo.Magic;
+            NodeServerTrace.Information($"Magic is {networkInfo.Magic}");
+
 			var natManager = new NATManager(networkInfo.DefaultPort);
 
 #if DEBUG
