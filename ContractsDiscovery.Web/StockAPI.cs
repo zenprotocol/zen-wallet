@@ -69,6 +69,16 @@ namespace ContractsDiscovery.Web.App_Code
                 Console.WriteLine("Error fetching data from url: "+ uri.ToString(), e);
             }
 
+            if (values.Count == 0)
+            {
+
+                Random random = new Random();
+                foreach (string ticker in _Tickers)
+                {
+                    values.Add(new Ticker() { Name = ticker, Value = random.Next(0, 100) });
+                }
+            }
+
             return values;
         }
     }

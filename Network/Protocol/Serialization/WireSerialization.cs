@@ -10,17 +10,18 @@ using NBitcoin.Protocol;
 
 namespace Network.Serialization
 {
-	//TODO: add version
-	public class WireSerialization : Singleton<WireSerialization>
-	{
-		private const int _Magic = 1;
+    //TODO: add version
+    public class WireSerialization : Singleton<WireSerialization>
+    {
+        public uint Magic { get; set; }
+
 		private Dictionary<Type, MessagePackSerializer> _ConsensusExtSerializers;
 		private Dictionary<byte, Type> _ConsensusExtTypes;
 		private Dictionary<string, Type> _NetworkingPayloadTypes;
 		private Dictionary<Type, string> _NetworkingPayloadCodes;
 		private List<Type> _EmptyNetworkingPayloadTypes;
 
-		public WireSerialization()
+		public  WireSerialization()
 		{
 			IPEndPointSerializer.Register();
 
@@ -98,7 +99,7 @@ namespace Network.Serialization
 			Packer packer = Packer.Create(stream);
 
 			packer.PackArrayHeader(3);
-			packer.Pack(_Magic);
+			packer.Pack(Magic);
 			packer.Pack(GetChecksum(payloadObject));
 			packer.PackRawBody(Consensus.Serialization.context.GetSerializer<T>().PackSingleObject(payloadObject));
 		}
@@ -110,7 +111,7 @@ namespace Network.Serialization
 
 			var isEmptyPayload = _EmptyNetworkingPayloadTypes.Contains(payloadObject.GetType());
 			packer.PackArrayHeader(isEmptyPayload ? 3 : 4);
-			packer.Pack(_Magic);
+			packer.Pack(Magic);
 			packer.Pack(GetChecksum(payloadObject));
 
 			if (!_NetworkingPayloadCodes.ContainsKey(payloadObject.GetType())) {
@@ -140,7 +141,7 @@ namespace Network.Serialization
 
 			Assert(unpacker.Read());
 			var magic = unpacker.LastReadData.AsInt32();
-			Assert(magic == _Magic);
+			Assert(magic == Magic);
 
 			Assert(unpacker.Read());
 			var checksum = unpacker.LastReadData.AsBinary();
