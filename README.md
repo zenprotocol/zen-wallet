@@ -1,8 +1,10 @@
 # Zen Protocol Alpha Documentation
 
-[Gihub Repo](https://github.com/zenprotocol/zen-wallet)
-
-
+Links:
+ * [Gihub Repo](https://github.com/zenprotocol/zen-wallet)
+ * [Website](https://www.zenprotocol.com)
+ * [Blog](https://blog.zenprotocol.com)
+ * [Telegram](https://t.me/zenprotocol)
 
 ## Installation Instructions
 
