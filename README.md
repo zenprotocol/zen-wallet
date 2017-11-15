@@ -8,6 +8,7 @@ Links:
 
 ## Installation Instructions
 
+[Video Tutorial on YouTube](https://www.youtube.com/watch?v=Pi9lK8dJeGU)
 
 ### Mac OSX
 
