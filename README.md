@@ -8,10 +8,10 @@ Links:
 
 ## Youtube Tutorials
 
-* [Windows installation walkthrough](https://www.youtube.com/watch?v=gJRmtX7UL0c){:target="_blank"}
-* [Using the Alpha tutorial](https://www.youtube.com/watch?v=Pi9lK8dJeGU&t=6s){:target="_blank"}
-* [Chinese tutorial](https://www.youtube.com/watch?v=siLrcqpoZhA){:target="_blank"}
-* [TUI walkthrough](https://www.youtube.com/watch?v=GR4R_hNDxJU){:target="_blank"}
+* [Windows installation walkthrough](https://www.youtube.com/watch?v=gJRmtX7UL0c)
+* [Using the Alpha tutorial](https://www.youtube.com/watch?v=Pi9lK8dJeGU&t=6s)
+* [Chinese tutorial](https://www.youtube.com/watch?v=siLrcqpoZhA)
+* [TUI walkthrough](https://www.youtube.com/watch?v=GR4R_hNDxJU)
 
 ### Mac OSX
 
