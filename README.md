@@ -8,7 +8,9 @@ Links:
 
 ## Installation Instructions
 
-[Video Tutorial on YouTube](https://www.youtube.com/watch?v=Pi9lK8dJeGU)
+[Alpha tutorial on YouTube](https://www.youtube.com/watch?v=Pi9lK8dJeGU&t=6s)
+[Chinese tutorial on YouTube](https://www.youtube.com/watch?v=siLrcqpoZhA)
+[TUI walkthrough on YouTube](https://www.youtube.com/watch?v=GR4R_hNDxJU)
 
 ### Mac OSX
 
