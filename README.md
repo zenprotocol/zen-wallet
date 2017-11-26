@@ -6,11 +6,12 @@ Links:
  * [Blog](https://blog.zenprotocol.com)
  * [Telegram](https://t.me/zenprotocol)
 
-## Installation Instructions
+## Youtube Tutorials
 
-[Alpha tutorial on YouTube](https://www.youtube.com/watch?v=Pi9lK8dJeGU&t=6s)
-[Chinese tutorial on YouTube](https://www.youtube.com/watch?v=siLrcqpoZhA)
-[TUI walkthrough on YouTube](https://www.youtube.com/watch?v=GR4R_hNDxJU)
+* [Windows installation walkthrough](https://www.youtube.com/watch?v=gJRmtX7UL0c)
+* [Alpha tutorial, Mac](https://www.youtube.com/watch?v=Pi9lK8dJeGU&t=6s)
+* [Chinese tutorial](https://www.youtube.com/watch?v=siLrcqpoZhA)
+* [TUI walkthrough](https://www.youtube.com/watch?v=GR4R_hNDxJU)
 
 ### Mac OSX
 
