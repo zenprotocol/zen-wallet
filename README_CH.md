@@ -9,6 +9,7 @@
 ## 安装指南
 
 [YouTube 视频教程](https://www.youtube.com/watch?v=Pi9lK8dJeGU)
+[YouTube 中文教程](https://www.youtube.com/watch?v=siLrcqpoZhA)
 
 ### Mac OSX
 
